@@ -32,15 +32,24 @@
 //	new /obj/item/stack/sheet/mineral/wood(src.loc, 10)
 	qdel(src)
 
+// AI EDIT: user.pulling/grab_state don't exist in DD - the old pull system was replaced with a grab_datum system
+// (code/modules/grab/). The equivalent of "who/how hard is user currently grabbing" is
+// user.get_active_grab().affecting / .current_grab.damage_stage (see e.g. code/modules/grab/human_grab.dm for the
+// same GRAB_AGGRESSIVE comparison pattern in DD's own code).
+// do_mob() is left as-is and still flagged - it's a separate, genuinely missing proc (never defined anywhere in
+// DD), not part of this rename.
 /obj/structure/kitchenspike/ms13/cross/attack_hand(mob/user)
-	if(VIABLE_MOB_CHECK(user.pulling) && user.grab_state == GRAB_AGGRESSIVE && !has_buckled_mobs())
-		var/mob/living/L = user.pulling
+	// get_active_grab() is /mob/living-specific; user.pulling/grab_state were being read just as loosely before
+	var/mob/living/living_user = user
+	var/obj/item/hand_item/grab/active_grab = living_user.get_active_grab()
+	if(VIABLE_MOB_CHECK(active_grab?.affecting) && active_grab.current_grab.damage_stage == GRAB_AGGRESSIVE && !has_buckled_mobs())
+		var/mob/living/L = active_grab.affecting
 		if(do_mob(user, src, 120))
 			if(has_buckled_mobs()) //to prevent spam/queing up attacks
 				return
 			if(L.buckled)
 				return
-			if(user.pulling != L)
+			if(living_user.get_active_grab()?.affecting != L)
 				return
 			playsound(src.loc, "sound/effects/ms13/crossed.ogg", 20, 1) // thanks hippie
 			L.visible_message("<span class='danger'>[user] ties [L] to the cross!</span>", "<span class='userdanger'>[user] ties you to the cross!</span>")
