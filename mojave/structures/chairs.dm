@@ -192,8 +192,7 @@
 	icon = 'mojave/icons/structure/chairs.dmi'
 	buildstacktype = /obj/item/stack/sheet/ms13/scrap
 	buildstackamount = 1
-	buckle_sound = 'mojave/sound/ms13effects/furniture/chair_office_sit.ogg'
-	unbuckle_sound = 'mojave/sound/ms13effects/furniture/chair_office_standup.ogg'
+	// buckle_sound/unbuckle_sound don't exist on DD's /obj/structure/chair and weren't wired to anything here either - dropped
 	max_integrity = 100
 
 /obj/structure/chair/office/ms13/wrench_act_secondary(mob/living/user, obj/item/weapon)

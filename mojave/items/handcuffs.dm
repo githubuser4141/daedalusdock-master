@@ -6,16 +6,14 @@
 	worn_icon_state = "rope"
 	worn_icon = 'mojave/icons/mob/clothing/hands.dmi'
 	inhand_icon_state = "rope"
-	handcuffed_icon = 'mojave/icons/mob/clothing/hands.dmi'
-	handcuffed_icon_state = "rope"
+	// handcuffed_icon/handcuffed_icon_state and cuff_verb aren't supported by DD's restraint system - dropped
 	lefthand_file = 'mojave/icons/mob/inhands/items_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	//grid_width = 64
 	//grid_height = 64
 	w_class = WEIGHT_CLASS_NORMAL
 	cuffsound = 'mojave/sound/ms13effects/hogtie.ogg'
-	cuff_time = 3 SECONDS
-	cuff_verb = "hogtie"
+	handcuff_time = 3 SECONDS
 	breakouttime = 60 SECONDS
 	does_shrink = FALSE
 
@@ -41,13 +39,12 @@
 	icon_state = "handcuffs"
 	icon = 'mojave/icons/objects/tools/tools_inventory.dmi'
 	inhand_icon_state = "handcuffs"
-	handcuffed_icon = 'mojave/icons/mob/clothing/hands.dmi'
-	handcuffed_icon_state = "handcuffs"
+	// handcuffed_icon/handcuffed_icon_state aren't supported by DD's restraint system - dropped
 	lefthand_file = 'mojave/icons/mob/inhands/items_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	var/does_shrink = TRUE
 	breakouttime = 100 SECONDS //1M 40S
-	cuff_time = 4 SECONDS
+	handcuff_time = 4 SECONDS
 
 /obj/item/restraints/handcuffs/ms13/Initialize(mapload)
 	. = ..()

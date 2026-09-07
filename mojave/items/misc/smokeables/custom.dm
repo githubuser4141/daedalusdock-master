@@ -34,7 +34,7 @@
 /obj/item/ms13/cigarette/custom
 	name = "generic custom smigglerette"
 	desc = "THE COMPONENT FUCKED UP, ABORT ABORT, DO NOT SMOKE."
-	obj_flags = UNIQUE_RENAME | UNIQUE_RENAME_NO_DESCRIPTION
+	obj_flags = UNIQUE_RENAME // UNIQUE_RENAME_NO_DESCRIPTION doesn't exist in DD - players can now also edit the description
 	list_reagents = null
 	nicotine_potency = 0.10 //less potent
 	smoking_damage = 0.005 //organic

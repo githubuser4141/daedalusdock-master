@@ -1460,7 +1460,7 @@
 	visor_flags_inv = HIDEEARS|HIDEEYES
 	visor_flags_cover = HEADCOVERSEYES | PEPPERPROOF
 	resistance_flags = FIRE_PROOF
-	clothing_flags = SNUG_FIT | PLASMAMAN_HELMET_EXEMPT
+	clothing_flags = SNUG_FIT | STACKABLE_HELMET_EXEMPT // PLASMAMAN_HELMET_EXEMPT was renamed to STACKABLE_HELMET_EXEMPT
 
 /obj/item/clothing/head/helmet/ms13/ncr/engineer/attack_self(mob/user)
 	weldingvisortoggle(user)
