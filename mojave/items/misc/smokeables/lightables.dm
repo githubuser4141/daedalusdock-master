@@ -63,7 +63,7 @@
 		W.update_overlays()
 		W.update_icon()
 		W.build_worn_icon()
-		user.update_inv_hands()
+		user.update_held_items()
 		W.set_light_on(TRUE)
 		return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
 

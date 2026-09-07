@@ -6,6 +6,10 @@
 //1 cigarette lasts 5 minutes, gives 5 minute of buff and whatever peaks when no reagents are left equivalent debuff
 //9 nicotine numbers per minute
 
+// DD has no mood system yet (see code/modules/reagents/drugs.dm's own #warn about this) - the COMSIG_ADD_MOOD_EVENT/
+// COMSIG_CLEAR_MOOD_EVENT calls that used to sit in each switch case below were dropped. The actual mechanical
+// effects (actionspeed modifiers, chat flavor text) are untouched.
+
 /obj/item/organ/lungs
 	var/chain_smokah = 0 //variable for cigarette abuse damage
 	var/nicotine = 0 //variable for nicotine potency and effects
@@ -29,24 +33,20 @@
 	if(has_nic) //NIC!!!
 		switch(nicotine)
 			if(2 to 4.5) //kicks in after 30 seconds
-				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smoked", /datum/mood_event/smoked)
 				owner.remove_actionspeed_modifier(ALL_CIG)
 				if(prob(5))
 					to_chat(owner, "<span class='green'>[pick("You feel slightly calmed.", "You feel a little more alert.", "Your body feels more awake.")]</span>")
 			if(4.6 to 54.9) //chill
-				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smoked", /datum/mood_event/smoked)
 				owner.remove_actionspeed_modifier(ALL_BUT_ONE_CIG)
 				owner.add_actionspeed_modifier(/datum/actionspeed_modifier/one_cig)
 				if(prob(3))
 					to_chat(owner, "<span class='green'>[pick("You feel calmed.", "You feel more alert.", "You feel a little energised.")]</span>")
 			if(55 to 107.9) //buzzed
-				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smoked", /datum/mood_event/smoked)
 				owner.remove_actionspeed_modifier(ALL_BUT_TWO_CIG)
 				owner.add_actionspeed_modifier(/datum/actionspeed_modifier/two_cig)
 				if(prob(4))
 					to_chat(owner, "<span class='green'>[pick("You feel focused.", "You feel more aware.", "You feel very awake.")]</span>")
 			if(108 to 162) //super buzzed
-				SEND_SIGNAL(owner, COMSIG_ADD_MOOD_EVENT, "smoked", /datum/mood_event/smoked)
 				owner.remove_actionspeed_modifier(ALL_BUT_THREE_CIG)
 				owner.add_actionspeed_modifier(/datum/actionspeed_modifier/three_cig)
 				if(prob(6))
@@ -54,24 +54,20 @@
 	if(!has_nic) //NO NIC!!
 		switch(nicotine)
 			if(2 to 4.5)
-				SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smoked")
 				owner.remove_actionspeed_modifier(ALL_CIG)
 				if(prob(1))
 					to_chat(owner, "<span class='danger'>[pick("You feel normal.", "You feel a little tired.")]</span>")
 			if(4.6 to 54.9)
-				SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smoked")
 				owner.remove_actionspeed_modifier(ALL_BUT_ONE_AFTER_CIG)
 				owner.add_actionspeed_modifier(/datum/actionspeed_modifier/after_one_cig)
 				if(prob(2))
 					to_chat(owner, "<span class='danger'>[pick("You feel drowsy.", "You feel a bit out of it.")]</span>")
 			if(55 to 107.9)
-				SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smoked")
 				owner.remove_actionspeed_modifier(ALL_BUT_TWO_AFTER_CIG)
 				owner.add_actionspeed_modifier(/datum/actionspeed_modifier/after_two_cig)
 				if(prob(5))
 					to_chat(owner, "<span class='danger'>[pick("You feel tired.", "You feel unfocused.")]</span>")
 			if(108 to 162)
-				SEND_SIGNAL(owner, COMSIG_CLEAR_MOOD_EVENT, "smoked")
 				owner.remove_actionspeed_modifier(ALL_BUT_THREE_AFTER_CIG)
 				owner.add_actionspeed_modifier(/datum/actionspeed_modifier/after_three_cig)
 				if(prob(6))

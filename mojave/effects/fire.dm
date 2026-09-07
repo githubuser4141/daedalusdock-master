@@ -37,7 +37,7 @@
 		for(var/mob/living/C in get_turf(src))
 			C.flamer_fire_act(fire_stacks)
 
-			if(C.IgniteMob())
+			if(C.ignite_mob())
 				C.visible_message("<span class='danger'>[C] bursts into flames!</span>","<span class='highdanger'>You burst into flames!</span>")
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_ENTERED = PROC_REF(on_entered),
@@ -64,7 +64,7 @@
 // override this proc to give different walking-over-fire effects
 /mob/living/proc/flamer_fire_crossed(burnlevel, firelevel, fire_mod = 1)
 	adjust_fire_stacks(burnlevel) //Make it possible to light them on fire later.
-	IgniteMob()
+	ignite_mob()
 	to_chat(src, "<span class='danger'>You are burned!</span>")
 
 /obj/ms13/fire/proc/updateicon()
@@ -128,7 +128,7 @@
 	if(!burnlevel)
 		return
 	adjust_fire_stacks(burnlevel) //If i stand in the fire i deserve all of this. Also Napalm stacks quickly.
-	IgniteMob()
+	ignite_mob()
 	adjustFireLoss(rand(5 , burnlevel)) //Including the fire should be way stronger.
 	to_chat(src, "<span class='warning'>You are burned!</span>")
 

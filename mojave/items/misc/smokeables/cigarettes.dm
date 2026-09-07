@@ -103,8 +103,8 @@
 
 	if(ismob(loc))
 		var/mob/M = loc
-		M.update_inv_wear_mask()
-		M.update_inv_hands()
+		M.update_worn_mask()
+		M.update_held_items()
 		if(smoketime <= 60) //for the scroungers
 			to_chat(M, "<span class='warning'>You desperately light the [name].</span>")
 
@@ -143,8 +143,8 @@
 	if(ismob(loc))
 		var/mob/living/M = loc
 		to_chat(M, "<span class='notice'>The [name] goes out.</span>")
-		M.update_inv_wear_mask()
-		M.update_inv_hands()
+		M.update_worn_mask()
+		M.update_held_items()
 
 /obj/item/ms13/cigarette/Destroy()
 	STOP_PROCESSING(SSobj, src)
@@ -203,7 +203,7 @@
 /obj/item/ms13/cigarette/process()
 	var/mob/living/M = loc
 	if(isliving(M))
-		M.IgniteMob()
+		M.ignite_mob()
 	smoketime--
 	if(smoketime < 1)
 		var/obj/item/ash = new /obj/item/ms13/ash(get_turf(src))

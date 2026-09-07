@@ -5060,11 +5060,17 @@
 #include "mojave\__DEFINES\ambience_sounds.dm"
 #include "mojave\__DEFINES\armor.dm"
 #include "mojave\__DEFINES\atmosphere_sounds.dm"
+// Note: per the repo owner, this was bought/bounty code that compiles and runs but never actually worked
+// correctly gameplay-wise. Kept included for now since it may carry structural changes other mojave projectile
+// code depends on - flagged for a closer look later, not a compile-error concern.
+#include "mojave\__DEFINES\bullet_math.dm"
 #include "mojave\__DEFINES\combat.dm"
 #include "mojave\__DEFINES\construction.dm"
 #include "mojave\__DEFINES\crafting.dm"
 #include "mojave\__DEFINES\do_afters.dm"
 #include "mojave\__DEFINES\filters.dm"
+// footsteps.dm intentionally excluded: it redefines footstep/barefootstep/InitGlobalfootstep etc., all of which
+// already exist in code\__DEFINES\footsteps.dm - duplicate definitions, not a gap.
 #include "mojave\__DEFINES\fov.dm"
 #include "mojave\__DEFINES\icon_smoothing.dm"
 #include "mojave\__DEFINES\jobs.dm"
@@ -5078,6 +5084,7 @@
 #include "mojave\__DEFINES\tools.dm"
 #include "mojave\__DEFINES\vapour.dm"
 #include "mojave\__DEFINES\vending_loot.dm"
+#include "mojave\__DEFINES\zmojave_defines.dm"
 #include "mojave\__DEFINES\dcs\signals.dm"
 #include "mojave\__DEFINES\dcs\signals\signals_atom_main.dm"
 #include "mojave\__DEFINES\dcs\signals\signals_fixeye.dm"
@@ -5091,6 +5098,7 @@
 #include "mojave\__DEFINES\zmojave_defines\DNA.dm"
 #include "mojave\__DEFINES\zmojave_defines\fatness.dm"
 #include "mojave\__DEFINES\zmojave_defines\hud.dm"
+#include "mojave\__DEFINES\zmojave_defines\jobs.dm"
 #include "mojave\__DEFINES\zmojave_defines\keybinding.dm"
 #include "mojave\__DEFINES\zmojave_defines\layers.dm"
 #include "mojave\__DEFINES\zmojave_defines\mumbleboops.dm"
@@ -5150,6 +5158,9 @@
 #include "mojave\code\datums\components\nv_handler.dm"
 #include "mojave\code\datums\components\thirst.dm"
 #include "mojave\code\datums\components\transparency.dm"
+// two_handed.dm intentionally excluded: it's the old component-based two-handed wielding system. DD replaced this
+// with native wielded/wield_info vars directly on /obj/item (see items.dm) - this component is the wrong/obsolete
+// system, not a missing piece. mojave/items/melee/twohanded.dm etc. still need a real port to the native system.
 #include "mojave\code\datums\components\crafting\recipes.dm"
 #include "mojave\code\datums\components\looping_sounds\looping_sound.dm"
 #include "mojave\code\datums\components\looping_sounds\machinery.dm"
@@ -5175,6 +5186,8 @@
 #include "mojave\code\game\movables\follower\density.dm"
 #include "mojave\code\game\movables\follower\opacity.dm"
 #include "mojave\code\game\objects\item_defines.dm"
+// item_wield.dm intentionally excluded: it's paired with the obsolete two_handed.dm component (see above), not
+// DD's native wielded/wield_info system.
 #include "mojave\code\game\objects\effects\displacement_maps.dm"
 #include "mojave\code\game\objects\effects\displacement\fat.dm"
 #include "mojave\code\game\objects\traps\ms13_traps.dm"
@@ -5288,6 +5301,9 @@
 #include "mojave\code\modules\mob\mob_projectiles.dm"
 #include "mojave\code\modules\mob\ms13mobs.dm"
 #include "mojave\code\modules\mob\creatures\ms13animals.dm"
+// sprite_accessories.dm intentionally excluded: it redefines /datum/sprite_accessory itself (icon, icon_state,
+// name, gender, color_src...) and init_sprite_accessory_subtypes(), both of which already exist in DD's own
+// code/modules/mob/dead/new_player/sprite_accessories/_sprite_accessories.dm - duplicate definitions, not a gap.
 #include "mojave\code\modules\mob\living\emote.dm"
 #include "mojave\code\modules\mob\living\examine.dm"
 #include "mojave\code\modules\mob\living\living.dm"
@@ -5314,6 +5330,14 @@
 #include "mojave\code\modules\mob\robots\handies.dm"
 #include "mojave\code\modules\mob\robots\protectrons.dm"
 #include "mojave\code\modules\mob\robots\robobrains.dm"
+// trader.dm intentionally excluded: it redefines /mob/living/simple_animal/friendly/trader itself (products,
+// wanted_items, generate_cash, try_sell, sell_item, sell_sound...), which already exists in DD's own
+// code/modules/mob/living/simple_animal/friendly/trader.dm - duplicate definitions, not a gap.
+// vendortrons.dm intentionally excluded too: turns out it depends on fields trader.dm adds on top of the DD base
+// (say_phrases, currency_name, accepted_currency, initial_products()/initial_wanteds() as overridable procs) that
+// aren't part of DD's own trader system - it's not independent of trader.dm like it first looked. Porting this
+// properly means editing trader.dm to keep only its genuinely-new additions and drop the parts that duplicate DD's
+// base, which is real work, not a quick include.
 #include "mojave\code\modules\projectiles\gun.dm"
 #include "mojave\code\modules\projectiles\projectile.dm"
 #include "mojave\code\modules\projectiles\ammunition\_ammo_casing.dm"
@@ -5324,6 +5348,7 @@
 #include "mojave\code\modules\reagents\drugs.dm"
 #include "mojave\code\modules\reagents\drugs_modifiers.dm"
 #include "mojave\code\modules\reagents\mojave_chems.dm"
+#include "mojave\code\modules\reagents\reagents.dm"
 #include "mojave\code\modules\reagents\toxins.dm"
 #include "mojave\code\modules\reagents\consumables\alcohols.dm"
 #include "mojave\code\modules\reagents\consumables\drinks.dm"
@@ -5345,7 +5370,15 @@
 #include "mojave\code\modules\stats\perks\preacher.dm"
 #include "mojave\code\modules\stats\perks\silent_running.dm"
 #include "mojave\code\modules\storage\mojave.dm"
+// tarkov.dm intentionally excluded: it implements an already-abandoned grid-inventory system (grid_height/grid_width
+// are commented out everywhere else in mojave/) and its own #define grid_height/grid_width macros are corrupted
+// (invalid macro name containing "//"), which is fatal - it breaks parsing of every file listed after it in this .dme.
 #include "mojave\code\modules\surgery\bodyparts\_bodypart.dm"
+// _bp_aid.dm/bodypart_aid.dm intentionally excluded: they assume a bodypart_aid signal/var system
+// (COMSIG_BODYPART_SPLINTED/GAUZED/etc., bodypart.current_splint/current_gauze,
+// bodypart.owner.update_bandage_overlays) that doesn't match DD's current wound/bodypart-aid system. Per the
+// instruction to treat DD's medical system as authoritative and be careful here - needs real investigation into
+// DD's actual gauze/splint mechanism, not a quick rename.
 #include "mojave\code\modules\surgery\bodyparts\bodypart_meat.dm"
 #include "mojave\code\modules\surgery\bodyparts\subtypes\chest.dm"
 #include "mojave\code\modules\surgery\organs\_organ.dm"
@@ -5571,4 +5604,12 @@
 #include "mojave\turfs\plating.dm"
 #include "mojave\turfs\wall.dm"
 #include "mojave\turfs\window.dm"
+// mouse.dm intentionally excluded: it references .ico assets under tgui/packages/tgui/assets/ that don't exist in
+// this repo - missing binary assets, not a code issue.
+// character.dm/fatness.dm/fatness_adjective.dm/generic_adjective.dm/eye_color.dm/hair_color.dm/ms13_preferences.dm
+// intentionally excluded: they assume a preferences-panel category system (PREFERENCE_CATEGORY_CLOTHING,
+// PREFERENCE_CATEGORY_SECONDARY_FEATURES) and several mob-side vars (H.backpack, eyes_organ.eye_color,
+// GLOB.fatness_types...) that don't match DD's current preferences system - needs real investigation into how DD's
+// character-creation panel actually works, not a quick rename.
+#include "mojave\code\modules\smokeables\organ.dm"
 // END_INCLUDE
