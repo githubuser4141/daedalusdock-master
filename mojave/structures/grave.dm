@@ -233,7 +233,10 @@
 		span_warning("You [actuallyismob ? "try to ":""]stuff [O] into [src]."), \
 		span_hear("You hear dirt crumbling."))
 	if(actuallyismob)
-		if(do_after_mob(user, targets, 40))
+		// do_after_mob(user, list/targets, time) doesn't exist in DD - confirmed against Mojave Sun's
+		// code/__HELPERS/mobs.dm as the real signature. DD's own do_after() already accepts a list of targets
+		// natively (see its docstring in code/modules/do_after/do_after.dm), so this is a straight rename.
+		if(do_after(user, targets, 40))
 			user.visible_message(span_notice("[user] stuffs [O] into [src]."), \
 				span_notice("You stuff [O] into [src]."), \
 				span_hear("You hear dirt crumbling."))

@@ -60,7 +60,10 @@
 		if(M != user)
 			M.visible_message(span_danger("[user] attempts to feed [M] something from [src]."), \
 						span_userdanger("[user] attempts to feed you something from [src]."))
-			if(!do_mob(user, M))
+			// do_mob(user, target) doesn't exist in DD - renamed to do_after(). Its default time was 3 SECONDS
+			// (confirmed against Mojave Sun's code/__HELPERS/mobs.dm); DD's do_after() defaults to 0 (instant), so
+			// the time is now passed explicitly to keep the same delay.
+			if(!do_after(user, M, 3 SECONDS))
 				return
 			if(!reagents || !reagents.total_volume)
 				return // The drink might be empty after the delay, such as by spam-feeding

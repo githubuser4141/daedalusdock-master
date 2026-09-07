@@ -12,7 +12,10 @@
 		return
 	user.visible_message(span_warning("[user] begins to butcher [victim]..."),\
 			span_notice("You begin to butcher [victim]..."))
-	if(do_mob(user, FLOOR(butchering_component.speed, 1), target = victim))
+	// do_mob(user, target, time) doesn't exist in DD - confirmed against Mojave Sun's code/__HELPERS/mobs.dm as the
+	// real signature (target is 2nd positional, time is 3rd). This call had them the wrong way round (passing the
+	// speed value into the target slot, then separately naming target) - fixed while porting to do_after().
+	if(do_after(user, victim, FLOOR(butchering_component.speed, 1)))
 		user.visible_message(span_warning("[user] butchers [victim]."),\
 				span_notice("You butcher [victim]."))
 		playsound(victim, 'mojave/sound/ms13gore/dissection.ogg', 80, FALSE)

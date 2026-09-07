@@ -36,15 +36,17 @@
 // (code/modules/grab/). The equivalent of "who/how hard is user currently grabbing" is
 // user.get_active_grab().affecting / .current_grab.damage_stage (see e.g. code/modules/grab/human_grab.dm for the
 // same GRAB_AGGRESSIVE comparison pattern in DD's own code).
-// do_mob() is left as-is and still flagged - it's a separate, genuinely missing proc (never defined anywhere in
-// DD), not part of this rename.
+// do_mob(user, target, time) doesn't exist in DD - confirmed against github.com/Mojave-Sun/mojave-sun-13
+// (code/__HELPERS/mobs.dm) that this was the real signature there. DD consolidated do_mob/do_after_mob/do_after
+// into a single /proc/do_after(user, target, time, timed_action_flags, ...) - same positional order, so this is a
+// straight rename.
 /obj/structure/kitchenspike/ms13/cross/attack_hand(mob/user)
 	// get_active_grab() is /mob/living-specific; user.pulling/grab_state were being read just as loosely before
 	var/mob/living/living_user = user
 	var/obj/item/hand_item/grab/active_grab = living_user.get_active_grab()
 	if(VIABLE_MOB_CHECK(active_grab?.affecting) && active_grab.current_grab.damage_stage == GRAB_AGGRESSIVE && !has_buckled_mobs())
 		var/mob/living/L = active_grab.affecting
-		if(do_mob(user, src, 120))
+		if(do_after(user, src, 120))
 			if(has_buckled_mobs()) //to prevent spam/queing up attacks
 				return
 			if(L.buckled)
