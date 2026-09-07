@@ -176,7 +176,7 @@
 	interaction_flags_item &= ~INTERACT_ITEM_ATTACK_HAND_PICKUP
 	ADD_TRAIT(src, TRAIT_NODROP, STICKY_NODROP) //Somehow it's stuck to your body, no questioning.
 	AddElement(/datum/element/radiation_protected_clothing)
-	RegisterSignal(src, COMSIG_ATOM_CAN_BE_PULLED, PROC_REF(reject_pulls))
+	RegisterSignal(src, COMSIG_ATOM_CAN_BE_GRABBED, PROC_REF(reject_pulls))
 
 	for(var/i in module_armor)
 		if(isnull(module_armor[i]))
@@ -210,7 +210,7 @@
 		qdel(module_armor[i])
 	actions_modules = list()
 	listeningTo = null
-	UnregisterSignal(src, COMSIG_ATOM_CAN_BE_PULLED)
+	UnregisterSignal(src, COMSIG_ATOM_CAN_BE_GRABBED)
 
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/proc/update_actions()
 	actions_modules = null
@@ -507,7 +507,7 @@
 	ADD_TRAIT(user, TRAIT_NON_FLAMMABLE, "power_armor")
 	ADD_TRAIT(user, TRAIT_IN_POWERARMOUR, "power_armor")
 	ADD_TRAIT(user, TRAIT_SHOVEIMMUNE, "power_armor")
-	RegisterSignal(user, COMSIG_ATOM_CAN_BE_PULLED, PROC_REF(reject_pulls))
+	RegisterSignal(user, COMSIG_ATOM_CAN_BE_GRABBED, PROC_REF(reject_pulls))
 
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/unequipped(mob/living/carbon/human/user)
 	. = ..()
@@ -529,13 +529,17 @@
 	REMOVE_TRAIT(user, TRAIT_NON_FLAMMABLE, "power_armor")
 	REMOVE_TRAIT(user, TRAIT_IN_POWERARMOUR, "power_armor")
 	REMOVE_TRAIT(user, TRAIT_SHOVEIMMUNE, "power_armor")
-	UnregisterSignal(user, COMSIG_ATOM_CAN_BE_PULLED)
+	UnregisterSignal(user, COMSIG_ATOM_CAN_BE_GRABBED)
 
+// AI EDIT: COMSIG_ATOM_CAN_BE_PULLED/COMSIG_ATOM_CANT_PULL are the original Mojave Sun signal names (confirmed
+// against github.com/Mojave-Sun/mojave-sun-13) - DD's grab system renamed them to
+// COMSIG_ATOM_CAN_BE_GRABBED/COMSIG_ATOM_NO_GRAB (code/__DEFINES/dcs/signals/signals_atom/signals_atom_movement.dm),
+// same signal shape (sent to the target, blockable by returning the "no" bit).
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/proc/reject_pulls(datum/source, mob/living/puller)
 	SIGNAL_HANDLER
 	if(puller != loc) // != the wearer
 		to_chat(puller, span_warning("The power armor resists your attempt at pulling it!"))
-		return COMSIG_ATOM_CANT_PULL
+		return COMSIG_ATOM_NO_GRAB
 
 //No helmet toggles for now when helmet is up
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/ToggleHelmet()
