@@ -5,11 +5,14 @@
 /datum/ai_movement/basic_avoidance/bypass_tables/pre_move(datum/move_loop/has_target/dist_bound/source, params)
 	var/atom/movable/pawn = source.moving
 	var/datum/ai_controller/controller = source.extra_info
-	source.delay = controller.movement_delay
+	// AI EDIT: movement_delay isn't a plain var on /datum/ai_controller - it's get_movement_delay() (confirmed
+	// against DD's own ai_movement_basic_avoidance.dm). pulledby doesn't exist either - pulling was replaced by the
+	// grab_datum system, so "is something holding onto this pawn" is LAZYLEN(pawn.grabbed_by) now.
+	source.delay = controller.get_movement_delay()
 	source.distance = controller.blackboard[BB_CURRENT_MIN_MOVE_DISTANCE]
 
 	var/can_move = TRUE
-	if(controller.ai_traits & STOP_MOVING_WHEN_PULLED && pawn.pulledby)
+	if(controller.ai_traits & STOP_MOVING_WHEN_PULLED && LAZYLEN(pawn.grabbed_by))
 		return MOVELOOP_SKIP_STEP
 
 	if(controller.ai_traits & STOP_MOVING)

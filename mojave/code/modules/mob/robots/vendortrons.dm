@@ -771,14 +771,14 @@
 		/obj/item/storage/pill_bottle/ms13/radx = list(160, rand(0,2)),
 		/obj/item/storage/pill_bottle/ms13/cateye = list(150, rand(0,2)),
 		/obj/item/reagent_containers/hypospray/medipen/ms13/addictol = list(285, rand(0,1)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey = list(80, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/tequila = list(75, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/rum = list(80, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/absinthe = list(80, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/vodka = list(75, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/gin = list(80, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/wine = list(90, rand(0,2)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/moonshine = list(125, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/whiskey = list(80, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/tequila = list(75, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/rum = list(80, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/absinthe = list(80, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/vodka = list(75, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/gin = list(80, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/wine = list(90, rand(0,2)),
+		/obj/item/reagent_containers/cup/bottle/ms13/moonshine = list(125, rand(0,2)),
 		/obj/item/storage/fancy/ms13/cigarettes/rollies/republics = list(65, rand(0,3))
 				)
 
@@ -789,11 +789,11 @@
 		/obj/item/stack/sheet/ms13/refined_gold = list(50, rand(1,4), ", per ingot of gold"),
 		/obj/item/stack/sheet/ms13/refined_silver = list(40, rand(1,4), ", per ingot of silver"),
 		/obj/item/stack/ms13/currency/prewar = list(2, rand(25,120), ", per dollar"),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/sake = list(80, rand(0,1)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/vermouth = list(80, rand(0,1)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/champagne = list(80, rand(0,1)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/cognac = list(80, rand(0,1)),
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/nukashine = list(125, rand(0,1))
+		/obj/item/reagent_containers/cup/bottle/ms13/sake = list(80, rand(0,1)),
+		/obj/item/reagent_containers/cup/bottle/ms13/vermouth = list(80, rand(0,1)),
+		/obj/item/reagent_containers/cup/bottle/ms13/champagne = list(80, rand(0,1)),
+		/obj/item/reagent_containers/cup/bottle/ms13/cognac = list(80, rand(0,1)),
+		/obj/item/reagent_containers/cup/bottle/ms13/nukashine = list(125, rand(0,1))
 				)
 
 
@@ -848,8 +848,8 @@
 
 /mob/living/simple_animal/hostile/retaliate/trader/ms13/drought/general_goods/initial_products()
 	return list(
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/sarsaparilla = list(20, rand(2,6)),
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cola = list(20, rand(2,6)),
+		/obj/item/reagent_containers/cup/soda_cans/ms13/sarsaparilla = list(20, rand(2,6)),
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_cola = list(20, rand(2,6)),
 		/obj/item/food/ms13/prewar/canned/porknbeans = list(25, rand(1,4)),
 		/obj/item/food/ms13/prewar/canned/cajunrice = list(20, rand(1,3)),
 		/obj/item/food/ms13/prewar/canned/dogfood = list(15, rand(0,2)),
@@ -885,10 +885,10 @@
 
 /mob/living/simple_animal/hostile/retaliate/trader/ms13/drought/general_goods/initial_wanteds()
 	return list(
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_quartz = list(50, rand(0,1), ""),
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_quantum = list(50, rand(0,1), ""),
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_dark = list(50, rand(0,1), ""),
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_victory = list(40, rand(0,2), ""),
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_quartz = list(50, rand(0,1), ""),
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_quantum = list(50, rand(0,1), ""),
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_dark = list(50, rand(0,1), ""),
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_victory = list(40, rand(0,2), ""),
 		/obj/item/stack/sheet/ms13/scrap_gold = list(8, rand(3,15), ", per piece of gold"),
 		/obj/item/stack/sheet/ms13/scrap_silver = list(6, rand(3,15), ", per piece of silver"),
 		/obj/item/stack/sheet/ms13/refined_gold = list(50, rand(1,5), ", per ingot of gold"),

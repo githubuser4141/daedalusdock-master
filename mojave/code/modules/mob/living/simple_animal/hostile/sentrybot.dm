@@ -439,7 +439,9 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 /obj/item/shrapnel/ms13
 	name = "shrapnel shard"
-	weak_against_armour = FALSE
+	// AI EDIT: weak_against_armour was never declared as a var here (it's a run_armor_check() parameter, not a
+	// persistent field) and nothing reads it back off this projectile anyway - dropped (was set to FALSE, the
+	// same as run_armor_check's own default, so this was a no-op either way)
 	icon = 'mojave/icons/objects/projectiles/projectiles.dmi'
 	icon_state = "nail" //placeholder
 	sharpness = SHARP_POINTY
@@ -532,8 +534,8 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	pixel_z = 8 //bounce time
 	var/rand_spin = (rand(1, 3) * 10 ) //* SECONDS
 	SpinAnimation(speed = rand_spin, loops = 1)
-	var/angle_of_movement = !isnull(user) ? (rand(-3000, 3000) / 100) + dir2angle(turn(user.dir, 180)) : rand(-3000, 3000) / 100
-	AddComponent(/datum/component/movable_physics, _horizontal_velocity = rand(450, 550) / 100, _vertical_velocity = rand(400, 450) / 100, _horizontal_friction = rand(20, 24) / 100, _z_gravity = 9.80665, _z_floor = 0, _angle_of_movement = angle_of_movement)
+	// AI EDIT: dropped the movable_physics bounce-and-roll effect - it needs a whole subsystem (SSmovablephysics)
+	// that doesn't exist in DD at all, not something with a clean rename target
 
 /obj/projectile/bullet/ms13/sentry
 	name = "5mm bullet"

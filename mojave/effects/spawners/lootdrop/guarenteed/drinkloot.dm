@@ -9,26 +9,26 @@
 	name = "cola spawner"
 	icon_state = "ms13_cola-static"
 	loot = list(
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cola,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/sarsaparilla,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cherry,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_grape,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_orange,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_lime,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_wild,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_victory,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_quartz,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cranberry,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_quantum
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_cola,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/sarsaparilla,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_cherry,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_grape,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_orange,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_lime,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_wild,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_victory,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_quartz,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_cranberry,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_quantum
 		)
 
 /obj/effect/spawner/random/ms13/guaranteed/drink/soda_uncommon
 	name = "uncommon cola spawner"
 	icon_state = "ms13_cola-static"
 	loot = list(
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_quartz,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cranberry,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_quantum
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_quartz,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_cranberry,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_quantum
 		)
 
 
@@ -38,44 +38,44 @@
 	name = "broad alcoholic spawner"
 	icon_state = "ms13_alcohol-static"
 	loot = list(
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/trooper_beer,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/caligary_beer,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/plain,
-		/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_dark,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/moonshine,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/vodka,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/tequila,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/kaluha,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/wine,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/gin,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/sake,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/vermouth,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/triple_sec,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/rum,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/absinthe,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/champagne,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/cognac,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/nukashine
+		/obj/item/reagent_containers/cup/bottle/ms13/trooper_beer,
+		/obj/item/reagent_containers/cup/bottle/ms13/caligary_beer,
+		/obj/item/reagent_containers/cup/bottle/ms13/plain,
+		/obj/item/reagent_containers/cup/soda_cans/ms13/nuka_dark,
+		/obj/item/reagent_containers/cup/bottle/ms13/moonshine,
+		/obj/item/reagent_containers/cup/bottle/ms13/whiskey,
+		/obj/item/reagent_containers/cup/bottle/ms13/vodka,
+		/obj/item/reagent_containers/cup/bottle/ms13/tequila,
+		/obj/item/reagent_containers/cup/bottle/ms13/kaluha,
+		/obj/item/reagent_containers/cup/bottle/ms13/wine,
+		/obj/item/reagent_containers/cup/bottle/ms13/gin,
+		/obj/item/reagent_containers/cup/bottle/ms13/sake,
+		/obj/item/reagent_containers/cup/bottle/ms13/vermouth,
+		/obj/item/reagent_containers/cup/bottle/ms13/triple_sec,
+		/obj/item/reagent_containers/cup/bottle/ms13/rum,
+		/obj/item/reagent_containers/cup/bottle/ms13/absinthe,
+		/obj/item/reagent_containers/cup/bottle/ms13/champagne,
+		/obj/item/reagent_containers/cup/bottle/ms13/cognac,
+		/obj/item/reagent_containers/cup/bottle/ms13/nukashine
 		)
 
 /obj/effect/spawner/random/ms13/guaranteed/drink/alcohol_beer
 	name = "beer spawner"
 	icon_state = "ms13_beer-static"
 	loot = list(
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/trooper_beer,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/caligary_beer,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/plain,
+		/obj/item/reagent_containers/cup/bottle/ms13/trooper_beer,
+		/obj/item/reagent_containers/cup/bottle/ms13/caligary_beer,
+		/obj/item/reagent_containers/cup/bottle/ms13/plain,
 		)
 
 /obj/effect/spawner/random/ms13/guaranteed/drink/alcohol_uncommon // Breathe some artificial inflation up in there
 	name = "uncommon alcohol spawner"
 	icon_state = "ms13_alcohol-static"
 	loot = list(
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/sake,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/vermouth,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/champagne,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/cognac,
-		/obj/item/reagent_containers/food/drinks/bottle/ms13/nukashine
+		/obj/item/reagent_containers/cup/bottle/ms13/sake,
+		/obj/item/reagent_containers/cup/bottle/ms13/vermouth,
+		/obj/item/reagent_containers/cup/bottle/ms13/champagne,
+		/obj/item/reagent_containers/cup/bottle/ms13/cognac,
+		/obj/item/reagent_containers/cup/bottle/ms13/nukashine
 		)
 

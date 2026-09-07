@@ -849,7 +849,8 @@
 			if(!object.density || object.IsObscured())
 				continue
 			if(!isanimal(charger))
-				SSexplosions.med_mov_atom += target
+				// AI EDIT: SSexplosions.med_mov_atom doesn't exist in DD - same missing list as twohanded.dm's
+				// medturf, dropped there too. Just breaks out of the loop now, same as before minus that side effect.
 				break
 			object.attack_animal(charger)
 			break

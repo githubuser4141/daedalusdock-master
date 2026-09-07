@@ -5148,7 +5148,6 @@
 #include "mojave\code\datums\components\clothing_nv_visor.dm"
 #include "mojave\code\datums\components\fixeye.dm"
 #include "mojave\code\datums\components\generic_animal_patrol.dm"
-#include "mojave\code\datums\components\movable_physics.dm"
 #include "mojave\code\datums\components\mumbleboops.dm"
 #include "mojave\code\datums\components\nv_handler.dm"
 #include "mojave\code\datums\components\thirst.dm"

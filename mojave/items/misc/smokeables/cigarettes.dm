@@ -190,8 +190,8 @@
 			pixel_y = rand(-4, 4)
 			pixel_z = 8 //bounce time
 			SpinAnimation(speed = 3 SECONDS, loops = 2)
-			var/angle_of_movement = !isnull(user) ? (rand(-3000, 3000) / 100) : rand(-3000, 3000) / 100
-			AddComponent(/datum/component/movable_physics, _horizontal_velocity = rand(450, 550) / 100, _vertical_velocity = rand(400, 450) / 100, _horizontal_friction = rand(20, 24) / 100, _z_gravity = 9.80665, _z_floor = 0, _angle_of_movement = angle_of_movement)
+			// AI EDIT: dropped the movable_physics bounce-and-roll effect - it needs a whole subsystem
+			// (SSmovablephysics) that doesn't exist in DD at all, not something with a clean rename target
 		else
 			smoketime -= 50 // goodbye juicy smigglerette
 			update_overlays()

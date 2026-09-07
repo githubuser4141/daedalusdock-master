@@ -173,7 +173,7 @@
 	icon_state = "coffee"
 	var/has_mug = FALSE //this is deep as fuark
 	var/list/mugs
-	var/obj/item/reagent_containers/food/drinks/mug = null
+	var/obj/item/reagent_containers/cup/mug = null
 	max_integrity = 150
 
 /obj/machinery/ms13/coffee/Initialize()
@@ -226,7 +226,7 @@
 		icon_state = initial(icon_state)
 
 /obj/machinery/ms13/coffee/attackby(obj/item/I, mob/living/user, params)
-	if(istype(I, /obj/item/reagent_containers/food/drinks/mug/ms13))
+	if(istype(I, /obj/item/reagent_containers/cup/mug/ms13))
 		var/obj/item/reagent_containers/B = I
 		. = TRUE //no afterattack
 		if(!user.transferItemToLoc(B, src))

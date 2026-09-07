@@ -33,12 +33,14 @@
 	playsound(src, 'mojave/sound/ms13npc/ghoul_death2.ogg', 60, TRUE)
 
 /datum/ai_controller/basic_controller/ms13/ghoul
+	// AI EDIT: BB_TARGETTING_DATUM/targetting_datum (old spelling, instantiated) doesn't exist - DD's real key is
+	// BB_TARGETING_STRATEGY, holding a type path (not an instance), confirmed against DD's own cockroach.dm
 	blackboard = list(
-		BB_TARGETTING_DATUM = new /datum/targetting_datum/basic()
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance/bypass_tables
-	idle_behavior = /datum/idle_behavior/idle_random_walk
+	default_behavior = /datum/ai_behavior/idle_random_walk
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/simple_find_target,
 		/datum/ai_planning_subtree/basic_melee_attack_subtree/ms13/ghoul,
