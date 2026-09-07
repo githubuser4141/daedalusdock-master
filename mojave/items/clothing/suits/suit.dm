@@ -900,7 +900,7 @@
 		icon_state = initial(icon_state)+"_snatched"
 		worn_icon_state = initial(icon_state)+"_snatched"
 		update_appearance(updates = UPDATE_ICON)
-		user.update_inv_wear_suit()
+		user.update_worn_oversuit()
 		user.update_body()
 		snatched = TRUE
 		var/obj/item/stack/sheet/ms13/scrap_gold/G = new /obj/item/stack/sheet/ms13/scrap_gold
@@ -922,7 +922,7 @@
 			icon_state = initial(icon_state)
 			worn_icon_state = initial(icon_state)
 			update_appearance(updates = UPDATE_ICON)
-			user.update_inv_wear_suit()
+			user.update_worn_oversuit()
 			user.update_body()
 			snatched = FALSE
 			qdel(W)

@@ -78,7 +78,7 @@
 	icon_state = "ltube"
 	base_state = "ltube"
 	inhand_icon_state = "c_tube"
-	brightness = 7
+	bulb_outer_range = 7
 	//grid_width = 64
 	//grid_height = 32
 
@@ -97,7 +97,7 @@
 	inhand_icon_state = "contvapour"
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	brightness = 4.5
+	bulb_outer_range = 4.5
 	//grid_width = 32
 	//grid_height = 32
 

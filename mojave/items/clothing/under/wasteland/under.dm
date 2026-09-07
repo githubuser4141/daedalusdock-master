@@ -1,5 +1,5 @@
 /obj/item/clothing/under/ms13
-	fitted = NO_FEMALE_UNIFORM
+	female_sprite_flags = NO_FEMALE_UNIFORM
 	///femstatics destroyed (Also stops it going invisible when someone dosent make a thottiana version.)
 	can_adjust = FALSE
 	has_sensor = NO_SENSORS // For the crew computer
@@ -476,7 +476,7 @@
 		icon_state = initial(icon_state)+"_snatched"
 		worn_icon_state = initial(icon_state)+"_snatched"
 		update_appearance(updates = UPDATE_ICON)
-		user.update_inv_w_uniform()
+		user.update_worn_undersuit()
 		user.update_body()
 		snatched = TRUE
 		var/obj/item/stack/sheet/ms13/scrap_gold/G = new /obj/item/stack/sheet/ms13/scrap_gold
@@ -500,7 +500,7 @@
 			icon_state = initial(icon_state)
 			worn_icon_state = initial(icon_state)
 			update_appearance(updates = UPDATE_ICON)
-			user.update_inv_w_uniform()
+			user.update_worn_undersuit()
 			user.update_body()
 			snatched = FALSE
 			W.use(1)

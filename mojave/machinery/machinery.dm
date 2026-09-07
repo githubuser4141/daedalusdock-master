@@ -64,7 +64,8 @@
 
 /obj/machinery/ms13/wartable/attack_hand(mob/living/user)
 	. = ..()
-	if(user.canUseTopic(src, USE_CLOSE, NO_DEXTERITY)) //Can only actually activate this from the base tile in the bottom left due to the size of it. :Thinking://
+	// NO_DEXTERITY doesn't exist under DD's bitflag canUseTopic - not requiring dexterity is just the default (omit USE_DEXTERITY)
+	if(user.canUseTopic(src, USE_CLOSE)) //Can only actually activate this from the base tile in the bottom left due to the size of it. :Thinking://
 		if(on)
 			on = FALSE
 			icon_state = "wartable_off"
@@ -297,7 +298,9 @@
 	return
 
 /obj/machinery/griddle/ms13/update_grill_audio()
+	// meat_sound was never declared - DD's base /obj/machinery/griddle already has an equivalent, already-initialized
+	// var (grill_loop, of type /datum/looping_sound/grill), which this type inherits since it doesn't override Initialize()
 	if(on && griddled_objects.len)
-		meat_sound.start()
+		grill_loop.start()
 	else
-		meat_sound.stop()
+		grill_loop.stop()

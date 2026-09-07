@@ -27,7 +27,7 @@ Occasionally, a chosen one is born... They will adapt to it and "recover" Benefi
 	. = ..()
 	infection_purity = rand(1,10)
 
-/datum/pathogen/pocklung/stage_act(delta_time, times_fired)
+/datum/pathogen/pocklung/on_process(delta_time, times_fired)
 	. = ..()
 	if(!.)
 		return
@@ -78,7 +78,11 @@ Occasionally, a chosen one is born... They will adapt to it and "recover" Benefi
 					P.pixel_y = P.base_pixel_y + rand(-12, 12)
 				my_turf.VapourTurf(/datum/vapours/sulfur_concentrate, 15)
 
-/datum/pathogen/pocklung/update_stage(new_stage)
+/datum/pathogen/pocklung/set_stage(new_stage)
+	// stage_act -> on_process and update_stage -> set_stage rename to match DD's /datum/pathogen (same signatures/semantics).
+	// This override never called ..() under its old name, so the stage var itself was never actually being updated -
+	// added the call so switch(stage) below sees the newly-entered stage like the flavor text assumes.
+	. = ..()
 	switch(stage)
 		if(2)
 			to_chat(affected_mob, span_yellowteamradio("Your feet ache almost as badly as your chest."))

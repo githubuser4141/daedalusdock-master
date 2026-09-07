@@ -16,3 +16,7 @@
 // Base-game sharpness only defines SHARP_EDGED and SHARP_POINTY; this claims the next free bit for axe-specific
 // interactions (tree chopping, furniture destruction) that check for it on top of SHARP_EDGED.
 #define SHARP_AXE (1<<2)
+
+// Base-game flags_1 (on /atom) goes up to (1<<19); this claims the next free bit. Checked by
+// mojave/code/datums/components/transparency.dm but never set anywhere, so it's currently always FALSE either way.
+#define CRITICAL_ATOM_1 (1<<20)

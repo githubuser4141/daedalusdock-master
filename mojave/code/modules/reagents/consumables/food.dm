@@ -9,4 +9,5 @@
 	addtimer(CALLBACK(src, .proc/mrelectrickillthisguy, M), rand(5,10) MINUTES)
 
 /datum/reagent/consumable/nutriment/protein/prions/proc/mrelectrickillthisguy(mob/living/carbon/M) // Delay the kuru... it's funnier this way prolly
-	M.ForceContractDisease(new /datum/pathogen/kuru)
+	// ForceContractDisease doesn't exist in DD - infection goes through the pathogen instance itself
+	new /datum/pathogen/kuru().force_infect(M)

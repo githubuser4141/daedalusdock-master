@@ -9,6 +9,7 @@
 	var/weldable = FALSE
 	var/girder_type
 	var/sheet_type
+	var/sheet_amount = 2
 
 /turf/closed/wall/ms13/try_decon(obj/item/I, mob/user, turf/T)
 	if(!weldable)

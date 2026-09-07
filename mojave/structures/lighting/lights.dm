@@ -6,7 +6,7 @@
 	icon_state = "light_tube"
 	desc = "A lighting fixture."
 	max_integrity = 100
-	brightness = 6
+	bulb_outer_range = 6
 	bulb_power = 0.9
 	bulb_colour = "#e9d8b2"
 	light_type = /obj/item/light/ms13/tube
@@ -66,7 +66,7 @@
 	base_state = "light_bulb"
 	icon_state = "light_bulb"
 	max_integrity = 35
-	brightness = 5
+	bulb_outer_range = 5
 	bulb_power = 0.8
 	bulb_colour = "#ddd2b9"
 	light_type = /obj/item/light/ms13/bulb
@@ -84,7 +84,7 @@
 	base_state = "light_bulb_indust"
 	icon_state = "light_bulb_indust"
 	max_integrity = 55
-	brightness = 5
+	bulb_outer_range = 5
 
 /obj/machinery/light/ms13/bulb/industrial/broken
 	icon_state = "light_bulb_indust-broken"

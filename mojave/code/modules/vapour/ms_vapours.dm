@@ -91,7 +91,9 @@
 		victim.emote("cough")
 
 	if(prob(amount / 10)) // Yo longs fuct
-		victim.ForceContractDisease(new /datum/disease/pocklung)
+		// ForceContractDisease doesn't exist in DD - infection goes through the pathogen instance itself.
+		// Also fixed the type path: pocklung.dm defines /datum/pathogen/pocklung, not /datum/disease/pocklung.
+		new /datum/pathogen/pocklung().force_infect(victim)
 
 ///CS gas for NCR warcrimes!!
 /datum/vapours/cs_gas
