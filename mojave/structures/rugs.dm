@@ -172,10 +172,10 @@
 /obj/item/ms13/rug/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/clutter/clutter_inventory.dmi')
-
-/obj/item/ms13/rug/ComponentInitialize()
-	. = ..()
-	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
+	// AI EDIT: ComponentInitialize()/AddComponent(two_handed, require_twohands=TRUE) doesn't exist in DD - the
+	// native equivalent is this trait, auto-enforced by /obj/item/equipped() (code/game/objects/items.dm).
+	// /obj/item/ms13/rug/mat below removes it again - door mats aren't meant to require two hands.
+	ADD_TRAIT(src, TRAIT_NEEDS_TWO_HANDS, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/ms13/rug/attack_self(mob/user)
 	var/turf/T = get_turf(loc)
@@ -216,8 +216,9 @@
 	origin_type = /obj/structure/ms13/rug/mat
 	w_class = WEIGHT_CLASS_NORMAL
 
-/obj/item/ms13/rug/mat/ComponentInitialize()
-	return
+/obj/item/ms13/rug/mat/Initialize(mapload)
+	. = ..()
+	REMOVE_TRAIT(src, TRAIT_NEEDS_TWO_HANDS, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/ms13/rug/mat/welcome
 	origin_type = /obj/structure/ms13/rug/mat/welcome

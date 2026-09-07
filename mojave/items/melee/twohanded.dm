@@ -24,21 +24,22 @@
 
 /obj/item/ms13/twohanded/Initialize()
 	. = ..()
-	RegisterSignal(src, COMSIG_TWOHANDED_WIELD, PROC_REF(on_wield))
-	RegisterSignal(src, COMSIG_TWOHANDED_UNWIELD, PROC_REF(on_unwield))
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/melee/melee_inventory.dmi')
 
-// triggered on wielding of a two handed item.
-/obj/item/ms13/twohanded/proc/on_wield(obj/item/source, mob/user)
-	SIGNAL_HANDLER
-	playsound(src.loc, 'mojave/sound/ms13weapons/meleesounds/general_grip.ogg', 50, TRUE)
-	wielded = TRUE
+// AI EDIT: COMSIG_TWOHANDED_WIELD/UNWIELD don't exist in DD - this whole class used the old component-based
+// wielding system. DD's real system is native: /obj/item/proc/wield()/unwield() (code/game/objects/items.dm),
+// automatically driven by the TRAIT_NEEDS_TWO_HANDS trait for weapons that strictly require both hands (see the
+// "TWO HANDS REQUIRED" subtree below), or manually for optional bonus-wielding like DD's own /obj/item/fireaxe.
+// Overriding wield()/unwield() here instead of hooking a signal covers every subtype below for free.
+/obj/item/ms13/twohanded/wield(mob/living/user)
+	. = ..()
+	if(.)
+		playsound(src.loc, 'mojave/sound/ms13weapons/meleesounds/general_grip.ogg', 50, TRUE)
 
-// triggered on unwielding of two handed item.
-/obj/item/ms13/twohanded/proc/on_unwield(obj/item/source, mob/user)
-	SIGNAL_HANDLER
-	playsound(src.loc, 'mojave/sound/ms13weapons/meleesounds/general_grip.ogg', 35, TRUE)
-	wielded = FALSE
+/obj/item/ms13/twohanded/unwield(mob/living/user, show_message = TRUE, dropping = FALSE)
+	. = ..()
+	if(.)
+		playsound(src.loc, 'mojave/sound/ms13weapons/meleesounds/general_grip.ogg', 35, TRUE)
 
 /obj/item/ms13/twohanded/fireaxe
 	name = "fire axe"
@@ -143,7 +144,7 @@
 	if(wielded)
 		var/atom/throw_target = get_edge_target_turf(target, user.dir)
 		target.throw_at(throw_target, rand(2,4), 3, user)
-		SSexplosions.medturf += throw_target
+		// AI EDIT: SSexplosions.medturf doesn't exist in DD - dropped, the throw itself still happens above
 		playsound(loc, 'sound/weapons/resonator_blast.ogg', 50, TRUE)
 
 	else
@@ -202,13 +203,11 @@
 	slot_flags = null
 	stowable = FALSE
 
-/obj/item/ms13/twohanded/heavy/ComponentInitialize()
+// AI EDIT: ComponentInitialize()/AddComponent(two_handed, require_twohands=TRUE) doesn't exist in DD - the native
+// equivalent is this trait, which DD's own /obj/item/equipped() automatically enforces (see code/game/objects/items.dm)
+/obj/item/ms13/twohanded/heavy/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
-
-/obj/item/ms13/twohanded/heavy/on_wield(obj/item/source, mob/user)
-	playsound(src.loc, 'mojave/sound/ms13weapons/meleesounds/general_grip.ogg', 35, TRUE)
-	wielded = TRUE
+	ADD_TRAIT(src, TRAIT_NEEDS_TWO_HANDS, ABSTRACT_ITEM_TRAIT)
 
 /datum/looping_sound/saw
 	start_sound = 'mojave/sound/ms13weapons/meleesounds/saw_start.ogg'
@@ -267,10 +266,10 @@
 		soundloop.stop()
 
 	if(src == user.get_active_held_item()) //update inhands
-		user.update_inv_hands()
+		user.update_held_items()
 	for(var/X in actions)
 		var/datum/action/A = X
-		A.UpdateButtonIcon()
+		A.build_all_button_icons()
 
 /obj/item/ms13/twohanded/heavy/lance
 	name = "thermic lance"
@@ -312,10 +311,10 @@
 		force = 10
 
 	if(src == user.get_active_held_item()) //update inhands
-		user.update_inv_hands()
+		user.update_held_items()
 	for(var/X in actions)
 		var/datum/action/A = X
-		A.UpdateButtonIcon()
+		A.build_all_button_icons()
 
 //THUNDER STICK//
 
@@ -337,8 +336,7 @@
 
 /obj/item/ms13/twohanded/thunderstick/Initialize(mapload)
 	. = ..()
-	RegisterSignal(src, COMSIG_TWOHANDED_WIELD, PROC_REF(on_wield))
-	RegisterSignal(src, COMSIG_TWOHANDED_UNWIELD, PROC_REF(on_unwield))
+	// AI EDIT: no signal registration needed - the base class's wield()/unwield() overrides already cover this subtype
 	set_explosive(new /obj/item/grenade/frag/ms13/charge()) //For admin-spawned explosive lances
 
 /obj/item/ms13/twohanded/thunderstick/proc/set_explosive(obj/item/grenade/G)
@@ -352,11 +350,9 @@
 	var/obj/item/grenade/G = locate() in parts_list
 	if(G)
 		var/obj/item/spear/lancePart = locate() in parts_list
-		var/datum/component/two_handed/comp_twohand = lancePart.GetComponent(/datum/component/two_handed)
-		if(comp_twohand)
-			var/lance_wielded = comp_twohand.force_wielded
-			var/lance_unwielded = comp_twohand.force_unwielded
-			AddComponent(/datum/component/two_handed, force_unwielded=lance_unwielded, force_wielded=lance_wielded)
+		// AI EDIT: force_wielded/force_unwielded are native vars on /obj/item in DD (code/game/objects/items.dm),
+		// not a component - just copy them straight across instead of going through /datum/component/two_handed
+		force_wielded = lancePart.force_wielded
 		throwforce = lancePart.throwforce
 		parts_list -= G
 		parts_list -= lancePart

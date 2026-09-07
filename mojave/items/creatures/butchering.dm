@@ -126,9 +126,11 @@
 	//grid_height = 128
 	//grid_width = 128
 
-/obj/item/ms13/hide/large/ComponentInitialize()
+// AI EDIT: ComponentInitialize()/AddComponent(two_handed, require_twohands=TRUE) doesn't exist in DD - the native
+// equivalent is this trait, auto-enforced by /obj/item/equipped() (code/game/objects/items.dm)
+/obj/item/ms13/hide/large/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
+	ADD_TRAIT(src, TRAIT_NEEDS_TWO_HANDS, ABSTRACT_ITEM_TRAIT)
 
 /////////////////////////////////////////////////////////////
 //////////////////////// CARCASSES //////////////////////////
@@ -245,9 +247,11 @@
 	throw_range = 1
 	decomp_type = /obj/item/food/badrecipe/moldy/ms13
 
-/obj/item/food/meat/slab/ms13/carcass/large/ComponentInitialize()
+// AI EDIT: ComponentInitialize()/AddComponent(two_handed, require_twohands=TRUE) doesn't exist in DD - the native
+// equivalent is this trait, auto-enforced by /obj/item/equipped() (code/game/objects/items.dm)
+/obj/item/food/meat/slab/ms13/carcass/large/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
+	ADD_TRAIT(src, TRAIT_NEEDS_TWO_HANDS, ABSTRACT_ITEM_TRAIT)
 
 /obj/item/food/meat/slab/ms13/carcass/large/boar
 	name = "boar carcass"
