@@ -174,7 +174,9 @@
 		if(myseed && plant_status != HYDROTRAY_PLANT_DEAD)
 			// Advance age
 			age++
-			if(age < myseed.base_maturation)
+			// AI EDIT: myseed's stats live on its plant_datum (a /datum/plant), not on the /obj/item/seeds itself -
+			// confirmed against DD's code/modules/hydroponics/plant.dm and seeds.dm. Applied throughout this proc.
+			if(age < myseed.plant_datum.base_maturation)
 				lastproduce = age
 
 			needs_update = 1
@@ -207,7 +209,8 @@
 				k_fertilizer -= 1
 
 			// Lack of nutrients hurts non-weeds
-				if(drained_nutrient <= 0 && !myseed.get_gene(/datum/plant_gene/trait/plant_type/weed_hardy))
+				// get_gene() -> plant_datum.gene_holder.has_active_gene_of_type(); /datum/plant_gene/trait/* -> /datum/plant_gene/product_trait/*
+				if(drained_nutrient <= 0 && !myseed.plant_datum.gene_holder.has_active_gene_of_type(/datum/plant_gene/product_trait/plant_type/weed_hardy))
 					adjust_plant_health(-rand(3,6))
 //Photosynthesis/////////////////////////////////////////////////////////
 			// Lack of light hurts non-mushrooms
@@ -224,7 +227,7 @@
 				adjust_waterlevel(-rand(0.5,1.5) / rating)
 
 			// If the plant is dry, it loses health pretty fast, unless mushroom
-				if(waterlevel <= 10 && !myseed.get_gene(/datum/plant_gene/trait/plant_type/fungal_metabolism))
+				if(waterlevel <= 10 && !myseed.plant_datum.gene_holder.has_active_gene_of_type(/datum/plant_gene/product_trait/plant_type/fungal_metabolism))
 					adjust_plant_health(-rand(2,5) / rating)
 				if(waterlevel <= 0)
 					adjust_plant_health(-rand(4,7) / rating)
@@ -245,6 +248,11 @@
 
 //This is where stability mutations exist now.
 
+			// FLAGGED, not fixed: instability/mutatelist/set_instability were never declared anywhere in mojave/'s
+			// port of /obj/item/seeds/ms13 (confirmed - not in wasteproduce.dm or wasteplants.dm either), and DD's
+			// own mutation system works completely differently (event-driven /datum/plant_gene/unstable ticks via
+			// plant_tick.mutation_power, not a polled instability counter). This would need real feature work
+			// (deciding what instability/mutatelist/mutate() should even mean here), not a rename - left as-is.
 			if(myseed.instability >= 60)
 				if(prob((myseed.instability)/2) && !self_sustaining && LAZYLEN(myseed.mutatelist)) //Minimum 30%, Maximum 50% chance of mutating every age tick when not on autogrow.
 					mutatespecie()
@@ -257,12 +265,13 @@
 				plantdies()
 
 			// If the plant is too old, lose health fast
+			// FLAGGED: myseed.lifespan was never declared anywhere in mojave/'s port - no DD equivalent field either
 			if(age > myseed.lifespan)
 				adjust_plant_health(-rand(5,8) / rating)
 
 			// Harvest code
-			if(age > myseed.base_production && (age - lastproduce) > myseed.base_production && plant_status == HYDROTRAY_PLANT_GROWING)
-				if(myseed && myseed.base_harvest_amt != -1) // Unharvestable shouldn't be harvested
+			if(age > myseed.plant_datum.base_production && (age - lastproduce) > myseed.plant_datum.base_production && plant_status == HYDROTRAY_PLANT_GROWING)
+				if(myseed && myseed.plant_datum.base_harvest_amt != -1) // Unharvestable shouldn't be harvested
 					set_plant_status(HYDROTRAY_PLANT_HARVESTABLE)
 				else
 					lastproduce = age
@@ -280,9 +289,13 @@
 	if(self_sustaining)
 		set_light(3)
 		return
-	if(myseed?.get_gene(/datum/plant_gene/trait/glow)) // Hydroponics needs a refactor, badly.
-		var/datum/plant_gene/trait/glow/G = myseed.get_gene(/datum/plant_gene/trait/glow)
-		set_light(G.glow_range(myseed), G.glow_power(myseed), G.glow_color)
+	// AI EDIT: /datum/plant_gene/trait/glow -> /datum/plant_gene/product_trait/glow (DD's real path); glow_range()/
+	// glow_power() are procs that take a potency value in DD, not plain vars - using
+	// gene_holder.get_effective_stat(PLANT_STAT_POTENCY), the same call DD's own glow.dm uses internally.
+	var/datum/plant_gene/product_trait/glow/G = myseed?.plant_datum.gene_holder.has_active_gene_of_type(/datum/plant_gene/product_trait/glow)
+	if(G) // Hydroponics needs a refactor, badly.
+		var/potency = myseed.plant_datum.gene_holder.get_effective_stat(PLANT_STAT_POTENCY)
+		set_light(G.glow_range(potency), G.glow_power(potency), G.glow_color)
 		return
 	set_light(0)
 
@@ -292,18 +305,18 @@
 		. += update_plant_overlay()
 
 /obj/machinery/ms13/agriculture/proc/update_plant_overlay()
-	var/mutable_appearance/plant_overlay = mutable_appearance(myseed.growing_icon, layer = OBJ_LAYER + 0.01)
+	var/mutable_appearance/plant_overlay = mutable_appearance(myseed.plant_datum.growing_icon, layer = OBJ_LAYER + 0.01)
 	switch(plant_status)
 		if(HYDROTRAY_PLANT_DEAD)
-			plant_overlay.icon_state = myseed.icon_dead
+			plant_overlay.icon_state = myseed.plant_datum.icon_dead
 		if(HYDROTRAY_PLANT_HARVESTABLE)
-			if(!myseed.icon_harvest)
-				plant_overlay.icon_state = "[myseed.icon_grow][myseed.growthstages]"
+			if(!myseed.plant_datum.icon_harvest)
+				plant_overlay.icon_state = "[myseed.plant_datum.icon_grow][myseed.plant_datum.growthstages]"
 			else
-				plant_overlay.icon_state = myseed.icon_harvest
+				plant_overlay.icon_state = myseed.plant_datum.icon_harvest
 		else
-			var/t_growthstate = clamp(round((age / myseed.base_maturation) * myseed.growthstages), 1, myseed.growthstages)
-			plant_overlay.icon_state = "[myseed.icon_grow][t_growthstate]"
+			var/t_growthstate = clamp(round((age / myseed.plant_datum.base_maturation) * myseed.plant_datum.growthstages), 1, myseed.plant_datum.growthstages)
+			plant_overlay.icon_state = "[myseed.plant_datum.icon_grow][t_growthstate]"
 	return plant_overlay
 
 ///Sets a new value for the myseed variable, which is the seed of the plant that's growing inside the tray.
@@ -416,7 +429,7 @@
  * * adjustamt - Determines how much the plant_health will be adjusted upwards or downwards.
  */
 /obj/machinery/ms13/agriculture/proc/adjust_plant_health(amt)
-	set_plant_health(clamp(plant_health + amt, 0, myseed?.base_endurance), FALSE)
+	set_plant_health(clamp(plant_health + amt, 0, myseed?.plant_datum.base_endurance), FALSE)
 
 /**
  * Adjust toxicity.
@@ -429,12 +442,13 @@
 /obj/machinery/ms13/agriculture/examine(user)
 	. = ..()
 	if(myseed)
-		. += span_info("It has [span_name("[myseed.plantname]")] planted.")
+		// plantname -> plant_datum.name (DD's real field name for a plant's display name)
+		. += span_info("It has [span_name("[myseed.plant_datum.name]")] planted.")
 		if (plant_status == HYDROTRAY_PLANT_DEAD)
 			. += span_warning("It's dead!")
 		else if (plant_status == HYDROTRAY_PLANT_HARVESTABLE)
 			. += span_info("It's ready to harvest.")
-		else if (plant_health <= (myseed.base_endurance / 2))
+		else if (plant_health <= (myseed.plant_datum.base_endurance / 2))
 			. += span_warning("It looks unhealthy.")
 	else
 		. += span_info("It's empty.")
@@ -446,6 +460,9 @@
 	if(self_sustaining)
 		. += span_info("The tray's autogrow is active, protecting it from species mutations, weeds, and pests.")
 
+// FLAGGED, not fixed: myseed.mutate()/mutatelist were never declared anywhere in mojave/'s port, and this whole
+// proc (and mutatespecie() below) only ever gets called from the instability block above, which is also flagged -
+// real feature work needed to decide how this should work against DD's actual gene/mutation system.
 /obj/machinery/ms13/agriculture/proc/mutate(lifemut = 2, endmut = 5, productmut = 1, base_harvest_amtmut = 2, potmut = 25, wrmut = 2, wcmut = 5, traitmut = 0, stabmut = 3) // Mutates the current seed
 	if(!myseed)
 		return
@@ -459,16 +476,16 @@
 	if(!myseed || plant_status == HYDROTRAY_PLANT_DEAD || !LAZYLEN(myseed.mutatelist))
 		return
 
-	var/oldPlantName = myseed.plantname
+	var/oldPlantName = myseed.plant_datum.name
 	var/mutantseed = pick(myseed.mutatelist)
 	set_seed(new mutantseed(src))
 
 	hardmutate()
 	age = 0
-	set_plant_health(myseed.base_endurance, update_icon = FALSE)
+	set_plant_health(myseed.plant_datum.base_endurance, update_icon = FALSE)
 	lastcycle = world.time
 
-	var/message = span_warning("[oldPlantName] suddenly mutates into [myseed.plantname]!")
+	var/message = span_warning("[oldPlantName] suddenly mutates into [myseed.plant_datum.name]!")
 	addtimer(CALLBACK(src, PROC_REF(after_mutation), message), 0.5 SECONDS)
 
 /**
@@ -515,7 +532,7 @@
 			return
 
 		var/list/trays = list(src)//makes the list just this in cases of syringes and compost etc
-		var/target = myseed ? myseed.plantname : src
+		var/target = myseed ? myseed.plant_datum.name : src
 		var/transfer_amount
 
 		if(IS_EDIBLE(reagent_source) || istype(reagent_source, /obj/item/reagent_containers/pill))
@@ -565,7 +582,7 @@
 			set_seed(O)
 			TRAY_NAME_UPDATE
 			age = 1
-			set_plant_health(myseed.base_endurance)
+			set_plant_health(myseed.plant_datum.base_endurance)
 			lastcycle = world.time
 			return
 		else
@@ -619,6 +636,8 @@
 	if(issilicon(user)) //How does AI know what plant is?
 		return
 	if(plant_status == HYDROTRAY_PLANT_HARVESTABLE)
+		// FLAGGED: myseed.harvest(user) was never declared anywhere in mojave/'s port (/obj/item/seeds has no
+		// harvest() proc in DD either) - the actual harvest/product-spawning logic needs to be written, not renamed.
 		return myseed.harvest(user)
 
 	else if(plant_status == HYDROTRAY_PLANT_DEAD)
@@ -656,12 +675,14 @@
  */
 /obj/machinery/ms13/agriculture/proc/update_tray(mob/user, product_count)
 	lastproduce = age
+	// FLAGGED: /obj/item/seeds/replicapod and /datum/plant_gene/trait/repeated_harvest don't exist anywhere in DD -
+	// genuinely missing content (confirmed against Mojave Sun's own source too), not a rename target.
 	if(istype(myseed, /obj/item/seeds/replicapod))
-		to_chat(user, span_notice("You harvest from the [myseed.plantname]."))
+		to_chat(user, span_notice("You harvest from the [myseed.plant_datum.name]."))
 	else if(product_count <= 0)
 		to_chat(user, span_warning("You fail to harvest anything useful!"))
 	else
-		to_chat(user, span_notice("You harvest [product_count] items from the [myseed.plantname]."))
+		to_chat(user, span_notice("You harvest [product_count] items from the [myseed.plant_datum.name]."))
 	if(!myseed.get_gene(/datum/plant_gene/trait/repeated_harvest))
 		set_seed(null)
 		name = initial(name)
@@ -708,13 +729,16 @@
 	if(extractor)
 		seedloc = extractor.loc
 
+	// AI EDIT: /obj/item/food/grown and /obj/item/grown don't carry a .seed var in DD - the plant is reachable via
+	// .plant_datum directly (confirmed against DD's own code/modules/hydroponics/grown.dm), and .Copy() is really
+	// /datum/plant/proc/CopySeed() (returns a fresh /obj/item/seeds instance).
 	if(istype(O, /obj/item/food/grown/))
 		var/obj/item/food/grown/F = O
-		if(F.seed)
+		if(F.plant_datum)
 			if(user && !user.temporarilyRemoveItemFromInventory(O)) //couldn't drop the item
 				return
 			while(t_amount < t_max)
-				var/obj/item/seeds/t_prod = F.seed.Copy()
+				var/obj/item/seeds/t_prod = F.plant_datum.CopySeed()
 				seeds.Add(t_prod)
 				t_prod.forceMove(seedloc)
 				t_amount++
@@ -723,11 +747,11 @@
 
 	else if(istype(O, /obj/item/grown))
 		var/obj/item/grown/F = O
-		if(F.seed)
+		if(F.plant_datum)
 			if(user && !user.temporarilyRemoveItemFromInventory(O))
 				return
 			while(t_amount < t_max)
-				var/obj/item/seeds/t_prod = F.seed.Copy()
+				var/obj/item/seeds/t_prod = F.plant_datum.CopySeed()
 				t_prod.forceMove(seedloc)
 				t_amount++
 			qdel(O)

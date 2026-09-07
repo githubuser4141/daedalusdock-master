@@ -2,6 +2,12 @@
 
 /datum/plant/ms13
 	growing_icon = 'mojave/icons/hydroponics/growing.dmi'
+	// AI EDIT: potency/growthstages moved here from /obj/item/seeds/ms13 below - they're /datum/plant fields in DD
+	// (confirmed against code/modules/hydroponics/plant.dm and seeds.dm), not /obj/item/seeds fields. potency isn't
+	// a plain default on /datum/plant (it's gene-derived via get_effective_stat) - base_potency is its closest
+	// equivalent starting value.
+	base_potency = 40
+	growthstages = 5
 	var/growing_color = ""
 	var/harvest_icon = 1
 	var/wholeiconcolor = TRUE
@@ -11,8 +17,6 @@
 /obj/item/seeds/ms13
 	icon = 'mojave/icons/hydroponics/seeds.dmi'
 	icon_state = "seed"
-	potency = 40
-	growthstages = 5
 	w_class = WEIGHT_CLASS_TINY
 	var/growing_color = ""
 	var/harvest_icon = 1
@@ -1511,7 +1515,7 @@
 	growing_color = "#98b752"
 	wholeiconcolor = TRUE
 	name = "Glowfungus Mushrooms"
-	innate_genes =list(/datum/plant_gene/product_trait/plant_type/fungal_metabolism, /datum/plant_gene/trait/glow/ms13green)
+	innate_genes =list(/datum/plant_gene/product_trait/plant_type/fungal_metabolism, /datum/plant_gene/product_trait/glow/ms13green)
 	seed_path = /obj/item/seeds/ms13/glowfungus
 	product_path = /obj/item/food/grown/ms13/glowfungus
 	//lifespan = 45
@@ -1907,7 +1911,7 @@
 	growing_color = "#4468b2"
 	wholeiconcolor = TRUE
 	name = "Mindshroom"
-	innate_genes =list(/datum/plant_gene/product_trait/plant_type/fungal_metabolism, /datum/plant_gene/trait/glow/ms13blue)
+	innate_genes =list(/datum/plant_gene/product_trait/plant_type/fungal_metabolism, /datum/plant_gene/product_trait/glow/ms13blue)
 	seed_path = /obj/item/seeds/ms13/mindshroom
 	product_path = /obj/item/food/grown/ms13/mindshroom
 	//lifespan = 40

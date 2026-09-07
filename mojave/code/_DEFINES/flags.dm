@@ -34,3 +34,17 @@
 // still use these two AI-node identifier strings though.
 #define IDENTIFIER_GENERIC_SIMPLE "identifies_generic_simple"
 #define IDENTIFIER_EYEBOT "identifies_eyebot"
+
+// AI EDIT: mojave/flora/agriculture.dm's own hydrotray setter signals - only ever sent (SEND_SIGNAL), never
+// listened for anywhere, so these were just never declared. Only needed to be unique strings.
+#define COMSIG_HYDROTRAY_SET_SEED "hydrotray_set_seed"
+#define COMSIG_HYDROTRAY_SET_SELFSUSTAINING "hydrotray_set_selfsustaining"
+#define COMSIG_HYDROTRAY_SET_NITROLEVEL "hydrotray_set_nitrolevel"
+#define COMSIG_HYDROTRAY_SET_PHOSLEVEL "hydrotray_set_phoslevel"
+#define COMSIG_HYDROTRAY_SET_POTLEVEL "hydrotray_set_potlevel"
+#define COMSIG_HYDROTRAY_SET_WATERLEVEL "hydrotray_set_waterlevel"
+#define COMSIG_HYDROTRAY_SET_PLANT_HEALTH "hydrotray_set_plant_health"
+#define COMSIG_HYDROTRAY_SET_TOXIC "hydrotray_set_toxic"
+#define COMSIG_HYDROTRAY_SET_PLANT_STATUS "hydrotray_set_plant_status"
+#define COMSIG_HYDROTRAY_PLANT_DEATH "hydrotray_plant_death"
+#define COMSIG_HYDROTRAY_ON_HARVEST "hydrotray_on_harvest"
