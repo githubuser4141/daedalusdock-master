@@ -37,7 +37,7 @@
 	icon_living = "mrhandy_saw"
 	melee_damage_lower = 30
 	melee_damage_upper = 30
-	armour_penetration = 10
+	armor_penetration = 10 // AI EDIT: armour_penetration -> armor_penetration (DD's real spelling for this var)
 	sharpness = SHARP_EDGED
 	//wound_bonus = 6
 	//bare_wound_bonus 6

@@ -80,6 +80,11 @@ GLOBAL_LIST_INIT(lower_priority_connectables, typecacheof(list(
 		/obj/structure/girder,
 	)))
 
+// AI EDIT: manual_align was never declared anywhere - added below. Nothing sets it TRUE anywhere in mojave/, so
+// this only fixes the compile error (auto_align() always runs its full logic either way, same as before).
+/atom
+	var/manual_align = FALSE
+
 ///Ok so this whole proc is about finding tiles that we could in theory be connected to, and blocking off that direction right?
 ///It's not perfect, and it can make mistakes, but it does a pretty good job predicting a mapper's intentions
 /atom/proc/auto_align(connectables_typecache, lower_priority_typecache)

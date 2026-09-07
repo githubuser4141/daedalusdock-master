@@ -143,7 +143,9 @@
 	icon = 'mojave/icons/hud/lockpicking.dmi'
 	icon_state = "base"
 	screen_loc = "1,1"
-	locked = TRUE
+	// AI EDIT: locked was never declared anywhere (not a var on any DD screen object base) and is never read
+	// elsewhere in this file either - added as a plain var, no behavioral effect either way
+	var/locked = TRUE
 	plane = HUD_PLANE
 	layer = 1
 

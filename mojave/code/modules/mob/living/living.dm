@@ -6,7 +6,7 @@
 /mob/living/proc/wield_active_hand()
 	var/obj/item/active = get_active_held_item()
 	if(istype(active))
-		return active.wield_act(src)
+		return active.wield(src) // AI EDIT: wield_act() -> wield() (DD's real proc, code/game/objects/items.dm)
 	else
 		to_chat(src, span_warning("You have nothing to wield!"))
 		return FALSE

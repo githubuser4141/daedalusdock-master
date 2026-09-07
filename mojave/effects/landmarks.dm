@@ -1,7 +1,10 @@
 /obj/effect/landmark/start/ms13
 	name = "Mojave Sun"
 	icon_state = "Assistant"
-	jobspawn_override = TRUE
+	// AI EDIT: jobspawn_override doesn't exist - mapped to DD's closest equivalent, high_priority ("used over other
+	// landmarks first", code/game/objects/effects/landmarks.dm) since there's no dedicated "override job spawn"
+	// var. Worth double-checking in-game if spawn selection doesn't behave as expected.
+	high_priority = TRUE
 	delete_after_roundstart = FALSE
 
 // Wasteland Spawns //
