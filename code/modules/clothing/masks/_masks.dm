@@ -14,6 +14,9 @@
 	var/modifies_speech = FALSE
 	var/mask_adjusted = FALSE
 	var/adjusted_flags = null
+	// AI EDIT: added for mojave/code/datums/components/mumbleboops.dm's muffle check - was referenced but never
+	// declared, and nothing currently sets it TRUE, so this only fixes the compile error (no behavior change).
+	var/lowers_pitch = FALSE
 	///Did we install a filtering cloth?
 	var/has_filter = FALSE
 

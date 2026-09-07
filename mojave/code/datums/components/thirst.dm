@@ -70,7 +70,7 @@ GLOBAL_LIST_INIT(dehydration_stage_alerts, list(
 		var/mob/living/carbon/the_carbon = the_parent
 		if(!istype(the_carbon))
 			return
-		for(var/i in the_carbon.internal_organs)
+		for(var/i in the_carbon.organs) // AI EDIT: internal_organs doesn't exist - DD's real list var name is organs
 			var/obj/item/organ/O = i
 			if(O.organ_flags & ORGAN_SYNTHETIC)
 				continue

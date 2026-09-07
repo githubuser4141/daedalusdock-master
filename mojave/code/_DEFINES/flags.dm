@@ -24,3 +24,7 @@
 // Used by living_armor.dm's weak_against_armour branch; weak_against_armour is never actually set TRUE anywhere in
 // mojave/, so this multiplier is currently unreachable dead code either way.
 #define ARMOR_WEAKENED_MULTIPLIER 1.5
+
+// AI EDIT: admin VV dropdown key for objs.dm's "Modify subarmor values" option - only needs to be a unique string,
+// matching the same pattern as the base game's VV_HK_* defines.
+#define VV_HK_SUBARMOR_MOD "modifysubarmor"

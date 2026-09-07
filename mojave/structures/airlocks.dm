@@ -16,7 +16,8 @@
 	resistance_flags = INDESTRUCTIBLE
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_generic_2.wav'
 
-/obj/machinery/door/airlock/ms13/Bumped(atom/movable/AM)
+// AI EDIT: Bumped() doesn't exist in DD - renamed to BumpedBy() (code/game/atom/atoms.dm), same single-arg signature
+/obj/machinery/door/airlock/ms13/BumpedBy(atom/movable/AM)
 	return
 
 //TEMP AIRLOCK LOCKING (will be replaced by hacking)
