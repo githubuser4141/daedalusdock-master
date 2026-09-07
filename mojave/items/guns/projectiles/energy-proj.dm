@@ -147,7 +147,7 @@
 	name = "plasma bolt"
 	icon = 'mojave/icons/objects/projectiles/projectiles.dmi'
 	damage_type = BURN
-	flag = ENERGY
+	armor_flag = ENERGY // AI EDIT: flag doesn't exist - DD's real armor-check var name on projectiles
 	icon_state = "plasma"
 	armor_penetration = 0
 	damage = 0

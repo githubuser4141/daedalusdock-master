@@ -286,7 +286,7 @@
 /obj/item/ammo_box/magazine/internal/cylinder/ms13/mts
 	name = "revolver shotgun internal tube"
 	ammo_type = /obj/item/ammo_casing/shotgun/ms13/buckshot
-	caliber = CALIBER_SHOTGUN
+	caliber = CALIBER_12GAUGE // AI EDIT: CALIBER_SHOTGUN doesn't exist - DD's real 12-gauge define
 	max_ammo = 6
 
 /obj/item/ammo_box/magazine/internal/shot/ms13/derringer

@@ -1,5 +1,7 @@
 /obj/item/ammo_box
-	multiload = FALSE
+	// AI EDIT: multiload was never declared anywhere - added here. Nothing currently reads it (in mojave/ or DD's
+	// base), so this only fixes the compile error - it has no behavioral effect either way right now.
+	var/multiload = FALSE
 
 /obj/item/ammo_box/attack_hand_secondary(mob/user, list/modifiers)
 	. = ..()
