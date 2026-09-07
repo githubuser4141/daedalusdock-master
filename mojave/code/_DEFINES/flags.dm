@@ -28,3 +28,9 @@
 // AI EDIT: admin VV dropdown key for objs.dm's "Modify subarmor values" option - only needs to be a unique string,
 // matching the same pattern as the base game's VV_HK_* defines.
 #define VV_HK_SUBARMOR_MOD "modifysubarmor"
+
+// AI EDIT: moved here from mojave/code/modules/mob/robots/trader.dm, which is excluded from the build (it
+// duplicates DD's own /mob/living/simple_animal/friendly/trader) - generic_animal_patrol.dm/generic_patrol_animal.dm
+// still use these two AI-node identifier strings though.
+#define IDENTIFIER_GENERIC_SIMPLE "identifies_generic_simple"
+#define IDENTIFIER_EYEBOT "identifies_eyebot"
