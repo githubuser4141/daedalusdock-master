@@ -10,7 +10,8 @@
 	power_light = FALSE
 	outdoors = TRUE
 	has_gravity = STANDARD_GRAVITY
-	static_lighting = TRUE
+	// AI EDIT: static_lighting -> area_lighting, DD's real var name for this (see code/modules/lighting/lighting_area.dm)
+	area_lighting = AREA_LIGHTING_STATIC
 	ambientsounds = GENERIC_AMBIENCE // To Do, Make actual Ambience and Seperate Music Component - Scar 2022
 	flags_1 = NONE
 	var/dissipation_rate = 1 // higher numbers = quicker dissipation, 0.05 is neutral //default indoor rate 2 is outdoors//generic
@@ -378,8 +379,7 @@
 	power_environ = TRUE
 	power_equip = TRUE
 	power_light = TRUE
-	mood_bonus = 2
-	mood_message = "<span class='cultlarge'>LETS GOOOOOOOOOO\n"
+	// AI EDIT: mood_bonus/mood_message dropped - DD has no mood system yet (see drugs.dm's own #warn about this)
 
 /area/ms13/combattest/building
 	name = "combat arena building"
