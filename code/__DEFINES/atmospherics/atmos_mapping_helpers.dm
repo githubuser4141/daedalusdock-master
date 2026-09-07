@@ -1,0 +1,22 @@
+//AIRLOCK CONTROLLER TAGS
+
+//RnD ordnance burn chamber
+#define INCINERATOR_ORDMIX_IGNITER "ordmix_igniter"
+#define INCINERATOR_ORDMIX_VENT "ordmix_vent"
+#define INCINERATOR_ORDMIX_DP_VENTPUMP "ordmix_airlock_pump"
+#define INCINERATOR_ORDMIX_AIRLOCK_SENSOR "ordmix_airlock_sensor"
+#define INCINERATOR_ORDMIX_AIRLOCK_CONTROLLER "ordmix_airlock_controller"
+#define INCINERATOR_ORDMIX_AIRLOCK_INTERIOR "ordmix_airlock_interior"
+#define INCINERATOR_ORDMIX_AIRLOCK_EXTERIOR "ordmix_airlock_exterior"
+
+//Atmospherics/maintenance incinerator
+#define INCINERATOR_ATMOS_IGNITER "atmos_incinerator_igniter"
+#define INCINERATOR_ATMOS_MAINVENT "atmos_incinerator_mainvent"
+#define INCINERATOR_ATMOS_AUXVENT "atmos_incinerator_auxvent"
+#define INCINERATOR_ATMOS_DP_VENTPUMP "atmos_incinerator_airlock_pump"
+#define INCINERATOR_ATMOS_AIRLOCK_SENSOR "atmos_incinerator_airlock_sensor"
+#define INCINERATOR_ATMOS_AIRLOCK_CONTROLLER "atmos_incinerator_airlock_controller"
+#define INCINERATOR_ATMOS_AIRLOCK_INTERIOR "atmos_incinerator_airlock_interior"
+#define INCINERATOR_ATMOS_AIRLOCK_EXTERIOR "atmos_incinerator_airlock_exterior"
+#define TEST_ROOM_ATMOS_MAINVENT_1 "atmos_test_room_mainvent_1"
+#define TEST_ROOM_ATMOS_MAINVENT_2 "atmos_test_room_mainvent_2"

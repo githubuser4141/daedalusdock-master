@@ -1,0 +1,14 @@
+{
+	"default":
+	{
+		"layers":
+		[
+			{
+				"type": "icon_state",
+				"icon_state": "inhand_right",
+				"blend_mode": "overlay",
+				"color_ids": [ 1 ]
+			}
+		]
+	}
+}

@@ -1,0 +1,383 @@
+#define IV_TAKING 0
+#define IV_INJECTING 1
+
+#define MIN_IV_TRANSFER_RATE 0.1
+#define MAX_IV_TRANSFER_RATE 5
+
+///Universal IV that can drain blood or feed reagents over a period of time from or to a replaceable container
+/obj/machinery/iv_drip
+	name = "\improper IV drip"
+	desc = "An IV drip with an advanced infusion pump that can both drain blood into and inject liquids from attached containers. Blood packs are injected at twice the displayed rate."
+	icon = 'icons/obj/iv_drip.dmi'
+	icon_state = "iv_drip"
+	base_icon_state = "iv_drip"
+	anchored = FALSE
+	mouse_drag_pointer = MOUSE_ACTIVE_POINTER
+	use_power = NO_POWER_USE
+
+	fingerprint_flags_item_interaction = NONE // handled ourselves
+
+	///Who are we sticking our needle in?
+	var/mob/living/carbon/attached
+	///Are we donating or injecting?
+	var/mode = IV_INJECTING
+	///whether we feed slower
+	var/transfer_rate = MAX_IV_TRANSFER_RATE
+	///Internal beaker
+	var/obj/item/reagent_container
+	///Set false to block beaker use and instead use an internal reagent holder
+	var/use_internal_storage = FALSE
+	///If use_internal_storage is true, this is the created volume of the container
+	var/internal_storage_volume = 100
+	///Typecache of containers we accept
+	var/static/list/drip_containers = typecacheof(list(
+		/obj/item/reagent_containers/blood,
+		/obj/item/reagent_containers/food,
+		/obj/item/reagent_containers/cup,
+		/obj/item/reagent_containers/chem_pack,
+	))
+	// If the blood draining tab should be greyed out
+	var/inject_only = FALSE
+
+/obj/machinery/iv_drip/Initialize(mapload)
+	. = ..()
+	update_appearance()
+	if(use_internal_storage)
+		create_reagents(internal_storage_volume, TRANSPARENT)
+
+	interaction_flags_machine |= INTERACT_MACHINE_OFFLINE
+
+/obj/machinery/iv_drip/Destroy()
+	attached = null
+	QDEL_NULL(reagent_container)
+	return ..()
+
+/obj/machinery/iv_drip/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "IVDrip")
+		ui.open()
+
+/obj/machinery/iv_drip/ui_data(mob/user)
+	var/list/data = list()
+	data["transferRate"] = transfer_rate
+	data["injectOnly"] = inject_only ? TRUE : FALSE
+	data["maxInjectRate"] = MAX_IV_TRANSFER_RATE
+	data["minInjectRate"] = MIN_IV_TRANSFER_RATE
+	data["mode"] = mode == IV_INJECTING ? TRUE : FALSE
+	data["connected"] = attached ? TRUE : FALSE
+	data["beakerAttached"] = reagent_container ? TRUE : FALSE
+	data["useInternalStorage"] = use_internal_storage
+	return data
+
+/obj/machinery/iv_drip/ui_act(action, params)
+	. = ..()
+	if(.)
+		return
+	switch(action)
+		if("changeMode")
+			toggle_mode()
+			. = TRUE
+
+		if("eject")
+			eject_beaker()
+			. = TRUE
+
+		if("changeRate")
+			var/target_rate = params["rate"]
+			if(text2num(target_rate) != null)
+				target_rate = text2num(target_rate)
+				transfer_rate = round(clamp(target_rate, MIN_IV_TRANSFER_RATE, MAX_IV_TRANSFER_RATE), 0.1)
+				. = TRUE
+
+	update_appearance()
+
+/obj/machinery/iv_drip/update_icon_state()
+	if(attached)
+		icon_state = "[base_icon_state]_[mode ? "injecting" : "donating"]"
+	else
+		icon_state = "[base_icon_state]_[mode ? "injectidle" : "donateidle"]"
+	return ..()
+
+/obj/machinery/iv_drip/update_overlays()
+	. = ..()
+
+	if(!reagent_container)
+		return
+
+	. += attached ? "beakeractive" : "beakeridle"
+	var/datum/reagents/target_reagents = get_reagent_holder()
+	if(!target_reagents)
+		return
+
+	var/mutable_appearance/filling_overlay = mutable_appearance('icons/obj/iv_drip.dmi', "reagent")
+	var/percent = round((target_reagents.total_volume / target_reagents.maximum_volume) * 100)
+	switch(percent)
+		if(0 to 9)
+			filling_overlay.icon_state = "reagent0"
+		if(10 to 24)
+			filling_overlay.icon_state = "reagent10"
+		if(25 to 49)
+			filling_overlay.icon_state = "reagent25"
+		if(50 to 74)
+			filling_overlay.icon_state = "reagent50"
+		if(75 to 79)
+			filling_overlay.icon_state = "reagent75"
+		if(80 to 90)
+			filling_overlay.icon_state = "reagent80"
+		if(91 to INFINITY)
+			filling_overlay.icon_state = "reagent100"
+
+	filling_overlay.color = mix_color_from_reagents(target_reagents.reagent_list)
+	. += filling_overlay
+
+/obj/machinery/iv_drip/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change)
+	. = ..()
+	check_attached_dist()
+
+/obj/machinery/iv_drip/MouseDrop(mob/living/target)
+	. = ..()
+	if(!ishuman(usr) || !usr.canUseTopic(src, USE_CLOSE) || !isliving(target))
+		return
+
+	if(attached)
+		visible_message(span_warning("[attached] is detached from [src]."))
+		detach_iv()
+		return
+
+	if(Adjacent(target) && usr.Adjacent(target))
+		if(get_reagent_holder())
+			attach_iv(target, usr)
+		else
+			to_chat(usr, span_warning("There's nothing attached to the IV drip."))
+
+/obj/machinery/iv_drip/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(use_internal_storage)
+		return NONE
+
+	if(is_type_in_typecache(tool, drip_containers) || IS_EDIBLE(tool))
+		if(reagent_container)
+			to_chat(user, span_warning("\A [reagent_container.name] is already loaded on [src]."))
+			return ITEM_INTERACT_BLOCKING
+		if(!user.transferItemToLoc(tool, src))
+			return ITEM_INTERACT_BLOCKING
+
+		reagent_container = tool
+		to_chat(user, span_notice("You attach [tool] to [src]."))
+		user.log_message("attached a [tool] to [src] at [AREACOORD(src)] containing ([reagent_container.reagents.get_reagent_log_string()])", LOG_ATTACK)
+		tool.leave_evidence(user, src)
+		update_appearance()
+		return ITEM_INTERACT_SUCCESS
+
+
+/obj/machinery/iv_drip/deconstruct(disassembled = TRUE)
+	if(!(flags_1 & NODECONSTRUCT_1))
+		new /obj/item/stack/sheet/iron(loc)
+	qdel(src)
+
+/obj/machinery/iv_drip/process(delta_time)
+	if(!attached)
+		return PROCESS_KILL
+
+	var/datum/reagents/target_reagents = get_reagent_holder()
+	if(target_reagents)
+		// Give blood
+		if(mode)
+			if(target_reagents.total_volume)
+				var/real_transfer_amount = transfer_rate
+				if(istype(reagent_container, /obj/item/reagent_containers/blood))
+					// speed up transfer on blood packs
+					real_transfer_amount *= 2
+				target_reagents.trans_to(attached, real_transfer_amount * delta_time * 0.5, methods = INJECT, show_message = FALSE) //make reagents reacts, but don't spam messages
+				update_appearance()
+
+		// Take blood
+		else
+			var/amount = target_reagents.maximum_volume - target_reagents.total_volume
+			amount = min(amount, 4) * delta_time * 0.5
+
+			var/atom/movable/target = use_internal_storage ? src : reagent_container
+			attached.transfer_blood_to(target, amount)
+			update_appearance()
+
+/obj/machinery/iv_drip/attack_hand_secondary(mob/user, list/modifiers)
+	. = ..()
+	if(. == SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN)
+		return
+
+	if(!ishuman(user))
+		return
+
+	add_fingerprint(user)
+	user.animate_interact(src)
+
+	if(attached)
+		visible_message(span_notice("[user] detaches [attached] from [src]."))
+		detach_iv()
+		return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
+
+	if(reagent_container)
+		eject_beaker(user)
+	else
+		toggle_mode()
+	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
+
+///called when an IV is attached
+/obj/machinery/iv_drip/proc/attach_iv(mob/living/target, mob/living/user)
+	user.visible_message(
+		span_notice("<b>[user]</b> begins attaching [src] to <b>[target]</b>."),
+	)
+
+	user.animate_interact(src)
+
+	if(!do_after(usr, target, 1 SECONDS, DO_PUBLIC|DO_RESTRICT_USER_DIR_CHANGE|DO_RESTRICT_CLICKING))
+		return FALSE
+
+	user.animate_interact(target)
+
+	if(iscarbon(target))
+		var/mob/living/carbon/carbon_target = target
+		var/mob/living/living_user = user
+		var/datum/roll_result/result = living_user.stat_roll(7, /datum/rpg_skill/anatomy)
+		if(result.outcome <= FAILURE)
+			result.do_skill_sound(user)
+			to_chat(user, result.create_tooltip("That is not where an IV should be inserted, but it will suffice."))
+			carbon_target.bleed(10)
+			carbon_target.apply_damage(5, BRUTE, pick(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM), sharpness = SHARP_POINTY)
+
+	user.visible_message(span_notice("<b>[user]</b> attaches [src] to <b>[target]</b>."))
+
+	var/datum/reagents/container = get_reagent_holder()
+	log_combat(user, target, "attached", src, "containing: ([container.get_reagent_log_string()])")
+	add_fingerprint(user)
+
+	attached = target
+	RegisterSignal(attached, COMSIG_MOVABLE_MOVED, PROC_REF(check_attached_dist))
+	START_PROCESSING(SSmachines, src)
+	update_appearance()
+
+	return TRUE
+
+///Called when an iv is detached. doesnt include chat stuff because there's multiple options and its better handled by the caller
+/obj/machinery/iv_drip/proc/detach_iv(wound = FALSE)
+	if(!attached)
+		return
+
+	if(wound && !(QDELING(src) || QDELING(attached)))
+		to_chat(attached, span_userdanger("The IV drip needle is tears out of your arm."))
+		var/list/arm_zones = shuffle(list(BODY_ZONE_R_ARM, BODY_ZONE_L_ARM))
+		var/obj/item/bodypart/chosen_limb = attached.get_bodypart(arm_zones[1]) || attached.get_bodypart(arm_zones[2]) || attached.get_bodypart(BODY_ZONE_CHEST)
+		chosen_limb.receive_damage(7, sharpness = SHARP_POINTY, modifiers = NONE)
+
+	UnregisterSignal(attached, COMSIG_MOVABLE_MOVED)
+	attached = null
+	update_appearance()
+
+/obj/machinery/iv_drip/proc/get_reagent_holder()
+	return use_internal_storage ? reagents : reagent_container?.reagents
+
+/// Rechecks the distance to the attached mob and breaks if needed.
+/obj/machinery/iv_drip/proc/check_attached_dist(instant = FALSE)
+	SIGNAL_HANDLER
+
+	// This makes it so if you're pulling it behind you via grabbing, it doesn't fuck up. Hacky? yes.
+	spawn(0)
+		if(!attached)
+			return
+
+		if(get_dist(src, attached) > 1)
+			detach_iv(TRUE)
+
+/obj/machinery/iv_drip/verb/eject_beaker()
+	set category = "Object"
+	set name = "Remove IV Container"
+	set src in view(1)
+
+	if(!isliving(usr))
+		to_chat(usr, span_warning("You can not do that."))
+		return
+
+	if(!reagent_container)
+		return
+
+	if (!usr.canUseTopic(USE_CLOSE|USE_NEED_HANDS))
+		return
+
+	if(usr.incapacitated())
+		return
+
+	if(attached)
+		visible_message(span_warning("[usr] detaches [attached] from [src]."))
+		detach_iv()
+
+	reagent_container.forceMove(drop_location())
+	reagent_container = null
+	usr.animate_interact(src)
+	update_appearance()
+
+/obj/machinery/iv_drip/verb/toggle_mode()
+	set category = "Object"
+	set name = "Toggle Mode"
+	set src in view(1)
+
+	if(!isliving(usr))
+		to_chat(usr, span_warning("You can not do that."))
+		return
+	if (!usr.canUseTopic(USE_CLOSE))
+		return
+	if(usr.incapacitated())
+		return
+
+	usr.animate_interact(src)
+	mode = !mode
+	to_chat(usr, span_notice("The IV drip is now [mode ? "injecting" : "taking blood"]."))
+	update_appearance()
+
+/obj/machinery/iv_drip/examine(mob/user)
+	. = ..()
+	if(get_dist(user, src) > 2)
+		return
+
+	. += span_info("It is [mode ? "injecting" : "taking blood"].")
+
+	if(reagent_container)
+		if(reagent_container.reagents && reagent_container.reagents.reagent_list.len)
+			. += span_info("Attached is \a [reagent_container.name] with [reagent_container.reagents.total_volume] units of liquid.")
+		else
+			. += span_info("Attached is an empty [reagent_container.name].")
+
+	else if(use_internal_storage)
+		. += span_info("It has an internal chemical storage.")
+	else
+		. += span_info("No chemicals are attached.")
+
+	. += span_info("[attached ? attached : "No one"] is attached.")
+
+
+/obj/machinery/iv_drip/saline
+	name = "saline drip"
+	desc = "An all-you-can-drip saline canister designed to supply a hospital without running out, with a scary looking pump rigged to inject saline into containers, but filling people directly might be a bad idea."
+	icon_state = "saline"
+	base_icon_state = "saline"
+	use_internal_storage = TRUE
+	internal_storage_volume = 5000
+	density = TRUE
+	inject_only = TRUE
+
+/obj/machinery/iv_drip/saline/Initialize(mapload)
+	AddElement(/datum/element/update_icon_blocker, COMSIG_ATOM_NO_UPDATE_OVERLAYS)
+	. = ..()
+	// Parent call creates our container. Fill it up to max.
+	reagents.add_reagent(/datum/reagent/medicine/saline_glucose, internal_storage_volume)
+
+/obj/machinery/iv_drip/saline/eject_beaker()
+	return
+
+/obj/machinery/iv_drip/saline/toggle_mode()
+	return
+
+#undef IV_TAKING
+#undef IV_INJECTING
+
+#undef MIN_IV_TRANSFER_RATE
+#undef MAX_IV_TRANSFER_RATE

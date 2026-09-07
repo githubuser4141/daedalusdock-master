@@ -1,0 +1,1 @@
+#define MAX_FLAVOR_LEN 1024

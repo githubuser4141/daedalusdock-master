@@ -1,0 +1,1 @@
+#define VV_HK_EDIT_PARTICLES "edit_particles" //MOJAVE MODULE OUTDOOR_EFFECTS
