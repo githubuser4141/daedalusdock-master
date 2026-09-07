@@ -21,8 +21,9 @@
 	for(var/organ_slot in valid_organ_slots)
 		current_organ = M.getorganslot(organ_slot)
 		if(current_organ)
-			current_organ.applyOrganDamage(2 * REM * normalise_creation_purity() * delta_time)
-	M.apply_damage(0.75 * REM * normalise_creation_purity() * delta_time, BRUTE, def_zone = BODY_ZONE_CHEST, sharpness = SHARP_EDGED)
+			current_organ.applyOrganDamage(2 * REM * delta_time)
+	// normalise_creation_purity() doesn't exist - DD's reagents have no creation-purity concept, treated as always full strength
+	M.apply_damage(0.75 * REM * delta_time, BRUTE, def_zone = BODY_ZONE_CHEST, sharpness = SHARP_EDGED)
 	if(DT_PROB(10, delta_time))
 		M.emote("cough")
 		//can also make u cough up blood sometimes

@@ -20,3 +20,7 @@
 // Base-game flags_1 (on /atom) goes up to (1<<19); this claims the next free bit. Checked by
 // mojave/code/datums/components/transparency.dm but never set anywhere, so it's currently always FALSE either way.
 #define CRITICAL_ATOM_1 (1<<20)
+
+// Used by living_armor.dm's weak_against_armour branch; weak_against_armour is never actually set TRUE anywhere in
+// mojave/, so this multiplier is currently unreachable dead code either way.
+#define ARMOR_WEAKENED_MULTIPLIER 1.5

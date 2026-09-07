@@ -489,7 +489,7 @@
 	if(slot != ITEM_SLOT_OCLOTHING)
 		return
 	user.RemoveElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6)
-	user.AddElement(/datum/element/footstep, FOOTSTEP_PA, 1, -6, sound_vary = TRUE)
+	user.AddElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
 	listeningTo = user
 	// How do you buckle a suit of power armor to something?
 	user.can_buckle_to = FALSE
@@ -515,7 +515,7 @@
 	user.can_buckle_to = TRUE
 	user.base_pixel_y = user.base_pixel_y - 6
 	user.pixel_y = user.base_pixel_y
-	user.RemoveElement(/datum/element/footstep, FOOTSTEP_PA, 1, -6, sound_vary = TRUE)
+	user.RemoveElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
 	user.AddElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6)
 	listeningTo.remove_movespeed_modifier(/datum/movespeed_modifier/ms13/pa_broken)
 	listeningTo = null
@@ -554,7 +554,7 @@
 	else
 		if(user.wear_suit == src)
 			to_chat(user, "You begin exiting the [src].")
-			if(do_after(user, 8 SECONDS, user, IGNORE_INCAPACITATED) && !density && (get_dist(user, src) <= 1))
+			if(do_after(user, 8 SECONDS, user, DO_IGNORE_INCAPACITATED) && !density && (get_dist(user, src) <= 1))
 				GetOutside(user)
 				return TRUE
 			return FALSE

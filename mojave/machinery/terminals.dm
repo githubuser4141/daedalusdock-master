@@ -278,7 +278,7 @@
 	dat += "</font></div>"
 	var/datum/browser/popup = new(user, "terminal", null, 600, 400)
 	popup.set_content(dat)
-	popup.set_title_image(user.browse_rsc_icon(src.icon, src.icon_state))
+	// set_title_image doesn't exist on DD's /datum/browser - purely cosmetic titlebar icon, dropped
 	popup.open()
 
 /obj/machinery/ms13/terminal/Topic(href, href_list)
