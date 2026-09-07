@@ -47,7 +47,7 @@
 		else
 			if(!def_zone)
 				def_zone = ran_zone(def_zone)
-			BP = H.get_bodypart(check_zone(def_zone))
+			BP = H.get_bodypart(deprecise_zone(def_zone)) // AI EDIT: check_zone was renamed to deprecise_zone in DD
 			if(!BP)
 				BP = H.bodyparts[1]
 

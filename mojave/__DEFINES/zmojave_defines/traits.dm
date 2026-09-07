@@ -3,6 +3,7 @@
 #define CATWALK_ON_TURF "catwalk_on_turf" // Source for adding/removing traits, namely the above trait
 #define BOARDS_ON_TURF "boards_on_turf" // Like above, but for board walkways
 #define STAIRS_ON_TURF "stairs_on_turf" // Like above, but for stairs!
-#define TRAIT_MAGIC_CHOKE "magic_choke"
+// AI EDIT: moved to code/__DEFINES/traits.dm's "MOJAVE TRAITS" section - this file loads too late for
+// code/modules/mob/living/carbon/life.dm (a base file) to see it
 #define TRAIT_DUSTSTORM_IMMUNE "duststorm_immune" //MOJAVE MODULE OUTDOOR_EFFECTS
 #define TRAIT_RAINSTORM_IMMUNE "rainstorm_immune" //MOJAVE MODULE OUTDOOR_EFFECTS

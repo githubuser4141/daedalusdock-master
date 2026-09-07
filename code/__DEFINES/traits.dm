@@ -1058,4 +1058,9 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 
 #define TRAIT_SHOVEIMMUNE "shove_immune"//Makes the user completely immune to shoving
 
+// AI EDIT: moved here from mojave/__DEFINES/zmojave_defines/traits.dm - that file only loads after all of code/ in
+// the .dme, but code/modules/mob/living/carbon/life.dm (a base file) checks this trait, so it needs to be defined
+// this early instead. Same issue the other traits in this section were already moved here to fix.
+#define TRAIT_MAGIC_CHOKE "magic_choke"
+
 // MOJAVE JOB TRAITS END
