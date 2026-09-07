@@ -12,8 +12,11 @@
 	max_integrity = 1150
 	armor = list(BLUNT = 40, PUNCTURE = 70, LASER = 90, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 50, ACID = 100)
 	damage_deflection = 15
-	sparks = FALSE
 	ms13_flags_1 = LOCKABLE_1
+	// AI EDIT: sparks and safe were never declared anywhere - added here (sparks was previously just dropped on
+	// the floor as an invalid assignment; safe gates a get_turf() crush-check in close() below)
+	var/sparks = FALSE
+	var/safe = TRUE
 	var/door_type = null
 	var/solidity = SOLID
 	var/frametype = "metal"
@@ -208,12 +211,14 @@
 		return TRUE
 	if(!open)
 		update_appearance()
-		return ((obj_flags & CAN_BE_HIT) && I.attack_atom(src, M, params))
+		// AI EDIT: attack_atom doesn't exist in DD - the atom-side equivalent is attacked_by(), called on the target
+		return ((obj_flags & CAN_BE_HIT) && attacked_by(I, M))
 
 /obj/machinery/door/unpowered/ms13/do_animate(animation)
 	return
 
-/obj/machinery/door/unpowered/ms13/Bumped(atom/movable/AM)
+// AI EDIT: Bumped() doesn't exist in DD - renamed to BumpedBy() (code/game/atom/atoms.dm), same single-arg signature
+/obj/machinery/door/unpowered/ms13/BumpedBy(atom/movable/AM)
 	return
 
 /obj/machinery/door/unpowered/ms13/metal

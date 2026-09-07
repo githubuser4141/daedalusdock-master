@@ -24,7 +24,7 @@
 	assemblytype = null
 	id_tag = VAULT_DOOR_TAG
 	flags_1 = INDESTRUCTIBLE
-	safe = FALSE
+	// AI EDIT: safe isn't declared on this branch (/obj/machinery/door/airlock) and was never read here either - dropped
 	autoclose = FALSE
 	var/list/atom/movable/follower/opaque_followers
 

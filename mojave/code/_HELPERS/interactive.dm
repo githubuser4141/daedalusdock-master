@@ -45,18 +45,20 @@
 			drifting = FALSE
 			user_loc = user.loc
 
+		// AI EDIT: IGNORE_USER_LOC_CHANGE/IGNORE_HELD_ITEM/IGNORE_INCAPACITATED/IGNORE_TARGET_LOC_CHANGE renamed to
+		// DD's real names (DO_IGNORE_*, see code/__DEFINES/flags.dm) - same bits, same meaning, just prefixed.
 		if(
 			QDELETED(user) \
-			|| (!(timed_action_flags & IGNORE_USER_LOC_CHANGE) && !drifting && user.loc != user_loc) \
-			|| (!(timed_action_flags & IGNORE_HELD_ITEM) && user.get_active_held_item() != holding) \
-			|| (!(timed_action_flags & IGNORE_INCAPACITATED) && HAS_TRAIT(user, TRAIT_INCAPACITATED)) \
+			|| (!(timed_action_flags & DO_IGNORE_USER_LOC_CHANGE) && !drifting && user.loc != user_loc) \
+			|| (!(timed_action_flags & DO_IGNORE_HELD_ITEM) && user.get_active_held_item() != holding) \
+			|| (!(timed_action_flags & DO_IGNORE_INCAPACITATED) && HAS_TRAIT(user, TRAIT_INCAPACITATED)) \
 			|| (extra_checks && !extra_checks.Invoke()) \
 		)
 			. = FALSE
 			break
 
 		if(
-			!(timed_action_flags & IGNORE_TARGET_LOC_CHANGE) \
+			!(timed_action_flags & DO_IGNORE_TARGET_LOC_CHANGE) \
 			&& !drifting \
 			&& !QDELETED(target_loc) \
 			&& (QDELETED(target) || target_loc != target.loc) \
