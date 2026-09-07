@@ -9,7 +9,7 @@
 	icon_state = "matchbox"
 	inventory_state = "matchbox"
 	world_state = "matchbox"
-	storage_type = /datum/component/storage/concrete/ms13/matchbox
+	// storage_type left unset - inherits the working setup from /obj/item/storage/box/matches/Initialize() (10 slots, holds /obj/item/match)
 	lefthand_file = 'mojave/icons/mob/inhands/misc/lightables_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/misc/lightables_righthand.dmi'
 	inhand_icon_state = "matchbox"
@@ -107,7 +107,7 @@
 	if(match)
 		if(user && contents.len > 0)
 			var/obj/item/match/ms13/W = match
-			SEND_SIGNAL(src, COMSIG_TRY_STORAGE_TAKE, W, user)
+			// COMSIG_TRY_STORAGE_TAKE doesn't exist in DD; this box manages contents manually rather than via atom_storage anyway
 			user.put_in_hands(W)
 			contents -= W
 			to_chat(user, "<span class='notice'>You take \a [W] out of the box.</span>")

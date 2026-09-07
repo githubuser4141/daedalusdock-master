@@ -113,12 +113,13 @@
 
 /obj/item/ms13/fluff/ashtray/Initialize(mapload)
 	. = ..()
-	LoadComponent(/datum/component/storage/concrete/ms13/ashtray)
+	// LoadComponent(/datum/component/storage/concrete/ms13/ashtray) doesn't exist in DD - using create_storage() instead
+	create_storage(max_slots = 20, max_specific_storage = WEIGHT_CLASS_TINY, max_total_storage = 20)
+	atom_storage.set_holdable(list(/obj/item/ms13/cigarette/butt, /obj/item/ms13/ash))
 	for(var/i = 0 to rand(0,6))
 		new /obj/item/ms13/cigarette/butt(src)
 	for(var/i = 0 to rand(0,10))
 		new /obj/item/ms13/ash(src)
-	reset_grid_inventory()
 
 /obj/item/ms13/fluff/ashtray/examine(mob/user)
 	. = ..()

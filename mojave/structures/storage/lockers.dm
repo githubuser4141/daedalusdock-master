@@ -7,9 +7,8 @@
 	door_anim_time = 0
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_sheet_4.wav'
 
-/obj/structure/closet/ms13/Initialize(mapload)
-	. = ..()
-	reset_grid_inventory()
+// reset_grid_inventory() doesn't exist in DD (the grid-layout storage UI it fed was never ported here either - see the
+// commented-out grid_height/grid_width vars throughout mojave/) - the Initialize() override that only called it is gone too.
 
 /obj/structure/closet/ms13/metal
 	name = "metal locker"

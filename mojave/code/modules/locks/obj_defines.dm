@@ -17,8 +17,8 @@
 
 //for storage items that open when lockpicked
 /obj/proc/unlock_storage()
-	for(var/datum/component/storage/storage as anything in src.GetComponents(/datum/component/storage))
-		storage.locked = FALSE //unlocks the storage
+	if(atom_storage)
+		atom_storage.locked = FALSE //unlocks the storage
 	return TRUE
 
 //for denying access/interaction with general locked items

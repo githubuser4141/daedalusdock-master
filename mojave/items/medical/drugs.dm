@@ -207,7 +207,7 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
-	storage_type = /datum/component/storage/concrete/ms13/pillbottle
+	// storage_type left unset - inherits the working setup from /obj/item/storage/pill_bottle/Initialize() (holds /obj/item/reagent_containers/pill)
 	//grid_height = 64
 	//grid_width = 32
 

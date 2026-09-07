@@ -49,7 +49,7 @@
 	density = TRUE
 	anchored = TRUE
 	pixel_y = 12
-	storage_type = /datum/storage/machine_large
+	// storage_type left unset - /datum/storage/machine_large doesn't exist in DD, create_storage() is called in Initialize() instead
 	var/closed = TRUE
 	var/working = FALSE
 	var/busy = FALSE
@@ -60,6 +60,7 @@
 
 /obj/structure/ms13/storage/washingmachine/Initialize(mapload)
 	. = ..()
+	create_storage(max_slots = 20, max_specific_storage = WEIGHT_CLASS_BULKY, max_total_storage = 70)
 	register_context()
 	soundloop = new(src, FALSE)
 	if(working)

@@ -168,11 +168,7 @@
 
 /mob/living/simple_animal/ms13/proc/bogged()
 	if(bagged == TRUE)
-		AddComponent(/datum/component/storage/concrete)
-		var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-		max_total_storage = 100
-		max_specific_storage = WEIGHT_CLASS_BULKY
-		max_slots = 20
+		create_storage(max_slots = 20, max_specific_storage = WEIGHT_CLASS_BULKY, max_total_storage = 100)
 		add_overlay("[icon_state]_bagged")
 
 /mob/living/simple_animal/ms13/attackby(obj/item/O, mob/user, params)

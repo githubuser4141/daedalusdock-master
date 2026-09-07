@@ -13,7 +13,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	gender = PLURAL
 	spawn_type = /obj/item/ms13/cigarette
-	storage_type = /datum/component/storage/concrete/ms13/cigarettes
+	// storage_type left unset - inherits the working setup from /obj/item/storage/fancy/Initialize() (max_slots = spawn_count)
 	contents_tag = "cigarette"
 	folds = FALSE
 	//grid_width = 32
@@ -131,7 +131,7 @@
 	if(cig)
 		if(user && contents.len > 0)
 			var/obj/item/ms13/cigarette/W = cig
-			SEND_SIGNAL(src, COMSIG_TRY_STORAGE_TAKE, W, user)
+			// COMSIG_TRY_STORAGE_TAKE doesn't exist in DD; this pack manages contents manually rather than via atom_storage anyway
 			user.put_in_hands(W)
 			contents -= W
 			to_chat(user, "<span class='notice'>You take \a [W] out of the pack.</span>")

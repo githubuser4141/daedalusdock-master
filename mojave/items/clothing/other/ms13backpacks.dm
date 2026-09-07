@@ -14,7 +14,7 @@
 	righthand_file = 'mojave/icons/mob/inhands/equipment/backpack_righthand.dmi'
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
-	storage_flags = STORAGE_NO_WORN_ACCESS
+	// storage_flags/STORAGE_NO_WORN_ACCESS don't exist in DD's storage system (no "can't access while worn" concept) - dropped
 	resistance_flags = NONE
 	max_integrity = 300
 	drag_slowdown = 2
@@ -43,7 +43,6 @@
 	name = "leather satchel"
 	desc = "A simple leather satchel. Easy to access but can't hold much."
 	icon_state = "satchel"
-	storage_flags = 0
 	storage_type = /datum/storage/ms13/satchel
 
 /datum/storage/ms13/satchel
@@ -120,7 +119,6 @@
 	name = "harvesting sack"
 	desc = "A crude sack intended for holding plants and seeds. Has some rope tightly attached for attaching on the hip."
 	icon_state = "sack"
-	storage_flags = 0
 	slot_flags = ITEM_SLOT_BELT
 	storage_type = /datum/storage/ms13/harvest_bag
 	equip_delay_self = 0.65 SECONDS

@@ -6,10 +6,14 @@
 	//grid_height = 64
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 4 SECONDS // have you ever put shoes on a full grown adult before
+	// shoes aren't /obj/item/storage, so this doesn't create storage on its own - see Initialize() below
+	var/storage_type
 
 /obj/item/clothing/shoes/ms13/Initialize()
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/clothing/clothing_inventory/shoes_inventory.dmi')
+	if(storage_type)
+		create_storage(type = storage_type)
 
 /obj/item/clothing/shoes/ms13/rag
 	name = "footcloths"

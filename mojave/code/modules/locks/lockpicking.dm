@@ -43,8 +43,8 @@
 	var/obj/thing = target
 	if(isobj(thing))
 		thing.lock_locked = TRUE
-		for(var/datum/component/storage/storage as anything in thing.GetComponents(/datum/component/storage))
-			storage.locked = TRUE //locks
+		if(thing.atom_storage)
+			thing.atom_storage.locked = TRUE //locks
 
 	RegisterSignal(target, COMSIG_PARENT_ATTACKBY, PROC_REF(check_pick))
 	RegisterSignal(target, COMSIG_LOCKPICK_ATTACKBY, PROC_REF(pick_info))
@@ -389,13 +389,9 @@
 
 	finish_lockpicking(user)
 
-	var/list/is_storage = list(/datum/component/storage, /datum/component/storage/concrete)
-
-	for(var/storages in is_storage)
-		var/has_component = src.GetComponent(storages)
-
-		if(has_component)
-			unlock_storage()
+	// DD only ever has one storage per atom (atom_storage), not a list of storage components
+	if(atom_storage)
+		unlock_storage()
 
 	if(prob(50))
 		to_chat(user, "<span class='notice'>Your [lockpick_used.name] broke!</span>")

@@ -8,8 +8,7 @@
 	lefthand_file = 'mojave/icons/mob/inhands/equipment/backpack_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/equipment/backpack_righthand.dmi'
 
-	storage_type = /datum/component/storage/concrete/ms13/rad_pack
-	storage_flags = 0
+	// storage_type left unset - inherits /datum/storage/ms13/backpack from the shared /obj/item/storage/ms13 base
 	var/held = 0
 	var/obj/item/radio/ms13/ncr/radio
 
@@ -37,7 +36,7 @@
 					to_chat(user, "<span class='warning'>You need a free hand to hold the radio!</span>")
 					return
 				update_icon()
-				user.update_inv_back()
+				user.update_worn_back()
 		else
 			to_chat(user, "<span class='warning'>You are already holding the radio!</span>")
 	else
@@ -78,7 +77,7 @@
 	if(user)
 		to_chat(user, "<span class='notice'>You attach the [radio.name] to the [name].</span>")
 	update_icon()
-	user.update_inv_back()
+	user.update_worn_back()
 
 
 /obj/item/radio/ms13/ncr

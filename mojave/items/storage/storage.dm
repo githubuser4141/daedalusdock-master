@@ -1,6 +1,5 @@
-/obj/item/storage/ms13/Initialize()
-	. = ..()
-	reset_grid_inventory()
+// reset_grid_inventory() doesn't exist in DD (the grid-layout storage UI it fed was never ported here either) -
+// the Initialize() override that only called it is gone too.
 
 // Storage code
 /obj/item/storage/firstaid/ms13
