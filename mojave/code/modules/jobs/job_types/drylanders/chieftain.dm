@@ -31,4 +31,4 @@
 	..()
 	if(H.gender != MALE)
 		H.gender = MALE
-		H.body_type = MALE
+		H.physique = MALE

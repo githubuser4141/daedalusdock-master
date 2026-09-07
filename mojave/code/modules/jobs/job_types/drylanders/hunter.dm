@@ -29,7 +29,7 @@
 	..()
 	if(H.gender != MALE)
 		H.gender = MALE
-		H.body_type = MALE
+		H.physique = MALE
 
 	if(prob(65))
 		r_pocket = /obj/item/flashlight/ms13/crafted

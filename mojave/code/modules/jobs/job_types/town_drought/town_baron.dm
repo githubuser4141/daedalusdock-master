@@ -34,7 +34,7 @@
 	..()
 	if(H.gender != MALE)
 		H.gender = MALE
-		H.body_type = MALE
+		H.physique = MALE
 		H.real_name = random_unique_raider_name(MALE)
 		H.name = H.real_name
 		if(H.wear_id)
