@@ -15,10 +15,11 @@
 	spawn_type = /obj/item/ms13/cigarette
 	// storage_type left unset - inherits the working setup from /obj/item/storage/fancy/Initialize() (max_slots = spawn_count)
 	contents_tag = "cigarette"
-	folds = FALSE
+	fold_result = null // AI EDIT: folds -> fold_result (DD's real var; FALSE meant "doesn't fold into anything", i.e. null)
 	//grid_width = 32
 	//grid_height = 32
-	freshsound = 'mojave/sound/ms13effects/smokeables/freshpack.ogg'
+	// AI EDIT: freshsound was write-only (never played anywhere) and paired with a "fresh" var that doesn't exist
+	// on this type and is never read - dead scaffolding for a feature that was never wired up. Dropped.
 	drop_sound = 'mojave/sound/ms13effects/smokeables/packdrop.ogg'
 	pickup_sound = 'mojave/sound/ms13effects/smokeables/packgrab.ogg'
 	var/amount = 8 //the amount spawned in the pack
@@ -40,8 +41,6 @@
 	else
 		for(var/i = 0 to rand(0, amount))
 			new spawn_type(src)
-	if(contents.len == max_amount) //full pack, unopened
-		fresh = TRUE
 
 /obj/item/storage/fancy/ms13/cigarettes/Initialize()
 	. = ..()

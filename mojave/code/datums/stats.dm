@@ -11,7 +11,7 @@ GLOBAL_LIST_INIT(perks, list())
 /mob
 	var/datum/stats_browser/statsbrowser
 /datum/stats_browser
-	var/datum/stats/temp_special
+	var/datum/ms13_stats/temp_special // AI EDIT: datum/stats -> datum/ms13_stats (renamed, see mojave/code/modules/stats/stats.dm)
 	var/list/activeperks = list()
 
 /datum/stats_browser/ui_state()
@@ -62,7 +62,7 @@ GLOBAL_LIST_INIT(perks, list())
 /datum/stats_browser/ui_interact(mob/user, datum/tgui/ui)
 	if(isliving(user))
 		var/mob/living/u = user
-		temp_special = u.stats
+		temp_special = u.ms13_stats // AI EDIT: stats -> ms13_stats
 	else
 		temp_special = new
 

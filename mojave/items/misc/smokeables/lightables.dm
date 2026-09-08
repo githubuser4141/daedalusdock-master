@@ -175,13 +175,10 @@
 	light_power = 0.6
 	light_color = LIGHT_COLOR_FIRE
 
-/obj/item/match/ms13/ComponentInitialize()
+/obj/item/match/ms13/Initialize(mapload) // AI EDIT: merged ComponentInitialize() into Initialize() - ComponentInitialize() isn't a real DD hook, and this type already had its own Initialize() override
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/tools/lightables_inventory.dmi', world_state, inventory_state)
 	AddElement(/datum/element/update_icon_updates_onmob)
-
-/obj/item/match/ms13/Initialize(mapload)
-	. = ..()
 	set_light_on(FALSE)
 
 /obj/item/match/ms13/process(delta_time)
@@ -434,6 +431,6 @@
 	//grid_width = 32
 	//grid_height = 64
 
-/obj/item/reagent_containers/ms13/lighterfluid/ComponentInitialize()
+/obj/item/reagent_containers/ms13/lighterfluid/Initialize(mapload) // AI EDIT: ComponentInitialize() isn't a real DD hook - this is just Initialize()
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/tools/lightables_inventory.dmi', world_state, inventory_state)

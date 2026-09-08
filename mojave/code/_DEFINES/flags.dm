@@ -29,9 +29,10 @@
 // matching the same pattern as the base game's VV_HK_* defines.
 #define VV_HK_SUBARMOR_MOD "modifysubarmor"
 
-// AI EDIT: moved here from mojave/code/modules/mob/robots/trader.dm, which is excluded from the build (it
-// duplicates DD's own /mob/living/simple_animal/friendly/trader) - generic_animal_patrol.dm/generic_patrol_animal.dm
-// still use these two AI-node identifier strings though.
+// AI EDIT: moved here from mojave/code/modules/mob/robots/trader.dm back when that file was deleted entirely.
+// trader.dm has since been restored (scoped to the /ms13 trader subtype, see that file's header comment) but
+// without its unused AI-node restock/patrol system, which is what originally declared these - left here since
+// generic_animal_patrol.dm/generic_patrol_animal.dm still use these two identifier strings.
 #define IDENTIFIER_GENERIC_SIMPLE "identifies_generic_simple"
 #define IDENTIFIER_EYEBOT "identifies_eyebot"
 
@@ -48,3 +49,7 @@
 #define COMSIG_HYDROTRAY_SET_PLANT_STATUS "hydrotray_set_plant_status"
 #define COMSIG_HYDROTRAY_PLANT_DEATH "hydrotray_plant_death"
 #define COMSIG_HYDROTRAY_ON_HARVEST "hydrotray_on_harvest"
+
+// AI EDIT: mojave/hud/screen_objects.dm's custom HUD background icons used this layer value but it was never
+// declared anywhere in DD - just needs to be a low value so the background renders behind the icons on top of it.
+#define HUD_BACKGROUND_LAYER 1

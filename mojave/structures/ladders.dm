@@ -26,8 +26,10 @@
 							'mojave/sound/ms13effects/ladder4.ogg'), 60)
 		show_fluff_message(going_up, user)
 
-	var/turf/target = get_turf(ladder)
-	user.zMove(target = target, z_move_flags = ZMOVE_CHECK_PULLEDBY|ZMOVE_ALLOW_BUCKLED|ZMOVE_INCLUDE_PULLED)
+	// AI EDIT: user.zMove(target=, z_move_flags=) isn't a real proc signature (zMove takes dir, not a target turf) -
+	// replaced with zstep(), the same global helper DD's own ladder travel() uses (code/game/objects/structures/ladders.dm)
+	if(!zstep(user, going_up ? UP : DOWN, ZMOVE_INCAPACITATED_CHECKS))
+		return
 	ladder.use(user) //reopening ladder radial menu ahead
 
 // TG code edit to add a check for blocked ladders //

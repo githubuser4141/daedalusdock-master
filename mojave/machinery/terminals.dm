@@ -440,6 +440,9 @@
 
 	return
 
+// AI EDIT: FLAGGED, NOT FIXED - GLOB.machines doesn't exist anywhere in DD (no global machine registry of any kind,
+// confirmed via search); this looks like a genuinely missing MS13 system rather than a rename target. Left broken
+// per instructions not to fabricate missing objects/subsystems.
 /obj/machinery/ms13/terminal/proc/transmit_signal()
 	var/openclose
 	for(var/obj/machinery/door/poddoor/M in GLOB.machines)

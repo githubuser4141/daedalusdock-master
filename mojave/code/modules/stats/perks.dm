@@ -38,7 +38,7 @@ PERK_HUMAN_TORCH = /datum/perk/human_torch,
 	var/nimble = 0
 
 	//Attached stats
-	var/datum/stats/stats
+	var/datum/ms13_stats/stats // AI EDIT: datum/stats -> datum/ms13_stats (renamed, see mojave/code/modules/stats/stats.dm)
 
 	//DEV THING
 	var/is_ready = FALSE
@@ -56,7 +56,7 @@ PERK_HUMAN_TORCH = /datum/perk/human_torch,
 /datum/perk/proc/remove_effect()
 	stats.modifyRating(-perceptive, -enduring, -retaining, -strong, -outgoing, -nimble)
 
-/datum/perk/proc/has_level(datum/stats/s)
+/datum/perk/proc/has_level(datum/ms13_stats/s)
 	switch(type_class)
 		if("p")
 			if(level > 5)
@@ -107,7 +107,7 @@ PERK_HUMAN_TORCH = /datum/perk/human_torch,
 					return TRUE
 			return FALSE
 
-/datum/perk/proc/check_to_add(datum/stats/s)
+/datum/perk/proc/check_to_add(datum/ms13_stats/s)
 	if(!has_level(s))
 		return FALSE
 	return TRUE

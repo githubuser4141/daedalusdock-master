@@ -8,7 +8,7 @@
 	. = ..()
 	var/static/list/bad_initialize = list(INITIALIZE_HINT_QDEL, INITIALIZE_HINT_QDEL_FORCE)
 	if(!(. in bad_initialize))
-		AddComponent(/datum/component/footstep_changer, FOOTSTEP_CATWALK)
+		AddElement(/datum/element/footstep_override, clawfootstep = FOOTSTEP_CATWALK, heavyfootstep = FOOTSTEP_CATWALK, footstep = FOOTSTEP_CATWALK) // AI EDIT: footstep_changer component doesn't exist - footstep_override is DD's real equivalent (already used by the parent type, code/game/objects/structures/lattice.dm)
 
 	var/turf/my_turf = get_turf(loc)
 	if(my_turf)

@@ -305,12 +305,12 @@
 	var/to_smoke = (reagents.total_volume * (dragtime / smoketime))
 	var/mob/living/carbon/smoker = loc
 	if(!istype(smoker) || src != smoker.wear_mask)
-		reagents.remove_any(to_smoke)
+		reagents.remove_all(to_smoke) // AI EDIT: remove_any() isn't a real proc - remove_all(amount) is DD's equivalent (code/modules/reagents/chemistry/holder.dm)
 		return
 
 	reagents.expose(smoker, INGEST, min(to_smoke / reagents.total_volume, 1))
 	if(!reagents.trans_to(smoker, to_smoke, methods = INGEST, ignore_stomach = TRUE))
-		reagents.remove_any(to_smoke)
+		reagents.remove_all(to_smoke) // AI EDIT: remove_any() isn't a real proc - remove_all(amount) is DD's equivalent (code/modules/reagents/chemistry/holder.dm)
 
 /obj/item/ms13/cigarette/attack(mob/living/carbon/M, mob/living/carbon/user)
 	if(!istype(M))

@@ -35,7 +35,7 @@
 	if(H.gender != MALE)
 		H.gender = MALE
 		H.physique = MALE
-		H.real_name = random_unique_raider_name(MALE)
+		H.real_name = random_unique_raider_name(MALE) // AI EDIT: FLAGGED, NOT FIXED - this proc is never defined anywhere (GLOB.raider_names exists in mojave/code/_globalvars/lists/names.dm but nothing reads from it); genuinely missing, left broken
 		H.name = H.real_name
 		if(H.wear_id)
 			var/obj/item/card/id/L = H.wear_id

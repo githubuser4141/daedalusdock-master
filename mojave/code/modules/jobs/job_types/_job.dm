@@ -1,11 +1,11 @@
 /datum/job
 	var/forbid = ""
 	var/enforce = ""
-	var/stats_type = /datum/stats
+	var/stats_type = /datum/ms13_stats // AI EDIT: /datum/stats -> /datum/ms13_stats (renamed to avoid colliding with DD's own three_dsix stats system, see mojave/code/modules/stats/stats.dm)
 
 /datum/job/after_spawn(mob/living/spawned, client/player_client)
 	. = ..()
-	spawned.stats = new stats_type(spawned)
+	spawned.ms13_stats = new stats_type(spawned) // AI EDIT: stats -> ms13_stats
 	if(ishuman(spawned))
 		try_open_job_info(spawned, player_client)
 

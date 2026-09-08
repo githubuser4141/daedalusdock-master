@@ -58,7 +58,7 @@
 	if(!breaking)
 		breaking = TRUE
 		if(do_after(C, 5, interaction_key = DOAFTER_SOURCE_WINDOWBASH))
-			if(C.gloves && armor.melee < 50)
+			if(C.gloves && armor.blunt < 50) // AI EDIT: armor.melee -> armor.blunt (DD's /datum/armor has no "melee" category, blunt is the closest match for a bare-handed bash)
 				visible_message(span_warning("[C] bashes against the [src], cracking it!"))
 				take_damage(15, BRUTE, BLUNT)
 				update_appearance()

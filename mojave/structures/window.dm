@@ -157,7 +157,7 @@
 		to_chat(C, span_notice("You attempt to bash the [src] with your elbow!"))
 		breaking = TRUE
 		if(do_after(C, 5 SECONDS))
-			if(C.gloves && armor.melee < 50)
+			if(C.gloves && armor.blunt < 50) // AI EDIT: armor.melee -> armor.blunt (DD's /datum/armor has no "melee" category, blunt is the closest match for a bare-handed bash)
 				visible_message(span_warning("[C] bashes against the [src], cracking it!"))
 				take_damage(10, BRUTE, BLUNT)
 				update_appearance()

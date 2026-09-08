@@ -233,7 +233,7 @@
 	spawn_loot_count = 1
 	loot = list(
 			/obj/effect/spawner/random/ms13/food/junkfood_boxed = 10,
-			/obj/effect/spawner/random/ms13/guaranteed/food/produce_random = 60,
+			/obj/effect/spawner/random/ms13/food/produce_random = 60, // AI EDIT: was pointing at the guaranteed-pool sibling by mistake - this file's own produce_random (defined above) is what exists
 			/obj/effect/spawner/random/ms13/food/junkfood_canned = 30,
 			)
 

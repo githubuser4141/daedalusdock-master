@@ -172,7 +172,8 @@
 	inhand_icon_state = "gasmask"
 	var/adjusted = FALSE
 	var/adjustable = TRUE
-	has_fov = FALSE //placeholder for now until we make this more useful to justify a FOV
+	// AI EDIT: FLAGGED, NOT FIXED - has_fov doesn't exist; part of the same missing FOV-visor subsystem already
+	// flagged in power_armor.dm/helmet.dm (clothing_fov_visor component, confirmed real in MS source, absent from DD)
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
 	w_class = WEIGHT_CLASS_NORMAL

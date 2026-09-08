@@ -490,10 +490,11 @@
 	name = "red gang badge"
 	desc = "A silver textured gang star, issued to gangers with extensive expertise in the field, with multiple years of ganging behind them."
 	icon_state = "ranger_star_rimmed"
-	trim = /datum/id_trim/job/security_officer
+	// AI EDIT: trim doesn't exist - DD's ID cards set assignment/access directly (see the rest of this file), it
+	// has no /datum/id_trim indirection at all. Dropped rather than guess at an equivalent access list.
 
 /obj/item/card/id/ms13/blue_ganger
 	name = "blue gang badge"
 	desc = "A gold textured gang star, issued to gangers with extensive expertise in the field, with multiple years of ganging behind them."
 	icon_state = "ranger_star"
-	trim = /datum/id_trim/centcom/deathsquad
+	// AI EDIT: trim doesn't exist - see comment on red_ganger above

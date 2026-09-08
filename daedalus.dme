@@ -5303,6 +5303,8 @@
 #include "mojave\code\modules\mob\robots\handies.dm"
 #include "mojave\code\modules\mob\robots\protectrons.dm"
 #include "mojave\code\modules\mob\robots\robobrains.dm"
+#include "mojave\code\modules\mob\robots\trader.dm"
+#include "mojave\code\modules\mob\robots\vendortrons.dm"
 #include "mojave\code\modules\projectiles\gun.dm"
 #include "mojave\code\modules\projectiles\projectile.dm"
 #include "mojave\code\modules\projectiles\ammunition\_ammo_casing.dm"

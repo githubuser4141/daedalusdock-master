@@ -76,7 +76,7 @@
 	. = ..()
 	var/static/list/bad_initialize = list(INITIALIZE_HINT_QDEL, INITIALIZE_HINT_QDEL_FORCE)
 	if(!(. in bad_initialize))
-		AddComponent(/datum/component/footstep_changer, FOOTSTEP_WOOD)
+		AddElement(/datum/element/footstep_override, clawfootstep = FOOTSTEP_WOOD, heavyfootstep = FOOTSTEP_WOOD, footstep = FOOTSTEP_WOOD) // AI EDIT: footstep_changer component doesn't exist - footstep_override is DD's real equivalent (see code/game/objects/structures/lattice.dm)
 
 /obj/structure/ms13/foundation/variantone
 	icon_state = "wood_foundation_broken_1"

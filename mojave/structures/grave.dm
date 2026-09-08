@@ -171,7 +171,7 @@
 	else
 		to_chat(user, span_notice("[src] needs to be fully dug before burying items."))
 
-/obj/structure/closet/ms13/grave/shovel_act_secondary(mob/living/user, obj/item/tool)
+/obj/structure/closet/ms13/grave/attackby_secondary(obj/item/tool, mob/living/user, params) // AI EDIT: shovel_act_secondary isn't a real DD hook - this is DD's actual secondary-click interaction proc (code/_onclick/item_attack.dm), param order adjusted to match
 	. = TRUE
 	if(IS_DEAD_OR_INCAP(user) || user.resting || get_turf(user) == loc)
 		// Cannot dig if incapacitated or on the grave turf

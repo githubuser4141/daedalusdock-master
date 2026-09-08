@@ -4,6 +4,10 @@
  *
  * Working on this has made me lose my mind because the technical issues were way more than i anticipated.
  */
+// AI EDIT: FLAGGED, NOT FIXED - DISPLACEMENT_MAP_PLANE doesn't exist, and the comment right below already says
+// this needs a matching plane_master registered (see code/_onclick/hud/render/plane_master.dm) - that's real
+// rendering infrastructure to add, not a rename target, so left broken per instructions not to fabricate
+// missing subsystems.
 /obj/effect/abstract/displacement_map
 	name = "displacement map"
 	icon = 'mojave/icons/effects/distortion/distort.dmi'

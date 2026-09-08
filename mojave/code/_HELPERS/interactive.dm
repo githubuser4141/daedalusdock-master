@@ -3,6 +3,15 @@
 //Interactivity//Rust-Like speedup do_after//
 //Pretty buggy as of now, only use on things not in inventory//
 
+// AI EDIT: FLAGGED, NOT FIXED - this whole file is a self-contained "click a hallucinated icon to speed up your
+// do_after" minigame (used by mojave/elements/craftable.dm). It's broken on several fronts that aren't simple
+// renames: GAME_PLANE_UPPER is a render plane that doesn't exist and would need real plane_master registration to
+// only be visible to the interacting player; bonus_progress/boost_progress are a var/proc pair on /datum/progressbar
+// that DD's progressbar doesn't have, and the `new(user, time, target, bonus_time, focus_sound, type)` call below
+// doesn't match DD's actual progressbar constructor either. This is a genuinely missing subsystem, not a
+// rename target, and the file's own header already calls it "pretty buggy as of now" - left broken per
+// instructions not to fabricate missing subsystems.
+
 /proc/do_after_interactive(mob/user, time = 3 SECONDS, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, interaction_key, max_interact_count = 1, bonus_time = 0, focus_sound = null, type = /obj/effect/hallucination/simple/progress_focus)
 	if(!user)
 		return FALSE

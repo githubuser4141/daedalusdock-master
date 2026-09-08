@@ -212,6 +212,7 @@
 					egg_type = null
 					return */
 		if(rideable == TRUE)
+			// AI EDIT: FLAGGED, NOT FIXED - /obj/item/saddle is never defined anywhere in mojave/; genuinely missing item, left broken
 			if(istype(O, /obj/item/saddle) && !saddled)
 				if(tame && do_after(user,55,target=src))
 					playsound(get_turf(src), "rustle", 50, TRUE)
@@ -417,6 +418,7 @@
 					egg_type = null
 					return */ //Sack no longer exists, so no packing rats
 		if(rideable == TRUE)
+			// AI EDIT: FLAGGED, NOT FIXED - /obj/item/saddle is never defined anywhere in mojave/; genuinely missing item, left broken
 			if(istype(O, /obj/item/saddle) && !saddled)
 				if(tame && do_after(user,55,target=src))
 					playsound(get_turf(src), "rustle", 50, TRUE)
@@ -627,6 +629,7 @@
 					egg_type = null
 					return */ //Sack no longer exists, so no packing rats
 		if(rideable == TRUE)
+			// AI EDIT: FLAGGED, NOT FIXED - /obj/item/saddle is never defined anywhere in mojave/; genuinely missing item, left broken
 			if(istype(O, /obj/item/saddle) && !saddled)
 				if(tame && do_after(user,55,target=src))
 					playsound(get_turf(src), "rustle", 50, TRUE)

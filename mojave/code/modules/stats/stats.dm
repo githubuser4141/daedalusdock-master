@@ -1,11 +1,17 @@
+// AI EDIT: /datum/stats and /mob/living's "stats" var renamed to /datum/ms13_stats / "ms13_stats" - both names
+// collided with DD's own, unrelated three_dsix RPG stat/skill system (code/modules/three_dsix/stats.dm,
+// code/modules/mob/living/living_defines.dm), which already used the exact same type name and mob var name.
+// This is a SPECIAL-style perk system, functionally unrelated to DD's rpg_stat/rpg_skill datums - just renamed
+// to stop the "duplicate definition" conflict, no logic changed. Same rename applied in _job.dm, perks.dm, and
+// mojave/code/datums/stats.dm.
 /mob/living
-	var/datum/stats/stats
+	var/datum/ms13_stats/ms13_stats
 
 /mob/living/Destroy()
-	qdel(stats)
+	qdel(ms13_stats)
 	. = ..()
 
-/datum/stats
+/datum/ms13_stats
 	//15 value no give buffs and debuffs
 	var/perceptive = 15
 	var/enduring = 15
@@ -19,7 +25,7 @@
 	//Mob or Player
 	var/mob/living/owner
 
-/datum/stats/New(owner, perceptive = 15, enduring = 15, retaining = 15, strong = 15, outgoing = 15, nimble = 15)
+/datum/ms13_stats/New(owner, perceptive = 15, enduring = 15, retaining = 15, strong = 15, outgoing = 15, nimble = 15)
 	src.owner = owner
 	src.perceptive = perceptive
 	src.enduring = enduring
@@ -32,12 +38,12 @@
 		for(var/datum/perk/p as anything in perks)
 			init_perks.Add(initial(p.id) = new p(src))
 
-/datum/stats/Destroy(force, ...)
+/datum/ms13_stats/Destroy(force, ...)
 	owner = null
 	QDEL_LIST(perks)
 	. = ..()
 
-/datum/stats/proc/Reset()
+/datum/ms13_stats/proc/Reset()
 	perceptive = initial(perceptive)
 	enduring = initial(enduring)
 	retaining = initial(retaining)
@@ -45,11 +51,11 @@
 	outgoing = initial(outgoing)
 	nimble = initial(nimble)
 
-/datum/stats/proc/ReCalculating()
+/datum/ms13_stats/proc/ReCalculating()
 	for(var/datum/perk/p as anything in perks)
 		p.added_effect()
 
-/datum/stats/proc/modifyRating(perceptive = 0, enduring = 0, retaining = 0, strong = 0, outgoing = 0, nimble = 0)
+/datum/ms13_stats/proc/modifyRating(perceptive = 0, enduring = 0, retaining = 0, strong = 0, outgoing = 0, nimble = 0)
 	src.perceptive += perceptive
 	src.enduring += enduring
 	src.retaining += retaining
@@ -57,7 +63,7 @@
 	src.outgoing += outgoing
 	src.nimble += nimble
 
-/datum/stats/proc/setRating(perceptive, enduring, retaining, strong, outgoing, nimble)
+/datum/ms13_stats/proc/setRating(perceptive, enduring, retaining, strong, outgoing, nimble)
 	Reset()
 
 	if(!isnull(perceptive))
@@ -77,7 +83,7 @@
 
 	ReCalculating()
 
-/datum/stats/proc/checkRating(perceptive, enduring, retaining, strong, outgoing, nimble)
+/datum/ms13_stats/proc/checkRating(perceptive, enduring, retaining, strong, outgoing, nimble)
 	if(!isnull(perceptive) && src.perceptive < perceptive)
 		return FALSE
 	if(!isnull(enduring) && src.enduring < enduring)
@@ -93,7 +99,7 @@
 
 	return TRUE
 
-/datum/stats/proc/AddPerk(datum/perk/type_or_id)
+/datum/ms13_stats/proc/AddPerk(datum/perk/type_or_id)
 	if(QDELETED(owner))
 		return
 	if(isnull(type_or_id))
@@ -109,7 +115,7 @@
 		perks.Add(p)
 		p.added_effect()
 
-/datum/stats/proc/RemovePerk(datum/perk/type_or_id)
+/datum/ms13_stats/proc/RemovePerk(datum/perk/type_or_id)
 	if(isnull(type_or_id))
 		return
 	var/datum/perk/p
@@ -133,7 +139,7 @@
 			qdel(p)
 			return
 
-/datum/stats/proc/HasPerk(datum/perk/type_or_id)
+/datum/ms13_stats/proc/HasPerk(datum/perk/type_or_id)
 	if(isnull(type_or_id))
 		return FALSE
 	var/datum/perk/p

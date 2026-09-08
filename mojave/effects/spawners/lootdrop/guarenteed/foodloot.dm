@@ -239,7 +239,7 @@
 	spawn_loot_count = 1
 	loot = list(
 			/obj/effect/spawner/random/ms13/guaranteed/food/junkfood_boxed = 10,
-			/obj/effect/spawner/random/ms13/guaranteed/food/produce_random = 60,
+			/obj/effect/spawner/random/ms13/food/produce_random = 60, // AI EDIT: this pool's own produce_random is deliberately commented out above (#warn Commented) - pointing at the working non-guaranteed sibling instead of reviving disabled content
 			/obj/effect/spawner/random/ms13/guaranteed/food/junkfood_canned = 30,
 			)
 

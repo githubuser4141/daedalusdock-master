@@ -31,25 +31,27 @@
 /*
 		/obj/item/gun/ballistic/automatic/pistol,
 		/obj/item/ammo_box/ms13/rev4570, // Revolver speedloaders.
-		/obj/item/ammo_box/ms13/rev44,
-		/obj/item/ammo_box/ms13/rev357,
+		/obj/item/ammo_box/ms13/m44box,
+		/obj/item/ammo_box/ms13/a357box,
 		/obj/item/ammo_box/ms13/rev556,
 		/obj/item/ammo_box/ms13/rev10mm, // Pistol Mags
 */
 
+// AI EDIT: ammo_box/ms13/rev44 -> m44box and rev357 -> a357box below - those box types never existed under the
+// "rev*" names, m44box/a357box are the real .44/.357 boxes (confirmed by matching usage in vendortrons.dm)
 /obj/item/storage/belt/holster/ms13/sheriff/full_44/PopulateContents()
 	var/static/items_inside = list(
 		/obj/item/gun/ballistic/revolver/ms13/rev44 = 1,
-		/obj/item/ammo_box/ms13/rev44 = 2)
+		/obj/item/ammo_box/ms13/m44box = 2)
 	generate_items_inside(items_inside,src)
 /obj/item/storage/belt/holster/ms13/sheriff/full_357/PopulateContents()
 	var/static/items_inside = list(
 		/obj/item/gun/ballistic/revolver/ms13/rev357 = 1,
-		/obj/item/ammo_box/ms13/rev357 = 2)
+		/obj/item/ammo_box/ms13/a357box = 2)
 	generate_items_inside(items_inside,src)
 
 /obj/item/storage/belt/holster/ms13/sheriff/full_357_lucky/PopulateContents()
 	var/static/items_inside = list(
 		/obj/item/gun/ballistic/revolver/ms13/rev357/lucky = 1,
-		/obj/item/ammo_box/ms13/rev357 = 2)
+		/obj/item/ammo_box/ms13/a357box = 2)
 	generate_items_inside(items_inside,src)
