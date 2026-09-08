@@ -25,7 +25,7 @@
 	ADD_TRAIT(src, TRAIT_NODROP, STICKY_NODROP) //Somehow it's stuck to your body, no questioning.
 	radio = new radiotype(src)
 	AddElement(/datum/element/radiation_protected_clothing)
-	AddComponent(/datum/component/clothing_fov_visor, FOV_180_DEGREES)
+	// AI EDIT: disabled, not fixed - see the note on /obj/item/clothing/head/helmet/ms13/init_fov() in helmet.dm
 
 /obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor/Destroy()
 	if(suit.helmet)

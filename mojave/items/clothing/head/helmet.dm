@@ -24,8 +24,11 @@
 	init_fov()
 
 /obj/item/clothing/head/helmet/ms13/proc/init_fov()
-	if (has_fov)
-		AddComponent(/datum/component/clothing_fov_visor, fov_angle)
+	// AI EDIT: disabled, not fixed - clothing_fov_visor exists in MS's own source but depends on
+	// add_fov_trait()/remove_fov_trait()/update_fov() mob procs that were never added anywhere (neither DD nor
+	// MS have them). has_fov/fov_angle are left set on all the helmets that had them (real data, ~36 sites) for
+	// whenever this gets built for real - this proc is just a no-op until then.
+	return
 
 /obj/item/clothing/head/ms13/hood
 	name = "generic ms13 hood"
@@ -54,8 +57,8 @@
 	init_fov()
 
 /obj/item/clothing/head/ms13/hood/proc/init_fov()
-	if (has_fov)
-		AddComponent(/datum/component/clothing_fov_visor, fov_angle)
+	// AI EDIT: disabled, not fixed - see the identical note on /obj/item/clothing/head/helmet/ms13/init_fov() above
+	return
 
 /obj/item/clothing/head/hooded/ms13
 	name = "generic ms13 suit hood"

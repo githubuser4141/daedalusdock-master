@@ -250,16 +250,20 @@ GLOBAL_LIST_INIT(job_display_order, list(
 		to_chat(player_client, span_obviousnotice("You remember the pin to your doors: <b>[pin]</b>"))
 
 // MOJAVE SUN EDIT START
-
+// AI EDIT: disabled, not fixed - this block exists purely to populate mind.guestbook (a "have you met this
+// person" stranger-recognition system: unmet, non-faction people show up as descriptors like "the young pale
+// man" instead of their name), but mind.guestbook itself was never added anywhere (/datum/mind has no guestbook
+// var). The guestbook_flags var and GUESTBOOK_* defines are real and left in place, but with the actual add_guest()
+// calls unreachable, looping every human on every spawn to compute common_departments did nothing but burn cycles,
+// so the whole block is commented out rather than just the two broken lines. Re-enable once a real guestbook
+// datum exists on /datum/mind.
+/*
 	for(var/mob/living/carbon/human/dude as anything in GLOB.human_list)
 		if((dude == spawned) || !dude.mind?.assigned_role)
 			continue
 		var/datum/job/dudes_job = dude.mind.assigned_role
 		var/list/common_departments = dudes_job.departments_list & departments_list //wonky
 		//if we satisfy at least one condition, add us to their guestbook (if we are not a forgetmenot role)
-		// AI EDIT: FLAGGED, NOT FIXED - mind.guestbook doesn't exist anywhere (/datum/mind has no guestbook var at
-		// all); the guestbook_flags var and GUESTBOOK_* defines this MOJAVE SUN EDIT block added are there, but the
-		// actual guestbook storage/datum was never added. Genuinely missing, left broken.
 		if(!(guestbook_flags & GUESTBOOK_FORGETMENOT))
 			if((dudes_job.guestbook_flags & GUESTBOOK_OMNISCIENT) || \
 				((dudes_job.guestbook_flags & GUESTBOOK_JOB) && (dudes_job.type == src.type)) || \
@@ -271,7 +275,7 @@ GLOBAL_LIST_INIT(job_display_order, list(
 				((guestbook_flags & GUESTBOOK_JOB) && (src.type == dudes_job.type)) || \
 				((guestbook_flags & GUESTBOOK_DEPARTMENT) && length(common_departments)))
 				spawned.mind.guestbook.add_guest(spawned, dude, dude.real_name, dude.real_name, silent = TRUE)
-
+*/
 // MOJAVE SUN EDIT END
 
 /datum/job/proc/announce_job(mob/living/joining_mob)
