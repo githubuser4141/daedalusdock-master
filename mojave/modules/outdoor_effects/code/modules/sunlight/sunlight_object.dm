@@ -332,7 +332,7 @@ Sunlight System
 
 	GLOB.SUNLIGHT_QUEUE_WORK += SunlightUpdates
 
-	var/turf/T = SSmapping.GetBelow(src)
+	var/turf/T = GetBelow(src) // AI EDIT: GetBelow is a macro (code/__DEFINES/_multiz.dm), not an SSmapping method
 	if(T)
 		T.reconsider_sunlight()
 

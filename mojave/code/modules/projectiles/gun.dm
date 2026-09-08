@@ -26,8 +26,8 @@
 	if(!turf_source)
 		return
 	var/source_z = turf_source.z
-	var/turf/above_turf = SSmapping.GetAbove(turf_source)
-	var/turf/below_turf = SSmapping.GetBelow(turf_source)
+	var/turf/above_turf = GetAbove(turf_source) // AI EDIT: GetAbove/GetBelow are macros (code/__DEFINES/_multiz.dm), not SSmapping methods
+	var/turf/below_turf = GetBelow(turf_source)
 	var/list/listeners = list()
 	listeners += SSmobs.clients_by_zlevel[source_z]
 	listeners += SSmobs.dead_players_by_zlevel[source_z]
