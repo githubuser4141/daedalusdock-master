@@ -3,14 +3,15 @@
 //Interactivity//Rust-Like speedup do_after//
 //Pretty buggy as of now, only use on things not in inventory//
 
-// AI EDIT: FLAGGED, NOT FIXED - this whole file is a self-contained "click a hallucinated icon to speed up your
-// do_after" minigame (used by mojave/elements/craftable.dm). It's broken on several fronts that aren't simple
-// renames: GAME_PLANE_UPPER is a render plane that doesn't exist and would need real plane_master registration to
-// only be visible to the interacting player; bonus_progress/boost_progress are a var/proc pair on /datum/progressbar
-// that DD's progressbar doesn't have, and the `new(user, time, target, bonus_time, focus_sound, type)` call below
-// doesn't match DD's actual progressbar constructor either. This is a genuinely missing subsystem, not a
-// rename target, and the file's own header already calls it "pretty buggy as of now" - left broken per
-// instructions not to fabricate missing subsystems.
+// AI EDIT: this file is a self-contained "click a hallucinated icon to speed up your do_after" minigame (used by
+// mojave/elements/craftable.dm). bonus_progress/boost_progress/the booster-spawning New() logic were real,
+// working MOJAVE SUN EDIT additions to DD's own code/datums/progressbar.dm that just never got carried over
+// during the port - ported those over for real (see that file). Still FLAGGED, NOT FIXED: GAME_PLANE_UPPER
+// (used below) is also a real MS addition to DD's own code/__DEFINES/layers.dm and code/_onclick/hud/rendering/
+// plane_master.dm, but MS's layers.dm reflects a much larger plane-numbering refactor DD never took (nearly
+// every plane value differs, not just the new ones) - grafting just this one plane number on top of DD's
+// current, differently-numbered plane hierarchy risks silently colliding with or breaking existing rendering,
+// so left broken pending someone who can verify the result in-game.
 
 /proc/do_after_interactive(mob/user, time = 3 SECONDS, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, interaction_key, max_interact_count = 1, bonus_time = 0, focus_sound = null, type = /obj/effect/hallucination/simple/progress_focus)
 	if(!user)
