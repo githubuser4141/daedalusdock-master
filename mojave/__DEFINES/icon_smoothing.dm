@@ -1,3 +1,15 @@
+// AI EDIT: FLAGGED, NOT FIXED - this whole file predates DD's own smoothing_groups/canSmoothWith refactor. DD's
+// S_TURF(num)/S_OBJ(num) (code/__DEFINES/icon_smoothing.dm) now produce STRINGS ("0," / "-1,"), with the leading
+// "-" on S_OBJ specifically flagging obj-space groups so SETUP_SMOOTHING can auto-set SMOOTH_OBJ - but S_OBJ_FO/
+// S_OBJ1 below still do raw integer arithmetic. Any smoothing_groups/canSmoothWith declaration that mixes one of
+// DD's own groups (e.g. SMOOTH_GROUP_TURF_OPEN) with one of these MS13 groups in the same `+` expression fails to
+// compile (string + number isn't a constant expression) - mojave/turfs/plating.dm has 5 such sites. Groups used
+// MS13-only (no DD group mixed in) compile fine as a bare number but are silently broken at runtime instead:
+// SETUP_SMOOTHING only touches smoothing_groups/canSmoothWith when istext() is true, so an all-MS13 numeric value
+// just gets skipped, and that atom never smooths. A real fix means converting every SMOOTH_GROUP_MS13_* below to
+// DD's string format AND deciding turf-space vs obj-space (the "-" prefix) per group to preserve SMOOTH_OBJ
+// detection - getting that polarity wrong per-group causes wrong-but-compiling behavior, not a compile error, so
+// it needs visual verification in-game rather than a blind mechanical rename. Left as-is.
 #define S_OBJ_FO(num) (MAX_S_OBJ_1 + 1 + num)
 
 #define S_OBJ1(num) (MAX_S_TURF + 1 + num) // Def

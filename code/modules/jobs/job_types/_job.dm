@@ -257,6 +257,9 @@ GLOBAL_LIST_INIT(job_display_order, list(
 		var/datum/job/dudes_job = dude.mind.assigned_role
 		var/list/common_departments = dudes_job.departments_list & departments_list //wonky
 		//if we satisfy at least one condition, add us to their guestbook (if we are not a forgetmenot role)
+		// AI EDIT: FLAGGED, NOT FIXED - mind.guestbook doesn't exist anywhere (/datum/mind has no guestbook var at
+		// all); the guestbook_flags var and GUESTBOOK_* defines this MOJAVE SUN EDIT block added are there, but the
+		// actual guestbook storage/datum was never added. Genuinely missing, left broken.
 		if(!(guestbook_flags & GUESTBOOK_FORGETMENOT))
 			if((dudes_job.guestbook_flags & GUESTBOOK_OMNISCIENT) || \
 				((dudes_job.guestbook_flags & GUESTBOOK_JOB) && (dudes_job.type == src.type)) || \
