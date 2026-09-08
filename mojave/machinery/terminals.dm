@@ -440,16 +440,17 @@
 
 	return
 
-// AI EDIT: FLAGGED, NOT FIXED - GLOB.machines doesn't exist anywhere in DD (no global machine registry of any kind,
-// confirmed via search); this looks like a genuinely missing MS13 system rather than a rename target. Left broken
-// per instructions not to fabricate missing objects/subsystems.
+// AI EDIT: disabled, not fixed - GLOB.machines doesn't exist anywhere (no global machine registry of any kind,
+// confirmed via search, including MS's own live source). transmit_signal() is still called from 7 sites below,
+// so kept as a real proc, just with the broken poddoor loop commented out the same way the author already
+// disabled the sign-toggling code right below it.
 /obj/machinery/ms13/terminal/proc/transmit_signal()
 	var/openclose
-	for(var/obj/machinery/door/poddoor/M in GLOB.machines)
-		if(M.id == src.id)
-			if(openclose == null)
-				openclose = M.density
-			INVOKE_ASYNC(M, openclose ? TYPE_PROC_REF(/obj/machinery/door/poddoor, open) : TYPE_PROC_REF(/obj/machinery/door/poddoor, close))
+	//for(var/obj/machinery/door/poddoor/M in GLOB.machines)
+	//	if(M.id == src.id)
+	//		if(openclose == null)
+	//			openclose = M.density
+	//		INVOKE_ASYNC(M, openclose ? TYPE_PROC_REF(/obj/machinery/door/poddoor, open) : TYPE_PROC_REF(/obj/machinery/door/poddoor, close))
 
 	// freak this code for now
 	//var/onoff

@@ -212,18 +212,11 @@
 					egg_type = null
 					return */
 		if(rideable == TRUE)
-			// AI EDIT: FLAGGED, NOT FIXED - /obj/item/saddle is never defined anywhere in mojave/; genuinely missing item, left broken
-			if(istype(O, /obj/item/saddle) && !saddled)
-				if(tame && do_after(user,55,target=src))
-					playsound(get_turf(src), "rustle", 50, TRUE)
-					user.visible_message("<span class='notice'>You manage to put [O] on [src], you can now ride [p_them()].</span>")
-					qdel(O)
-					saddled = TRUE
-					saddleup()
-					egg_type = null
-					return
-				else
-					user.visible_message("<span class='warning'>[src] is rocking around! You can't put the saddle on!</span>")
+			// AI EDIT: disabled, not fixed - /obj/item/saddle genuinely does not exist anywhere, not even in
+			// MS's own live source (checked their current repo directly), so there is nothing to put this animal
+			// in a ridden state with. saddled/saddleup() left in place (real, used-for-display state), just never
+			// reachable until a real saddle item exists.
+			return
 
 //Aggressive Mobs - Things that Run/Attack you (TG shitcode, I know)
 
@@ -418,20 +411,13 @@
 					egg_type = null
 					return */ //Sack no longer exists, so no packing rats
 		if(rideable == TRUE)
-			// AI EDIT: FLAGGED, NOT FIXED - /obj/item/saddle is never defined anywhere in mojave/; genuinely missing item, left broken
-			if(istype(O, /obj/item/saddle) && !saddled)
-				if(tame && do_after(user,55,target=src))
-					playsound(get_turf(src), "rustle", 50, TRUE)
-					user.visible_message("<span class='notice'>You manage to put [O] on [src], you can now ride [p_them()].</span>")
-					qdel(O)
-					saddled = TRUE
-					saddleup()
-					egg_type = null
-					return
-				else
-					user.visible_message("<span class='warning'>[src] is rocking around! You can't put the saddle on!</span>")
-			else
-				return ..()
+			// AI EDIT: disabled, not fixed - /obj/item/saddle genuinely does not exist anywhere, not even in
+			// MS's own live source (checked their current repo directly), so there is nothing to put this animal
+			// in a ridden state with. saddled/saddleup() left in place (real, used-for-display state), just never
+			// reachable until a real saddle item exists.
+			return
+		else
+			return ..()
 
 //Mobs that attack in retaliation, Brahmin, etc. (oh yeah, boo hoo, no more slaughtering 85 brahmin for meat dawg)
 
@@ -629,18 +615,11 @@
 					egg_type = null
 					return */ //Sack no longer exists, so no packing rats
 		if(rideable == TRUE)
-			// AI EDIT: FLAGGED, NOT FIXED - /obj/item/saddle is never defined anywhere in mojave/; genuinely missing item, left broken
-			if(istype(O, /obj/item/saddle) && !saddled)
-				if(tame && do_after(user,55,target=src))
-					playsound(get_turf(src), "rustle", 50, TRUE)
-					user.visible_message("<span class='notice'>You manage to put [O] on [src], you can now ride [p_them()].</span>")
-					qdel(O)
-					saddled = TRUE
-					saddleup()
-					egg_type = null
-					return
-				else
-					user.visible_message("<span class='warning'>[src] is rocking around! You can't put the saddle on!</span>")
+			// AI EDIT: disabled, not fixed - /obj/item/saddle genuinely does not exist anywhere, not even in
+			// MS's own live source (checked their current repo directly), so there is nothing to put this animal
+			// in a ridden state with. saddled/saddleup() left in place (real, used-for-display state), just never
+			// reachable until a real saddle item exists.
+			return
 
 /mob/living/simple_animal/hostile/ms13/robot
 	name = "ms13 robot"

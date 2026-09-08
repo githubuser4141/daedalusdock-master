@@ -35,9 +35,7 @@
 	if(H.gender != MALE)
 		H.gender = MALE
 		H.physique = MALE
-		H.real_name = random_unique_raider_name(MALE) // AI EDIT: FLAGGED, NOT FIXED - this proc is never defined anywhere (GLOB.raider_names exists in mojave/code/_globalvars/lists/names.dm but nothing reads from it); genuinely missing, left broken
-		H.name = H.real_name
-		if(H.wear_id)
-			var/obj/item/card/id/L = H.wear_id
-			L.registered_name = H.name
-			L.update_label()
+		// AI EDIT: disabled, not fixed - random_unique_raider_name() genuinely doesn't exist anywhere, not even in
+		// MS's own live source (checked their current repo directly); GLOB.raider_names (mojave/code/_globalvars/
+		// lists/names.dm) exists but nothing ever reads from it. Left H's original name alone rather than rename
+		// with a nonexistent generator - only the forced gender/physique above still applies.
