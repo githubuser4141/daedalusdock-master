@@ -107,6 +107,27 @@
 	if(!IS_ORGANIC_LIMB(affecting)) //Limb must be organic to be healed - RR
 		to_chat(user, span_warning("[src] won't work on a robotic limb!"))
 		return FALSE
+
+	// AI EDIT (see mojave/__DEFINES/MODIFIED_FILES_LIST.dm): /obj/item/stack/medical previously only ever did direct
+	// brute/burn healing here, ignoring absorption_capacity/splint_slowdown entirely even when a subtype set them -
+	// those items compiled and looked functional but their bandaging/splinting never actually applied. Root-caused
+	// here instead of per-item so it covers every current and future /obj/item/stack/medical subtype.
+	var/did_bandage_or_splint = FALSE
+	if(absorption_capacity && !affecting.bandage)
+		affecting.apply_bandage(src)
+		if(affecting.bandage)
+			user.visible_message(
+				span_infoplain(span_green("[user] bandages [C]'s [parse_zone(affecting.body_zone)] with [src].")),
+				span_infoplain(span_green("You bandage [C]'s [parse_zone(affecting.body_zone)] with [src]."))
+			)
+			did_bandage_or_splint = TRUE
+	if(splint_slowdown && affecting.apply_splint(src))
+		user.visible_message(
+			span_infoplain(span_green("[user] splints [C]'s [parse_zone(affecting.body_zone)] with [src].")),
+			span_infoplain(span_green("You splint [C]'s [parse_zone(affecting.body_zone)] with [src]."))
+		)
+		did_bandage_or_splint = TRUE
+
 	if(affecting.brute_dam && brute || affecting.burn_dam && burn)
 		user.visible_message(
 			span_infoplain(span_green("[user] applies [src] on [C]'s [parse_zone(affecting.body_zone)].")),
@@ -116,6 +137,10 @@
 		affecting.heal_damage(brute, burn)
 		post_heal_effects(max(previous_damage - affecting.get_damage(), 0), C, user)
 		return TRUE
+
+	if(did_bandage_or_splint)
+		return TRUE
+
 	to_chat(user, span_warning("[C]'s [parse_zone(affecting.body_zone)] can not be healed with [src]!"))
 	return FALSE
 

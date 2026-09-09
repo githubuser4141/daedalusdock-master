@@ -23,6 +23,8 @@ code/__DEFINES/layers.dm,
 code/game/objects/items/devices/radio/radio.dm,
 code/__DEFINES/dcs/signals/signals_storage.dm,
 code/__DEFINES/dcs/signals/signals_mob/signals_mob_main.dm,
+code/datums/progressbar.dm,
+code/game/objects/items/stacks/medical.dm,
 
 
 
