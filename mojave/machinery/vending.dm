@@ -66,8 +66,7 @@
 				var/obj/item/bodypart/affecting = vender_victim.get_bodypart("[(user.active_hand_index % 2 == 0) ? "r" : "l" ]_arm")
 				to_chat(user, span_danger("You feel a horrible pain as your arm gets stuck in the [src]s [pick("mechanisms", "parts", "gears")]!"))
 				if(affecting?.receive_damage(30))
-					var/type_wound = pick(list(/datum/wound/blunt/critical, /datum/wound/blunt/severe, /datum/wound/blunt/moderate))
-					affecting.force_wound_upwards(type_wound)
+					affecting.create_wound(WOUND_BRUISE, 30)
 					vender_victim.emote("scream")
 					vender_victim.update_damage_overlays()
 				return

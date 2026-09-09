@@ -175,7 +175,6 @@
 
 /datum/reagent/ms13/day_tripper/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
 	M.set_timed_status_effect(0 SECONDS, /datum/status_effect/jitter, only_if_higher = FALSE)
-	M.jitteriness = 0
 	return ..()
 
 /datum/reagent/ms13/day_tripper/overdose_process(mob/living/M)
@@ -218,10 +217,9 @@
 		return
 	M.adjustOrganLoss(ORGAN_SLOT_HEART, 0.2)
 	var/obj/item/bodypart/bodypart = pick(M.bodyparts)
-	var/datum/wound/blunt/existing_break = locate(/datum/wound/blunt) in bodypart.wounds
-	// If we have an existing burn try to upgrade it
+	var/datum/wound/bruise/existing_break = locate(/datum/wound/bruise) in bodypart.wounds
 	if(existing_break)
-		existing_break.remove_wound()
+		qdel(existing_break)
 	return ..()
 
 /datum/reagent/ms13/hydra/on_mob_delete(mob/living/carbon/human/M)

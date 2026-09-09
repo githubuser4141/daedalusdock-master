@@ -8,7 +8,6 @@
 	//grid_width = 64
 	//grid_height = 32
 	fill_icon_thresholds = list(25, 50, 75, 100)
-	filling_file = 'mojave/icons/objects/medical/iv_fillings.dmi'
 
 	var/mob/living/carbon/human/attached
 
@@ -89,7 +88,7 @@
 	if(do_after(usr, 1 SECONDS, target))
 		usr.visible_message(span_warning("[usr] attaches [src] to [target]."), span_notice("You attach [src] to [target]."))
 		balloon_alert_to_viewers("[usr] attaches [src] to [target].", "You attach [src] to [target].")
-		log_combat(usr, target, "attached", src, "containing: ([reagents.log_list()])")
+		log_combat(usr, target, "attached", src, "containing: ([reagents.get_reagent_log_string()])")
 		add_fingerprint(usr)
 		attached = target
 		icon_state = "iv_empty_injecting"
@@ -120,7 +119,6 @@
 	name = "RadAway"
 	desc = "RadAway is an intravenous chemical solution that bonds with radiation and toxin particles and passes them through the body's system. It takes some time to work and is a potent diuretic."
 	icon_state = "iv_empty"
-	labelled = 1
 	blood_type = null
 	volume = 200
 	list_reagents = list(/datum/reagent/ms13/medicine/radaway = 200)

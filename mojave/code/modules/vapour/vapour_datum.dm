@@ -164,7 +164,7 @@
 	var/list/sharing_turfs = list()
 	var/list/already_processed_cache = SSvapour.processed_this_run
 	var/list/potential_activers = list()
-	for(var/turf/open/open_turf as anything in my_turf.atmos_adjacent_turfs)
+	for(var/turf/open/open_turf as anything in my_turf.get_atmos_adjacent_turfs()) // AI EDIT: atmos_adjacent_turfs is a proc on DD's real ZAS turf API (code/modules/atmospherics/ZAS/Turf.dm), not a var
 		if(!already_processed_cache[open_turf] && prob(SPREAD_PROBABILITY))
 			if(CanShareWith(open_turf))
 				sharing_turfs[open_turf] = TRUE
@@ -263,7 +263,7 @@
 
 ///Atmos adjacency has been updated on this turf, see if it affects any of our vapours
 /turf/proc/UpdateAdjacentVapours()
-	for(var/turf/open/open_turf as anything in atmos_adjacent_turfs)
+	for(var/turf/open/open_turf as anything in get_atmos_adjacent_turfs()) // AI EDIT: atmos_adjacent_turfs is a proc (see note above), not a var
 		if(open_turf.vapour)
 			SET_ACTIVE_VAPOUR(open_turf.vapour)
 

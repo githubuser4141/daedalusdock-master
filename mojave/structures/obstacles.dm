@@ -215,7 +215,9 @@
 
 /obj/structure/ms13/celldoor/Initialize()
 	. = ..()
-	air_update_turf(TRUE)
+	var/turf/T = get_turf(src)
+	if(T)
+		T.update_air_properties()
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_EXIT = PROC_REF(on_exit),
 	)

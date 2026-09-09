@@ -2,6 +2,11 @@
 	/// The meat we turn into when butchered yum
 	var/meat_type = /obj/item/food/meat/slab/ms13/bodypart
 
+/obj/item/bodypart/proc/drop_organs(mob/user, violent = FALSE)
+	for(var/obj/item/organ/organ as anything in contained_organs)
+		remove_organ(organ)
+		organ.forceMove(drop_location())
+
 /obj/item/bodypart/attackby(obj/item/weapon, mob/user, params)
 	//bad component usage omg!!!!
 	var/datum/component/butchering/butchering_component = weapon.GetComponent(/datum/component/butchering)

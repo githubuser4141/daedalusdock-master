@@ -165,7 +165,6 @@
 	volume = 10
 	grind_results = list()
 	self_delay = 0.5
-	chompsound = "mojave/sound/ms13items/pill_swallow.ogg"
 
 /obj/item/reagent_containers/pill/ms13/Initialize()
 	. = ..()

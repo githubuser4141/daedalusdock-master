@@ -27,6 +27,7 @@
 	// AI EDIT: safe isn't declared on this branch (/obj/machinery/door/airlock) and was never read here either - dropped
 	autoclose = FALSE
 	var/list/atom/movable/follower/opaque_followers
+	var/dangerous_close = FALSE
 
 /obj/machinery/door/airlock/ms13/vault_door/Initialize(mapload)
 	. = ..()
@@ -64,7 +65,6 @@
 			sleep(12.4)
 			set_density(FALSE)
 			flags_1 &= ~PREVENT_CLICK_UNDER_1
-			air_update_turf(TRUE, FALSE)
 			sleep(1)
 			layer = OPEN_DOOR_LAYER
 			update_icon(ALL, AIRLOCK_OPEN, TRUE)
@@ -80,12 +80,10 @@
 			if(air_tight)
 				set_density(TRUE)
 				flags_1 |= PREVENT_CLICK_UNDER_1
-				air_update_turf(TRUE, TRUE)
 			sleep(25.4)
 			if(!air_tight)
 				set_density(TRUE)
 				flags_1 |= PREVENT_CLICK_UNDER_1
-				air_update_turf(TRUE, TRUE)
 			sleep(4)
 			if(dangerous_close)
 				crush()

@@ -10,7 +10,7 @@
 	max_amount = 1
 	repeating = FALSE
 	heal_brute = 0
-	stop_bleeding = 1
+	absorption_capacity = 100
 	grind_results = null
 	merge_type = /obj/item/stack/medical/suture/ms13/tourniquet
 
@@ -23,7 +23,7 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	self_delay = 7 SECONDS
 	other_delay = 4 SECONDS
-	stop_bleeding = 0.6
+	absorption_capacity = 60
 	merge_type = /obj/item/stack/medical/suture/ms13/tourniquet/belt
 
 /obj/item/stack/medical/suture/ms13/tourniquet/snakebite
@@ -31,7 +31,7 @@
 	desc = "An anti-toxin soaked tourniquet made specifically to cut the flow of any venom while actively eliminating it."
 	singular_name = "tourniquet"
 	icon_state = "torniquet_sb"
-	stop_bleeding = 0.6
+	absorption_capacity = 60
 	merge_type = /obj/item/stack/medical/suture/ms13/tourniquet/snakebite
 
 // Healing Powder //

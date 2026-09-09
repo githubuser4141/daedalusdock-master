@@ -143,7 +143,9 @@
 	update_appearance()
 	set_opacity(0)
 	operating = FALSE
-	air_update_turf(TRUE, FALSE)
+	var/turf/T = get_turf(src)
+	if(T)
+		T.update_air_properties()
 	update_freelook_sight()
 	playsound(src, (opensound), 50, TRUE)
 	return TRUE
@@ -165,7 +167,9 @@
 	if(visible && !glass)
 		set_opacity(1)
 	operating = FALSE
-	air_update_turf(TRUE, FALSE)
+	var/turf/T = get_turf(src)
+	if(T)
+		T.update_air_properties()
 	update_freelook_sight()
 	playsound(src, (closesound), 50, TRUE)
 	return TRUE

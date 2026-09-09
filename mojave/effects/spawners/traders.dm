@@ -11,8 +11,9 @@
 /obj/effect/spawner/random/ms13/trader
 	name = "Random vendortron spawn"
 	loot = list(
-		/mob/living/simple_animal/hostile/retaliate/trader/ms13/armor,
-		/mob/living/simple_animal/hostile/retaliate/trader/ms13/gunrunner,
-		/mob/living/simple_animal/hostile/retaliate/trader/ms13/medtek,
-		/mob/living/simple_animal/hostile/retaliate/trader/ms13/robco,
-		/mob/living/simple_animal/hostile/retaliate/trader/ms13/tools)
+//		/mob/living/simple_animal/hostile/retaliate/trader/ms13/armor,
+//		/mob/living/simple_animal/hostile/retaliate/trader/ms13/gunrunner,
+//		/mob/living/simple_animal/hostile/retaliate/trader/ms13/medtek,
+//		/mob/living/simple_animal/hostile/retaliate/trader/ms13/robco,
+//		/mob/living/simple_animal/hostile/retaliate/trader/ms13/tools
+		)

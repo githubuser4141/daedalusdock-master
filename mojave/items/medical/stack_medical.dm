@@ -37,7 +37,7 @@
 	other_delay = 2 SECONDS
 	repeating = FALSE
 	heal_brute = 5
-	stop_bleeding = 0.75
+	absorption_capacity = 40
 	gender = NEUTER //So examine text says "This is a suture" instead of "These are some suture"
 	merge_type = /obj/item/stack/medical/suture/ms13
 
@@ -108,8 +108,8 @@
 	amount = 12
 	novariants = TRUE
 	burn_cleanliness_bonus = 0.5
+	absorption_capacity = 50
 	merge_type = /obj/item/stack/medical/gauze/ms13
-	gauze_type = /datum/bodypart_aid/gauze/ms13
 
 /obj/item/stack/medical/gauze/ms13/attackby(obj/item/I, mob/user, params)
 	return
@@ -133,8 +133,8 @@
 	icon_state = "bandage_m"
 	inhand_icon_state = "bandage_m"
 	burn_cleanliness_bonus = 0.3 //Lower = better
+	absorption_capacity = 65
 	merge_type = /obj/item/stack/medical/gauze/ms13/military
-	gauze_type = /datum/bodypart_aid/gauze/ms13/military
 
 // Splints //
 
@@ -151,7 +151,6 @@
 	max_amount = 1
 	amount = 1
 	merge_type = /obj/item/stack/medical/splint/ms13
-	splint_type = /datum/bodypart_aid/splint/ms13
 	novariants = TRUE
 	w_class = WEIGHT_CLASS_SMALL
 	//grid_width = 64
@@ -172,7 +171,6 @@
 	self_delay = 6 SECONDS
 	other_delay = 4 SECONDS
 	merge_type = /obj/item/stack/medical/splint/ms13/wooden
-	splint_type = /datum/bodypart_aid/splint/ms13/wooden
 
 // Healing Powder //
 
