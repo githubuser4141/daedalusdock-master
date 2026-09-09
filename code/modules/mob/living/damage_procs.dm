@@ -27,6 +27,7 @@
 	sharpness = NONE,
 	attack_direction = null,
 	obj/item/attacking_item = null,
+	ignore_subarmor = FALSE,
 )
 	SHOULD_CALL_PARENT(TRUE)
 
@@ -37,9 +38,15 @@
 		// /mob/living/proc/get_subarmor_dt_reduction (mojave/code/modules/mob/living/living_armor.dm).
 		// Scoped to BRUTE only: sharpness reliably maps to a subarmor category (crushing/cutting/
 		// piercing/impaling) for physical attacks, but nothing here distinguishes laser/energy/bomb/
-		// fire/acid for BURN etc, so those aren't wired to avoid guessing.
-		if(damagetype == BRUTE)
-			damage_amount = max(0, damage_amount - (get_subarmor_dt_reduction(def_zone, sharpness) || 0))
+		// fire/acid for BURN etc, so those aren't wired to avoid guessing. ignore_subarmor lets a
+		// caller (e.g. power armor with a destroyed component covering this zone) skip this layer
+		// entirely for one hit - see /mob/living/carbon/human/apply_damage() override.
+		if(damagetype == BRUTE && !ignore_subarmor)
+			// 0.2 mirrors mojave/__DEFINES/armor.dm's MAXIMUM_ARMOR_REDUCTION (can't #include a
+			// mojave define here - mojave loads after all of code/ in daedalus.dme). Subarmor can
+			// never reduce a hit below this fraction of its original damage, so a high tier softens
+			// a hit instead of negating it outright.
+			damage_amount = max(damage_amount * 0.2, damage_amount - (get_subarmor_dt_reduction(def_zone, sharpness) || 0))
 		damage_amount *= ((100 - blocked) / 100)
 		damage_amount *= get_incoming_damage_modifier(damage_amount, damagetype, def_zone, sharpness, attack_direction, attacking_item)
 

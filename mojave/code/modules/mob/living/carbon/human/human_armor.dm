@@ -1,3 +1,30 @@
+/**
+ * While wearing power armor, BRUTE damage to a zone with an intact component routes entirely to
+ * that component instead of the wearer: subarmor absorbs part of the hit, the component's own
+ * take_damage() eats the rest (using its own subarmor/integrity), and the wearer takes 0. Once a
+ * zone's component is missing or destroyed it no longer intercepts anything, and that hit skips
+ * subarmor entirely (ignore_subarmor = TRUE) rather than half-protecting through a broken part.
+ */
+/mob/living/carbon/human/apply_damage(damage = 0, damagetype = BRUTE, def_zone = null, blocked = 0, forced = FALSE, spread_damage = FALSE, sharpness = NONE, attack_direction = null, obj/item/attacking_item = null, ignore_subarmor = FALSE)
+	if(!forced && damagetype == BRUTE && !ignore_subarmor && istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/ms13/power_armor))
+		var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : get_bodypart(deprecise_zone(def_zone))
+		if(hit_part)
+			var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/pa = wear_suit
+			var/obj/item/ms13/power_armor/PA_part = pa.module_armor[hit_part.body_zone]
+			if(PA_part && PA_part.atom_integrity > 0)
+				var/subarmor_flag = CRUSHING
+				if(sharpness & SHARP_IMPALING)
+					subarmor_flag = IMPALING
+				else if(sharpness & SHARP_POINTY)
+					subarmor_flag = PIERCING
+				else if(sharpness & SHARP_EDGED)
+					subarmor_flag = CUTTING
+				var/routed_damage = max(damage * 0.2, damage - (getsubarmor(hit_part, subarmor_flag) || 0))
+				PA_part.take_damage(routed_damage, damagetype, subarmor_flag)
+				return 0
+			return ..(damage, damagetype, def_zone, blocked, forced, spread_damage, sharpness, attack_direction, attacking_item, ignore_subarmor = TRUE)
+	return ..()
+
 /mob/living/carbon/human/getsubarmor(def_zone, d_type)
 	if(!def_zone)
 		//no averaging values when no bodypart is specified, that's stupid
@@ -98,7 +125,7 @@
 		if(istype(clothing, /obj/item/clothing/suit/space/hardsuit/ms13/power_armor))
 			var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/pa = clothing
 			var/obj/item/ms13/power_armor/PA_part = pa.module_armor[def_zone.body_zone]
-			if(PA_part != null)
+			if(PA_part && PA_part.atom_integrity > 0)
 				protection += PA_part.subarmor.getRating(d_type)
 		protection += clothing.subarmor.getRating(d_type)
 	protection += physiology.subarmor.getRating(d_type)
