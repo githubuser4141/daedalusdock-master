@@ -17,17 +17,6 @@
 	///Reference to the turf fire on the turf
 	var/obj/effect/abstract/turf_fire/turf_fire
 
-/turf/open/Initialize(mapload)
-	if(!blocks_air)
-		air = new
-		air.copy_from_turf(src)
-		if(planetary_atmos)
-			if(!SSair.planetary[initial_gas])
-				var/datum/gas_mixture/immutable/planetary/mix = new
-				mix.parse_string_immutable(initial_gas)
-				SSair.planetary[initial_gas] = mix
-	. = ..()
-
 /turf/open/indestructible
 	name = "floor"
 	icon = 'icons/turf/floors.dmi'

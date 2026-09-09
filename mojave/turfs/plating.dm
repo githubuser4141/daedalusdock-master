@@ -35,15 +35,11 @@
 
 ////Ground Turfs////
 
-/turf/open/floor/plating/ms13/ReplaceWithLattice()
-	return //No lattice please - this might break things
-
 /turf/open/floor/plating/ms13/ground
 	name = "ground"
 	desc = "Some really hard ground. Looks like you can't destroy this for sure."
 	baseturfs = /turf/open/floor/plating/ms13/ground
-	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
-	planetary_atmos = TRUE
+	initial_gas = OPENTURF_DEFAULT_ATMOS
 	attachment_holes = FALSE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
@@ -76,7 +72,6 @@
 /turf/open/floor/plating/dirt/ms13
 	baseturfs = /turf/open/floor/plating/ms13/ground
 	initial_gas = OPENTURF_DEFAULT_ATMOS
-	planetary_atmos = TRUE
 	attachment_holes = FALSE
 	footstep = FOOTSTEP_SAND
 	barefootstep = FOOTSTEP_SAND
@@ -232,7 +227,7 @@
 	icon_state = "snow-255"
 	base_icon_state = "snow"
 	slowdown = 1
-	footstep = FOOTSTEP_SNOW
+	footstep = FOOTSTEP_SAND
 	baseturfs = /turf/open/floor/plating/ms13/ground/snow
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_MS13_SNOW
@@ -507,7 +502,7 @@
 	icon = 'mojave/icons/turf/roof_sheet_noborder.dmi'
 
 /turf/open/floor/plating/ms13/roof/metal
-	footstep = FOOTSTEP_ROOF
+	footstep = FOOTSTEP_PLATING
 	icon = 'mojave/icons/turf/roof_metal.dmi'
 	smoothing_groups = SMOOTH_GROUP_TURF_OPEN + SMOOTH_GROUP_MS13_ROOF_METAL
 	canSmoothWith = SMOOTH_GROUP_MS13_ROOF_METAL + WALL_SMOOTHING
