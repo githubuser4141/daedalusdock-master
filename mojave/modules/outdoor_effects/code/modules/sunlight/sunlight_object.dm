@@ -104,7 +104,16 @@ Sunlight System
 		if(IS_OPAQUE_TURF(T)) /* get_corners used to do opacity checks for arse */
 			continue
 		if (!T.lighting_corners_initialised)
-			T.GENERATE_MISSING_CORNERS()
+			// GENERATE_MISSING_CORNERS(T) inlined - that macro is #undef'd at the end of lighting_source.dm, only usable there
+			if(!T.lighting_corner_NE)
+				T.lighting_corner_NE = new /datum/lighting_corner(T.x, T.y, T.z)
+			if(!T.lighting_corner_SE)
+				T.lighting_corner_SE = new /datum/lighting_corner(T.x, T.y - 1, T.z)
+			if(!T.lighting_corner_SW)
+				T.lighting_corner_SW = new /datum/lighting_corner(T.x - 1, T.y - 1, T.z)
+			if(!T.lighting_corner_NW)
+				T.lighting_corner_NW = new /datum/lighting_corner(T.x - 1, T.y, T.z)
+			T.lighting_corners_initialised = TRUE
 		corners |= T.lighting_corner_NE
 		corners |= T.lighting_corner_SE
 		corners |= T.lighting_corner_SW

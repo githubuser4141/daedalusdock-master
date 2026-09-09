@@ -292,13 +292,12 @@
 				return FALSE
 	..()
 
-/obj/item/gun/ballistic/rifle/ms13/process_fire(mob/user)
-	if(can_jam)
-		if(chambered.loaded_projectile)
-			if(prob(jamming_chance))
-				jammed = TRUE
-			jamming_chance  += jamming_increment
-			jamming_chance = clamp (jamming_chance, 0, 100)
+/obj/item/gun/ballistic/rifle/ms13/do_chamber_update(empty_chamber = TRUE, from_firing = TRUE, chamber_next_round = TRUE)
+	if(can_jam && from_firing && chambered?.loaded_projectile)
+		if(prob(jamming_chance))
+			jammed = TRUE
+		jamming_chance += jamming_increment
+		jamming_chance = clamp(jamming_chance, 0, 100)
 	return ..()
 
 /* Have fun, until we get our own or show interest in using this widespread.

@@ -1,3 +1,6 @@
+/datum/map_config
+	var/list/particle_weather = list()
+
 SUBSYSTEM_DEF(ParticleWeather)
 	name = "Particle Weather"
 	flags = SS_BACKGROUND

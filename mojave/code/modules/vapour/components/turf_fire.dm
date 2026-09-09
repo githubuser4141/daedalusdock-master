@@ -87,27 +87,23 @@
 
 /obj/effect/abstract/turf_fire/proc/process_waste()
 	inhabited_turf.VapourListTurf(list(/datum/vapours/smoke = 15, /datum/vapours/carbon_air_vapour = 5), VAPOUR_ACTIVE_EMITTER_CAP)
-	if(inhabited_turf.planetary_atmos)
-		return TRUE
-	var/list/air_gases = inhabited_turf.air?.gases
-	if(!air_gases)
-		return FALSE
-	var/oxy = air_gases[/datum/xgm_gas/oxygen] ? air_gases[/datum/xgm_gas/oxygen][MOLES] : 0
-	if (oxy < 0.5)
-		return FALSE
 	var/datum/gas_mixture/cached_air = inhabited_turf.air
+	if(!cached_air)
+		return FALSE
+	var/oxy = cached_air.gas[GAS_OXYGEN]
+	if(!oxy || oxy < 0.5)
+		return FALSE
 	var/temperature = cached_air.temperature
-	var/old_heat_capacity = cached_air.heat_capacity()
+	var/old_heat_capacity = cached_air.getHeatCapacity()
 	var/burn_rate = TURF_FIRE_BURN_RATE_BASE + fire_power * TURF_FIRE_BURN_RATE_PER_POWER
 	if(burn_rate > oxy)
 		burn_rate = oxy
-	air_gases[/datum/xgm_gas/oxygen][MOLES] = air_gases[/datum/xgm_gas/oxygen][MOLES] - burn_rate
-	ASSERT_GAS(/datum/xgm_gas/carbon_dioxide,cached_air)
-	air_gases[/datum/xgm_gas/carbon_dioxide][MOLES] += burn_rate * TURF_FIRE_BURN_CARBON_DIOXIDE_MULTIPLIER
-	var/new_heat_capacity = cached_air.heat_capacity()
+	cached_air.gas[GAS_OXYGEN] -= burn_rate
+	cached_air.gas[GAS_CO2] += burn_rate * TURF_FIRE_BURN_CARBON_DIOXIDE_MULTIPLIER
+	var/new_heat_capacity = cached_air.getHeatCapacity()
 	var/energy_released = burn_rate * TURF_FIRE_ENERGY_PER_BURNED_OXY_MOL
 	cached_air.temperature = (temperature * old_heat_capacity + energy_released) / new_heat_capacity
-	inhabited_turf.air_update_turf(TRUE)
+	inhabited_turf.update_air_properties()
 	return TRUE
 
 /obj/effect/abstract/turf_fire/process()

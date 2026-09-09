@@ -3,7 +3,7 @@
 	var/wind = 0 //Left/Right maximum movement increase per tick
 	var/maxSpawning = 0 //Max spawner - Recommend you use this over Spawning, so severity can ease it in
 	var/minSpawning = 0 //Weather should start with 0, but when easing, it will never go below this
-	icon = 'icons/effects/particles/particle.dmi'
+	icon = 'icons/effects/particles/generic.dmi'
 
 
 	spawning = 0

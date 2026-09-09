@@ -316,7 +316,7 @@ SUBSYSTEM_DEF(outdoor_effects)
 	#endif
 
 	if((fr & fg & fb & fa) && (fr + fg + fb + fa == 4)) /* this will likely never happen */
-		MA.color = LIGHTING_BASE_MATRIX
+		MA.color = COLOR_MATRIX_IDENTITY
 	else if(!MA.luminosity)
 		MA.color = SUNLIGHT_DARK_MATRIX
 	else

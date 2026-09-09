@@ -1,4 +1,7 @@
 //MOJAVE MODULE OUTDOOR_EFFECTS -- BEGIN
+/datum/controller/subsystem/ticker
+	var/station_time_rate_multiplier = 1
+
 //returns time diff of two times normalized to time_rate_multiplier
 /proc/daytimeDiff(timeA, timeB)
 
