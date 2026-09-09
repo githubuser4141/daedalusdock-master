@@ -49,7 +49,6 @@
 //	department_experience_type = EXP_TYPE_RANGERS
 //	department_full_name = "Desert Rangers"
 
-/*// There. I made it easy for you to un-fix the server. Just remove the commenting out.
 /datum/job_department/bos
 	department_name = DEPARTMENT_BOS
 	department_bitflags = DEPARTMENT_BITFLAG_BOS
@@ -59,7 +58,6 @@
 	//display_order = 0
 	//label_class = "BOS"
 	//latejoin_color = "#ffddf0"
-*/
 
 /datum/job_department/raiders
 	department_name = DEPARTMENT_RAIDERS
