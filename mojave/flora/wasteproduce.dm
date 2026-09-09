@@ -22,6 +22,7 @@
 	var/harvest_icon = 1
 	var/wholeiconcolor = TRUE
 	var/nutrient_type
+	var/lifespan = INFINITY
 
 /obj/item/seeds/ms13/examine(mob/user)
 	. = ..()

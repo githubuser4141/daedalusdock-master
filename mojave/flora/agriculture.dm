@@ -78,9 +78,6 @@
 			SCREENTIP_CONTEXT_LMB = "Scan tray stats",
 			SCREENTIP_CONTEXT_RMB = "Scan tray chemicals"
 		),
-		/obj/item/cultivator = list(
-			SCREENTIP_CONTEXT_LMB = "Remove weeds",
-		),
 		/obj/item/shovel/ms13/spade = list(
 			SCREENTIP_CONTEXT_LMB = "Clear tray",
 		),
@@ -125,12 +122,8 @@
 
 		return NONE
 
-	// If the plant is harvestable, we can graft it with secateurs or harvest it with a plant bag.
+	// If the plant is harvestable, we can harvest it with a plant bag.
 	if(plant_status == HYDROTRAY_PLANT_HARVESTABLE)
-		if(istype(held_item, /obj/item/secateurs))
-			context[SCREENTIP_CONTEXT_LMB] = "Graft plant"
-			return CONTEXTUAL_SCREENTIP_SET
-
 		if(istype(held_item, /obj/item/storage/bag/plants))
 			context[SCREENTIP_CONTEXT_LMB] = "Harvest plant"
 			return CONTEXTUAL_SCREENTIP_SET
@@ -246,18 +239,6 @@
 				adjust_plant_health(-3)
 				adjust_toxic(-rating * 3)
 
-//This is where stability mutations exist now.
-
-			// FLAGGED, not fixed: instability/mutatelist/set_instability were never declared anywhere in mojave/'s
-			// port of /obj/item/seeds/ms13 (confirmed - not in wasteproduce.dm or wasteplants.dm either), and DD's
-			// own mutation system works completely differently (event-driven /datum/plant_gene/unstable ticks via
-			// plant_tick.mutation_power, not a polled instability counter). This would need real feature work
-			// (deciding what instability/mutatelist/mutate() should even mean here), not a rename - left as-is.
-			if(myseed.instability >= 60)
-				if(prob((myseed.instability)/2) && !self_sustaining && LAZYLEN(myseed.mutatelist)) //Minimum 30%, Maximum 50% chance of mutating every age tick when not on autogrow.
-					mutatespecie()
-					myseed.set_instability(myseed.instability/2)
-
 //Health & Age///////////////////////////////////////////////////////////
 
 			// Plant dies if plant_health <= 0
@@ -265,7 +246,6 @@
 				plantdies()
 
 			// If the plant is too old, lose health fast
-			// FLAGGED: myseed.lifespan was never declared anywhere in mojave/'s port - no DD equivalent field either
 			if(age > myseed.lifespan)
 				adjust_plant_health(-rand(5,8) / rating)
 
@@ -460,41 +440,6 @@
 	if(self_sustaining)
 		. += span_info("The tray's autogrow is active, protecting it from species mutations, weeds, and pests.")
 
-// FLAGGED, not fixed: myseed.mutate()/mutatelist were never declared anywhere in mojave/'s port, and this whole
-// proc (and mutatespecie() below) only ever gets called from the instability block above, which is also flagged -
-// real feature work needed to decide how this should work against DD's actual gene/mutation system.
-/obj/machinery/ms13/agriculture/proc/mutate(lifemut = 2, endmut = 5, productmut = 1, base_harvest_amtmut = 2, potmut = 25, wrmut = 2, wcmut = 5, traitmut = 0, stabmut = 3) // Mutates the current seed
-	if(!myseed)
-		return
-	myseed.mutate(lifemut, endmut, productmut, base_harvest_amtmut, potmut, wrmut, wcmut, traitmut, stabmut)
-
-/obj/machinery/ms13/agriculture/proc/hardmutate()
-	mutate(4, 10, 2, 4, 50, 4, 10, 0, 4)
-
-
-/obj/machinery/ms13/agriculture/proc/mutatespecie() // Mutagent produced a new plant!
-	if(!myseed || plant_status == HYDROTRAY_PLANT_DEAD || !LAZYLEN(myseed.mutatelist))
-		return
-
-	var/oldPlantName = myseed.plant_datum.name
-	var/mutantseed = pick(myseed.mutatelist)
-	set_seed(new mutantseed(src))
-
-	hardmutate()
-	age = 0
-	set_plant_health(myseed.plant_datum.base_endurance, update_icon = FALSE)
-	lastcycle = world.time
-
-	var/message = span_warning("[oldPlantName] suddenly mutates into [myseed.plant_datum.name]!")
-	addtimer(CALLBACK(src, PROC_REF(after_mutation), message), 0.5 SECONDS)
-
-/**
- * Called after plant mutation, update the appearance of the tray content and send a visible_message()
- */
-/obj/machinery/ms13/agriculture/proc/after_mutation(message)
-		update_appearance()
-		visible_message(message)
-		TRAY_NAME_UPDATE
 /**
  * Plant Death Proc.
  * Cleans up various stats for the plant upon death, including harvestability, and plant health.
@@ -636,9 +581,7 @@
 	if(issilicon(user)) //How does AI know what plant is?
 		return
 	if(plant_status == HYDROTRAY_PLANT_HARVESTABLE)
-		// FLAGGED: myseed.harvest(user) was never declared anywhere in mojave/'s port (/obj/item/seeds has no
-		// harvest() proc in DD either) - the actual harvest/product-spawning logic needs to be written, not renamed.
-		return myseed.harvest(user)
+		return harvest_plant(user)
 
 	else if(plant_status == HYDROTRAY_PLANT_DEAD)
 		to_chat(user, span_notice("You remove the dead plant from [src]."))
@@ -673,25 +616,85 @@
  * Sends messages to the player about plants harvested, or if nothing was harvested at all.
  * * User - The mob who clears the tray.
  */
+// Ported from DD's own /obj/machinery/hydroponics/proc/try_harvest() (code/modules/hydroponics/hydroponics_tray/hydrotray_interaction.dm)
+/obj/machinery/ms13/agriculture/proc/harvest_plant(mob/user)
+	if(!myseed)
+		return FALSE
+
+	var/datum/plant/growing = myseed.plant_datum
+	var/quality = 1
+	var/max_yield = HYDRO_MAX_YIELD
+	var/harvest_yield = growing.get_effective_stat(PLANT_STAT_YIELD)
+	var/potency = growing.get_scaled_potency()
+	var/endurance = growing.get_effective_stat(PLANT_STAT_ENDURANCE)
+
+	if(plant_health > growing.base_health * 2)
+		quality += 5
+		var/yield_bonus = rand(1, 3)
+		max_yield += yield_bonus
+		harvest_yield += yield_bonus
+	else if(plant_health < growing.base_health * 0.5)
+		quality -= 10
+
+	var/product_path = growing.product_path
+	if(!product_path)
+		update_tray(user, 0)
+		return TRUE
+
+	for(var/datum/plant_gene/yield_mod/gene in growing.gene_holder.gene_list)
+		max_yield = ceil(max_yield * gene.multiplier)
+
+	var/bonus_yield_prob = 0
+	if(harvest_yield > max_yield)
+		bonus_yield_prob = harvest_yield - max_yield
+		harvest_yield = max_yield
+	harvest_yield = round(max(harvest_yield, 0))
+
+	var/turf/drop_turf = user?.drop_location() || drop_location()
+	var/can_produce_seed = growing.force_single_harvest || !growing.gene_holder.has_active_gene_of_type(/datum/plant_gene/seedless)
+
+	for(var/i in 1 to harvest_yield)
+		var/unit_quality = quality
+		unit_quality += rand(-2, 2)
+		unit_quality += potency / 6
+		unit_quality += endurance / 6
+
+		var/atom/movable/product = new product_path(drop_turf, growing)
+		product.add_fingerprint(user)
+
+		if(istype(product, /obj/item/food))
+			var/obj/item/food/food_product = product
+			food_product.quality = round(unit_quality, 1)
+			food_product.transform = matrix() * clamp((unit_quality + 100) / 100, 0.5, 2)
+
+		if(can_produce_seed && prob(80 / ceil(harvest_yield / 2)))
+			var/obj/item/new_seed = growing.CopySeed()
+			new_seed.forceMove(drop_turf)
+
+	if(plant_health >= growing.base_health * 4)
+		bonus_yield_prob += 20
+		if(prob(bonus_yield_prob))
+			to_chat(user, span_notice("The [growing.name] glistens."))
+		else
+			growing.base_harvest_amt--
+	else
+		growing.base_harvest_amt--
+
+	update_tray(user, harvest_yield)
+	return TRUE
+
 /obj/machinery/ms13/agriculture/proc/update_tray(mob/user, product_count)
 	lastproduce = age
-	// FLAGGED: /obj/item/seeds/replicapod and /datum/plant_gene/trait/repeated_harvest don't exist anywhere in DD -
-	// genuinely missing content (confirmed against Mojave Sun's own source too), not a rename target.
-	if(istype(myseed, /obj/item/seeds/replicapod))
-		to_chat(user, span_notice("You harvest from the [myseed.plant_datum.name]."))
-	else if(product_count <= 0)
+	if(product_count <= 0)
 		to_chat(user, span_warning("You fail to harvest anything useful!"))
 	else
 		to_chat(user, span_notice("You harvest [product_count] items from the [myseed.plant_datum.name]."))
-	if(!myseed.get_gene(/datum/plant_gene/trait/repeated_harvest))
-		set_seed(null)
-		name = initial(name)
-		desc = initial(desc)
-		TRAY_NAME_UPDATE
-		if(self_sustaining) //No reason to pay for an empty tray.
-			set_self_sustaining(FALSE)
-	else
-		set_plant_status(HYDROTRAY_PLANT_GROWING)
+	set_seed(null)
+	name = initial(name)
+	desc = initial(desc)
+	TRAY_NAME_UPDATE
+	if(self_sustaining) //No reason to pay for an empty tray.
+		set_self_sustaining(FALSE)
 	update_appearance()
 	SEND_SIGNAL(src, COMSIG_HYDROTRAY_ON_HARVEST, user, product_count)
 
