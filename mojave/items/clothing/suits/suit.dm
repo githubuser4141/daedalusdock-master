@@ -147,7 +147,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -169,7 +169,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -212,7 +212,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -232,7 +232,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -257,7 +257,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -277,7 +277,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -302,7 +302,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -322,7 +322,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -347,7 +347,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -367,7 +367,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -596,7 +596,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -617,7 +617,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 	////storage_type = null
@@ -656,7 +656,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -702,7 +702,7 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 0, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	body_parts_covered = CHEST|ARMS
 	////storage_type = /datum/storage/ms13/suit/large
 	equip_delay_self = 1.5 SECONDS
@@ -722,7 +722,7 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 0, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	body_parts_covered = CHEST|ARMS
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
@@ -742,7 +742,7 @@
 	desc = "Long, dark, and imposing padded robes worn by Hubologists."
 	icon_state = "hubologist"
 	inhand_icon_state = "hostrench"
-	armor = list("melee" = 25, "bullet" = 20, "laser" = 10, "energy" = 5, "bomb" = 15, "bio" = 10,  "fire" = 10, "acid" = 10, "wound" = 0)
+	armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 10, ENERGY = 5, BOMB = 15, BIO = 10, FIRE = 10, ACID = 10)
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
 	hoodtype = /obj/item/clothing/head/hooded/ms13/hubologist
 
@@ -785,7 +785,7 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 350
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 10, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	////storage_type = /datum/storage/ms13/suit/med
 
 /obj/item/clothing/suit/ms13/drylander/headtaker
@@ -804,7 +804,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	////storage_type = /datum/storage/ms13/suit/med
 
 /obj/item/clothing/suit/ms13/drylander/simple
@@ -843,7 +843,7 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 350
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 10, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/suit/ms13/drylander/shaman
 	name = "\improper Drylander shaman robes"
@@ -984,7 +984,7 @@
                 FIRE = 0)
 	////storage_type = /datum/storage/ms13/suit/large
 	max_integrity = 350
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 10, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/suit/ms13/goldman/leader
 	name = "\improper goldman Ringleader trenchcoat"

@@ -4,7 +4,7 @@
 	icon = 'mojave/icons/objects/clothing/clothing_world/suits_world.dmi'
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing) // AI EDIT: flask -> glass/flask (DD's flask is at cup/glass/flask, not cup/flask; same fix in suit.dm)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 0, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	max_integrity = 400
 	///Icon file for left hand inhand overlays
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
@@ -27,7 +27,7 @@
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
 	hoodtype = /obj/item/clothing/head/hooded/ms13
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 0, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	//grid_width = 64
 	//grid_height = 96
 
@@ -53,7 +53,7 @@
                 LASER = 0, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 
@@ -95,7 +95,7 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 
@@ -115,7 +115,7 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
@@ -135,7 +135,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 // Metal Armor //
 
@@ -156,7 +156,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -193,7 +193,7 @@
                 ENERGY = CLASS3_PLASMA, \
                 FIRE = CLASS4_FIRE)
 	max_integrity = 575
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 75, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vaultvan
 	name = "\improper Vault-tec van armor"
@@ -211,7 +211,7 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
@@ -234,7 +234,7 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
@@ -252,7 +252,7 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 10, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	//storage_type = /datum/storage/ms13/suit/small
 
 /obj/item/clothing/suit/armor/ms13/vest/military
@@ -270,7 +270,7 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest/vault
 	name = "vault security vest"
@@ -286,7 +286,7 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest/snowcrest
 	name = "heavy kevlar vest"
@@ -303,7 +303,7 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 5)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 // Raider Armor //
 
@@ -352,7 +352,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
@@ -409,7 +409,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 5)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -448,7 +448,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	clothing_traits = list(TRAIT_SILENT_FOOTSTEPS)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
@@ -471,7 +471,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
@@ -492,7 +492,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 575
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -517,7 +517,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 // Enviro Armor //
 
@@ -538,7 +538,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS5_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 100, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 100, ACID = 0)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	resistance_flags = FIRE_PROOF
 	equip_delay_self = 3.5 SECONDS
@@ -573,7 +573,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 450
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
@@ -599,7 +599,7 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 15, acid = 0) //No wound armor
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 15, ACID = 0) //No wound armor
 
 /obj/item/clothing/suit/space/ms13
 	name = "\improper Space suit"
@@ -608,7 +608,7 @@
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	icon_state = "spacesuit"
 	inhand_icon_state = "spacesuit"
-	armor = list(melee = 25, bullet = 15, laser = 25, energy = 25, bomb = 5, bio = 50, fire = 60, acid = 50)
+	armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 25, ENERGY = 25, BOMB = 5, BIO = 50, FIRE = 60, ACID = 50)
 
 // NCR Armor //
 
@@ -629,7 +629,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
@@ -682,7 +682,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
@@ -696,7 +696,7 @@
 	slowdown = 0.15
 	body_parts_covered = CHEST|GROIN|LEGS
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/legion/recruit
 	name = "\improper Legion recruit armor"
@@ -746,7 +746,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
@@ -754,7 +754,7 @@
 	name = "\improper Legion scout armor"
 	desc = "Legion recruit armor without a chestplate, slightly reduced protection as a result."
 	icon_state = "leg_scout"
-	armor = list("melee" = 35, "bullet" = 25, "laser" = 5, "energy" = 5, "bomb" = 20, "bio" = 5,  "fire" = 10, "acid" = 5)
+	armor = list(BLUNT = 35, PUNCTURE = 35, SLASH = 35, LASER = 5, ENERGY = 5, BOMB = 20, BIO = 5, FIRE = 10, ACID = 5)
 
 /obj/item/clothing/suit/armor/ms13/legion/explorer
 	name = "\improper Legion explorer armor"
@@ -771,7 +771,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 10, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
 
@@ -779,7 +779,7 @@
 	name = "\improper Legion speculatore armor"
 	desc = "Legion veteran armor with less reinforcements, reducing some of it's protection."
 	icon_state = "leg_spec"
-	armor = list("melee" = 45, "bullet" = 40, "laser" = 10, "energy" = 10, "bomb" = 25, "bio" = 20,  "fire" = 25, "acid" = 20)
+	armor = list(BLUNT = 45, PUNCTURE = 45, SLASH = 45, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 20, FIRE = 25, ACID = 20)
 
 /obj/item/clothing/suit/armor/ms13/legion/vexillarius
 	name = "\improper Legion vexillarius armor"
@@ -795,7 +795,7 @@
                 ENERGY = 0, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 
@@ -803,7 +803,7 @@
 	name = "\improper Legion praetorian armor"
 	desc = "Legion praetorian armor, worn only by the most skilled guardians of the Legion."
 	icon_state = "leg_prae"
-	armor = list("melee" = 55, "bullet" = 40, "laser" = 25, "energy" = 25, "bomb" = 30, "bio" = 20,  "fire" = 30, "acid" = 20)
+	armor = list(BLUNT = 55, PUNCTURE = 55, SLASH = 55, LASER = 25, ENERGY = 25, BOMB = 30, BIO = 20, FIRE = 30, ACID = 20)
 
 /obj/item/clothing/suit/armor/ms13/legion/centurion
 	name = "\improper Legion centurion armor"
@@ -821,7 +821,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 575
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -887,7 +887,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 35, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
@@ -908,7 +908,7 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -931,7 +931,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 50, acid = 0, wound = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
@@ -1007,7 +1007,7 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 5)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/ms13/veteran_coat/reinf/mon_city/pointman
 	name = "metal reinforced winter fur coat"
@@ -1023,5 +1023,5 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
-	armor = list(melee = 0, bullet = 0, laser = 0, energy = 0, bomb = 0, bio = 0,  fire = 60, acid = 0, wound = 5)
+	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	//storage_type = /datum/storage/ms13/suit/small

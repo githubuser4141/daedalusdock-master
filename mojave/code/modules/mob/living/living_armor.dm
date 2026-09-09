@@ -1,19 +1,23 @@
 // just changing the messages here to be clearer, mkay?
-/mob/living/run_armor_check(def_zone = null, attack_flag = BLUNT, absorb_text = null, soften_text = null, armour_penetration, penetrated_text, silent=FALSE, weak_against_armour = FALSE)
+// AI EDIT: params were "armour_penetration"/"weak_against_armour" (British spelling) - DD's real base
+// proc (code/modules/mob/living/living_defense.dm) uses "armor_penetration"/"weak_against_armor". Since
+// this fully replaces that proc, callers using DD's real spelling as named args (e.g.
+// code/datums/components/embedded.dm:94's weak_against_armor=) crashed with "bad arg name".
+/mob/living/run_armor_check(def_zone = null, attack_flag = BLUNT, absorb_text = null, soften_text = null, armor_penetration, penetrated_text, silent=FALSE, weak_against_armor = FALSE)
 	var/armor = getarmor(def_zone, attack_flag)
 
 	if(armor <= 0)
 		return armor
 
-	if(weak_against_armour && (armor >= 0))
+	if(weak_against_armor && (armor >= 0))
 		armor *= ARMOR_WEAKENED_MULTIPLIER
 
 	if(silent)
-		return max(0, armor - armour_penetration)
+		return max(0, armor - armor_penetration)
 
 	//the if "armor" check is because this is used for everything on /living, including humans
-	if(armour_penetration >= armor)
-		armor = max(0, armor - armour_penetration)
+	if(armor_penetration >= armor)
+		armor = max(0, armor - armor_penetration)
 		if(penetrated_text)
 			to_chat(src, span_userdanger("[penetrated_text]"))
 		else
@@ -34,10 +38,10 @@
 						attack_flag = BLUNT, \
 						absorb_text = null, \
 						soften_text = null, \
-						armour_penetration = null, \
+						armor_penetration = null, \
 						penetrated_text = null, \
 						silent = FALSE, \
-						weak_against_armour = FALSE, \
+						weak_against_armor = FALSE, \
 						sharpness = NONE)
 	//We need to convert attack flags into actually useful subarmor variables
 	var/static/list/conversion_table = list(BLUNT, PUNCTURE)
@@ -54,15 +58,15 @@
 	if(armor <= 0)
 		return armor
 
-	if(weak_against_armour && (armor >= 0))
+	if(weak_against_armor && (armor >= 0))
 		armor *= ARMOR_WEAKENED_MULTIPLIER
 
 	if(silent)
-		return max(0, armor - armour_penetration)
+		return max(0, armor - armor_penetration)
 
 	//the if "armor" check is because this is used for everything on /living, including humans
-	if(armour_penetration >= armor)
-		armor = max(0, armor - armour_penetration)
+	if(armor_penetration >= armor)
+		armor = max(0, armor - armor_penetration)
 		if(penetrated_text)
 			to_chat(src, span_userdanger("[penetrated_text]"))
 		else
@@ -78,7 +82,7 @@
 		else
 			to_chat(src, span_warning("Your armor softens the blow!"))
 
-	return max(0, armor - armour_penetration)
+	return max(0, armor - armor_penetration)
 
 /mob/living/proc/getsubarmor(def_zone, d_type)
 	return 0
