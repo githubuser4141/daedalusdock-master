@@ -62,6 +62,16 @@
 
 	return protection
 
+/mob/living/carbon/human/get_subarmor_dt_reduction(def_zone, sharpness = NONE)
+	var/subarmor_flag = CRUSHING
+	if(sharpness & SHARP_IMPALING)
+		subarmor_flag = IMPALING
+	else if(sharpness & SHARP_POINTY)
+		subarmor_flag = PIERCING
+	else if(sharpness & SHARP_EDGED)
+		subarmor_flag = CUTTING
+	return getsubarmor(def_zone, subarmor_flag)
+
 /mob/living/carbon/human/proc/checksubarmor(obj/item/bodypart/def_zone, d_type)
 	if(!d_type)
 		return 0

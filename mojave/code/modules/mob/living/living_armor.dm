@@ -95,3 +95,11 @@
 
 /mob/living/proc/damage_armor(damage = 0, damage_flag = BLUNT, damage_type = BRUTE, sharpness = NONE, def_zone = BODY_ZONE_CHEST)
 	return damage
+
+/**
+ * Real DT (flat subtraction) hook for BRUTE damage, called from code/modules/mob/living/damage_procs.dm's
+ * apply_damage() - see mojave/code/datums/armor/subarmor.dm. Base living mobs have no subarmor, so this
+ * is a no-op here; /mob/living/carbon/human overrides it with the real lookup.
+ */
+/mob/living/proc/get_subarmor_dt_reduction(def_zone, sharpness = NONE)
+	return 0

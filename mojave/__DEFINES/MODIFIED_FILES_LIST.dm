@@ -26,6 +26,7 @@ code/__DEFINES/dcs/signals/signals_mob/signals_mob_main.dm,
 code/datums/progressbar.dm,
 code/game/objects/items/stacks/medical.dm,
 code/_onclick/hud/living.dm,
+code/modules/mob/living/damage_procs.dm,
 
 
 
