@@ -12,6 +12,13 @@ Mojave Sun Job Base Class
 	paycheck_department = null
 	job_flags = JOB_CREW_MANIFEST | JOB_EQUIP_RANK | JOB_NEW_PLAYER_JOINABLE | JOB_REOPEN_ON_ROUNDSTART_LOSS | JOB_ASSIGN_QUIRKS
 
+/datum/job/ms13/New()
+	. = ..()
+	// DD's dress_up_as_job() only reads the per-species outfits list, not the legacy singular
+	// outfit var every mojave job sets - without this, every mojave job spawns naked.
+	if(outfit && !outfits)
+		outfits = list("Default" = list(SPECIES_HUMAN = outfit))
+
 /datum/outfit/job/ms13
 	name = "Default"
 	jobtype = /datum/job/ms13

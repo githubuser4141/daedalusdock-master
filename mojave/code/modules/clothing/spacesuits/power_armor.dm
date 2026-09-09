@@ -330,7 +330,7 @@
 		if(L.status)
 			to_chat(user, span_warning("This bulb is too damaged to use as a replacement!"))
 			return
-		if(do_after(user, 5 SECONDS, src))
+		if(do_after(user, src, 5 SECONDS))
 			qdel(I)
 			helmet = new helmettype(src)
 			to_chat(user, span_notice("You have successfully repaired [src]'s helmet."))
@@ -382,7 +382,7 @@
 		var/radial_result = part_to_zone[show_radial_menu(user, src, radial_options, require_near = TRUE, tooltips = TRUE)]
 		//var/hand = user.get_empty_held_index_for_side(LEFT_HANDS) || user.get_empty_held_index_for_side(RIGHT_HANDS) // Heavy ahhh armour. Just put it on the ground now fow now
 		playsound(src, 'mojave/sound/ms13effects/crafting/wrenchthreeturn.ogg', 25, TRUE)
-		if(radial_result && do_after(user, 5 SECONDS, user))
+		if(radial_result && do_after(user, user, 5 SECONDS))
 			playsound(src, 'mojave/sound/ms13effects/crafting/wrenchturn.ogg', 25, TRUE)
 			var/obj/item/ms13/power_armor/PA = module_armor[radial_result]
 			//if(!user.put_in_hand(PA, hand))
@@ -558,7 +558,7 @@
 	else
 		if(user.wear_suit == src)
 			to_chat(user, "You begin exiting the [src].")
-			if(do_after(user, 8 SECONDS, user, DO_IGNORE_INCAPACITATED) && !density && (get_dist(user, src) <= 1))
+			if(do_after(user, src, 8 SECONDS, DO_IGNORE_INCAPACITATED) && !density && (get_dist(user, src) <= 1))
 				GetOutside(user)
 				return TRUE
 			return FALSE
@@ -569,7 +569,7 @@
 		to_chat(user, span_warning("Your fat ass is too huge to fit in."))
 		return FALSE
 	to_chat(user, "You begin entering the [src].")
-	if(do_after(user, 8 SECONDS, user) && CheckEquippedClothing(user) && density)
+	if(do_after(user, src, 8 SECONDS) && CheckEquippedClothing(user) && density)
 		GetInside(user)
 		return TRUE
 	return FALSE

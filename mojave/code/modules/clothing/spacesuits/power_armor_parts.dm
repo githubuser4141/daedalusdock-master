@@ -63,7 +63,7 @@
 		if(modules[module.class_type])
 			to_chat(user, span_warning("[src] already have module there."))
 			return
-		if(do_after(user, 5 SECONDS, user) && user.transferItemToLoc(module, src))
+		if(do_after(user, user, 5 SECONDS) && user.transferItemToLoc(module, src))
 			modules[module.class_type] = module
 			if(module.actions_modules)
 				LAZYINITLIST(actions_modules)
