@@ -1,5 +1,9 @@
 /datum/hud/living
-	ui_style = 'icons/hud/screen_gen.dmi'
+	// AI EDIT: was 'icons/hud/screen_gen.dmi', which is missing "hand_l"/"hand_r"/"swap_1_m"/"swap_2"
+	// (confirmed identical to upstream DD - not a mojave asset issue, just an unnoticed base bug).
+	// null lets /datum/hud/New()'s existing preference-based fallback (ui_style2icon(), defaults to
+	// Midnight) resolve a complete skin instead, for every living mob, with no per-player action needed.
+	ui_style = null
 
 /datum/hud/living/New(mob/living/owner)
 	..()
