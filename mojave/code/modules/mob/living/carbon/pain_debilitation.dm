@@ -3,8 +3,15 @@
 // untreated wound doesn't go away - can chain into staying unconscious indefinitely. This keeps mojave
 // characters conscious and able to act at those same trigger points, just severely hampered. Everything
 // else (bodypart/organ pain messages, mood, shrug-off-pain rolls, cardiac arrest, death) is untouched -
-// copied verbatim from DD's original so only the collapse response differs. Raised thresholds and the
-// debilitation tuning knobs live in mojave/code/_DEFINES/pain_debilitation.dm.
+// copied verbatim from DD's original so only the collapse response differs. Raised thresholds live in
+// mojave/code/_DEFINES/pain_debilitation.dm; the actual response is the status effects defined in
+// mojave/code/datums/status_effects/pain_debilitation.dm.
+//
+// This can't be done as a signal listener instead (e.g. hooking COMSIG_LIVING_STATUS_UNCONSCIOUS and
+// blocking it with COMPONENT_NO_STUN) without either editing pain.dm to tag its calls with a
+// distinguishing source, or blocking every Unconscious() call on the mob regardless of cause - which
+// would also swallow legitimate unconsciousness from sleep toxin, other stuns, etc. A full override is
+// the only way to change specifically the pain/shock collapse point without touching either DD file.
 
 /mob/living/carbon/handle_pain(delta_time)
 	if(stat == DEAD)
@@ -26,7 +33,7 @@
 		remove_movespeed_modifier(/datum/movespeed_modifier/pain)
 
 	if(pain >= pain_passout)
-		apply_pain_debilitation(pain / pain_passout)
+		apply_status_effect(/datum/status_effect/ms13_pain_debilitation, pain / pain_passout)
 		return
 
 	if(stat != CONSCIOUS)
@@ -176,12 +183,14 @@
 				if(CRIT_SUCCESS)
 					to_chat(src, result.create_tooltip("You won't give in now. Stay in the fight."))
 					shock_stage = max(shock_stage - 15, 0)
+					apply_status_effect(/datum/status_effect/determined/ms13_adrenaline)
 					stats.set_cooldown("shrug_off_pain", 180 SECONDS)
 					return
 
 				if(SUCCESS)
 					shock_stage = max(shock_stage - 5, 0)
 					to_chat(src, result.create_tooltip("Not here, not now."))
+					apply_status_effect(/datum/status_effect/determined/ms13_adrenaline)
 					stats.set_cooldown("shrug_off_pain", 180 SECONDS)
 					return
 
@@ -249,13 +258,13 @@
 	if((shock_stage > MS13_SHOCK_TIER_COLLAPSE && prob(2)) || shock_stage == MS13_SHOCK_TIER_COLLAPSE)
 		if(stat == CONSCIOUS)
 			pain_message(pick("Your vision swims, but you refuse to go down.", "You grit your teeth against the agony.", "You can barely stay on your feet."), shock_stage - CHEM_EFFECT_MAGNITUDE(src, CE_PAINKILLER)/3, TRUE)
-			apply_pain_debilitation(shock_stage / MS13_SHOCK_TIER_LIMP)
+			apply_status_effect(/datum/status_effect/ms13_pain_debilitation, shock_stage / MS13_SHOCK_TIER_LIMP)
 			return
 
 	if(shock_stage >= MS13_SHOCK_TIER_LIMP)
 		if(shock_stage == MS13_SHOCK_TIER_LIMP)
 			visible_message("<b>[src]</b> staggers, barely able to keep moving!")
-		apply_pain_debilitation(1.5)
+		apply_status_effect(/datum/status_effect/ms13_pain_debilitation, 1.5)
 
 	if(message && !COOLDOWN_FINISHED(src, pain_cooldowns["shock"]))
 		COOLDOWN_START(src, pain_cooldowns["shock"], 20 SECONDS)
@@ -263,35 +272,3 @@
 
 #undef SHOCK_STRING_MINOR
 #undef SHOCK_STRING_MAJOR
-
-/**
- * Applies the mojave "debilitated by pain" response in place of DD's Unconscious() collapse.
- * The target stays conscious and able to act - slowed, blurry, shaky, prone to stumbling and
- * dropping what they're holding - rather than blacking out. Severity is roughly a 0.5-2 scale
- * (how far past the relevant threshold the pain/shock is).
- *
- * The heavy movement slowdown itself needs no extra code here: DD's own life.dm already applies
- * /datum/movespeed_modifier/shock automatically once shock_stage >= SHOCK_TIER_1, and shock_stage
- * is still driven up by handle_shock() above exactly like stock DD.
- */
-/mob/living/carbon/proc/apply_pain_debilitation(severity)
-	if(stat == DEAD || HAS_TRAIT(src, TRAIT_FAKEDEATH))
-		return
-
-	severity = clamp(severity, 0.5, 2)
-
-	blur_eyes(MS13_PAIN_DEBILITATION_BLUR * severity)
-	set_jitter(MS13_PAIN_DEBILITATION_JITTER * severity)
-	set_timed_status_effect(MS13_PAIN_DEBILITATION_STUTTER * severity, /datum/status_effect/speech/stutter, only_if_higher = TRUE)
-
-	if(!COOLDOWN_FINISHED(src, pain_cooldowns["debilitation_pulse"]))
-		return
-	COOLDOWN_START(src, pain_cooldowns["debilitation_pulse"], MS13_PAIN_DEBILITATION_COOLDOWN)
-
-	if(stat == CONSCIOUS)
-		if(prob(MS13_PAIN_DEBILITATION_STUMBLE_CHANCE * severity))
-			manual_emote(pick("staggers", "stumbles", "nearly collapses"))
-			Knockdown(MS13_PAIN_DEBILITATION_STUMBLE_DURATION)
-
-		if(prob(MS13_PAIN_DEBILITATION_DROP_CHANCE * severity) && COOLDOWN_FINISHED(src, pain_cooldowns["drop_item"]))
-			pain_drop_item(PAIN_THRESHOLD_DROP_ITEM * severity)

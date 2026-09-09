@@ -5164,6 +5164,7 @@
 #include "mojave\code\datums\keybindings\living.dm"
 #include "mojave\code\datums\looping_sounds\fires.dm"
 #include "mojave\code\datums\preferences\mumbleboop.dm"
+#include "mojave\code\datums\status_effects\pain_debilitation.dm"
 #include "mojave\code\datums\wielding\_wield_info.dm"
 #include "mojave\code\datums\wielding\default.dm"
 #include "mojave\code\datums\wielding\twohand_required.dm"
