@@ -53,3 +53,9 @@
 // AI EDIT: mojave/hud/screen_objects.dm's custom HUD background icons used this layer value but it was never
 // declared anywhere in DD - just needs to be a low value so the background renders behind the icons on top of it.
 #define HUD_BACKGROUND_LAYER 1
+
+#define GAME_PLANE_UPPER -4
+#define ABOVE_GAME_PLANE -3
+#define DISPLACEMENT_MAP_PLANE -2
+#define VAPOUR_PLANE -13
+#define VAPOUR_LAYER 5.2

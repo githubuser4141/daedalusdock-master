@@ -3,15 +3,6 @@
 //Interactivity//Rust-Like speedup do_after//
 //Pretty buggy as of now, only use on things not in inventory//
 
-// AI EDIT: this file is a self-contained "click a hallucinated icon to speed up your do_after" minigame (used by
-// mojave/elements/craftable.dm). bonus_progress/boost_progress/the booster-spawning New() logic were real,
-// working MOJAVE SUN EDIT additions to DD's own code/datums/progressbar.dm that just never got carried over
-// during the port - ported those over for real (see that file). Still FLAGGED, NOT FIXED: GAME_PLANE_UPPER
-// (used below) is also a real MS addition to DD's own code/__DEFINES/layers.dm and code/_onclick/hud/rendering/
-// plane_master.dm, but MS's layers.dm reflects a much larger plane-numbering refactor DD never took (nearly
-// every plane value differs, not just the new ones) - grafting just this one plane number on top of DD's
-// current, differently-numbered plane hierarchy risks silently colliding with or breaking existing rendering,
-// so left broken pending someone who can verify the result in-game.
 
 /proc/do_after_interactive(mob/user, time = 3 SECONDS, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, interaction_key, max_interact_count = 1, bonus_time = 0, focus_sound = null, type = /obj/effect/hallucination/simple/progress_focus)
 	if(!user)
@@ -88,7 +79,7 @@
 	desc = "If I focus, I might be able to speed up my progress a little bit."
 	image_icon = 'mojave/icons/effects/interactive.dmi'
 	image_state = "progress_focus"
-	image_plane = GAME_PLANE_UPPER
+	plane = GAME_PLANE_UPPER
 	///The progress bar that this booster is linked to
 	var/datum/progressbar/linked_bar
 	///How much this focus helps overall progress
@@ -197,6 +188,6 @@
 	desc = ""
 	image_icon = 'mojave/icons/effects/interactive.dmi'
 	image_state = "skill_arrow"
-	image_plane = ABOVE_GAME_PLANE
+	plane = ABOVE_GAME_PLANE
 	image_layer = ABOVE_HUD_PLANE
 //
