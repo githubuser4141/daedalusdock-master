@@ -96,6 +96,12 @@
 /mob/living/proc/damage_armor(damage = 0, damage_flag = BLUNT, damage_type = BRUTE, sharpness = NONE, def_zone = BODY_ZONE_CHEST)
 	return damage
 
+/// Used by code/modules/projectiles/projectile.dm's on_hit() to suppress its blood-splatter effect,
+/// which is otherwise computed from the pre-hit armor% and has no idea power armor can independently
+/// zero out the wearer's actual damage. /mob/living/carbon/human overrides this with the real check.
+/mob/living/proc/wearing_power_armor()
+	return FALSE
+
 /**
  * Real DT (flat subtraction) hook for BRUTE damage, called from code/modules/mob/living/damage_procs.dm's
  * apply_damage() - see mojave/code/datums/armor/subarmor.dm. Base living mobs have no subarmor, so this

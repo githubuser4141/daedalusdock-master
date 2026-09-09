@@ -242,6 +242,11 @@
 			continue
 		var/obj/item/ms13/power_armor/PA_part = module_armor[i]
 		var/icon/PA = new(icon, icon_state = PA_part.icon_state_pa)
+		// AI EDIT: darken a destroyed component's overlay so a broken piece is visibly different -
+		// there's no separate "broken" sprite for these, and nothing was refreshing the worn icon
+		// when a component's integrity changed at all (see atom_destruction() below).
+		if(PA_part.atom_integrity <= 0)
+			PA.Blend("#404040", ICON_MULTIPLY)
 		standing.overlays.Add(PA)
 
 	return standing

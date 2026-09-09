@@ -20,10 +20,18 @@
 				else if(sharpness & SHARP_EDGED)
 					subarmor_flag = CUTTING
 				var/routed_damage = max(damage * 0.2, damage - (getsubarmor(hit_part, subarmor_flag) || 0))
-				PA_part.take_damage(routed_damage, damagetype, subarmor_flag)
+				// AI EDIT: no damage_flag here on purpose - take_damage() internally re-runs
+				// run_atom_subarmor() using PA_part's own subarmor, which is already folded into
+				// getsubarmor() above (checksubarmor() adds the part's rating on top of the suit's).
+				// Passing subarmor_flag through double-applies the same reduction twice, making the
+				// component nearly unbreakable in practice.
+				PA_part.take_damage(routed_damage, damagetype)
 				return 0
 			return ..(damage, damagetype, def_zone, blocked, forced, spread_damage, sharpness, attack_direction, attacking_item, ignore_subarmor = TRUE)
 	return ..()
+
+/mob/living/carbon/human/wearing_power_armor()
+	return istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 
 /mob/living/carbon/human/getsubarmor(def_zone, d_type)
 	if(!def_zone)

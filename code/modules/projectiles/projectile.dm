@@ -308,7 +308,11 @@
 	var/mob/living/L = target
 
 	if(blocked != 100) // not completely blocked
-		if(damage && L.blood_volume && damage_type == BRUTE && (!hit_limb || (hit_limb.bodypart_flags & BP_HAS_BLOOD)))
+		// AI EDIT: wearing_power_armor() added - `blocked` here is the old armor% computed before
+		// this hit, unaware of mojave's power armor component-routing (mojave/code/modules/mob/
+		// living/carbon/human/human_armor.dm), which can independently zero out the wearer's actual
+		// damage. Without this, blood splatters even on a hit power armor fully absorbed.
+		if(damage && L.blood_volume && damage_type == BRUTE && (!hit_limb || (hit_limb.bodypart_flags & BP_HAS_BLOOD)) && !L.wearing_power_armor())
 			var/splatter_dir = dir
 			if(starting)
 				splatter_dir = get_dir(starting, target_loca)

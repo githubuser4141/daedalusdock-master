@@ -124,7 +124,14 @@
 	. = ..()
 
 /obj/item/ms13/power_armor/atom_destruction(damage_flag)
-	return
+	// AI EDIT: nothing refreshed the wearer's worn icon when a component's integrity changed at all,
+	// so build_worn_icon()'s broken-component tint never actually showed up. frame is the suit this
+	// part is installed in; its loc is the wearer while worn.
+	if(frame)
+		frame.update_appearance()
+		var/mob/living/carbon/human/wearer = frame.loc
+		if(istype(wearer))
+			wearer.update_worn_oversuit()
 
 /obj/item/ms13/power_armor/get_examine_string(mob/user, thats, damage = TRUE)
 	var/damage_txt = ""
