@@ -155,23 +155,27 @@
 	angle = angle % 360
 
 /datum/worldAngle/proc/fromAny(originalAngle)
-	var/tempAngle = originalAngle%360
-	if(originalAngle < 0)
-		angle = -originalAngle
-	else
-		angle = (360 - originalAngle)
+	// AI EDIT: tempAngle was computed but never used - angle was set straight from the unreduced
+	// originalAngle, so anything outside -360..360 (or exactly 0) didn't land in 0-360 at all.
+	var/tempAngle = originalAngle % 360
+	if(tempAngle < 0)
+		tempAngle += 360 // DM's % can return negative results for a negative left operand
+	angle = (360 - tempAngle) % 360
 
 /// BulletTipType defines
+// AI EDIT: was 1>>N (right-shift) for all five - right-shifting 1 by anything >=1 gives 0, so
+// ROUNDED/ULTRASHARP/FRAGMENTED/FLAT all evaluated to the same value (0) and collided as the same
+// key in every GLOBAL_LIST_INIT below. Needed 1<<N (left-shift) to actually produce distinct bitflags.
 // Rifle grade sharp
-#define BULLET_SHARP 1>>0
+#define BULLET_SHARP 1<<0
 // Riot control
-#define BULLET_ROUNDED 1>>1
+#define BULLET_ROUNDED 1<<1
 // Very sharp. Tank Ammunition grade
-#define BULLET_ULTRASHARP 1>>2
+#define BULLET_ULTRASHARP 1<<2
 // Fragmented bullet tip, unpredictable performance.
-#define BULLET_FRAGMENTED 1>>3
+#define BULLET_FRAGMENTED 1<<3
 // A flat bullet head
-#define BULLET_FLAT 1>>4
+#define BULLET_FLAT 1<<4
 
 GLOBAL_LIST_INIT(bulletStandardRicochetAngles, list(
 	"[BULLET_SHARP]" = 18,
@@ -282,7 +286,12 @@ TYPEINFO_DEF(/obj/projectile/bullet/bmg50)
 	name = ".50 BMG"
 	damage = 60
 	armor_penetration = 10
-	speed = BULLET_SPEED_INSANE
+	// AI EDIT: was `speed = BULLET_SPEED_INSANE` directly - BULLET_SPEED_* are deltas meant to be
+	// measured against BULLET_SPEED_BASELINE (per this file's own comment on that define), not
+	// assigned as the absolute speed. DD's real /obj/projectile/var/speed is a divisor for movement
+	// step count (code/modules/projectiles/projectile.dm:86); assigning a bare negative delta made
+	// it negative, breaking the movement math outright (the projectile never actually travels).
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	bulletTipType = BULLET_SHARP
 
 
@@ -293,7 +302,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/lr22)
 /obj/projectile/bullet/lr22
 	name = ".22 lr"
 	damage = 20
-	speed = BULLET_SPEED_FAST
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_FAST
 	bulletTipType = BULLET_ROUNDED
 	armor_penetration = 10
 
@@ -304,14 +313,14 @@ TYPEINFO_DEF(/obj/projectile/bullet/a556666)
 /obj/projectile/bullet/a556666
 	name = "5.56"
 	damage = 40
-	speed = BULLET_SPEED_BOOSTED
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_BOOSTED
 	bulletTipType = BULLET_SHARP
 	armor_penetration = 10
 
 /obj/projectile/bullet/a556666/noap
 	name = "5.56"
 	damage = 40
-	speed = BULLET_SPEED_BOOSTED
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_BOOSTED
 	bulletTipType = BULLET_SHARP
 	armor_penetration = 0
 
@@ -322,6 +331,6 @@ TYPEINFO_DEF(/obj/projectile/bullet/bmg50/subs)
 	name = ".50 BMG"
 	damage = 60
 	armor_penetration = 0
-	speed = BULLET_SPEED_SNAIL
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SNAIL
 	bulletTipType = BULLET_SHARP
 
