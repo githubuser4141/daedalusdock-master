@@ -233,7 +233,7 @@
 		var/icon/PA = new(icon, icon_state = PA_part.icon_state_pa)
 		add_overlay(PA)
 
-/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/build_worn_icon(default_layer, default_icon_file, isinhands, femaleuniform, override_state)
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/build_worn_icon(mob/living/carbon/wearer, default_layer = 0, default_icon_file = null, isinhands = FALSE, female_uniform = NO_FEMALE_UNIFORM, override_state = null, override_file = null, fallback = null)
 	var/mutable_appearance/standing = ..()
 	for(var/i in module_armor)
 		if(isnull(module_armor[i]))
