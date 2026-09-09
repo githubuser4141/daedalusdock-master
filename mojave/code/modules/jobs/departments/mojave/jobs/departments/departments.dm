@@ -42,12 +42,11 @@
  	//label_class = "Legion"
  	//latejoin_color = "#ffddf0"
 
-/// Depreciated. Not even human.
-//datum/job_department/rangers
-//	department_name = DEPARTMENT_RANGERS
-//	department_bitflags = DEPARTMENT_BITFLAG_RANGERS
-//	department_experience_type = EXP_TYPE_RANGERS
-//	department_full_name = "Desert Rangers"
+/datum/job_department/rangers
+	department_name = DEPARTMENT_RANGERS
+	department_bitflags = DEPARTMENT_BITFLAG_RANGERS
+	department_experience_type = EXP_TYPE_RANGERS
+	department_full_name = "Desert Rangers"
 
 /datum/job_department/bos
 	department_name = DEPARTMENT_BOS
