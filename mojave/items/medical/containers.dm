@@ -37,13 +37,9 @@
 
 /obj/item/reagent_containers/ms13/flask/unequipped(mob/user, silent)
 	. = ..()
-	if(spillable)
-		for(var/datum/reagent/reagent as anything in reagents.reagent_list)
-		if(reagents)
-			reagents.clear_reagents()
-			visible_message(span_notice("[src] spills its contents."))
-		else
-			return
+	if(spillable && reagents?.total_volume)
+		reagents.clear_reagents()
+		visible_message(span_notice("[src] spills its contents."))
 
 /obj/item/reagent_containers/ms13/flask/attack(mob/M, mob/living/user, obj/target)
 	if(!canconsume(M, user))
