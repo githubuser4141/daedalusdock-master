@@ -400,6 +400,18 @@ GLOBAL_LIST_EMPTY(all_grabstates)
 		break_strength++
 	if(assailant_shock >= 50)
 		break_strength++
+	// AI EDIT: mojave/code/modules/surgery/organs/muscle.dm - a weak grabbing arm loosens its grip the same
+	// way any other assailant impairment does above. Every human gets a muscle organ per arm via
+	// /datum/species/New(), so this only ever fires on an actually damaged/missing arm muscle, not as a
+	// blanket penalty.
+	var/held_index = assailant.get_held_index_of_item(G)
+	var/obj/item/bodypart/grab_arm = held_index ? assailant.hand_bodyparts?[held_index] : null
+	if(grab_arm)
+		var/grab_performance = grab_arm.get_muscle_performance()
+		if(grab_performance < 50)
+			break_strength++
+		if(grab_performance < 20)
+			break_strength++
 
 	if(break_strength < 1)
 		to_chat(G.affecting, span_warning("You try to break free but feel that unless something changes, you'll never escape!"))

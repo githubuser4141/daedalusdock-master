@@ -28,6 +28,20 @@
 		owner.blood_volume = max(0, owner.blood_volume - MS13_MAJOR_VESSEL_BLOOD_BURST)
 		to_chat(owner, span_userdanger("A sudden gush of blood leaves you lightheaded!"))
 
+/**
+ * A missing vessel means no blood is getting to this limb at all - worse than even a ruptured one (which
+ * can at least be repaired quickly). Snap local_blood_volume to 0 instead of leaving it frozen at whatever
+ * it was the moment the vessel left, so the general regen gate and get_vessel_circulation_factor() (both in
+ * vessel_local_blood.dm/vessel.dm) correctly treat the limb as fully blood-starved in the meantime. A new
+ * vessel put back in doesn't need special handling here - it starts from this 0 and refills naturally
+ * through its own on_life() regen, same as a healed one would.
+ */
+/obj/item/organ/vessel/Remove(mob/living/carbon/organ_owner, special = FALSE)
+	var/obj/item/bodypart/limb = ownerlimb
+	. = ..()
+	if(limb)
+		limb.local_blood_volume = 0
+
 /obj/item/organ/vessel/head
 	name = "carotid artery"
 	zone = BODY_ZONE_HEAD
@@ -128,9 +142,14 @@
 	. *= get_vessel_circulation_factor()
 
 /**
- * Every human gets one vessel organ per limb, same as DD's own baseline organs
- * (/datum/species/var/organs, code/modules/mob/living/carbon/human/species.dm).
+ * Every human gets one vessel organ per limb (and one muscle organ per arm/leg - see muscle.dm), same as
+ * DD's own baseline organs (/datum/species/var/organs, code/modules/mob/living/carbon/human/species.dm).
  * Not editing that list directly - this appends to it after the real one is built.
+ *
+ * AI EDIT: this is the ONLY /datum/species/New() override across the mojave organ files - DM silently lets
+ * a later-compiled full redeclaration of the same proc+type replace an earlier one outright, no merge, no
+ * warning (the exact bug that broke power armor's apply_damage() earlier - see human_armor.dm). Any future
+ * organ system needs its slots added HERE, not in a second /datum/species/New() override elsewhere.
  */
 /datum/species/New()
 	. = ..()
@@ -138,5 +157,9 @@
 	organs[ORGAN_SLOT_VESSEL_CHEST] = /obj/item/organ/vessel/chest
 	organs[ORGAN_SLOT_VESSEL_L_ARM] = /obj/item/organ/vessel/l_arm
 	organs[ORGAN_SLOT_VESSEL_R_ARM] = /obj/item/organ/vessel/r_arm
+	organs[ORGAN_SLOT_MUSCLE_L_ARM] = /obj/item/organ/muscle/l_arm
+	organs[ORGAN_SLOT_MUSCLE_R_ARM] = /obj/item/organ/muscle/r_arm
+	organs[ORGAN_SLOT_MUSCLE_L_LEG] = /obj/item/organ/muscle/l_leg
+	organs[ORGAN_SLOT_MUSCLE_R_LEG] = /obj/item/organ/muscle/r_leg
 	organs[ORGAN_SLOT_VESSEL_L_LEG] = /obj/item/organ/vessel/l_leg
 	organs[ORGAN_SLOT_VESSEL_R_LEG] = /obj/item/organ/vessel/r_leg

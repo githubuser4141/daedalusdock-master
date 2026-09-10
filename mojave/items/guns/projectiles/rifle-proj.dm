@@ -1,74 +1,123 @@
 //7.62
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762)
+	default_armor = FMJ_RIFLE
+
 /obj/projectile/bullet/ms13/a762
 	name = "7.62 bullet"
 	icon_state = "bigroilfe_bullet"
-	damage = 30
-	subtractible_armour_penetration = 40
+	damage = 70
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762/junk)
+	default_armor = HP_RIFLE
 
 /obj/projectile/bullet/ms13/a762/junk
-	subtractible_armour_penetration = 30
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762/ap)
+	default_armor = AP_RIFLE
 
 /obj/projectile/bullet/ms13/a762/ap
-	subtractible_armour_penetration = 50
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762/fmj)
+	default_armor = FMJ_RIFLE
 
 /obj/projectile/bullet/ms13/a762/fmj
-	damage = 35
+	damage = 30
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762/hv)
+	default_armor = FMJ_RIFLE
 
 /obj/projectile/bullet/ms13/a762/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
+
+#warn standard: ap is more armored, junk is slower, hv is faster fmj, standard is softpoint, fmj is fmj
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a308)
+	default_armor = SOFTPOINT_RIFLE
 
 //.308
 /obj/projectile/bullet/ms13/a308
 	name = ".308 bullet"
 	icon_state = "bigroilfe_bullet"
-	damage = 45
-	subtractible_armour_penetration = 45
+	damage = 80
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE
 
 /obj/projectile/bullet/ms13/a308/junk
-	subtractible_armour_penetration = 35
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a308/ap)
+	default_armor = AP_RIFLE
 
 /obj/projectile/bullet/ms13/a308/ap
-	subtractible_armour_penetration = 55
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a308/fmj)
+	default_armor = FMJ_RIFLE
 
 /obj/projectile/bullet/ms13/a308/fmj
-	damage = 50
+	damage = 80
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a308/hv)
+	default_armor = FMJ_RIFLE
 
 /obj/projectile/bullet/ms13/a308/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
 
 //5.56
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a556)
+	default_armor = SOFTPOINT_RIFLE
+
 /obj/projectile/bullet/ms13/a556
 	name = "5.56 bullet"
 	icon_state = "medium_bullet"
-	damage = 25
-	subtractible_armour_penetration = 25
+	damage = 50
+	bulletTipType = BULLET_SHARP
+
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
 
 /obj/projectile/bullet/ms13/a556/junk
-	subtractible_armour_penetration = 15
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a556/ap)
+	default_armor = AP_RIFLE
 
 /obj/projectile/bullet/ms13/a556/ap
-	subtractible_armour_penetration = 40
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a556/fmj)
+	default_armor = FMJ_RIFLE
 
 /obj/projectile/bullet/ms13/a556/fmj
-	damage = 30
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a556/hv)
+	default_armor = FMJ_RIFLE
 
 /obj/projectile/bullet/ms13/a556/hv
-	speed = 0.4
+	speed =  BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a50MG)
+	default_armor = GIANT_CAL_RIFLE
 
 //50 BMG
 /obj/projectile/bullet/ms13/a50MG
 	name = ".50 BMG bullet"
 	icon_state = "lightfifty_bullet"
-	damage = 60
-	subtractible_armour_penetration = 60
+	damage = 150
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE
+	bulletTipType = BULLET_SHARP
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a50MG/ap)
+	default_armor = ANTI_MATERIEL
 
 /obj/projectile/bullet/ms13/a50MG/ap
-	subtractible_armour_penetration = 70
 
 /obj/projectile/bullet/ms13/a50MG/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/gauss)
+	default_armor = ANTI_MATERIEL
 
 //2mmEC
 /obj/projectile/bullet/ms13/gauss
 	icon_state = "gauss"
-	speed = 0.25
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN
+	bulletTipType = BULLET_ULTRASHARP

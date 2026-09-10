@@ -25,8 +25,14 @@
 #define MS13_VESSEL_RELATIVE_SIZE 10
 
 // --- mojave/code/modules/surgery/organs/vessel_local_blood.dm ---
-/// Max local blood a single bodypart can hold. Same for every zone for now - not scaling per body size yet.
+/// Max local blood each bodypart type can hold - scaled by roughly how much of the body's blood supply
+/// actually sits there. MS13_LOCAL_BLOOD_MAX is the generic /obj/item/bodypart fallback (used by any zone
+/// that doesn't get one of the four specific overrides below, e.g. non-human anatomy).
 #define MS13_LOCAL_BLOOD_MAX 60
+#define MS13_LOCAL_BLOOD_CHEST 250
+#define MS13_LOCAL_BLOOD_HEAD 80
+#define MS13_LOCAL_BLOOD_ARM 40
+#define MS13_LOCAL_BLOOD_LEG 60
 /// Per-tick local blood regen while the local vessel is undamaged, pulled from the mob's global blood_volume.
 #define MS13_LOCAL_BLOOD_REGEN 2
 /// Global blood_volume is left alone below this - a limb won't top up its local supply by draining the body dry.
@@ -36,7 +42,25 @@
 /// Per-tick GLOBAL blood_volume lost (via the real bleed() proc) per point of current vessel damage - on top
 /// of, not instead of, the flat +4 bleed_rate a fully severed artery already causes.
 #define MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE 0.1
-/// Minimum local_blood_volume (out of MS13_LOCAL_BLOOD_MAX) a vessel's own limb needs before that vessel is
-/// allowed to use DD's base handle_regeneration() self-heal at all - a quarter tank of local blood or less
-/// and there's not enough supply reaching the injury to knit it back together.
-#define MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD (MS13_LOCAL_BLOOD_MAX * 0.25)
+/// Fraction of THIS limb's own local_blood_volume_max (not a flat number - limbs hold different amounts,
+/// see MS13_LOCAL_BLOOD_CHEST etc above) a vessel's limb needs before that vessel is allowed to use DD's
+/// base handle_regeneration() self-heal at all - a quarter tank of local blood or less and there's not
+/// enough supply reaching the injury to knit it back together.
+#define MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD_PCT 0.25
+/// Same idea, generalized to every other organ sharing the bodypart (heart/lungs/liver/stomach in a
+/// starved chest, brain/eyes in a starved head) - a bit more lenient than the vessel's own threshold.
+#define MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT 0.15
+/// Per-tick organ damage to everything else sharing a bodypart once its local_blood_volume hits 0 outright -
+/// slow ischemic damage, not a death sentence, but a prolonged rupture will start costing real organ health.
+#define MS13_ISCHEMIA_DAMAGE_PER_TICK 0.5
+/// Hard ceiling on ischemic damage, as a fraction of the STARVED ORGAN's own maxHealth - ischemia alone can
+/// never push an organ to full failure (damage >= maxHealth) no matter how long it's starved for.
+#define MS13_ISCHEMIA_DAMAGE_CAP 0.7
+/// Internal (local_blood_volume) / external (bleed(), visible on the floor) bleed multipliers for a blunt
+/// hit (no sharpness) - a vessel ruptured by blunt trauma has no open path out, so it mostly pools
+/// internally instead of spilling out.
+#define MS13_BLEED_RATIO_BLUNT_INTERNAL_MULT 1.6
+#define MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT 0.4
+/// Same, for a sharp hit (edged/pointy/impaling) - an open wound bleeds out visibly instead of pooling.
+#define MS13_BLEED_RATIO_SHARP_INTERNAL_MULT 0.5
+#define MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT 2.5

@@ -708,6 +708,14 @@
 	if(!owner)
 		return
 
+	// AI EDIT: mojave/code/modules/surgery/organs/muscle.dm's muscle_critically_weak() - a critically weak
+	// (not just moderately weak) muscle combines with this real disable cascade (drops held items, loses a
+	// usable hand/leg, etc) instead of only affecting melee damage/movement speed on its own. Checked first,
+	// same as the other force-disable conditions below.
+	if(muscle_critically_weak())
+		set_disabled(TRUE)
+		return
+
 	if(bodypart_flags & (BP_CUT_AWAY|BP_TENDON_CUT))
 		set_disabled(TRUE)
 		return

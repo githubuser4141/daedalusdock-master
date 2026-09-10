@@ -132,7 +132,9 @@
 	icon_state = "ergo_chair"
 	anchored = FALSE
 
-/obj/structure/chair/comfy/ms13/ergo/Moved()
+// AI EDIT: zero-param signature - DD's real base /atom/movable/proc/Moved() takes 5 params including
+// momentum_change, so any caller passing that as a named arg crashed with "bad arg name 'momentum_change'".
+/obj/structure/chair/comfy/ms13/ergo/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
 	if(has_gravity())
 		playsound(src, 'sound/effects/roll.ogg', 100, TRUE)
@@ -181,9 +183,13 @@
 
 // Office Chairs //
 
-/obj/structure/chair/office/Moved()
+// AI EDIT: was a zero-param override, same bug as the ergo chair above - also fully replaced (rather than
+// extended) DD's real /obj/structure/chair/office/Moved() (code/game/objects/structures/beds_chairs/
+// chair.dm), silently dropping its "!forced && !CHECK_MOVE_LOOP_FLAGS(...)" guard, so this played its sound
+// even during forced/outside-control moves. Restored the guard.
+/obj/structure/chair/office/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
-	if(has_gravity())
+	if(!forced && !CHECK_MOVE_LOOP_FLAGS(src, MOVEMENT_LOOP_OUTSIDE_CONTROL) && has_gravity())
 		playsound(src, 'mojave/sound/ms13effects/furniture/chair_office_move.ogg', 75, TRUE)
 
 /obj/structure/chair/office/ms13

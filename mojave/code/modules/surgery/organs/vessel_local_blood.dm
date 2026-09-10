@@ -19,8 +19,37 @@
 /obj/item/bodypart
 	/// How much blood is currently available to this specific limb - drained by its own vessel's damage,
 	/// refilled from the mob's global blood_volume while the vessel is healthy. See vessel_local_blood.dm.
+	/// Defaults to the generic fallback size - chest/head/arm/leg override both vars below to their own size.
 	var/local_blood_volume = MS13_LOCAL_BLOOD_MAX
 	var/local_blood_volume_max = MS13_LOCAL_BLOOD_MAX
+	/// Sharpness of the most recent hit to reach this limb - DD's own damage_internal_organs() (code/modules/
+	/// surgery/bodyparts/_bodyparts.dm) receives sharpness but never passes it to the organ it damages, so
+	/// there's no way for a vessel to know what actually hit it without capturing it here first.
+	var/last_damage_sharpness = NONE
+
+/// See last_damage_sharpness above.
+/obj/item/bodypart/receive_damage(brute = 0, burn = 0, blocked = 0, updating_health = TRUE, required_status = null, sharpness = NONE, modifiers = DEFAULT_DAMAGE_FLAGS, obj/item/weapon_used = null)
+	if(brute || burn)
+		last_damage_sharpness = sharpness
+	return ..()
+
+/// Per-zone local blood pool sizes - the chest (torso, holding most of the body's actual blood supply)
+/// dwarfs a single limb, matching real distribution far better than one flat number for every zone.
+/obj/item/bodypart/chest
+	local_blood_volume = MS13_LOCAL_BLOOD_CHEST
+	local_blood_volume_max = MS13_LOCAL_BLOOD_CHEST
+
+/obj/item/bodypart/head
+	local_blood_volume = MS13_LOCAL_BLOOD_HEAD
+	local_blood_volume_max = MS13_LOCAL_BLOOD_HEAD
+
+/obj/item/bodypart/arm
+	local_blood_volume = MS13_LOCAL_BLOOD_ARM
+	local_blood_volume_max = MS13_LOCAL_BLOOD_ARM
+
+/obj/item/bodypart/leg
+	local_blood_volume = MS13_LOCAL_BLOOD_LEG
+	local_blood_volume_max = MS13_LOCAL_BLOOD_LEG
 
 /**
  * Every tick: a damaged (but not yet ruptured - that's handled separately by set_organ_dead()) vessel bleeds
@@ -36,11 +65,22 @@
 	if(!ownerlimb || !owner)
 		return
 
+	if(ownerlimb.local_blood_volume <= 0)
+		starve_organs(delta_time)
+
 	if(damage > 0)
-		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * delta_time
+		// AI EDIT: internal (pools in the limb, local_blood_volume) vs external (leaves the body via
+		// bleed(), which already handles floor splatter - see code/modules/mob/living/blood.dm) - the split
+		// isn't fixed, it shifts with what actually caused the damage: an open/sharp wound bleeds out
+		// visibly, blunt trauma mostly pools internally with no path out.
+		var/sharp_wound = ownerlimb.last_damage_sharpness & (SHARP_EDGED|SHARP_POINTY|SHARP_IMPALING)
+		var/internal_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_INTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_INTERNAL_MULT
+		var/external_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
+
+		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * internal_mult * delta_time
 		ownerlimb.local_blood_volume = max(0, ownerlimb.local_blood_volume - local_loss)
 
-		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * delta_time
+		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * delta_time
 		owner.bleed(global_loss)
 		return
 
@@ -54,6 +94,27 @@
 	owner.adjustBloodVolume(-regen)
 
 /**
+ * "organs need blood values" - a limb with zero local blood isn't just failing to heal its own vessel
+ * (handle_regeneration() below already covers that generally), the other organs living in it are being
+ * starved outright. Everything else in ownerlimb.contained_organs takes slow ischemic damage while this
+ * lasts - the heart/lungs/liver/stomach for a starved chest, the brain/eyes for a starved head.
+ *
+ * Gated on two things at once: how damaged THIS vessel currently is (worse vessel damage -> organs are
+ * allowed to be brought further down), and a hard MS13_ISCHEMIA_DAMAGE_CAP ceiling regardless of vessel
+ * severity or how long the starvation lasts - ischemia alone should never be a death sentence on its own,
+ * just a real cost, with actual failure reserved for direct injury (a fully ruptured/destroyed organ).
+ */
+/obj/item/organ/vessel/proc/starve_organs(delta_time)
+	var/vessel_severity = damage / maxHealth
+	for(var/obj/item/organ/O in ownerlimb.contained_organs)
+		if(O == src || (O.organ_flags & ORGAN_SYNTHETIC))
+			continue
+		var/ceiling = O.maxHealth * MS13_ISCHEMIA_DAMAGE_CAP * vessel_severity
+		if(O.damage >= ceiling)
+			continue
+		O.applyOrganDamage(min(MS13_ISCHEMIA_DAMAGE_PER_TICK * delta_time, ceiling - O.damage))
+
+/**
  * DD's base /obj/item/organ/proc/handle_regeneration() (code/modules/surgery/organs/_organ.dm) already
  * self-heals any organ once its damage drops under 10% of max - vessels get that for free just by being a
  * normal /obj/item/organ subtype, no changes needed there. What DD's base version doesn't know about is
@@ -62,6 +123,18 @@
  * on_life() above) shouldn't be healing on its own no matter how minor the damage is.
  */
 /obj/item/organ/vessel/handle_regeneration()
-	if(!ownerlimb || ownerlimb.local_blood_volume < MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD)
+	if(!ownerlimb || ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD_PCT)
+		return
+	return ..()
+
+/**
+ * Same idea as the vessel-specific override above, generalized to every other organ - a heart or lung
+ * sitting in a blood-starved chest shouldn't be knitting itself back together either. Safe to apply
+ * universally: local_blood_volume defaults to full and only ever drops via a vessel actually being
+ * damaged (vessel_local_blood.dm's on_life()), so this is a no-op for any species/mob that never got the
+ * vessel system installed on it.
+ */
+/obj/item/organ/handle_regeneration()
+	if(ownerlimb && ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT)
 		return
 	return ..()

@@ -143,7 +143,13 @@
 	var/atom/A = parent
 
 	if(isgrenade(parent)) // handle_martyrs can reduce the radius and thus the number of pellets we produce if someone dives on top of a frag grenade
-		INVOKE_ASYNC(src, PROC_REF(handle_martyrs), triggerer) // note that we can modify radius in this proc
+		// AI EDIT: was INVOKE_ASYNC - that doesn't block, so num_pellets below was computed from the
+		// pre-martyr radius/pellet_delta despite this comment's own assumption that handle_martyrs already
+		// ran. handle_martyrs's own pellet_delta increments and pew() calls (added afterward, async) then
+		// went uncounted in num_pellets, so terminated could hit that too-low target and finalize() would
+		// qdel() this component while those extra martyr pellets were still in flight and registered - their
+		// later hit/range-out signal firing on the dead component was the "null -= pellet" crash.
+		handle_martyrs(triggerer)
 	else if(islandmine(parent))
 		var/obj/effect/mine/shrapnel/triggered_mine = parent
 		if(triggered_mine.shred_triggerer && istype(triggerer)) // free shrapnel for the idiot who stepped on it if we're a mine that shreds the triggerer
@@ -221,7 +227,13 @@
 /datum/component/pellet_cloud/proc/pellet_hit(obj/projectile/P, atom/movable/firer, atom/target, Angle, hit_zone)
 	SIGNAL_HANDLER
 
-	pellets -= P
+	// AI EDIT: Destroy() nulls pellets - a pellet's hit/range-out signal can still fire after that (the
+	// projectile itself isn't guaranteed to be cleaned up in the same tick), which was "type mismatch:
+	// null -= P". Using a plain guard (not LAZYREMOVE) since LAZYREMOVE auto-nulls the list once empty,
+	// and pew() below still does raw "pellets += P" for pellets that haven't fired yet (create_blast_pellets
+	// invokes pew() asynchronously per turf) - nulling pellets mid-batch would just move the crash there.
+	if(pellets)
+		pellets -= P
 	terminated++
 	hits++
 	var/obj/item/bodypart/hit_part
@@ -248,7 +260,8 @@
 ///One of our pellets disappeared due to hitting their max range (or just somehow got qdel'd), remove it from our list and check if we're done (terminated == num_pellets)
 /datum/component/pellet_cloud/proc/pellet_range(obj/projectile/P)
 	SIGNAL_HANDLER
-	pellets -= P
+	if(pellets)
+		pellets -= P
 	terminated++
 	UnregisterSignal(P, list(COMSIG_PARENT_QDELETING, COMSIG_PROJECTILE_RANGE_OUT, COMSIG_PROJECTILE_SELF_ON_HIT))
 	if(terminated == num_pellets)

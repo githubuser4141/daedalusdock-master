@@ -5,7 +5,7 @@
 	icon = 'mojave/icons/objects/pa_items.dmi'
 	pickup_sound = 'mojave/sound/ms13weapons/meleesounds/general_pickup.ogg'
 	drop_sound = 'mojave/sound/ms13effects/impact/metal/metal_hollow_2.wav'
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 0, WOUND = 15)
+	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 0)
 	subarmor = list(SUBARMOR_FLAGS = NONE, \
 					EDGE_PROTECTION = 0, \
 					CRUSHING = 0, \

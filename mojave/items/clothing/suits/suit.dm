@@ -5,7 +5,7 @@
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
 	body_parts_covered = CHEST|ARMS|LEGS|GROIN
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0, WOUND = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
 	max_integrity = 325
 	///Icon file for left inhand overlays
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
@@ -29,7 +29,7 @@
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
 	body_parts_covered = CHEST|ARMS|LEGS|GROIN
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0, WOUND = 0)
+	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
 	///Icon file for left inhand overlays
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	///Icon file for right inhand overlays

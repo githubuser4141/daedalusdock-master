@@ -1,9 +1,11 @@
 //.44
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/m44)
+	default_armor = HIGH_CAL_PISTOL
+
 /obj/projectile/bullet/ms13/m44
 	name = ".44 bullet"
 	icon_state = "medium_bullet"
-	damage = 40
-	subtractible_armour_penetration = 15
+	damage = 60
 
 /obj/projectile/bullet/ms13/m44/junk
 	subtractible_armour_penetration = 5

@@ -31,6 +31,9 @@ code/modules/projectiles/projectile.dm,
 code/modules/projectiles/ammunition/_firing.dm,
 code/game/turfs/closed/wall/reinf_walls.dm,
 code/modules/mob/living/carbon/damage_procs.dm,
+code/datums/components/pellet_cloud.dm,
+code/modules/surgery/bodyparts/_bodyparts.dm,
+code/modules/grab/grab_datum.dm,
 
 
 

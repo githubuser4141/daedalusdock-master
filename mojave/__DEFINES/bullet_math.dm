@@ -123,7 +123,37 @@
 	// The threshold reached when the bullet has little penetration power
 	// against this
 	var/maximumBulletOverpenThreshld = 1
-	var/bIntegrity = 100
+	// AI EDIT: was a plain "var/bIntegrity = 100" - a second, disconnected integrity number that never
+	// matched what the atom's real health/damage system (atom_integrity/max_integrity, code/game/atom/
+	// atoms.dm) showed or did, even for things that DO track real integrity (most /obj/structure and /obj/
+	// machinery). Replaced with getBIntegrity()/setBIntegrity()/getBIntegrityMax() below - they read/write
+	// through to atom_integrity when the atom actually uses_integrity (so shooting a structure/machine
+	// enough now really damages and can break it through DD's own system, not just a hidden number), and
+	// fall back to this standalone var otherwise - which covers both the bullet itself (a projectile never
+	// sets uses_integrity) and walls (this codebase's walls don't use atom_integrity at all - they're
+	// dismantled/broken through a separate mechanic).
+	var/standalone_bIntegrity = 100
+
+/// See standalone_bIntegrity above.
+/atom/proc/getBIntegrity()
+	if(uses_integrity)
+		return atom_integrity
+	return standalone_bIntegrity
+
+/// See standalone_bIntegrity above.
+/atom/proc/getBIntegrityMax()
+	if(uses_integrity)
+		return max_integrity
+	return 100
+
+/// See standalone_bIntegrity above. Goes through the real update_integrity() (damage overlays, breaking,
+/// etc) when the atom uses_integrity, so this now has real, visible consequences instead of silently
+/// tracking a number nothing else ever reads.
+/atom/proc/setBIntegrity(value)
+	if(uses_integrity)
+		update_integrity(clamp(value, 0, max_integrity))
+	else
+		standalone_bIntegrity = clamp(value, 0, 100)
 
 /turf
 	var/wallIntegrity = 100
@@ -224,15 +254,49 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 /// Bullet Malus defines for fragmenting or expanding
 
 
+// Bullet Armors
+
+#define BUCKSHOT list(BLUNT = 0, PUNCTURE = 100, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define SLUG list(BLUNT = 0, PUNCTURE = 75, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define SOFTPOINT_RIFLE list(BLUNT = 0, PUNCTURE = 35, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define SOFTPOINT_PISTOL list(BLUNT = 0, PUNCTURE = 50, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define FMJ_RIFLE list(BLUNT = 0, PUNCTURE = 50, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define FMJ_PISTOL list(BLUNT = 0, PUNCTURE = 60, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define HP_PISTOL list(BLUNT = 0, PUNCTURE = 40, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define HP_RIFLE list(BLUNT = 0, PUNCTURE = 50, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define HIGH_CAL_RIFLE list(BLUNT = 0, PUNCTURE = 120, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define HIGH_CAL_PISTOL list(BLUNT = 0, PUNCTURE = 150, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define GIANT_CAL_RIFLE list(BLUNT = 0, PUNCTURE = 200, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define GIANT_CAL_PISTOL list(BLUNT = 0, PUNCTURE = 230, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define AP_PISTOL list(BLUNT = 0, PUNCTURE = 130, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define AP_RIFLE list(BLUNT = 0, PUNCTURE = 100, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define HIGH_CAL_AP_PISTOL list(BLUNT = 0, PUNCTURE = 200, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+#define HIGH_CAL_AP_RIFLE list(BLUNT = 0, PUNCTURE = 250, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+#define ANTI_MATERIEL list(BLUNT = 0, PUNCTURE = 350, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+// End Armors
+
 #define BULLET_FRAGMENT_MAXANGLEVARIATION  10
 #define BULLET_FRAGMENT_SPEEDMALUS 0.1
 #define BULLET_FRAGMENT_SPAWNCOUNT 8
 
 #define BULLET_EXPAND_SPEEDMALUS 0.05
 
-#define BULLET_SPEED_BOOSTED -0.1
-#define BULLET_SPEED_FAST -0.3
-#define BULLET_SPEED_INSANE -0.5
+#define BULLET_SPEED_PISTOL -0.1
+#define BULLET_SPEED_SMG -0.3
+#define BULLET_SPEED_RIFLE -0.4
+#define BULLET_SPEED_RIFLE_VFAST -0.5
+#define BULLET_SPEED_INSANE -0.6
+#define BULLET_SPEED_RAILGUN -0.8
+
 #define BULLET_SPEED_SLOWED 0.1
 #define BULLET_SPEED_SNAIL 0.4
 
@@ -265,7 +329,7 @@ TYPEINFO_DEF(/obj/projectile)
 /obj/projectile/proc/getRelativeArmorRatingMultiplier(atom/target, datum/armor/targetArmor, datum/armor/bulletArmor)
 	if(targetArmor == null || bulletArmor == null || bulletArmorType == "")
 		return 0
-	var/ratingDiff = (bulletArmor.vars[bulletArmorType] * bIntegrity / initial(bIntegrity)) * initial(speed) / speed - targetArmor.vars[bulletArmorType] * target.bIntegrity / initial(target.bIntegrity)
+	var/ratingDiff = (bulletArmor.vars[bulletArmorType] * getBIntegrity() / getBIntegrityMax()) * initial(speed) / speed - targetArmor.vars[bulletArmorType] * target.getBIntegrity() / target.getBIntegrityMax()
 //message_admins("relative armor returning [ratingDiff / bulletArmor.vars[damage_type]]")
 	return (ratingDiff+0.001) / bulletArmor.vars[bulletArmorType]
 
@@ -273,10 +337,17 @@ TYPEINFO_DEF(/obj/projectile)
 	// AI EDIT: was "0 to fragmentCount" (off-by-one, fragmentCount+1 fragments) and fired every fragment
 	// unconditionally - adjustIntegrity() below can qdel a fragment that inherited low bIntegrity from an
 	// already-battered parent bullet, and calling .fire() on that qdeleted object right after was the
-	// "Illegal forceMove()"/"Cannot read null.x"/qdeleted-datum crash spam.
+	// "Illegal forceMove()"/"Cannot read null.x"/qdeleted-datum crash spam. Root cause: every fragment
+	// inherits THIS bullet's current (possibly already-depleted) bIntegrity, so a bullet that's already
+	// spent most of its integrity ricocheting/overpenetrating would spawn a whole batch of fragments that
+	// are all dead on arrival. bIntegrity doesn't change across this loop, so one check up front covers the
+	// whole batch - don't bother fragmenting at all if there isn't enough integrity left for even one
+	// fragment to survive being created. The per-fragment QDELETED check stays as a cheap backstop.
+	if(getBIntegrity() <= BULLET_INTEGRITYLOSS_FRAGMENT)
+		return
 	for(var/i = 1 to fragmentCount)
 		var/obj/projectile/projectile = new /obj/projectile/bullet(get_turf(lastHit))
-		projectile.bIntegrity = bIntegrity
+		projectile.setBIntegrity(getBIntegrity())
 		projectile.speed = speed
 		projectile.firer = src
 		projectile.fired_from = lastHit
@@ -291,8 +362,8 @@ TYPEINFO_DEF(/obj/projectile)
 		projectile.fire(fragmentAngle + rand(0, maxDeviation) * sign(rand(-1,1)) + (fullLoopPossible ? rand(-1,1) > 0 : 0) * 180)
 
 /obj/projectile/proc/adjustIntegrity(value)
-	bIntegrity = max(bIntegrity + value, 0)
-	if(bIntegrity == 0)
+	setBIntegrity(max(getBIntegrity() + value, 0))
+	if(getBIntegrity() == 0)
 		qdel(src)
 
 /obj/projectile/proc/adjustSpeed(value)
@@ -317,45 +388,5 @@ TYPEINFO_DEF(/obj/projectile/bullet/bmg50)
 	// step count (code/modules/projectiles/projectile.dm:86); assigning a bare negative delta made
 	// it negative, breaking the movement math outright (the projectile never actually travels).
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
-	bulletTipType = BULLET_SHARP
-
-
-// very small bullet, unlikely to pen anything
-TYPEINFO_DEF(/obj/projectile/bullet/lr22)
-	default_armor = list(BLUNT = 0, PUNCTURE = 15, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
-
-/obj/projectile/bullet/lr22
-	name = ".22 lr"
-	damage = 20
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_FAST
-	bulletTipType = BULLET_ROUNDED
-	armor_penetration = 10
-
-// enough to go through 3-4 walls.
-TYPEINFO_DEF(/obj/projectile/bullet/a556666)
-	default_armor = list(BLUNT = 0, PUNCTURE = 50, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
-
-/obj/projectile/bullet/a556666
-	name = "5.56"
-	damage = 40
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_BOOSTED
-	bulletTipType = BULLET_SHARP
-	armor_penetration = 10
-
-/obj/projectile/bullet/a556666/noap
-	name = "5.56"
-	damage = 40
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_BOOSTED
-	bulletTipType = BULLET_SHARP
-	armor_penetration = 0
-
-TYPEINFO_DEF(/obj/projectile/bullet/bmg50/subs)
-	default_armor = list(BLUNT = 0, PUNCTURE = 350, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
-
-/obj/projectile/bullet/bmg50/subs
-	name = ".50 BMG"
-	damage = 60
-	armor_penetration = 0
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SNAIL
 	bulletTipType = BULLET_SHARP
 

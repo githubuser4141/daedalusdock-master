@@ -447,8 +447,8 @@
 		var/armorDiff = (bulletArmor.vars[bulletArmorType] - targetArmor.vars[bulletArmorType])
 		var/calculatedDamage = (A.maximumBulletOverpenThreshld - clamp(mult, A.minimumBulletOverpenThreshold, A.maximumBulletOverpenThreshld - 0.1)) * damage
 		if(mult > 0.4 * ((90 - abs(ricochetAngle)) / 90 + 1))
-			adjustIntegrity(-0.2 * bIntegrity)
-			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 150, 0, 0.8), 0)
+			adjustIntegrity(-0.2 * getBIntegrity())
+			hitted.setBIntegrity(max(hitted.getBIntegrity() - calculatedDamage * clamp(armorDiff / 150, 0, 0.8), 0))
 			adjustSpeed(-0.4 * speed)
 			impacted[A] = TRUE
 			return TRUE
@@ -463,7 +463,7 @@
 			set_angle(wallHitAngle)
 			trajectory.starting_x = wx
 			trajectory.starting_y = wy
-			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 200, 0, 0.5), 0)
+			hitted.setBIntegrity(max(hitted.getBIntegrity() - calculatedDamage * clamp(armorDiff / 200, 0, 0.5), 0))
 			ricochets++
 			decayedRange = max(0, decayedRange - 1)
 			adjustSpeed(-0.1 * speed)
@@ -472,12 +472,12 @@
 			adjustIntegrity(-20)
 			impacted[A] = TRUE
 			return TRUE
-		if(bIntegrity < initial(bIntegrity) * 0.3)
-			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 100, 0, 1), 0)
+		if(getBIntegrity() < getBIntegrityMax() * 0.3)
+			hitted.setBIntegrity(max(hitted.getBIntegrity() - calculatedDamage * clamp(armorDiff / 100, 0, 1), 0))
 			return process_hit(A, select_target(A, A, A), A)
 		if(mult < 0 && abs(ricochetAngle) < GLOB.bulletStandardFragmentAngles["[bulletTipType]"][2] && abs(ricochetAngle) > GLOB.bulletStandardFragmentAngles["[bulletTipType]"][1] && canFragment)
 			impacted[A] = TRUE
-			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 200, 0, 1), 0)
+			hitted.setBIntegrity(max(hitted.getBIntegrity() - calculatedDamage * clamp(armorDiff / 200, 0, 1), 0))
 			// AI EDIT: BULLET_FRAGMENT_SPAWNCOUNT (8) / BULLET_FRAGMENT_MAXANGLEVARIATION (10) - mojave
 			// defines, hardcoded here since mojave loads after code/ in daedalus.dme.
 			fragmentTowards(A, 8, abs(ricochetAngle) > 60 ? (ricochetAngle + orig + abs(ricochetAngle) + 90) : ricochetAngle + orig - sign(wallHitAngle) * 3, 10, abs(ricochetAngle) > 60)

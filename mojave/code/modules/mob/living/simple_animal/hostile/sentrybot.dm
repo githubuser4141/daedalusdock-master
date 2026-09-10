@@ -103,6 +103,15 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	var/already_firing = FALSE
 	var/speech_cooldown = 0
 	var/datum/looping_sound/treads/soundloop
+	/// Frozen aim point while blind-firing at a target's last-seen location - see OpenFire().
+	var/turf/blind_fire_turf
+	/// world.time deadline for the current blind-fire volley - 0 when not blind-firing.
+	var/blind_fire_until = 0
+	/// How long we'll keep shooting at a target's last-seen location after losing line of sight before giving up.
+	var/blind_fire_duration = 8 SECONDS
+	/// Was the target LYING_DOWN at the moment we lost line of sight on them? Drives low_aim_mode - see the
+	/// two ready_proj() overrides below.
+	var/blind_fire_target_was_prone = FALSE
 
 /datum/looping_sound/treads
 	start_sound = 'mojave/sound/ms13npc/sentrybot/treads_start.mp3'
@@ -206,12 +215,31 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	QDEL_NULL(soundloop)
 	return ..()
 
+/**
+ * Losing line of sight doesn't stop the gun - it keeps putting bullets through whatever's in the way,
+ * aimed at wherever the target was last actually seen (not omnisciently tracking them live through the
+ * wall) for blind_fire_duration before giving up and looking for a new target. If the target was LYING_DOWN
+ * the moment LoS was lost, that blind fire aims low instead - see low_aim_mode/ready_proj() below. Regaining
+ * LoS resets everything back to a normal aimed firing stance.
+ */
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/OpenFire(atom/A, actually_fire = FALSE)
-	//Main gun time
-	//If we don't have LoS on our target, we should see if there's any other targets we could be killing
-	//Otherwise, we'll go chase the target by setting a lowered minimum distance
 	if(!can_see(src, target, length = 10))
-		FindTarget(possible_targets = null, HasTargetsList = FALSE)
+		if(!blind_fire_until)
+			blind_fire_turf = get_turf(target)
+			blind_fire_until = world.time + blind_fire_duration
+			var/mob/living/living_target = isliving(target) ? target : null
+			blind_fire_target_was_prone = living_target && living_target.body_position == LYING_DOWN
+		if(!blind_fire_turf || world.time > blind_fire_until)
+			blind_fire_until = 0
+			blind_fire_turf = null
+			blind_fire_target_was_prone = FALSE
+			FindTarget(possible_targets = null, HasTargetsList = FALSE)
+			return
+		A = blind_fire_turf
+	else
+		blind_fire_until = 0
+		blind_fire_turf = null
+		blind_fire_target_was_prone = FALSE
 	if(actually_fire)
 		. = ..()
 		gunfire_sound()
@@ -272,7 +300,7 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	if(.) //Failed to find new targets, going into idle
 		play_speech_sound(GLOB.sentrybot_switch_to_patrol_sound, bypass_cooldown = TRUE)
 		add_overlay("scanning")
-		set_light(l_range = 1.5, l_power = 8, l_color = "#ff0000")
+		set_light(l_outer_range = 1.5, l_power = 8, l_color = "#ff0000")
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/wind_down_gun()
 	playsound(src, 'mojave/sound/ms13npc/sentrybot/gatling_winddown.ogg', 50, FALSE)
@@ -297,7 +325,7 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 		play_speech_sound(GLOB.sentrybot_hostiles_located_sound, bypass_cooldown = FALSE)
 		toggle_ai(AI_ON)
 		cut_overlays("scanning")
-		set_light(l_range = 1.5, l_power = 8, l_color = "#ff0000")
+		set_light(l_outer_range = 1.5, l_power = 8, l_color = "#ff0000")
 		update_icon()
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/adjustHealth(amount, updating_health = TRUE, forced = FALSE)
@@ -320,6 +348,27 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/reset_stat_attack()
 	stat_attack = initial(stat_attack)
 
+/**
+ * DD's real ready_proj() (code/modules/projectiles/ammunition/_firing.dm) sets hit_prone_targets from
+ * user.combat_mode, and can_hit_target() (code/modules/projectiles/projectile.dm) only bypasses that check
+ * (direct_target) when the shot was aimed straight at the living target itself. Sentrybots never set
+ * combat_mode, and blind fire is aimed at blind_fire_turf (not the mob) - so between those two, a genuinely
+ * aimed in-sight shot already hits prone targets and a blind one already doesn't, with no extra code needed.
+ *
+ * low_aim_mode covers the one case DD's engine doesn't: a target last seen LYING_DOWN before LoS was lost.
+ * Rather than a flat "never hits prone," the shooter aims low at where they went down - a moderate,
+ * uniform chance of hitting whoever's actually there, standing or prone, representing spraying the lower
+ * part of the structure instead of a precise shot. Set per-shot (see the two ready_proj() overrides below),
+ * not a static default, so it never leaks into a genuinely aimed shot.
+ */
+/obj/projectile
+	var/low_aim_mode = FALSE
+
+/obj/projectile/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE, cross_failed = FALSE)
+	if(low_aim_mode && isliving(target) && !direct_target)
+		return prob(50)
+	return ..()
+
 //randomspread prerequisite
 /obj/item/ammo_casing/energy/ms13/laser/sentrybot
 	projectile_type = /obj/projectile/beam/ms13/laser/sentrybot
@@ -332,6 +381,14 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	. = ..()
 	if(. && !QDELETED(src))
 		qdel(src)
+
+/// See /obj/projectile/var/low_aim_mode above - this is where DD's real ready_proj() already sets
+/// hit_prone_targets from user.combat_mode, so it's the natural place to set our own per-shot state too.
+/obj/item/ammo_casing/energy/ms13/laser/sentrybot/ready_proj(atom/target, mob/living/user, quiet, zone_override, atom/fired_from)
+	. = ..()
+	var/mob/living/simple_animal/hostile/ms13/robot/sentrybot/shooter = istype(user, /mob/living/simple_animal/hostile/ms13/robot/sentrybot) ? user : null
+	if(loaded_projectile && shooter && shooter.blind_fire_until && shooter.blind_fire_target_was_prone)
+		loaded_projectile.low_aim_mode = TRUE
 
 /obj/projectile/beam/ms13/laser/sentrybot
 	damage = 8
@@ -537,6 +594,13 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	SpinAnimation(speed = rand_spin, loops = 1)
 	// AI EDIT: dropped the movable_physics bounce-and-roll effect - it needs a whole subsystem (SSmovablephysics)
 	// that doesn't exist in DD at all, not something with a clean rename target
+
+/// See /obj/item/ammo_casing/energy/ms13/laser/sentrybot/ready_proj() above - same deal, ballistic side.
+/obj/item/ammo_casing/ms13/sentry/ready_proj(atom/target, mob/living/user, quiet, zone_override, atom/fired_from)
+	. = ..()
+	var/mob/living/simple_animal/hostile/ms13/robot/sentrybot/shooter = istype(user, /mob/living/simple_animal/hostile/ms13/robot/sentrybot) ? user : null
+	if(loaded_projectile && shooter && shooter.blind_fire_until && shooter.blind_fire_target_was_prone)
+		loaded_projectile.low_aim_mode = TRUE
 
 /obj/projectile/bullet/ms13/sentry
 	name = "5mm bullet"
