@@ -23,9 +23,20 @@
 
 /datum/ai_controller/basic_controller/ms13/hostile_animal
 	// AI EDIT: BB_TARGETTING_DATUM/targetting_datum (old spelling, instantiated) doesn't exist - DD's real key is
-	// BB_TARGETING_STRATEGY, holding a type path (not an instance), confirmed against DD's own cockroach.dm
+	// BB_TARGETING_STRATEGY, holding a type path (not an instance), confirmed against DD's own cockroach.dm.
+	//
+	// AI EDIT (bugfix): /datum/targeting_strategy/basic (code/datums/ai/targeting_strategies/
+	// _targeting_strategy.dm) is an abstract stub whose can_attack() unconditionally "return"s (null/FALSE) -
+	// nothing overrides it for the bare "basic" type (DD's own cockroach.dm has the identical bug, unnoticed
+	// since nobody tests cockroach aggression). find_potential_targets.dm's can_attack() check then NEVER
+	// passes, so BB_BASIC_MOB_CURRENT_TARGET never gets set, so basic_melee_attack_subtree never has a target
+	// to act on - the mob never engages, ever, no matter how close/hostile the player is. Switched to
+	// /datum/targeting_strategy/generic, DD's real working implementation (faction/LOS/vision/stat checks) -
+	// see targeting_strategy_generic.dm. BB_TARGET_MINIMUM_STAT = DEAD (same as monkey_controller.dm uses)
+	// so it isn't gated on stat at all, matching this mob type's original "attack anyone in range" intent.
 	blackboard = list(
-		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/generic,
+		BB_TARGET_MINIMUM_STAT = DEAD,
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance/bypass_tables

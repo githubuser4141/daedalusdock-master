@@ -27,9 +27,13 @@
 
 /datum/ai_controller/basic_controller/ms13/robot
 	// AI EDIT: BB_TARGETTING_DATUM/targetting_datum (old spelling, instantiated) doesn't exist - DD's real key is
-	// BB_TARGETING_STRATEGY, holding a type path (not an instance), confirmed against DD's own cockroach.dm
+	// BB_TARGETING_STRATEGY, holding a type path (not an instance), confirmed against DD's own cockroach.dm.
+	// AI EDIT (bugfix): see the matching comment in hostile_animals.dm - /datum/targeting_strategy/basic's
+	// can_attack() is an abstract stub that always fails, so this mob could never actually acquire a target.
+	// Switched to /datum/targeting_strategy/generic (DD's real implementation).
 	blackboard = list(
-		BB_TARGETING_STRATEGY = /datum/targeting_strategy/basic
+		BB_TARGETING_STRATEGY = /datum/targeting_strategy/generic,
+		BB_TARGET_MINIMUM_STAT = DEAD,
 	)
 
 	ai_movement = /datum/ai_movement/basic_avoidance/bypass_tables

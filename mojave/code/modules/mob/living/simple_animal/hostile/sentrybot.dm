@@ -103,15 +103,9 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	var/already_firing = FALSE
 	var/speech_cooldown = 0
 	var/datum/looping_sound/treads/soundloop
-	/// Frozen aim point while blind-firing at a target's last-seen location - see OpenFire().
-	var/turf/blind_fire_turf
-	/// world.time deadline for the current blind-fire volley - 0 when not blind-firing.
-	var/blind_fire_until = 0
-	/// How long we'll keep shooting at a target's last-seen location after losing line of sight before giving up.
-	var/blind_fire_duration = 8 SECONDS
-	/// Was the target LYING_DOWN at the moment we lost line of sight on them? Drives low_aim_mode - see the
-	/// two ready_proj() overrides below.
-	var/blind_fire_target_was_prone = FALSE
+	// blind_fire_turf/blind_fire_until/blind_fire_duration/blind_fire_los_range/blind_fire_target_was_prone
+	// now live on the shared /mob/living/simple_animal/hostile/ms13/robot parent - see
+	// mojave/code/modules/mob/robots/_ranged_robot_ai.dm.
 
 /datum/looping_sound/treads
 	start_sound = 'mojave/sound/ms13npc/sentrybot/treads_start.mp3'
@@ -180,10 +174,8 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	Move(_newLoc, _Dir)
 */
 
-/mob/living/simple_animal/hostile/ms13/robot/sentrybot/ListTargets()
-	. = ..()
-	if(target && get_dist(target, src) < aggro_vision_range)
-		. += target
+// ListTargets() override (keeping a lost-LoS target in scope within aggro_vision_range) now lives on the
+// shared /mob/living/simple_animal/hostile/ms13/robot parent - see _ranged_robot_ai.dm.
 
 // AI EDIT: added cause_of_death and forwarded it - see atmosphere.dm's /mob/living/death() for why.
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/death(gibbed, cause_of_death = "Unknown")
@@ -216,30 +208,22 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	return ..()
 
 /**
- * Losing line of sight doesn't stop the gun - it keeps putting bullets through whatever's in the way,
- * aimed at wherever the target was last actually seen (not omnisciently tracking them live through the
- * wall) for blind_fire_duration before giving up and looking for a new target. If the target was LYING_DOWN
- * the moment LoS was lost, that blind fire aims low instead - see low_aim_mode/ready_proj() below. Regaining
- * LoS resets everything back to a normal aimed firing stance.
+ * Losing line of sight doesn't stop the gun - it keeps putting bullets through whatever's in the way, aimed
+ * at wherever the target was last actually seen (not omnisciently tracking them live through the wall), via
+ * the shared get_blind_fire_target() (_ranged_robot_ai.dm) for blind_fire_duration before giving up and
+ * looking for a new target. If the target was LYING_DOWN the moment LoS was lost, that blind fire aims low
+ * instead - see low_aim_mode/ready_proj() below. Regaining LoS resets everything back to a normal aimed
+ * firing stance. Re-resolved on every call (both the initial "start windup" call and the "actually fire"
+ * callback below) since LoS/the blind-fire window can change in the second between them.
  */
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/OpenFire(atom/A, actually_fire = FALSE)
-	if(!can_see(src, target, length = 10))
-		if(!blind_fire_until)
-			blind_fire_turf = get_turf(target)
-			blind_fire_until = world.time + blind_fire_duration
-			var/mob/living/living_target = isliving(target) ? target : null
-			blind_fire_target_was_prone = living_target && living_target.body_position == LYING_DOWN
-		if(!blind_fire_turf || world.time > blind_fire_until)
-			blind_fire_until = 0
-			blind_fire_turf = null
-			blind_fire_target_was_prone = FALSE
-			FindTarget(possible_targets = null, HasTargetsList = FALSE)
-			return
-		A = blind_fire_turf
-	else
-		blind_fire_until = 0
-		blind_fire_turf = null
-		blind_fire_target_was_prone = FALSE
+	A = get_blind_fire_target(A)
+	if(!A)
+		// AI EDIT (bugfix): must reset already_firing here too, or giving up mid-windup leaves it stuck TRUE
+		// forever - every later OpenFire() call then hits "if(!already_firing)" as FALSE and does nothing at
+		// all, silently and permanently stopping the sentry bot from ever firing again.
+		wind_down_gun()
+		return
 	if(actually_fire)
 		. = ..()
 		gunfire_sound()
@@ -260,7 +244,7 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 //Don't bother kiting if we lose sight of the target, we gotta rush them
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/checkLoS()
-	if(!can_see(src, target, length = 10))
+	if(!can_see(src, target, length = blind_fire_los_range))
 		minimum_distance = 1
 		retreat_distance = 1
 	else
@@ -288,10 +272,10 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/trigger_abilities(atom/A)
 	if(!client)
-		if(grenade.IsAvailable() && can_see(src, target, 10))
+		if(grenade.IsAvailable() && can_see(src, target, blind_fire_los_range))
 			grenade.Trigger(target = target)
 			return
-		if(rocket.IsAvailable() && can_see(src, target, 10) && HAS_TRAIT(target, TRAIT_IN_POWERARMOUR))
+		if(rocket.IsAvailable() && can_see(src, target, blind_fire_los_range) && HAS_TRAIT(target, TRAIT_IN_POWERARMOUR))
 			rocket.Trigger(target = target)
 			return
 

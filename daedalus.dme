@@ -5318,6 +5318,7 @@
 #include "mojave\code\modules\mob\living\carbon\human\pale_skin.dm"
 #include "mojave\code\modules\mob\living\carbon\human\species.dm"
 #include "mojave\code\modules\mob\living\simple_animal\hostile\sentrybot.dm"
+#include "mojave\code\modules\mob\robots\_ranged_robot_ai.dm"
 #include "mojave\code\modules\mob\robots\assaultron.dm"
 #include "mojave\code\modules\mob\robots\eyebots.dm"
 #include "mojave\code\modules\mob\robots\handies.dm"
