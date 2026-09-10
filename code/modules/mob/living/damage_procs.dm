@@ -49,6 +49,11 @@
 			damage_amount = max(damage_amount * 0.2, damage_amount - (get_subarmor_dt_reduction(def_zone, sharpness) || 0))
 		damage_amount *= ((100 - blocked) / 100)
 		damage_amount *= get_incoming_damage_modifier(damage_amount, damagetype, def_zone, sharpness, attack_direction, attacking_item)
+		// AI EDIT: mojave/code/modules/mob/living/natural_armor.dm's tissue-layer framework (muscle, later
+		// bone) - deliberately NOT gated on ignore_subarmor, since that flag is about external protection
+		// (e.g. a destroyed power armor component) and the body's own tissue is still there either way.
+		// Base stub always returns damage_amount unchanged for mobs without any registered layers.
+		damage_amount = apply_natural_armor_layers(damage_amount, damagetype, def_zone)
 
 	if(damage_amount <= 0)
 		return 0

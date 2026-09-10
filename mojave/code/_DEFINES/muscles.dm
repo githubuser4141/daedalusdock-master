@@ -45,3 +45,12 @@
 /// How much extra dragging/grabbing slowdown (deciseconds) a fully-zero-performance grabbing arm adds, on
 /// top of (not instead of) DD's existing per-grab slowdown - see update_pull_movespeed() in muscle.dm.
 #define MS13_MUSCLE_DRAG_MAX_SLOWDOWN 3
+
+/// Three-way split for a BRUTE hit to a limb with an intact muscle, applied separately from and after
+/// external armor/subarmor (code/modules/mob/living/damage_procs.dm's apply_damage()) - same "some energy
+/// gone, some absorbed by the component, the rest passes through" idea as power armor
+/// (human_armor.dm), just with the body's own muscle as the component. Both fractions scale down as the
+/// muscle takes damage (1 - MS13_MUSCLE_ARMOR_GONE_FRACTION - MS13_MUSCLE_ARMOR_ABSORB_FRACTION always
+/// passes through even at full health - muscle blunts a hit, it doesn't stop it).
+#define MS13_MUSCLE_ARMOR_GONE_FRACTION 0.15
+#define MS13_MUSCLE_ARMOR_ABSORB_FRACTION 0.25
