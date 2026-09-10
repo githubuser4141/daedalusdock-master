@@ -65,6 +65,13 @@
 	SHOULD_CALL_PARENT(TRUE)
 	PROTECTED_PROC(TRUE)
 
+	// AI EDIT: bridges to mojave's /obj/item/organ/bone (bone.dm) - see get_bone_organ()/set_organ_dead()
+	// there for the reverse direction and a balance/bug caveat about the two break systems now triggering
+	// each other.
+	var/obj/item/organ/bone/B = get_bone_organ()
+	if(B && !(B.organ_flags & ORGAN_DEAD))
+		B.setOrganDamage(B.maxHealth)
+
 	SEND_SIGNAL(C, COMSIG_CARBON_BREAK_BONE, src)
 	return TRUE
 
@@ -105,6 +112,11 @@
 /obj/item/bodypart/proc/apply_bone_heal(mob/living/carbon/C)
 	SHOULD_CALL_PARENT(TRUE)
 	PROTECTED_PROC(TRUE)
+
+	// AI EDIT: see apply_bone_break() above.
+	var/obj/item/organ/bone/B = get_bone_organ()
+	if(B && (B.organ_flags & ORGAN_DEAD))
+		B.setOrganDamage(0)
 
 	SEND_SIGNAL(C, COMSIG_CARBON_HEAL_BONE, src)
 	return TRUE

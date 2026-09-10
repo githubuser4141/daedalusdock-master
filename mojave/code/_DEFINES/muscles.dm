@@ -6,6 +6,7 @@
 #define ORGAN_SLOT_MUSCLE_R_ARM "muscle_r_arm"
 #define ORGAN_SLOT_MUSCLE_L_LEG "muscle_l_leg"
 #define ORGAN_SLOT_MUSCLE_R_LEG "muscle_r_leg"
+#define ORGAN_SLOT_MUSCLE_CHEST "muscle_chest"
 
 /// How much damage a muscle can take before it's destroyed.
 #define MS13_MUSCLE_MAX_HEALTH 30

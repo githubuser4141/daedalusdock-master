@@ -6,6 +6,11 @@
 #define ORGAN_SLOT_BONE_R_ARM "bone_r_arm"
 #define ORGAN_SLOT_BONE_L_LEG "bone_l_leg"
 #define ORGAN_SLOT_BONE_R_LEG "bone_r_leg"
+#define ORGAN_SLOT_BONE_CHEST "bone_chest"
+#define ORGAN_SLOT_BONE_HEAD "bone_head"
+
+/// Skull is tougher than a rib or limb bone.
+#define MS13_BONE_SKULL_EXTERNAL_DAMAGE_MODIFIER 0.2
 
 /// Sturdier than vessel (20) or muscle (30) - bone is the hardest tissue to actually destroy.
 #define MS13_BONE_MAX_HEALTH 40

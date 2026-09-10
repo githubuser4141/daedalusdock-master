@@ -188,5 +188,8 @@
 	organs[ORGAN_SLOT_BONE_R_ARM] = /obj/item/organ/bone/r_arm
 	organs[ORGAN_SLOT_BONE_L_LEG] = /obj/item/organ/bone/l_leg
 	organs[ORGAN_SLOT_BONE_R_LEG] = /obj/item/organ/bone/r_leg
+	organs[ORGAN_SLOT_BONE_CHEST] = /obj/item/organ/bone/chest
+	organs[ORGAN_SLOT_BONE_HEAD] = /obj/item/organ/bone/head
+	organs[ORGAN_SLOT_MUSCLE_CHEST] = /obj/item/organ/muscle/chest
 	organs[ORGAN_SLOT_VESSEL_L_LEG] = /obj/item/organ/vessel/l_leg
 	organs[ORGAN_SLOT_VESSEL_R_LEG] = /obj/item/organ/vessel/r_leg

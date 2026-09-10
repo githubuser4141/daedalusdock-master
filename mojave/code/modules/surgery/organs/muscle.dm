@@ -45,6 +45,13 @@
 	slot = ORGAN_SLOT_MUSCLE_R_LEG
 	is_leg_muscle = TRUE
 
+/// Chest wall muscle - armor (natural_armor.dm) and myoglobin only, no movement/grip output (chest isn't a
+/// grabby or movement limb, so refresh_muscle_effects() naturally skips those parts).
+/obj/item/organ/muscle/chest
+	name = "chest muscle"
+	zone = BODY_ZONE_CHEST
+	slot = ORGAN_SLOT_MUSCLE_CHEST
+
 /// 0-100: own damage ratio times current local blood flow ratio. Always 0 once destroyed.
 /obj/item/organ/muscle/proc/get_performance()
 	if(organ_flags & ORGAN_DEAD)
