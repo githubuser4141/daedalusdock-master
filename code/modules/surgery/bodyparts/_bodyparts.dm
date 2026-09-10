@@ -713,6 +713,7 @@
 	// usable hand/leg, etc) instead of only affecting melee damage/movement speed on its own. Checked first,
 	// same as the other force-disable conditions below.
 	if(muscle_critically_weak())
+		ms13_medical_debug(owner, "[plaintext_zone] force-disabled: muscle critically weak")
 		set_disabled(TRUE)
 		return
 

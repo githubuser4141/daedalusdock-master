@@ -30,7 +30,9 @@
 	var/gone = damage_amount * gone_fraction * health_ratio
 	var/absorbed = damage_amount * absorb_fraction * health_ratio
 	O.applyOrganDamage(absorbed, updating_health = FALSE)
-	return damage_amount - gone - absorbed
+	var/remaining = damage_amount - gone - absorbed
+	ms13_medical_debug(H, "[O.name] absorbed hit: [round(gone, 0.1)] gone, [round(absorbed, 0.1)] to organ, [round(remaining, 0.1)] passthrough")
+	return remaining
 
 /// Active layers, checked in order. Add new layer instances here.
 GLOBAL_LIST_INIT(natural_armor_layers, list(new /datum/natural_armor_layer/muscle()))

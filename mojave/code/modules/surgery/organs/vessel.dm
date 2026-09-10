@@ -1,6 +1,13 @@
 // One damageable /obj/item/organ/vessel per limb. Self-contained per limb, no cross-limb network.
 // Rupture severs the limb's artery via DD's real set_sever_artery(). icon_state "fixovein" is a placeholder.
 
+/// Debug-only to_chat for the vessel/muscle systems - see MS13_MEDICAL_DEBUG_ENABLED (vessels.dm). Global so
+/// every file in both systems (including code/modules/grab/grab_datum.dm) can call it without a namespace.
+/proc/ms13_medical_debug(mob/recipient, message)
+	if(!MS13_MEDICAL_DEBUG_ENABLED)
+		return
+	to_chat(recipient, span_notice("[DEBUG] [message]"))
+
 /obj/item/organ/vessel
 	name = "blood vessel"
 	desc = "A major blood vessel. Best left where it is."
@@ -27,6 +34,7 @@
 	if(failing && major_vessel && owner)
 		owner.blood_volume = max(0, owner.blood_volume - MS13_MAJOR_VESSEL_BLOOD_BURST)
 		to_chat(owner, span_userdanger("A sudden gush of blood leaves you lightheaded!"))
+	ms13_medical_debug(owner, "Vessel [name] ([zone]) [failing ? "ruptured" : "repaired"] (major=[major_vessel])")
 
 /**
  * A missing vessel means no blood is getting to this limb at all - worse than even a ruptured one (which
@@ -35,11 +43,18 @@
  * vessel_local_blood.dm/vessel.dm) correctly treat the limb as fully blood-starved in the meantime. A new
  * vessel put back in doesn't need special handling here - it starts from this 0 and refills naturally
  * through its own on_life() regen, same as a healed one would.
+ *
+ * AI EDIT (bugfix): gated on !special. species.dm's regenerate_organs() silently swaps organs via
+ * oldorgan.Remove(C, TRUE) -> Insert() (fires whenever a character's species/appearance is (re)applied,
+ * which can happen more than once during spawn) - without this guard that routine swap zeroed
+ * local_blood_volume on every limb, tanking circulation/muscle performance to 0 and causing near-instant
+ * cardiac arrest + every limb force-disabling right after spawn. Real removal (surgery, dismemberment)
+ * still passes special=FALSE and correctly zeroes it.
  */
 /obj/item/organ/vessel/Remove(mob/living/carbon/organ_owner, special = FALSE)
 	var/obj/item/bodypart/limb = ownerlimb
 	. = ..()
-	if(limb)
+	if(limb && !special)
 		limb.local_blood_volume = 0
 
 /obj/item/organ/vessel/head

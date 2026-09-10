@@ -64,6 +64,7 @@
 		check_buckle(delta_time)
 	if(damage > 0)
 		add_myoglobin(MS13_MUSCLE_WASTE_PER_DAMAGE * damage * delta_time)
+		ms13_medical_debug(owner, "Muscle [name] performance=[get_performance()] damage=[damage]/[maxHealth]")
 
 /// A weak leg can buckle mid-stride - deliberately not DD's real TRAIT_FLOORED (a hard floor for a leg that
 /// flat-out doesn't work), just a brief recoverable stumble for one that's merely weak.
@@ -82,6 +83,7 @@
 		span_userdanger("Your [ownerlimb.plaintext_zone] buckles - you go down!"),
 	)
 	owner.Knockdown(1.5 SECONDS)
+	ms13_medical_debug(owner, "Leg muscle buckle: performance=[perf] chance=[chance]%")
 
 /// Destroying a muscle dumps a myoglobin burst on top of the ongoing trickle - a vessel rupture bleeds
 /// instead (vessel.dm's set_organ_dead()).
@@ -92,6 +94,7 @@
 	if(failing && owner)
 		add_myoglobin(MS13_MUSCLE_RUPTURE_WASTE_BURST)
 		to_chat(owner, span_userdanger("Your [zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_R_ARM ? "arm" : "leg"] floods with the poison of dead muscle tissue!"))
+		ms13_medical_debug(owner, "Muscle [name] destroyed - myoglobin burst +[MS13_MUSCLE_RUPTURE_WASTE_BURST]")
 	if(ownerlimb)
 		ownerlimb.refresh_muscle_effects()
 
@@ -103,7 +106,9 @@
 	var/current = owner.reagents.get_reagent_amount(/datum/reagent/toxin/myoglobin)
 	if(current >= ceiling)
 		return
-	owner.reagents.add_reagent(/datum/reagent/toxin/myoglobin, min(amount, ceiling - current))
+	var/added = min(amount, ceiling - current)
+	owner.reagents.add_reagent(/datum/reagent/toxin/myoglobin, added)
+	ms13_medical_debug(owner, "Myoglobin +[round(added, 0.1)] (now [round(current + added, 0.1)]/[ceiling])")
 
 /// Ceiling scales with how many muscles are CURRENTLY damaged (not a running count) - one smashed limb stays
 /// survivable, smashed up everywhere is genuine danger.

@@ -412,6 +412,7 @@ GLOBAL_LIST_EMPTY(all_grabstates)
 			break_strength++
 		if(grab_performance < 20)
 			break_strength++
+		ms13_medical_debug(assailant, "Grab arm muscle performance [grab_performance] - break_strength adjusted")
 
 	if(break_strength < 1)
 		to_chat(G.affecting, span_warning("You try to break free but feel that unless something changes, you'll never escape!"))

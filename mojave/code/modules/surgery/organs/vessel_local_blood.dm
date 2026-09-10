@@ -82,6 +82,7 @@
 
 		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * delta_time
 		owner.bleed(global_loss)
+		ms13_medical_debug(owner, "Vessel [name] bleeding: local -[round(local_loss, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max]), global -[round(global_loss, 0.1)]")
 		return
 
 	if(ownerlimb.local_blood_volume >= ownerlimb.local_blood_volume_max)
@@ -92,6 +93,7 @@
 	var/regen = min(MS13_LOCAL_BLOOD_REGEN * delta_time, ownerlimb.local_blood_volume_max - ownerlimb.local_blood_volume)
 	ownerlimb.local_blood_volume += regen
 	owner.adjustBloodVolume(-regen)
+	ms13_medical_debug(owner, "Vessel [name] local blood regen: +[round(regen, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 
 /**
  * "organs need blood values" - a limb with zero local blood isn't just failing to heal its own vessel
@@ -112,7 +114,9 @@
 		var/ceiling = O.maxHealth * MS13_ISCHEMIA_DAMAGE_CAP * vessel_severity
 		if(O.damage >= ceiling)
 			continue
-		O.applyOrganDamage(min(MS13_ISCHEMIA_DAMAGE_PER_TICK * delta_time, ceiling - O.damage))
+		var/ischemia_damage = min(MS13_ISCHEMIA_DAMAGE_PER_TICK * delta_time, ceiling - O.damage)
+		O.applyOrganDamage(ischemia_damage)
+		ms13_medical_debug(owner, "Ischemia: [O.name] +[round(ischemia_damage, 0.1)] damage (ceiling [round(ceiling, 0.1)])")
 
 /**
  * DD's base /obj/item/organ/proc/handle_regeneration() (code/modules/surgery/organs/_organ.dm) already
@@ -124,6 +128,8 @@
  */
 /obj/item/organ/vessel/handle_regeneration()
 	if(!ownerlimb || ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD_PCT)
+		if(ownerlimb)
+			ms13_medical_debug(owner, "Vessel [name] regen blocked: local blood too low ([round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 		return
 	return ..()
 
@@ -136,5 +142,6 @@
  */
 /obj/item/organ/handle_regeneration()
 	if(ownerlimb && ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT)
+		ms13_medical_debug(owner, "[name] regen blocked: local blood too low ([round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 		return
 	return ..()

@@ -24,6 +24,7 @@
 		var/perf_ratio = get_muscle_performance() / 100
 		unarmed_damage_low = round(initial(unarmed_damage_low) * perf_ratio, 1)
 		unarmed_damage_high = round(initial(unarmed_damage_high) * perf_ratio, 1)
+		ms13_medical_debug(owner, "[plaintext_zone] unarmed damage now [unarmed_damage_low]-[unarmed_damage_high]")
 	if(bodypart_flags & BP_IS_MOVEMENT_LIMB)
 		var/mob/living/carbon/human/human_owner = istype(owner, /mob/living/carbon/human) ? owner : null
 		human_owner?.update_muscle_movespeed()
@@ -49,6 +50,7 @@
 		return
 	var/slowdown = (avg_deficit / 100) * MS13_MUSCLE_LEG_MAX_SLOWDOWN
 	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/muscle_weakness, slowdown = slowdown)
+	ms13_medical_debug(src, "Leg muscle slowdown: [round(slowdown, 0.01)] (deficit=[round(avg_deficit, 0.1)])")
 
 /datum/movespeed_modifier/muscle_weakness
 	variable = TRUE
@@ -68,7 +70,9 @@
 	if(worst_deficit <= 0)
 		remove_movespeed_modifier(/datum/movespeed_modifier/muscle_drag_weakness)
 		return
-	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/muscle_drag_weakness, slowdown = (worst_deficit / 100) * MS13_MUSCLE_DRAG_MAX_SLOWDOWN)
+	var/drag_slowdown = (worst_deficit / 100) * MS13_MUSCLE_DRAG_MAX_SLOWDOWN
+	add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/muscle_drag_weakness, slowdown = drag_slowdown)
+	ms13_medical_debug(src, "Drag slowdown: [round(drag_slowdown, 0.01)] (worst grab arm deficit=[round(worst_deficit, 0.1)])")
 
 /datum/movespeed_modifier/muscle_drag_weakness
 	variable = TRUE
