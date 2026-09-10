@@ -3,11 +3,12 @@
 // limbless/grabbing movespeed modifiers, handle_resist()) rather than replacing it.
 
 /// Floors at MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR if this limb has no muscle organ installed at all.
+/// Multiplied by bone stability (bone.dm) - a stable skeleton is the baseline a muscle needs to work at all,
+/// not an independent input, so a badly broken bone drags this down even with perfectly healthy muscle.
 /obj/item/bodypart/proc/get_muscle_performance()
 	var/obj/item/organ/muscle/M = locate() in contained_organs
-	if(!M)
-		return MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR
-	return M.get_performance()
+	var/base = M ? M.get_performance() : MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR
+	return round(base * (get_bone_stability() / 100), 0.1)
 
 /**
  * The single point where muscle performance actually affects this limb - called from the muscle organ's

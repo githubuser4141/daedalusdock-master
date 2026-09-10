@@ -36,6 +36,7 @@ code/modules/surgery/bodyparts/_bodyparts.dm,
 code/modules/grab/grab_datum.dm,
 code/modules/surgery/organs/heart.dm,
 code/modules/mob/living/blood.dm,
+code/modules/surgery/organs/liver.dm,
 
 
 

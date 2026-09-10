@@ -1,0 +1,141 @@
+// One damageable /obj/item/organ/bone per arm/leg, alongside vessel and muscle. Stability (get_stability(),
+// 0-100) multiplies muscle performance (get_muscle_performance(), muscle_movement.dm) rather than adding to
+// it - a limb needs a structural baseline before muscle strength matters at all. icon_state "fixovein" is a
+// placeholder, same as vessel/muscle.
+
+/obj/item/organ/bone
+	name = "bone"
+	desc = "Load-bearing skeletal structure. Best left where it is."
+	icon = 'icons/obj/surgery.dmi'
+	icon_state = "fixovein"
+	w_class = WEIGHT_CLASS_SMALL
+	organ_flags = NONE
+	maxHealth = MS13_BONE_MAX_HEALTH
+	relative_size = MS13_BONE_RELATIVE_SIZE
+	external_damage_modifier = MS13_BONE_EXTERNAL_DAMAGE_MODIFIER
+	low_threshold_passed = span_info("A dull, deep ache settles into the bone...")
+	high_threshold_passed = span_warning("The bone throbs, close to giving out.")
+	now_failing = span_userdanger("Something snaps!")
+	now_fixed = span_info("The bone finally stops aching.")
+	high_threshold_cleared = span_info("The bone stops throbbing.")
+
+/obj/item/organ/bone/l_arm
+	name = "left arm bone"
+	zone = BODY_ZONE_L_ARM
+	slot = ORGAN_SLOT_BONE_L_ARM
+
+/obj/item/organ/bone/r_arm
+	name = "right arm bone"
+	zone = BODY_ZONE_R_ARM
+	slot = ORGAN_SLOT_BONE_R_ARM
+
+/obj/item/organ/bone/l_leg
+	name = "left leg bone"
+	zone = BODY_ZONE_L_LEG
+	slot = ORGAN_SLOT_BONE_L_LEG
+
+/obj/item/organ/bone/r_leg
+	name = "right leg bone"
+	zone = BODY_ZONE_R_LEG
+	slot = ORGAN_SLOT_BONE_R_LEG
+
+/// 0-100, own damage ratio. Always 0 once destroyed (broken).
+/obj/item/organ/bone/proc/get_stability()
+	if(organ_flags & ORGAN_DEAD)
+		return 0
+	return round(100 * (1 - damage / maxHealth), 0.1)
+
+/// Bodypart-level lookup, same pattern as get_muscle_performance() (muscle_movement.dm) - 100 (no-op) if this
+/// limb has no bone organ installed.
+/obj/item/bodypart/proc/get_bone_stability()
+	var/obj/item/organ/bone/B = locate() in contained_organs
+	if(!B)
+		return 100
+	return B.get_stability()
+
+/// Multiplies the liver's real blood regen (owner.adjustBloodVolumeUpTo() in liver.dm's on_life()) - 1 by
+/// default for anyone without bones.
+/mob/living/carbon/proc/get_blood_regen_multiplier()
+	return 1
+
+/// Averaged across bone-bearing limbs - broken bones are systemic (marrow), not one limb tanking the whole
+/// body's regen.
+/mob/living/carbon/human/get_blood_regen_multiplier()
+	var/total = 0
+	var/count = 0
+	for(var/obj/item/bodypart/BP as anything in bodyparts)
+		var/obj/item/organ/bone/B = locate() in BP.contained_organs
+		if(!B)
+			continue
+		total += B.get_stability()
+		count++
+	if(!count)
+		return 1
+	return (total / count) / 100
+
+/// Fragmenting is a per-hit event, not a tick effect - hooked on the damage-application proc itself.
+/obj/item/organ/bone/applyOrganDamage(damage_amount, maximum = maxHealth, silent, updating_health = TRUE, cause_of_death = "Organ failure")
+	. = ..()
+	if(. > 0)
+		try_fragment(.)
+	if(ownerlimb)
+		ownerlimb.refresh_muscle_effects()
+
+/// Sends a few chunks of bone into whatever else shares this limb. Scales with how hard THIS hit was, not
+/// cumulative damage - a single solid hit chips fragments loose, a string of small ones doesn't.
+/obj/item/organ/bone/proc/try_fragment(hit_damage)
+	if(hit_damage < MS13_BONE_FRAGMENT_MIN_DAMAGE || !ownerlimb)
+		return
+	var/fragment_count = min(MS13_BONE_FRAGMENT_MAX_COUNT, round((hit_damage - MS13_BONE_FRAGMENT_MIN_DAMAGE) * MS13_BONE_FRAGMENT_PER_DAMAGE) + 1)
+	var/list/neighbors = ownerlimb.contained_organs - src
+	if(!length(neighbors))
+		return
+	for(var/i in 1 to fragment_count)
+		if(!prob(MS13_BONE_FRAGMENT_CHANCE))
+			continue
+		var/obj/item/organ/victim = pick(neighbors)
+		victim.applyOrganDamage(MS13_BONE_FRAGMENT_DAMAGE)
+		ms13_medical_debug(owner, "Bone fragment hit [victim.name] for [MS13_BONE_FRAGMENT_DAMAGE]")
+
+/// A break is self-contained - local blood loss only (see apply_organ_bleed(), vessel_local_blood.dm), not a
+/// life-threatening open bleed. Also stops propping up local blood regen and muscle performance (see
+/// get_bone_stability()/get_muscle_performance() callers) until it's healed.
+/obj/item/organ/bone/set_organ_dead(failing, cause_of_death)
+	. = ..()
+	if(!.)
+		return
+	if(failing && ownerlimb)
+		ownerlimb.apply_organ_bleed(MS13_BONE_BREAK_LOCAL_BLEED)
+		if(owner)
+			to_chat(owner, span_userdanger("Something snaps in your [ownerlimb.plaintext_zone]!"))
+	if(ownerlimb)
+		ownerlimb.refresh_muscle_effects()
+
+/obj/item/organ/bone/Insert(mob/living/carbon/reciever, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(ownerlimb)
+		ownerlimb.refresh_muscle_effects()
+
+/obj/item/organ/bone/Remove(mob/living/carbon/organ_owner, special = FALSE)
+	var/obj/item/bodypart/limb = ownerlimb
+	. = ..()
+	if(limb)
+		limb.refresh_muscle_effects()
+
+/// Bone is the harder, deeper layer - registered after muscle in GLOB.natural_armor_layers (natural_armor.dm)
+/// so muscle absorbs first and bone gets whatever's left, matching real anatomy (skin/muscle over bone).
+/datum/natural_armor_layer/bone
+	gone_fraction = MS13_BONE_ARMOR_GONE_FRACTION
+	absorb_fraction = MS13_BONE_ARMOR_ABSORB_FRACTION
+
+/// Below MS13_BONE_ARMOR_MIN_DAMAGE, bone doesn't intercept the hit at all - a scratch shouldn't interact
+/// with the skeleton.
+/datum/natural_armor_layer/bone/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone)
+	if(damage_amount < MS13_BONE_ARMOR_MIN_DAMAGE)
+		return damage_amount
+	return ..()
+
+/datum/natural_armor_layer/bone/get_organ(mob/living/carbon/human/H, obj/item/bodypart/hit_part, damagetype)
+	if(damagetype != BRUTE)
+		return null
+	return locate(/obj/item/organ/bone) in hit_part.contained_organs

@@ -34,8 +34,9 @@
 	ms13_medical_debug(H, "[O.name] absorbed hit: [round(gone, 0.1)] gone, [round(absorbed, 0.1)] to organ, [round(remaining, 0.1)] passthrough")
 	return remaining
 
-/// Active layers, checked in order. Add new layer instances here.
-GLOBAL_LIST_INIT(natural_armor_layers, list(new /datum/natural_armor_layer/muscle()))
+/// Active layers, checked in order (muscle before bone - outside in, matching real anatomy). Add new layer
+/// instances here.
+GLOBAL_LIST_INIT(natural_armor_layers, list(new /datum/natural_armor_layer/muscle(), new /datum/natural_armor_layer/bone()))
 
 /// Base stub - safe no-op for any mob without natural armor layers.
 /mob/living/proc/apply_natural_armor_layers(damage_amount, damagetype, def_zone)

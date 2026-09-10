@@ -33,6 +33,13 @@
 		last_damage_sharpness = sharpness
 	return ..()
 
+/// Shared bleed entry point for any organ, not just vessels - a global_amount of 0 (the default) is a
+/// self-contained internal bleed, e.g. a broken bone (bone.dm).
+/obj/item/bodypart/proc/apply_organ_bleed(local_amount, global_amount = 0)
+	local_blood_volume = max(0, local_blood_volume - local_amount)
+	if(global_amount > 0 && owner)
+		owner.bleed(global_amount)
+
 /// Per-zone local blood pool sizes - the chest (torso, holding most of the body's actual blood supply)
 /// dwarfs a single limb, matching real distribution far better than one flat number for every zone.
 /obj/item/bodypart/chest
@@ -77,13 +84,10 @@
 		var/internal_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_INTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_INTERNAL_MULT
 		var/external_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
 
-		// AI EDIT: scaled by vessel_size (vessel.dm) - a nicked aorta or carotid should bleed out much faster
-		// than the same damage to a brachial artery, not just burst harder once fully severed.
+		// Scaled by vessel_size (vessel.dm) - a nicked aorta bleeds out faster than a nicked brachial artery.
 		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * internal_mult * vessel_size * delta_time
-		ownerlimb.local_blood_volume = max(0, ownerlimb.local_blood_volume - local_loss)
-
 		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * vessel_size * delta_time
-		owner.bleed(global_loss)
+		ownerlimb.apply_organ_bleed(local_loss, global_loss)
 		ms13_medical_debug(owner, "Vessel [name] bleeding: local -[round(local_loss, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max]), global -[round(global_loss, 0.1)]")
 		return
 
