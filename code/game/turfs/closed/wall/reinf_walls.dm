@@ -1,3 +1,9 @@
+// AI EDIT: mojave/__DEFINES/bullet_math.dm's ricochet/overpen math reads returnArmor() on whatever a bullet
+// hits - without a TYPEINFO_DEF here, a reinforced wall falls back to plain /turf/closed/wall's all-zero
+// default armor and gets punched through exactly like a normal wall despite the name.
+TYPEINFO_DEF(/turf/closed/wall/r_wall)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /turf/closed/wall/r_wall
 	name = "reinforced wall"
 	desc = "A huge chunk of reinforced metal used to separate rooms."

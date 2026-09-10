@@ -68,7 +68,8 @@
     ..()
     add_overlay(image(icon, "[shadow_type]", BELOW_MOB_LAYER, dir))
 
-/mob/living/basic/ms13/robot/handy/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/robot/handy/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	do_sparks(3, TRUE, src)
 	new /obj/item/stack/sheet/ms13/scrap/two(loc)

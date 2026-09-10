@@ -43,7 +43,8 @@
 	offsetx = 3
 	offsety = 11
 
-/mob/living/simple_animal/hostile/retaliate/ms13/brahmin/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/simple_animal/hostile/retaliate/ms13/brahmin/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/brahmin_death1.ogg', 60, TRUE)
 
@@ -508,7 +509,8 @@
 	var/poison_per_bite = 5
 	var/poison_type = /datum/reagent/toxin
 
-/mob/living/simple_animal/hostile/ms13/radscorpion/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/simple_animal/hostile/ms13/radscorpion/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/radscorp_death1.ogg', 60, TRUE)
 
@@ -575,7 +577,8 @@
 	offsetx = 2
 	offsety = 7
 
-/mob/living/simple_animal/hostile/ms13/radstag/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/simple_animal/hostile/ms13/radstag/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/radstag_death1.ogg', 60, TRUE)
 
@@ -794,9 +797,10 @@
 	charge = new /datum/action/cooldown/mob_cooldown/charge/hellpig()
 	charge.Grant(src)
 
-/mob/living/simple_animal/hostile/ms13/hellpig/death(gibbed)
+// AI EDIT: added cause_of_death and forwarded it - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/simple_animal/hostile/ms13/hellpig/death(gibbed, cause_of_death = "Unknown")
 	playsound(loc, pick('mojave/sound/ms13npc/hellpig_death1.ogg', 'mojave/sound/ms13npc/hellpig_death1.ogg'), 50, TRUE, -1)
-	..(gibbed)
+	..(gibbed, cause_of_death)
 
 /mob/living/simple_animal/hostile/ms13/hellpig/OpenFire()
 	if(client)

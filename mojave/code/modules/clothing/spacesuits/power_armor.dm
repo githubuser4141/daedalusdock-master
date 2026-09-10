@@ -627,7 +627,11 @@
 			A.Remove(user)
 
 //TODO for later involving integrity and ricochets
-/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", final_block_chance = 0, damage = 0, attack_type = MELEE_ATTACK)
+// AI EDIT: signature previously inserted an unused "final_block_chance" param before damage (shifting it)
+// and dropped block_success - DD's real base is /obj/item/proc/hit_reaction(owner, hitby, attack_text,
+// damage, attack_type, block_success). Any caller passing block_success= (named) crashed with "bad arg
+// name 'block_success'", aborting the whole hit_reaction() call - including this sparks effect.
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/hit_reaction(mob/living/carbon/human/owner, atom/movable/hitby, attack_text = "the attack", damage = 0, attack_type = MELEE_ATTACK, block_success = TRUE)
 	if(prob(50))
 		var/datum/effect_system/spark_spread/spark_system = new /datum/effect_system/spark_spread
 		spark_system.start()

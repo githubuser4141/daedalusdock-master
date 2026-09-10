@@ -128,16 +128,27 @@
 /turf
 	var/wallIntegrity = 100
 
+// AI EDIT: this used to also override /atom/New() (plus a bare "/atom \n atomHitbox = /datum/hitbox/standardWall"
+// initializer), giving EVERY atom in the game a hitbox - mobs included. Since Impact() below diverts any hit on
+// an atom with atomHitbox straight into this wall-integrity ricochet/frag/overpen math and often return TRUE
+// before ever reaching the normal bullet_act()/apply_damage() path, that meant shooting a PLAYER could silently
+// resolve as a "wall" hit and deal zero real damage - this matches the original bug report ("bullets... cleanly
+// went through everything without doing damage") almost exactly. Scoped to walls plus other solid /obj/structure
+// and /obj/machinery below (per request - "a lot of other objects" should get this), explicitly excluding mobs
+// and the projectile itself.
 /turf/closed/wall/New()
 	. = ..()
 	atomHitbox = new /datum/hitbox/standardWall(src)
 
-/atom/New()
+/obj/structure/New()
 	. = ..()
-	atomHitbox = new /datum/hitbox/standardWall(src)
+	if(!atomHitbox)
+		atomHitbox = new /datum/hitbox/standardWall(src)
 
-/atom
-	atomHitbox = /datum/hitbox/standardWall
+/obj/machinery/New()
+	. = ..()
+	if(!atomHitbox)
+		atomHitbox = new /datum/hitbox/standardWall(src)
 
 /datum/hitbox/standardWall
 	hitboxLines = list(
@@ -228,8 +239,13 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 // threshold at which bullet is too SLOW and should be deleted
 #define BULLET_THRESHOLD_TOOSLOW 2
 
+// AI EDIT: was BULLET_SPEED_INSANE (-0.5) - that's a per-gun tuning value, not a sane server-wide
+// default. Since this var lives on the base /obj/item/gun and gets added to every fired projectile's
+// speed in _firing.dm, defaulting it to a nonzero delta would slow down every gun in the entire game,
+// including vanilla DD weapons that were never balanced against this system. 0 = no-op unless a specific
+// gun opts in.
 /obj/item/gun
-	var/speedValueMod = BULLET_SPEED_INSANE
+	var/speedValueMod = 0
 
 TYPEINFO_DEF(/obj/projectile)
 	default_armor = list(BLUNT = 0, PUNCTURE = 50, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
@@ -242,16 +258,23 @@ TYPEINFO_DEF(/obj/projectile)
 	var/canRicochet = TRUE
 	var/canFragment = TRUE
 
-// returns a exponential multiplier for calculations. ONLY FOR WALLS
-/obj/projectile/proc/getRelativeArmorRatingMultiplier(turf/closed/wall/target, datum/armor/targetArmor, datum/armor/bulletArmor)
+// returns a exponential multiplier for calculations.
+// AI EDIT: param was typed turf/closed/wall - now that /obj/structure and /obj/machinery also carry a
+// hitbox (see /turf/closed/wall/New() above), a non-wall atom passed here would get silently coerced to
+// null by DM's typed-param check, crashing target.bIntegrity below. Loosened to atom.
+/obj/projectile/proc/getRelativeArmorRatingMultiplier(atom/target, datum/armor/targetArmor, datum/armor/bulletArmor)
 	if(targetArmor == null || bulletArmor == null || bulletArmorType == "")
 		return 0
 	var/ratingDiff = (bulletArmor.vars[bulletArmorType] * bIntegrity / initial(bIntegrity)) * initial(speed) / speed - targetArmor.vars[bulletArmorType] * target.bIntegrity / initial(target.bIntegrity)
 //message_admins("relative armor returning [ratingDiff / bulletArmor.vars[damage_type]]")
 	return (ratingDiff+0.001) / bulletArmor.vars[bulletArmorType]
 
-/obj/projectile/proc/fragmentTowards(atom/lastHit,fragmentCount, fragmentAngle, maxDeviation, fullLoopPossible)
-	for(var/i = 0 to fragmentCount)
+/obj/projectile/proc/fragmentTowards(atom/lastHit, fragmentCount, fragmentAngle, maxDeviation, fullLoopPossible)
+	// AI EDIT: was "0 to fragmentCount" (off-by-one, fragmentCount+1 fragments) and fired every fragment
+	// unconditionally - adjustIntegrity() below can qdel a fragment that inherited low bIntegrity from an
+	// already-battered parent bullet, and calling .fire() on that qdeleted object right after was the
+	// "Illegal forceMove()"/"Cannot read null.x"/qdeleted-datum crash spam.
+	for(var/i = 1 to fragmentCount)
 		var/obj/projectile/projectile = new /obj/projectile/bullet(get_turf(lastHit))
 		projectile.bIntegrity = bIntegrity
 		projectile.speed = speed
@@ -260,7 +283,9 @@ TYPEINFO_DEF(/obj/projectile)
 		projectile.impacted = list(lastHit)
 		projectile.preparePixelProjectile(get_turf_in_angle(fragmentAngle, lastHit, 2), src)
 		projectile.adjustSpeed(-BULLET_FRAGMENT_SPEEDMALUS)
-		projectile.adjustIntegrity(-BULLET_INTEGRITYLOSS_FRAGMENT	)
+		projectile.adjustIntegrity(-BULLET_INTEGRITYLOSS_FRAGMENT)
+		if(QDELETED(projectile))
+			continue
 		projectile.damage = damage * 0.2
 		projectile.damage_type = damage_type
 		projectile.fire(fragmentAngle + rand(0, maxDeviation) * sign(rand(-1,1)) + (fullLoopPossible ? rand(-1,1) > 0 : 0) * 180)

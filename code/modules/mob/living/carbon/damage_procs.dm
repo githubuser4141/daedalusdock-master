@@ -10,6 +10,7 @@
 	sharpness = NONE,
 	attack_direction = null,
 	obj/item/attacking_item = null,
+	ignore_subarmor = FALSE,
 )
 	// Spread damage should always have def zone be null
 	if(spread_damage)
@@ -28,21 +29,11 @@
 
 	return .
 
-/mob/living/carbon/human/apply_damage(
-	damage = 0,
-	damagetype = BRUTE,
-	def_zone = null,
-	blocked = 0,
-	forced = FALSE,
-	spread_damage = FALSE,
-	sharpness = NONE,
-	attack_direction = null,
-	obj/item/attacking_item = null,
-)
-
-	// Add relevant DR modifiers into blocked value to pass to parent
-	blocked += physiology?.damage_resistance
-	return ..()
+// AI EDIT: this human-level apply_damage() override used to live here, but mojave/code/modules/mob/living/
+// carbon/human/human_armor.dm fully redeclares /mob/living/carbon/human/apply_damage() for power armor
+// routing - DM silently lets the later-compiled (mojave, since it loads after all of code/) definition
+// replace this one outright, no merge, no warning. That silently dropped the blocked += physiology?.
+// damage_resistance line below - moved into human_armor.dm's override instead so it still runs.
 
 /mob/living/carbon/human/get_incoming_damage_modifier(
 	damage = 0,

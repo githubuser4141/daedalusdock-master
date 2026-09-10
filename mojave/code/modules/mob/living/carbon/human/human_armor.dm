@@ -6,6 +6,7 @@
  * subarmor entirely (ignore_subarmor = TRUE) rather than half-protecting through a broken part.
  */
 /mob/living/carbon/human/apply_damage(damage = 0, damagetype = BRUTE, def_zone = null, blocked = 0, forced = FALSE, spread_damage = FALSE, sharpness = NONE, attack_direction = null, obj/item/attacking_item = null, ignore_subarmor = FALSE)
+	blocked += physiology?.damage_resistance // DD's real human apply_damage() did this - see damage_procs.dm
 	if(!forced && damagetype == BRUTE && !ignore_subarmor && istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/ms13/power_armor))
 		var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : get_bodypart(deprecise_zone(def_zone))
 		if(hit_part)

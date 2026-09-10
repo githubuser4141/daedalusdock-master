@@ -424,6 +424,67 @@
 		return FALSE
 	if(impacted[A]) // NEVER doublehit
 		return FALSE
+	// AI EDIT: mojave/__DEFINES/bullet_math.dm's precise ricochet/overpenetration/fragmentation math for
+	// solid objects (walls, /obj/structure, /obj/machinery - see their New() overrides there). Runs before
+	// DD's native flag-based ricochet check below so a hitbox atom gets the precise math; anything without
+	// one (including all mobs) falls through to the existing behavior untouched.
+	if(A.atomHitbox)
+		var/atom/hitted = A
+		var/datum/armor/targetArmor = A.returnArmor()
+		var/datum/armor/bulletArmor = returnArmor()
+		var/wx
+		var/wy
+		var/wallHitAngle
+		var/mult = getRelativeArmorRatingMultiplier(A, targetArmor, bulletArmor) * speed / initial(speed)
+		// AI EDIT: BM_LINE is a mojave/__DEFINES/bullet_math.dm macro, invisible here (mojave loads after
+		// all of code/ in daedalus.dme) - inlined its list(sx,sy,ex,ey) expansion directly.
+		A.atomHitbox.getPointOfCollision(list(trajectory.starting_x, trajectory.starting_y, trajectory.x + trajectory.mpx * 10, trajectory.y + trajectory.mpy * 10), &wx, &wy, &wallHitAngle)
+		var/orig = Angle
+		var/ricochetAngle = wallHitAngle
+		if(abs(wallHitAngle) > 90)
+			ricochetAngle = abs(sign(wallHitAngle) * 180 - wallHitAngle)
+		// scales with angle of attack
+		var/armorDiff = (bulletArmor.vars[bulletArmorType] - targetArmor.vars[bulletArmorType])
+		var/calculatedDamage = (A.maximumBulletOverpenThreshld - clamp(mult, A.minimumBulletOverpenThreshold, A.maximumBulletOverpenThreshld - 0.1)) * damage
+		if(mult > 0.4 * ((90 - abs(ricochetAngle)) / 90 + 1))
+			adjustIntegrity(-0.2 * bIntegrity)
+			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 150, 0, 0.8), 0)
+			adjustSpeed(-0.4 * speed)
+			impacted[A] = TRUE
+			return TRUE
+		wallHitAngle = Angle + wallHitAngle * 2
+		// reduce the angle after the calculation for any further intersections and before feeding into the trajectory
+		wallHitAngle = wallHitAngle % 360
+		if(wallHitAngle > 180)
+			wallHitAngle = -(360 - wallHitAngle)
+		else if(wallHitAngle < -180)
+			wallHitAngle = 360 + wallHitAngle
+		if(mult > 0 && abs(ricochetAngle) < GLOB.bulletStandardRicochetAngles["[bulletTipType]"] && canRicochet)
+			set_angle(wallHitAngle)
+			trajectory.starting_x = wx
+			trajectory.starting_y = wy
+			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 200, 0, 0.5), 0)
+			ricochets++
+			decayedRange = max(0, decayedRange - 1)
+			adjustSpeed(-0.1 * speed)
+			// AI EDIT: BULLET_INTEGRITYLOSS_RICOCHET (mojave/__DEFINES/bullet_math.dm) = 20 * BULLET_INTEGRITYLOSSMULT
+			// (1) - hardcoded, mojave defines aren't visible from code/.
+			adjustIntegrity(-20)
+			impacted[A] = TRUE
+			return TRUE
+		if(bIntegrity < initial(bIntegrity) * 0.3)
+			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 100, 0, 1), 0)
+			return process_hit(A, select_target(A, A, A), A)
+		if(mult < 0 && abs(ricochetAngle) < GLOB.bulletStandardFragmentAngles["[bulletTipType]"][2] && abs(ricochetAngle) > GLOB.bulletStandardFragmentAngles["[bulletTipType]"][1] && canFragment)
+			impacted[A] = TRUE
+			hitted.bIntegrity = max(hitted.bIntegrity - calculatedDamage * clamp(armorDiff / 200, 0, 1), 0)
+			// AI EDIT: BULLET_FRAGMENT_SPAWNCOUNT (8) / BULLET_FRAGMENT_MAXANGLEVARIATION (10) - mojave
+			// defines, hardcoded here since mojave loads after code/ in daedalus.dme.
+			fragmentTowards(A, 8, abs(ricochetAngle) > 60 ? (ricochetAngle + orig + abs(ricochetAngle) + 90) : ricochetAngle + orig - sign(wallHitAngle) * 3, 10, abs(ricochetAngle) > 60)
+			qdel(src)
+			return TRUE
+		// low relative penetration but not enough to ricochet or fragment - let it fall through to the
+		// normal impact/damage path below instead of silently doing nothing.
 	var/datum/point/point_cache = trajectory.copy_to()
 	var/turf/T = get_turf(A)
 	if(ricochets < ricochets_max && check_ricochet_flag(A) && check_ricochet(A))

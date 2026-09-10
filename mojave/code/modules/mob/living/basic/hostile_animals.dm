@@ -68,7 +68,8 @@
 	eggable = TRUE
 	egg_type = /obj/item/food/ms13/egg/ms13/radroach */
 
-/mob/living/basic/ms13/hostile_animal/radroach/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/radroach/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/radroach_death1.ogg', 60, TRUE)
 
@@ -106,7 +107,8 @@
 	sharpness = SHARP_EDGED
 	faction = list("insect")
 
-/mob/living/basic/ms13/hostile_animal/mantis/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/mantis/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/mantis_death.ogg', 65, TRUE)
 
@@ -137,7 +139,8 @@
 	eggable = TRUE
 	egg_type = /obj/item/food/ms13/egg/ms13/gecko*/
 
-/mob/living/basic/ms13/hostile_animal/gecko/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/gecko/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/gecko_death2.ogg', 60, TRUE)
 
@@ -186,7 +189,8 @@
 /mob/living/simple_animal/hostile/ms13/molerat/tamed
 	faction = list("neutral")*/
 
-/mob/living/basic/ms13/hostile_animal/molerat/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/molerat/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/molerat_death1.ogg', 60, TRUE)
 
@@ -229,7 +233,8 @@
 	young_type = /mob/living/simple_animal/ms13/pigratyoung
 	adult_type = /mob/living/simple_animal/hostile/ms13/pigrat/tamed*/
 
-/mob/living/basic/ms13/hostile_animal/pigrat/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/pigrat/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/pigrat_death1.ogg', 60, TRUE)
 
@@ -276,7 +281,8 @@
 	eggable = TRUE
 	egg_type = /obj/item/food/ms13/egg/ms13/ant*/
 
-/mob/living/basic/ms13/hostile_animal/giantant/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/giantant/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/ant_death1.ogg', 60, TRUE)
 
@@ -303,7 +309,8 @@
 	tame_chance = 5
 	bonus_tame_chance = 5*/
 
-/mob/living/basic/ms13/hostile_animal/wolf/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/wolf/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/dog_death1.ogg', 60, TRUE)
 
@@ -333,7 +340,8 @@
 	eggable = TRUE
 	egg_type = /obj/item/food/ms13/egg/ms13/mirelurk*/
 
-/mob/living/basic/ms13/hostile_animal/mirelurk/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/mirelurk/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/ant_death1.ogg', 60, TRUE) //placeholder for now, it sounds alright
 
@@ -378,7 +386,8 @@
 	rideable = TRUE*/
 	base_pixel_x = -64
 
-/mob/living/basic/ms13/hostile_animal/yaoguai/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/yaoguai/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/yaoguai_death1.ogg', 60, TRUE)
 
@@ -411,7 +420,8 @@
 	pixel_x = -20
 	status_flags = null
 
-/mob/living/basic/ms13/hostile_animal/hellpig/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/hellpig/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/hellpig_death2.ogg', 60, TRUE)
 
@@ -441,7 +451,8 @@
 	rideable = TRUE*/
 	status_flags = null
 
-/mob/living/basic/ms13/hostile_animal/boar/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/basic/ms13/hostile_animal/boar/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/hellpig_death1.ogg', 45, TRUE)
 

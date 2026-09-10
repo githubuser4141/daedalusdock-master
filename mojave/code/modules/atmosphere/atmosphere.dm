@@ -80,7 +80,12 @@ SUBSYSTEM_DEF(atmosphere)
 	QDEL_NULL(atmosphere_sound)
 	last_atmosphere_sound = null
 
-/mob/living/death(gibbed)
+// AI EDIT: added cause_of_death (DD's real /mob/living/proc/death() base signature includes it) - without
+// it, this override becomes the most-derived death() for every /mob/living type that doesn't re-override it
+// below, and DM resolves named-arg calls against the most-derived override, so any death(cause_of_death=...)
+// call (e.g. simple_animal/update_stat(), basic_defense.dm's update_stat()) crashed with "bad arg name
+// 'cause_of_death'" and the whole call aborted - death() never ran, so mobs never actually died.
+/mob/living/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	if(.)
 		if(client)

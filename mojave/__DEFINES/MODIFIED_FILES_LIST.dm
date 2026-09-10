@@ -28,6 +28,9 @@ code/game/objects/items/stacks/medical.dm,
 code/_onclick/hud/living.dm,
 code/modules/mob/living/damage_procs.dm,
 code/modules/projectiles/projectile.dm,
+code/modules/projectiles/ammunition/_firing.dm,
+code/game/turfs/closed/wall/reinf_walls.dm,
+code/modules/mob/living/carbon/damage_procs.dm,
 
 
 

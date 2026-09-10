@@ -176,7 +176,8 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	if(target && get_dist(target, src) < aggro_vision_range)
 		. += target
 
-/mob/living/simple_animal/hostile/ms13/robot/sentrybot/death(gibbed)
+// AI EDIT: added cause_of_death and forwarded it - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/simple_animal/hostile/ms13/robot/sentrybot/death(gibbed, cause_of_death = "Unknown")
 	LoseTarget()
 	vision_range = 0
 	aggro_vision_range = 0
@@ -185,7 +186,7 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	var/the_sound = pick(GLOB.sentrybot_dying_sound)
 	playsound(src, the_sound, 50, FALSE)
 	addtimer(CALLBACK(src, PROC_REF(self_destruct)), GLOB.sentrybot_dying_sound[the_sound])
-	..(gibbed)
+	..(gibbed, cause_of_death)
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/self_destruct()
 	explosion(src, devastation_range = 0, heavy_impact_range = 1, light_impact_range = 2, flame_range = 4, flash_range = 5, smoke = TRUE)

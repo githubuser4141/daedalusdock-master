@@ -25,7 +25,8 @@
 	..()
 	add_overlay(image(icon, "[shadow_type]", BELOW_MOB_LAYER, dir))
 
-/mob/living/simple_animal/hostile/ms13/robot/handy/death()
+// AI EDIT: added gibbed/cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/simple_animal/hostile/ms13/robot/handy/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	do_sparks(3, TRUE, src)
 	playsound(src, 'mojave/sound/ms13npc/robot_death.ogg', 60, TRUE)

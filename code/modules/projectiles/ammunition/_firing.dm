@@ -63,6 +63,8 @@
 		var/obj/item/gun/G = fired_from
 		loaded_projectile.damage *= G.projectile_damage_multiplier
 		loaded_projectile.stamina *= G.projectile_damage_multiplier
+		// AI EDIT: mojave/__DEFINES/bullet_math.dm's per-gun speed tuning - see /obj/item/gun/var/speedValueMod there.
+		loaded_projectile.speed += G.speedValueMod
 
 	if(tk_firing(user, fired_from))
 		loaded_projectile.ignore_source_check = TRUE

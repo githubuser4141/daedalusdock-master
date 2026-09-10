@@ -25,7 +25,8 @@
 		var/turf/my_turf = get_turf(src)
 		my_turf.VapourListTurf(list(/datum/vapours/ms13/miasma = 50), VAPOUR_ACTIVE_EMITTER_CAP)
 
-/mob/living/carbon/human/death(gibbed)
+// AI EDIT: added cause_of_death - see atmosphere.dm's /mob/living/death() for why.
+/mob/living/carbon/human/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	if(stat == DEAD && !pre_spawn)
 		addtimer(CALLBACK(src, PROC_REF(rot)), rand(30 MINUTES, 45 MINUTES))
