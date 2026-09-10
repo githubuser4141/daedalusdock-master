@@ -20,10 +20,12 @@
 
 /// How much damage a vessel can take before it ruptures. Fragile relative to other organs (heart is 45).
 #define MS13_VESSEL_MAX_HEALTH 20
-/// One-time blood_volume hit (out of BLOOD_VOLUME_NORMAL 560) applied when a major_vessel (head/chest -
-/// carotid/aorta) ruptures, on top of the ongoing +4 bleed_rate every severed artery already causes via
-/// refresh_bleed_rate(). Represents the sudden/immediate nature of a core vessel letting go vs a limb one.
-#define MS13_MAJOR_VESSEL_BLOOD_BURST 60
+/// One-time blood_volume hit (out of BLOOD_VOLUME_NORMAL 560), PER POINT of the rupturing vessel's own
+/// vessel_size (see vessel.dm), applied on rupture - on top of the ongoing +4 bleed_rate every severed
+/// artery already causes via refresh_bleed_rate(). A bigger vessel (aorta, vessel_size 3) bursts harder
+/// than a small one (brachial, vessel_size 1) - represents the sudden/immediate nature of a core vessel
+/// letting go vs a limb one.
+#define MS13_VESSEL_BLOOD_BURST_PER_SIZE 20
 /// Weight in the same pick_weight() pool as the limb's other organs (base default is 25, heart/eyes/
 /// ears/tongue/appendix are 5, kidneys is 10, lungs/liver are 60). Vessels are the ONLY organ in arms
 /// and legs, so they take 100% of any organ-hit roll there regardless of this value.

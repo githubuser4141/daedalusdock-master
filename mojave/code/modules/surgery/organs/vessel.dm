@@ -22,19 +22,21 @@
 	now_failing = span_userdanger("Something ruptures inside, and blood starts pouring out!")
 	now_fixed = span_info("The bleeding beneath your skin finally stops.")
 	high_threshold_cleared = span_info("The bleeding beneath your skin slows.")
-	/// Carotid/aorta vs a limb's artery - see set_organ_dead() below.
-	var/major_vessel = FALSE
+	/// How big this vessel is, relative to a limb artery (1) - aorta/carotid are bigger, see the subtypes
+	/// below. Scales the one-time rupture burst (set_organ_dead()), the ongoing bleed rate (on_life(),
+	/// vessel_local_blood.dm), and this vessel's weight in get_vessel_circulation_factor() below.
+	var/vessel_size = 1
 
-/// Sync the limb's artery to match, plus a one-time blood burst on major vessel rupture.
+/// Sync the limb's artery to match, plus a one-time blood burst on rupture scaled by vessel_size.
 /obj/item/organ/vessel/set_organ_dead(failing, cause_of_death)
 	. = ..()
 	if(!. || !ownerlimb)
 		return
 	ownerlimb.set_sever_artery(failing)
-	if(failing && major_vessel && owner)
-		owner.blood_volume = max(0, owner.blood_volume - MS13_MAJOR_VESSEL_BLOOD_BURST)
-		to_chat(owner, span_userdanger("A sudden gush of blood leaves you lightheaded!"))
-	ms13_medical_debug(owner, "Vessel [name] ([zone]) [failing ? "ruptured" : "repaired"] (major=[major_vessel])")
+	if(failing && owner)
+		owner.blood_volume = max(0, owner.blood_volume - MS13_VESSEL_BLOOD_BURST_PER_SIZE * vessel_size)
+		to_chat(owner, vessel_size >= 2 ? span_userdanger("A sudden gush of blood leaves you lightheaded!") : span_warning("Blood spurts from the wound!"))
+	ms13_medical_debug(owner, "Vessel [name] ([zone]) [failing ? "ruptured" : "repaired"] (size=[vessel_size])")
 
 /**
  * A missing vessel means no blood is getting to this limb at all - worse than even a ruptured one (which
@@ -61,13 +63,13 @@
 	name = "carotid artery"
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_VESSEL_HEAD
-	major_vessel = TRUE
+	vessel_size = 2
 
 /obj/item/organ/vessel/chest
 	name = "aorta"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_VESSEL_CHEST
-	major_vessel = TRUE
+	vessel_size = 3
 
 /**
  * DD's own artery-fix tooling (the fix_vein surgery step, anti-coagulant chems, human.dm's full-heal) all
@@ -104,11 +106,13 @@
 	name = "femoral artery"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_VESSEL_L_LEG
+	vessel_size = 1.5
 
 /obj/item/organ/vessel/r_leg
 	name = "femoral artery"
 	zone = BODY_ZONE_R_LEG
 	slot = ORGAN_SLOT_VESSEL_R_LEG
+	vessel_size = 1.5
 
 /**
  * DD already computes a real whole-body "circulation number" - /mob/living/carbon/proc/get_blood_circulation()
@@ -120,18 +124,22 @@
  * top of the existing heart/blood_volume math, built from each vessel's own damage ratio - that IS the local
  * volume/global volume split described, just without a separate local blood currency: a vessel's own health
  * already stands in for how much blood is getting through that pathway, no extra state needed. A fully
- * healthy set of vessels multiplies by 1 (no change for anyone who hasn't been hit yet). major_vessel slots
- * (carotid/aorta) count double - losing the aorta should hurt whole-body circulation much more than losing a
- * wrist's worth of vessel.
+ * healthy set of vessels multiplies by 1 (no change for anyone who hasn't been hit yet). Each slot is
+ * weighted by that vessel type's own vessel_size (see the subtypes above) - losing the aorta (size 3) should
+ * hurt whole-body circulation much more than losing a wrist's worth of vessel (size 1).
+ *
+ * AI EDIT: this weight list has to mirror each subtype's own vessel_size initial() value above - can't just
+ * read V.vessel_size here, because a MISSING vessel (getorganslot() returns null) still needs to count
+ * against total_weight with its normal size, not be skipped from the average entirely (see the loop below).
  */
 /mob/living/carbon/human/proc/get_vessel_circulation_factor()
 	var/static/list/vessel_slot_weights = list(
 		(ORGAN_SLOT_VESSEL_HEAD) = 2,
-		(ORGAN_SLOT_VESSEL_CHEST) = 2,
+		(ORGAN_SLOT_VESSEL_CHEST) = 3,
 		(ORGAN_SLOT_VESSEL_L_ARM) = 1,
 		(ORGAN_SLOT_VESSEL_R_ARM) = 1,
-		(ORGAN_SLOT_VESSEL_L_LEG) = 1,
-		(ORGAN_SLOT_VESSEL_R_LEG) = 1,
+		(ORGAN_SLOT_VESSEL_L_LEG) = 1.5,
+		(ORGAN_SLOT_VESSEL_R_LEG) = 1.5,
 	)
 	var/total_weight = 0
 	var/prop_sum = 0

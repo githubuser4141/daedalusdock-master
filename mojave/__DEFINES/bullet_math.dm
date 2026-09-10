@@ -287,6 +287,8 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 #define BULLET_FRAGMENT_MAXANGLEVARIATION  10
 #define BULLET_FRAGMENT_SPEEDMALUS 0.1
 #define BULLET_FRAGMENT_SPAWNCOUNT 8
+/// A fragment computing below this much damage doesn't get spawned at all - see fragmentTowards() below.
+#define BULLET_FRAGMENT_MIN_DAMAGE 1
 
 #define BULLET_EXPAND_SPEEDMALUS 0.05
 
@@ -345,6 +347,14 @@ TYPEINFO_DEF(/obj/projectile)
 	// fragment to survive being created. The per-fragment QDELETED check stays as a cheap backstop.
 	if(getBIntegrity() <= BULLET_INTEGRITYLOSS_FRAGMENT)
 		return
+	// AI EDIT: fragment damage is a flat 20% of the parent's - a fragment that itself fragmented (before
+	// canFragment=FALSE below existed) kept losing another 80% each generation, cascading into a fast-growing
+	// swarm of 8x-per-hit projectiles doing next to nothing. Skip spawning entirely once that 20% would round
+	// under BULLET_FRAGMENT_MIN_DAMAGE - there's no point creating, moving, and hit-testing a bullet that
+	// can't deal a mark of damage.
+	var/fragment_damage = damage * 0.2
+	if(fragment_damage < BULLET_FRAGMENT_MIN_DAMAGE)
+		return
 	for(var/i = 1 to fragmentCount)
 		var/obj/projectile/projectile = new /obj/projectile/bullet(get_turf(lastHit))
 		projectile.setBIntegrity(getBIntegrity())
@@ -352,12 +362,17 @@ TYPEINFO_DEF(/obj/projectile)
 		projectile.firer = src
 		projectile.fired_from = lastHit
 		projectile.impacted = list(lastHit)
+		// AI EDIT: a fragment used to spawn as a plain /obj/projectile/bullet, which defaults canFragment to
+		// TRUE - hitting another wall at the right angle let it fragment AGAIN, and each of its 8 children
+		// could too, exponentially. "no fragmentation of the fragmentation" per this file's own
+		// bulletStandardFragmentAngles comment - now actually enforced.
+		projectile.canFragment = FALSE
 		projectile.preparePixelProjectile(get_turf_in_angle(fragmentAngle, lastHit, 2), src)
 		projectile.adjustSpeed(-BULLET_FRAGMENT_SPEEDMALUS)
 		projectile.adjustIntegrity(-BULLET_INTEGRITYLOSS_FRAGMENT)
 		if(QDELETED(projectile))
 			continue
-		projectile.damage = damage * 0.2
+		projectile.damage = fragment_damage
 		projectile.damage_type = damage_type
 		projectile.fire(fragmentAngle + rand(0, maxDeviation) * sign(rand(-1,1)) + (fullLoopPossible ? rand(-1,1) > 0 : 0) * 180)
 

@@ -77,10 +77,12 @@
 		var/internal_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_INTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_INTERNAL_MULT
 		var/external_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
 
-		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * internal_mult * delta_time
+		// AI EDIT: scaled by vessel_size (vessel.dm) - a nicked aorta or carotid should bleed out much faster
+		// than the same damage to a brachial artery, not just burst harder once fully severed.
+		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * internal_mult * vessel_size * delta_time
 		ownerlimb.local_blood_volume = max(0, ownerlimb.local_blood_volume - local_loss)
 
-		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * delta_time
+		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * vessel_size * delta_time
 		owner.bleed(global_loss)
 		ms13_medical_debug(owner, "Vessel [name] bleeding: local -[round(local_loss, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max]), global -[round(global_loss, 0.1)]")
 		return
@@ -145,3 +147,17 @@
 		ms13_medical_debug(owner, "[name] regen blocked: local blood too low ([round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 		return
 	return ..()
+
+/**
+ * fully_heal() (code/modules/mob/living/living.dm/carbon.dm/human.dm) never touched local_blood_volume -
+ * it heals the vessel/muscle organs' own damage via the processing_organs loop, but a limb that was merely
+ * drained (not yet at 0) stayed drained afterwards, still dragging down get_vessel_circulation_factor()
+ * (vessel.dm) and every muscle's get_performance() (muscle.dm) even right after an admin heal. Also
+ * refreshes muscle effects immediately instead of waiting for the next on_life() tick to pick the restored
+ * blood back up.
+ */
+/mob/living/carbon/human/fully_heal(admin_revive = FALSE)
+	. = ..()
+	for(var/obj/item/bodypart/BP as anything in bodyparts)
+		BP.local_blood_volume = BP.local_blood_volume_max
+		BP.refresh_muscle_effects()

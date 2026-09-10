@@ -82,6 +82,9 @@
 
 	if(owner)
 		owner.med_hud_set_health()
+		// AI EDIT: handle_heartbeat() only runs from on_life()'s "if(pulse)" branch, so once pulse hits
+		// PULSE_NONE nothing ever calls it again to turn the (looping) beat sound off - it played on forever.
+		owner.stop_sound_channel(CHANNEL_HEARTBEAT)
 		if(owner.ckey)
 			SSblackbox.record_feedback("amount", "heartattacks", 1)
 

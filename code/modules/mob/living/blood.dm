@@ -314,6 +314,9 @@
 
 	if(small_drip)
 		new /obj/effect/decal/cleanable/blood/drip(T, get_static_viruses(), get_blood_dna_list())
+		// AI EDIT: quiet drip sound for blood landing on the floor while bleeding - reuses the same pool the
+		// flying hitsplatter decal already plays on landing (humans.dm), just much quieter for an ambient drip.
+		playsound(T, pick('sound/effects/wounds/splatter.ogg', 'sound/effects/wounds/splatter2.ogg'), 15, TRUE, -1)
 		return
 
 	// Find a blood decal or create a new one.
@@ -325,6 +328,7 @@
 		return
 
 	B.bloodiness = min((B.bloodiness + BLOOD_AMOUNT_PER_DECAL), BLOOD_POOL_MAX)
+	playsound(T, pick('sound/effects/wounds/splatter.ogg', 'sound/effects/wounds/splatter2.ogg'), 25, TRUE, -1)
 
 /mob/living/carbon/human/add_splatter_floor(turf/T, small_drip)
 	if(!(NOBLOOD in dna.species.species_traits))

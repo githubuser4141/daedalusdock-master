@@ -34,6 +34,8 @@ code/modules/mob/living/carbon/damage_procs.dm,
 code/datums/components/pellet_cloud.dm,
 code/modules/surgery/bodyparts/_bodyparts.dm,
 code/modules/grab/grab_datum.dm,
+code/modules/surgery/organs/heart.dm,
+code/modules/mob/living/blood.dm,
 
 
 
