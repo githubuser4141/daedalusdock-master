@@ -6,9 +6,8 @@
 
 /obj/structure/lattice/catwalk/ms13/Initialize(mapload)
 	. = ..()
-	var/static/list/bad_initialize = list(INITIALIZE_HINT_QDEL, INITIALIZE_HINT_QDEL_FORCE)
-	if(!(. in bad_initialize))
-		AddElement(/datum/element/footstep_override, clawfootstep = FOOTSTEP_CATWALK, heavyfootstep = FOOTSTEP_CATWALK, footstep = FOOTSTEP_CATWALK) // AI EDIT: footstep_changer component doesn't exist - footstep_override is DD's real equivalent (already used by the parent type, code/game/objects/structures/lattice.dm)
+	// footstep_override is already added by the parent type (code/game/objects/structures/lattice.dm)
+	// with identical args - adding it again here just duplicate-registers the same signal handler.
 
 	var/turf/my_turf = get_turf(loc)
 	if(my_turf)

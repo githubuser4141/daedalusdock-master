@@ -135,6 +135,7 @@
 	if(operating)
 		return
 	operating = TRUE
+	sleep(1 SECONDS)
 	set_opacity(0)
 	set_density(FALSE)
 	flags_1 &= ~PREVENT_CLICK_UNDER_1
@@ -159,6 +160,7 @@
 			if(M.density && M != src) //something is blocking the door
 				return
 	operating = TRUE
+	sleep(1 SECONDS)
 	set_density(TRUE)
 	flags_1 |= PREVENT_CLICK_UNDER_1
 	open = FALSE

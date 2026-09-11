@@ -35,7 +35,8 @@
 
 /obj/structure/closet/crate/ms13/woodcrate/Initialize(mapload)
 	. = ..()
-	register_context()
+	// register_context() already runs in the parent's Initialize() (code/game/objects/structures/
+	// crates_lockers/closets.dm) - calling it again here just duplicate-registers add_context().
 	if(!altstates)
 		return
 

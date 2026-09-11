@@ -11,6 +11,11 @@
 	name = "_Wastelander Corpse"
 	jobtype = null
 
+// A decorative corpse prop, not a real job - post_equip()'s base body assumes a real ID card, bank account,
+// and job title were assigned, none of which apply here (jobtype = null above).
+/datum/outfit/job/ms13/wasteland/corpse/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE)
+	return
+
 /datum/outfit/job/ms13/wasteland/corpse/pre_equip(mob/living/carbon/human/H)
 	..()
 	H.pre_spawn = TRUE

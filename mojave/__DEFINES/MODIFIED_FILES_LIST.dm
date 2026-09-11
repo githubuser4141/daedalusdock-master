@@ -44,6 +44,8 @@ code/game/turfs/closed/walls.dm,
 code/modules/atmospherics/ZAS/Airflow.dm,
 code/__HELPERS/_lists.dm,
 code/datums/components/food/edible.dm,
+code/controllers/subsystem/mapping.dm,
+code/datums/looping_sounds/_looping_sound.dm,
 
 
 

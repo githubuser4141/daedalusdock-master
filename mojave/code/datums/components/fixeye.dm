@@ -160,7 +160,7 @@
 	//No dir change on inventory items
 	else if(isitem(A))
 		var/obj/item/item_atom = A
-		if((item_atom.item_flags & IN_INVENTORY) || (item_atom.loc && SEND_SIGNAL(item_atom.loc, COMSIG_CONTAINS_STORAGE)))
+		if((item_atom.item_flags & IN_INVENTORY) || (item_atom.loc && item_atom.loc.atom_storage))
 			return
 	//No dir change on self
 	else if(A == source)

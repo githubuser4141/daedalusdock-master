@@ -77,9 +77,8 @@
 /obj/effect/spawner/random/ms13/minefield
 	name = "Explosive mines"
 	spawn_loot_chance = 50
-	spawn_scatter_radius = 4 
-	spawn_loot_count = 1 // fucking broken seemingly
-	spawn_all_loot = TRUE
+	spawn_scatter_radius = 4
+	spawn_loot_count = 1
 	loot = list(
 		/obj/effect/mine/ms13/explosive = 60
 	)
@@ -87,7 +86,7 @@
 /obj/effect/spawner/random/ms13/guaranteed/minefield
 	name = "Explosive mines"
 	spawn_scatter_radius = 4
-	spawn_all_loot = TRUE
+	spawn_loot_count = 1
 	loot = list(
 		/obj/effect/mine/ms13/explosive
 	)

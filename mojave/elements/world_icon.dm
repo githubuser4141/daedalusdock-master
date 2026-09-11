@@ -52,7 +52,7 @@
 /datum/element/world_icon/proc/update_icon(obj/item/source, updates)
 	SIGNAL_HANDLER
 
-	if((source.item_flags & IN_INVENTORY) || (source.loc && SEND_SIGNAL(source.loc, COMSIG_CONTAINS_STORAGE)))
+	if((source.item_flags & IN_INVENTORY) || (source.loc && source.loc.atom_storage))
 		if(attached_proc)
 			return
 		return default_inventory_icon(source)
@@ -65,7 +65,7 @@
 /datum/element/world_icon/proc/update_icon_state(obj/item/source, updates)
 	SIGNAL_HANDLER
 
-	if((source.item_flags & IN_INVENTORY) || (source.loc && SEND_SIGNAL(source.loc, COMSIG_CONTAINS_STORAGE)))
+	if((source.item_flags & IN_INVENTORY) || (source.loc && source.loc.atom_storage))
 		if(attached_proc)
 			return
 		return default_inventory_icon_state(source)

@@ -321,7 +321,8 @@
 /obj/structure/table/ms13/crafting/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/personal_crafting, crafting_interface)
-	register_context()
+	// register_context() already runs in the parent's Initialize() (code/modules/tables/tables_racks.dm)
+	// for any deconstructible table - calling it again here just duplicate-registers add_context().
 
 /obj/structure/table/ms13/crafting/workbench
 	name = "workbench"
