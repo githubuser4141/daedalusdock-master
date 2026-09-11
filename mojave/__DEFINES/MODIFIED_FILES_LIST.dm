@@ -42,6 +42,8 @@ code/modules/mob/living/carbon/human/human_defense.dm,
 code/modules/surgery/organs/_organ.dm,
 code/game/turfs/closed/walls.dm,
 code/modules/atmospherics/ZAS/Airflow.dm,
+code/__HELPERS/_lists.dm,
+code/datums/components/food/edible.dm,
 
 
 

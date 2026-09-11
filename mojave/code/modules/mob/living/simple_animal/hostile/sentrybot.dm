@@ -385,10 +385,10 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 /obj/projectile/bullet/sentrybot_rocket
 	name = "explosive rocket"
 	icon_state = "84mm-hedp"
-	damage = 0 //Damage comes from the light explosion and fire
+	damage = 20 //Damage comes from the light explosion and fire
 	embedding = null
 	shrapnel_type = null
-	speed = 1 //slower because it's a rocket
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL //slower because it's a rocket
 
 /obj/projectile/bullet/sentrybot_rocket/on_hit(atom/target, blocked = FALSE)
 	explosion(get_turf(target), devastation_range = -1, heavy_impact_range = -1, light_impact_range = 2, flame_range = 3, explosion_cause = src)
@@ -481,27 +481,20 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 /obj/item/shrapnel/ms13
 	name = "shrapnel shard"
-	// AI EDIT: weak_against_armour was never declared as a var here (it's a run_armor_check() parameter, not a
-	// persistent field) and nothing reads it back off this projectile anyway - dropped (was set to FALSE, the
-	// same as run_armor_check's own default, so this was a no-op either way)
 	icon = 'mojave/icons/objects/projectiles/projectiles.dmi'
 	icon_state = "nail" //placeholder
 	sharpness = SHARP_POINTY
 
 /obj/projectile/bullet/shrapnel/ms13
 	name = "flying shrapnel shard"
-	damage = 15
-	subtractible_armour_penetration = 20
+	damage = COMPACTPISTOL_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	range = 25
 	icon = 'mojave/icons/objects/projectiles/projectiles.dmi'
 	icon_state = "nail" //placeholder
-	ricochets_max = 2
-	ricochet_chance = 75
 	shrapnel_type = /obj/item/shrapnel/ms13
-	ricochet_incidence_leeway = 60
 	sharpness = SHARP_POINTY
-	//wound_bonus = 10
-	//bare_wound_bonus 15
+	bulletTipType = BULLET_SHARP
 	embedding = list("embedded_pain_multiplier" = 1, "embed_chance" = 50, "embedded_fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
 
 //A flamethrower that's essentially a forward facing backblast of the rocket launcher
@@ -586,13 +579,14 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	if(loaded_projectile && shooter && shooter.blind_fire_until && shooter.blind_fire_target_was_prone)
 		loaded_projectile.low_aim_mode = TRUE
 
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/sentry)
+	default_armor = FMJ_RIFLE
 /obj/projectile/bullet/ms13/sentry
 	name = "5mm bullet"
 	icon_state = "medium_bullet"
-	damage = 6
-	subtractible_armour_penetration = 25
-	//wound_bonus = 15
-	//bare_wound_bonus 15
+	damage = SMALL_RIFLE_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
+	bulletTipType = BULLET_SHARP
 
 /datum/action/cooldown/railgun
 	name = "Fire a railgun"
@@ -613,10 +607,10 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	projectile_obj.preparePixelProjectile(target_atom, owner)
 	projectile_obj.fire()
 
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/gauss/sentry)
+	default_armor = ANTI_MATERIEL
 /obj/projectile/bullet/ms13/gauss/sentry
 	name = "heavy gauss bullet"
-	damage = 80
-	subtractible_armour_penetration = 80
-	//wound_bonus = 5
-	//bare_wound_bonus 0
-	speed = 0.35
+	damage = RAILGUN_DAMAGE
+	bulletTipType = BULLET_ULTRASHARP
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN

@@ -448,13 +448,24 @@
 			list_to_pick[item] = 0
 		total += list_to_pick[item]
 
+	if(total <= 0)
+		return null
+
 	total = rand(1, total)
+	var/last_valid_item
 	for(item in list_to_pick)
+		if(!list_to_pick[item])
+			continue
+		last_valid_item = item
 		total -= list_to_pick[item]
-		if(total <= 0 && list_to_pick[item])
+		if(total <= 0)
 			return item
 
-	return null
+	// Non-integer weights (fractions like 0.1/0.25/0.55) can leave a tiny rounding
+	// residual above zero after the last subtraction instead of landing exactly on
+	// or below it - fall back to the last positively-weighted item rather than
+	// returning null from a list that had a valid pick all along.
+	return last_valid_item
 
 /// Takes a weighted list (see above) and expands it into raw entries
 /// This eats more memory, but saves time when actually picking from it

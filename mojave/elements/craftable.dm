@@ -25,6 +25,7 @@
 /datum/looping_sound/crafting
 	start_length = 5 SECONDS
 	mid_length = 5 SECONDS
+	mid_sounds = list('mojave/sound/ms13effects/crafting/blank.ogg' = 1)
 	volume = 100
 
 /datum/looping_sound/proc/change_sound(target, new_start_sound, new_mid_sounds)

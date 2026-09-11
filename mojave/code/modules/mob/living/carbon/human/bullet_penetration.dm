@@ -83,18 +83,10 @@
 	var/velocity_spread = clamp(initial(P.speed) / P.speed, MS13_BULLET_SPEED_SPREAD_MIN, MS13_BULLET_SPEED_SPREAD_MAX)
 	var/transfer_fraction = MS13_BULLET_TRANSFER_CONVERGENCE + (rigidity - MS13_BULLET_TRANSFER_CONVERGENCE) * velocity_spread
 
-	// The bullet's own construction divides the result. bulletArmorType's rating (via returnArmor()) is the
-	// bullet's OWN toughness against deforming/fragmenting on impact, not its ability to defeat a target's
-	// armor - a tougher round holds its shape and punches through more (transfer_fraction goes down); one
-	// that deforms/fragments more easily dumps its energy instead (transfer_fraction goes up).
-	var/tip_hardness = GLOB.bulletTipHardness["[P.bulletTipType]"] || 1
-	var/datum/armor/bullet_armor = P.returnArmor()
-	var/rating_hardness = (bullet_armor && P.bulletArmorType) ? clamp(sqrt(bullet_armor.vars[P.bulletArmorType] / MS13_BULLET_HARDNESS_BASELINE), MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
-	// A bullet already worn down by prior impacts (ricochets, fragmenting, earlier organ hits) is already
-	// partway to being deformed/frangible right now, regardless of what it started as - scale hardness by its
-	// CURRENT integrity, not just its static type.
-	var/integrity_ratio = P.getBIntegrity() / P.getBIntegrityMax()
-	var/hardness_ratio = clamp(tip_hardness * rating_hardness * integrity_ratio, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX)
+	// The bullet's own construction divides the result - a tougher round holds its shape and punches through
+	// more (transfer_fraction goes down); one that deforms/fragments more easily dumps its energy instead
+	// (transfer_fraction goes up). Shared with wall overpenetration (bullet_math.dm's get_own_hardness_ratio()).
+	var/hardness_ratio = P.get_own_hardness_ratio()
 	transfer_fraction /= hardness_ratio
 
 	transfer_fraction = clamp(transfer_fraction, 0, 1)
@@ -115,13 +107,13 @@
 		P.adjustIntegrity(-integrity_cost)
 
 	if(!istext(picked))
-		apply_bullet_organ_damage(hit_part, picked, transferred_amount)
+		apply_bullet_organ_damage(hit_part, picked, transferred_amount, P.firer)
 
 	return transfer_fraction
 
 /// Splits transferred_amount between the primary struck organ and any splash to nearby organs sharing the
 /// bodypart - carved out of transferred_amount, never added to it.
-/mob/living/carbon/human/proc/apply_bullet_organ_damage(obj/item/bodypart/hit_part, obj/item/organ/primary, transferred_amount)
+/mob/living/carbon/human/proc/apply_bullet_organ_damage(obj/item/bodypart/hit_part, obj/item/organ/primary, transferred_amount, atom/firer)
 	var/organ_pool = transferred_amount
 	for(var/obj/item/organ/O in hit_part.contained_organs)
 		if(O == primary || (O.organ_flags & ORGAN_DEAD) || O.cosmetic_only || !O.bullet_cross_section)
@@ -133,6 +125,7 @@
 			continue
 		O.applyOrganDamage(splash)
 		organ_pool -= splash
-		log_combat(null, src, "bullet splash hit [O]", addition = "[round(splash, 0.1)] damage")
+		if(firer)
+			log_combat(firer, src, "bullet splash hit [O]", addition = "[round(splash, 0.1)] damage")
 
 	primary.applyOrganDamage(organ_pool)

@@ -22,7 +22,7 @@
 
 /obj/machinery/server/Initialize(mapload)
 	. = ..()
-	set_light(1.4,0.7,"#FF2A2A")
+	set_light(l_outer_range = 1.4, l_power = 0.7, l_color = "#FF2A2A")
 
 /obj/machinery/ms13/mainframe
 	name = "mainframe"
@@ -39,4 +39,4 @@
 
 /obj/machinery/ms13/mainframe/Initialize(mapload)
 	. = ..()
-	set_light(1.4,0.7,"#FF2A2A")
+	set_light(l_outer_range = 1.4, l_power = 0.7, l_color = "#FF2A2A")

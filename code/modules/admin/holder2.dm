@@ -382,11 +382,12 @@ you will have to do something like if(client.rights & R_ADMIN) yourself.
 	var/tok = GLOB.href_token
 	if(!forceGlobal && usr)
 		var/client/C = usr.client
-		if(!C)
-			CRASH("No client for HrefToken()!")
-		var/datum/admins/holder = C.holder
-		if(holder)
-			tok = holder.href_token
+		// usr isn't always a real player - hrefs get built for NPC/simple_animal-triggered UI too,
+		// and those have no client. The global token above is already a valid fallback for them.
+		if(C)
+			var/datum/admins/holder = C.holder
+			if(holder)
+				tok = holder.href_token
 	return tok
 
 /proc/HrefToken(forceGlobal = FALSE)

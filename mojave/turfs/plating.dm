@@ -5,8 +5,10 @@
 #define SHROOM_WEIGHT			4.8
 #define LUSH_PLANT_SPAWN_LIST list(/obj/structure/flora/ms13/tree/tallpine/snow = 8, /obj/structure/flora/ms13/forage/xander = 1, /obj/structure/flora/ms13/forage/brocflower = 1, /obj/structure/flora/ms13/forage/tarberry = 1, /obj/structure/flora/ms13/forage/blackberry = 1, /obj/structure/flora/ms13/forage/mutfruit = 1, /obj/structure/flora/ms13/forage/ashrose = 1, /obj/structure/flora/ms13/forage/wildcarrot = 1, /obj/structure/flora/ms13/forage/aster = 1, /obj/structure/flora/grass/wasteland/snow = 5)
 #define DESOLATE_PLANT_SPAWN_LIST list(/obj/structure/flora/grass/wasteland/snow = 10)
-#define MUSHROOM_SPAWN_LIST list(/obj/structure/flora/ms13/forage/mushroom = 5, /obj/structure/flora/ms13/forage/mushroom/glowing = 3, /obj/structure/flora/ms13/forage/brainshroom = 1.5, /obj/structure/flora/ms13/forage/fireshroom = 0.5, /obj/structure/flora/ms13/forage/gutshroom = 1.5, /obj/structure/flora/ms13/forage/blight = 1.5, /obj/structure/flora/ms13/forage/nara = 1.5)
-#define DESERT_LUSH_PLANT_SPAWN_LIST list(/obj/structure/flora/grass/wasteland = 2.5, /obj/structure/flora/ms13/tree/drought/dead = 2, /obj/structure/flora/ms13/cactus = 2.5, /obj/structure/flora/ms13/cactus/tall = 2.5, /obj/structure/flora/ms13/leafy = 2, /obj/structure/flora/ms13/forage/xander/drought = 1.5, /obj/structure/flora/ms13/forage/brocflower/drought = 1.5, /obj/structure/flora/ms13/forage/ashrose/drought = 1, /obj/structure/flora/ms13/forage/aster/drought = 1, /obj/structure/flora/ms13/forage/yucca = 1.5, /obj/structure/flora/ms13/forage/barrel_cactus = 2)
+// pick_weight() only accepts integer weights - these are the original 5/3/1.5/0.5/1.5/1.5/1.5 doubled to stay integer while keeping the same ratios.
+#define MUSHROOM_SPAWN_LIST list(/obj/structure/flora/ms13/forage/mushroom = 10, /obj/structure/flora/ms13/forage/mushroom/glowing = 6, /obj/structure/flora/ms13/forage/brainshroom = 3, /obj/structure/flora/ms13/forage/fireshroom = 1, /obj/structure/flora/ms13/forage/gutshroom = 3, /obj/structure/flora/ms13/forage/blight = 3, /obj/structure/flora/ms13/forage/nara = 3)
+// pick_weight() only accepts integer weights - doubled from the original 2.5/2/2.5/2.5/2/1.5/1.5/1/1/1.5/2 to stay integer while keeping the same ratios.
+#define DESERT_LUSH_PLANT_SPAWN_LIST list(/obj/structure/flora/grass/wasteland = 5, /obj/structure/flora/ms13/tree/drought/dead = 4, /obj/structure/flora/ms13/cactus = 5, /obj/structure/flora/ms13/cactus/tall = 5, /obj/structure/flora/ms13/leafy = 4, /obj/structure/flora/ms13/forage/xander/drought = 3, /obj/structure/flora/ms13/forage/brocflower/drought = 3, /obj/structure/flora/ms13/forage/ashrose/drought = 2, /obj/structure/flora/ms13/forage/aster/drought = 2, /obj/structure/flora/ms13/forage/yucca = 3, /obj/structure/flora/ms13/forage/barrel_cactus = 4)
 #define DESERT_DESOLATE_PLANT_SPAWN_LIST list(/obj/structure/flora/grass/wasteland = 6, /obj/structure/flora/ms13/leafy = 1, /obj/structure/flora/ms13/cactus = 1, /obj/structure/flora/ms13/cactus/tall = 1)
 
 #define TURF_LAYER_SNOW 2.003
@@ -386,7 +388,8 @@
 
 	if(prob(SHROOM_WEIGHT))
 		randPlant = pick_weight(MUSHROOM_SPAWN_LIST)
-		turfPlant = new randPlant(src)
+		if(randPlant)
+			turfPlant = new randPlant(src)
 	. = TRUE //in case we ever need this to return if we spawned
 	return .
 

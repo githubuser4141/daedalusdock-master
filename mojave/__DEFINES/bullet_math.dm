@@ -320,8 +320,8 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 /// Mob overpenetration (mojave/code/modules/mob/living/carbon/human/bullet_penetration.dm) - fraction of a
 /// bullet's damage that stays in the body vs continues through as leftover damage, by what internal
 /// structure absorbed the hit. Denser structures transfer MORE, not less - they decelerate/deform the round
-/// instead of letting it pass through. TODO: unify with the wall penetration math above instead of a
-/// separate formula.
+/// instead of letting it pass through. Shares get_own_hardness_ratio() below with wall overpenetration
+/// (wall_integrity.dm) so the same round's construction matters consistently against either.
 #define MS13_BULLET_TRANSFER_BONE 0.85
 #define MS13_BULLET_TRANSFER_ORGAN 0.6
 #define MS13_BULLET_TRANSFER_MUSCLE 0.5
@@ -365,6 +365,13 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 /// Below this much leftover damage, the bullet just stops - not worth continuing as an overpenetration hit.
 #define MS13_BULLET_OVERPEN_MIN_REMAINING 10
 
+/// Wall overpenetration (mojave/code/game/turfs/wall_integrity.dm) - baseline fraction of a bullet's damage
+/// that transfers into a "neutral" wall (same armor rating as MS13_BULLET_HARDNESS_BASELINE) before the
+/// wall's own armor and the bullet's own construction (get_own_hardness_ratio()) adjust it. A tougher wall
+/// pushes this UP (stops more of the round); a tougher/harder bullet divides it back DOWN (punches through).
+#define MS13_WALL_BULLET_TRANSFER_BASE 0.5
+#define MS13_WALL_BULLET_TRANSFER_MIN 0.1
+
 #define BULLET_SPEED_SLOWER -0.05
 #define BULLET_SPEED_PISTOL -0.1
 #define BULLET_SPEED_MAGNUM -0.2
@@ -398,6 +405,16 @@ TYPEINFO_DEF(/obj/projectile)
 	var/bulletArmorType = PUNCTURE
 	var/canRicochet = TRUE
 	var/canFragment = TRUE
+
+/// The bullet's own toughness against deforming/fragmenting on impact - shared by the mob overpenetration
+/// system (bullet_penetration.dm) and wall overpenetration (wall_integrity.dm) so the same round behaves
+/// consistently against either. >1 = holds together, punches through more; <1 = deforms/dumps energy instead.
+/obj/projectile/proc/get_own_hardness_ratio()
+	var/tip_hardness = GLOB.bulletTipHardness["[bulletTipType]"] || 1
+	var/datum/armor/bullet_armor = returnArmor()
+	var/rating_hardness = (bullet_armor && bulletArmorType) ? clamp(sqrt(bullet_armor.vars[bulletArmorType] / MS13_BULLET_HARDNESS_BASELINE), MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
+	var/integrity_ratio = getBIntegrity() / getBIntegrityMax()
+	return clamp(tip_hardness * rating_hardness * integrity_ratio, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX)
 
 // returns a exponential multiplier for calculations.
 // AI EDIT: param was typed turf/closed/wall - now that /obj/structure and /obj/machinery also carry a
