@@ -251,6 +251,11 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 #define BULLET_INTEGRITYLOSSMULT 1
 #define BULLET_INTEGRITYLOSS_RICOCHET 20 * BULLET_INTEGRITYLOSSMULT
 #define BULLET_INTEGRITYLOSS_FRAGMENT 50 * BULLET_INTEGRITYLOSSMULT
+/// Base integrity cost of hitting an organ (mojave/code/modules/mob/living/carbon/human/
+/// bullet_penetration.dm), scaled by that hit's rigidity - hitting bone costs more integrity than a clean
+/// pass, same idea as ricochet (20) and fragmenting (50) above but lighter, since a body isn't as abrupt a
+/// stop as a wall.
+#define MS13_BULLET_ORGAN_INTEGRITY_LOSS_BASE 15
 /// Bullet Malus defines for fragmenting or expanding
 
 
@@ -313,10 +318,11 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 /// compresses every structure toward MS13_BULLET_TRANSFER_CONVERGENCE, above 1 spreads them further apart.
 #define MS13_BULLET_SPEED_SPREAD_MIN 0.4
 #define MS13_BULLET_SPEED_SPREAD_MAX 1.8
-/// The bullet's own construction, from two signals: bulletTipType (shape) and its own armor-penetration
-/// rating (bulletArmorType via returnArmor() - AP rounds rate higher than softpoint). Combined into one
-/// hardness_ratio that DIVIDES the transfer fraction - harder/more solid ammo punches through more (divides
-/// down), softer/more frangible ammo dumps more energy (divides up, i.e. < 1).
+/// The bullet's own construction, from two signals: bulletTipType (shape) and its own armor rating
+/// (bulletArmorType via returnArmor()) - that rating represents the bullet's OWN toughness against
+/// deforming/fragmenting on impact, not its ability to defeat a target's armor. Combined into one
+/// hardness_ratio that DIVIDES the transfer fraction - a tougher round holds together and punches through
+/// more (divides down), one that deforms/fragments easily dumps more energy instead (divides up, i.e. < 1).
 GLOBAL_LIST_INIT(bulletTipHardness, list(
 	"[BULLET_SHARP]" = 1.1,
 	"[BULLET_ROUNDED]" = 0.8,
@@ -324,11 +330,14 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 	"[BULLET_FRAGMENTED]" = 0.5,
 	"[BULLET_FLAT]" = 0.7,
 ))
-/// "Neutral" reference armor-penetration rating (FMJ_RIFLE/HP_RIFLE's PUNCTURE value, both 50 above) - a
-/// round's own rating divided by this gives its hardness contribution.
+/// "Neutral" reference toughness rating (FMJ_RIFLE/HP_RIFLE's PUNCTURE value, both 50 above) - a round's own
+/// rating divided by this, then sqrt'd (get_bullet_transfer_fraction()), gives its hardness contribution.
+/// sqrt because the raw ratings span a 10x range (35 to 350) that would otherwise either clip most tough
+/// ammo to the same ceiling, or need a clamp so wide it makes ordinary ammo swing wildly - sqrt compresses
+/// that to ~3x while keeping every ammo type distinguishable.
 #define MS13_BULLET_HARDNESS_BASELINE 50
 #define MS13_BULLET_HARDNESS_MIN 0.5
-#define MS13_BULLET_HARDNESS_MAX 2.5
+#define MS13_BULLET_HARDNESS_MAX 2.7
 /// Splash: fraction of transferred_amount up for grabs by nearby organs (carved out of, not added to, the
 /// struck organ's own share), and a multiplier on bullet_cross_section for the per-organ splash chance.
 #define MS13_BULLET_SPLASH_SHARE 0.15
@@ -421,9 +430,16 @@ TYPEINFO_DEF(/obj/projectile)
 		projectile.fire(fragmentAngle + rand(0, maxDeviation) * sign(rand(-1,1)) + (fullLoopPossible ? rand(-1,1) > 0 : 0) * 180)
 
 /obj/projectile/proc/adjustIntegrity(value)
+	var/old_integrity = getBIntegrity()
 	setBIntegrity(max(getBIntegrity() + value, 0))
 	if(getBIntegrity() == 0)
 		qdel(src)
+		return
+	// AI EDIT: a damaged bullet is less stable in flight and burns through its remaining potential faster -
+	// modeled as less range left, not simulated drag/atmos. Proportional cut so this applies retroactively to
+	// every existing integrity-loss source (ricochet, fragment, and mojave's organ-hit loss) for free.
+	if(value < 0 && old_integrity > 0)
+		range = round(range * (getBIntegrity() / old_integrity))
 
 /obj/projectile/proc/adjustSpeed(value)
 	speed = max(speed - value, 0.1)

@@ -83,19 +83,36 @@
 	var/velocity_spread = clamp(initial(P.speed) / P.speed, MS13_BULLET_SPEED_SPREAD_MIN, MS13_BULLET_SPEED_SPREAD_MAX)
 	var/transfer_fraction = MS13_BULLET_TRANSFER_CONVERGENCE + (rigidity - MS13_BULLET_TRANSFER_CONVERGENCE) * velocity_spread
 
-	// The bullet's own construction divides the result - a harder/more solid round (high tip hardness, high
-	// armor-penetration rating) punches through more (transfer_fraction goes down); a softer/more frangible
-	// one dumps more energy (transfer_fraction goes up).
+	// The bullet's own construction divides the result. bulletArmorType's rating (via returnArmor()) is the
+	// bullet's OWN toughness against deforming/fragmenting on impact, not its ability to defeat a target's
+	// armor - a tougher round holds its shape and punches through more (transfer_fraction goes down); one
+	// that deforms/fragments more easily dumps its energy instead (transfer_fraction goes up).
 	var/tip_hardness = GLOB.bulletTipHardness["[P.bulletTipType]"] || 1
 	var/datum/armor/bullet_armor = P.returnArmor()
-	var/rating_hardness = (bullet_armor && P.bulletArmorType) ? clamp(bullet_armor.vars[P.bulletArmorType] / MS13_BULLET_HARDNESS_BASELINE, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
-	var/hardness_ratio = clamp(tip_hardness * rating_hardness, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX)
+	var/rating_hardness = (bullet_armor && P.bulletArmorType) ? clamp(sqrt(bullet_armor.vars[P.bulletArmorType] / MS13_BULLET_HARDNESS_BASELINE), MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
+	// A bullet already worn down by prior impacts (ricochets, fragmenting, earlier organ hits) is already
+	// partway to being deformed/frangible right now, regardless of what it started as - scale hardness by its
+	// CURRENT integrity, not just its static type.
+	var/integrity_ratio = P.getBIntegrity() / P.getBIntegrityMax()
+	var/hardness_ratio = clamp(tip_hardness * rating_hardness * integrity_ratio, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX)
 	transfer_fraction /= hardness_ratio
 
 	transfer_fraction = clamp(transfer_fraction, 0, 1)
 	var/transferred_amount = P.damage * transfer_fraction
 
-	log_combat(P.firer, src, "shot [istext(picked) ? "with a clean pass" : "hitting [picked]"] in the [hit_part.plaintext_zone]", P, "transferred [round(transferred_amount, 0.1)]/[P.damage] (fraction [round(transfer_fraction, 0.01)], velocity_spread [round(velocity_spread, 0.01)], hardness [round(hardness_ratio, 0.01)])")
+	log_combat(P.firer, src, "shot [istext(picked) ? "with a clean pass" : "hitting [picked]"] in the [hit_part.plaintext_zone]", P, "transferred [round(transferred_amount, 0.1)]/[P.damage] (fraction [round(transfer_fraction, 0.01)], velocity_spread [round(velocity_spread, 0.01)], hardness [round(hardness_ratio, 0.01)], integrity [round(P.getBIntegrity(), 1)])")
+
+	// Hitting a structure costs the bullet some of its own integrity too - more for a rigid one (bone) than a
+	// clean pass, same idea as the existing ricochet/fragment integrity costs (bullet_math.dm). This also
+	// shrinks its remaining range (adjustIntegrity()'s override there), so a sufficiently worn-down bullet
+	// naturally runs out of both damage and distance instead of either being tracked forever.
+	// AI EDIT: floored at 1, not 0 - adjustIntegrity() qdels the projectile outright at 0 integrity, and P is
+	// still needed by the caller (human_defense.dm's bullet_act()) for the rest of this same hit. Letting an
+	// organ hit alone fully finish the bullet off risks using it after it's deleted; a future ricochet or
+	// fragment event can still finish it for real.
+	var/integrity_cost = min(MS13_BULLET_ORGAN_INTEGRITY_LOSS_BASE * rigidity, P.getBIntegrity() - 1)
+	if(integrity_cost > 0)
+		P.adjustIntegrity(-integrity_cost)
 
 	if(!istext(picked))
 		apply_bullet_organ_damage(hit_part, picked, transferred_amount)
