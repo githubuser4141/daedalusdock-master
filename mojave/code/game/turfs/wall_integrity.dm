@@ -11,7 +11,7 @@
 	max_integrity = 350
 
 TYPEINFO_DEF(/turf/closed/wall)
-	default_armor = list(BLUNT = 20, PUNCTURE = 20, SLASH = 20, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+	default_armor = list(BLUNT = 40, PUNCTURE = 40, SLASH = 80, LASER = 50, ENERGY = 0, BOMB = 50, BIO = 0, FIRE = 0, ACID = 0)
 
 /// Gunfire chipping a wall's integrity, alongside (not replacing) bullet_math.dm's own ricochet/overpen math
 /// for walls - that system only handles the ricochet/pass-through/fragment branches and falls through to
@@ -25,3 +25,9 @@ TYPEINFO_DEF(/turf/closed/wall)
 /turf/closed/wall/atom_destruction(damage_flag)
 	. = ..()
 	dismantle_wall(devastated = (damage_flag == BOMB))
+
+/turf/closed/wall/r_wall
+	max_integrity = 700
+
+TYPEINFO_DEF(/turf/closed/wall)
+	default_armor = list(BLUNT = 60, PUNCTURE = 60, SLASH = 90, LASER = 80, ENERGY = 0, BOMB = 75, BIO = 0, FIRE = 0, ACID = 0)

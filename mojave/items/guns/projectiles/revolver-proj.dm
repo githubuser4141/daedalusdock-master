@@ -1,55 +1,60 @@
 //.44
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/m44)
 	default_armor = HIGH_CAL_PISTOL
-
 /obj/projectile/bullet/ms13/m44
 	name = ".44 bullet"
 	icon_state = "medium_bullet"
-	damage = 60
+	damage = MAGNUM_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
 
 /obj/projectile/bullet/ms13/m44/junk
-	subtractible_armour_penetration = 5
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
 
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/m44/ap)
+	default_armor = HIGH_CAL_AP_PISTOL
 /obj/projectile/bullet/ms13/m44/ap
-	subtractible_armour_penetration = 25
 
 /obj/projectile/bullet/ms13/m44/fmj
-	damage = 45
+	damage = MAGNUM_DAMAGE
 
 /obj/projectile/bullet/ms13/m44/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG
 
 //45-70
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c4570)
+	default_armor = HIGH_CAL_RIFLE
 /obj/projectile/bullet/ms13/c4570
 	name = ".45-70 bullet"
 	icon_state = "medium_bullet"
-	damage = 50
-	subtractible_armour_penetration = 20
+	damage = BIG_RIFLE_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG
 
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c4570/ap)
+	default_armor = HIGH_CAL_AP_RIFLE
 /obj/projectile/bullet/ms13/c4570/ap
-	subtractible_armour_penetration = 30
 
 /obj/projectile/bullet/ms13/c4570/fmj
-	damage = 55
 
 /obj/projectile/bullet/ms13/c4570/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE
 
 //.357
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a357)
+	default_armor = FMJ_PISTOL
 /obj/projectile/bullet/ms13/a357
 	name = ".357 bullet"
 	icon_state = "medium_bullet"
-	damage = 35
-	subtractible_armour_penetration = 10
+	damage = MAGNUM_DAMAGE - 10
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
 
 /obj/projectile/bullet/ms13/a357/junk
-	subtractible_armour_penetration = 0
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
 
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/a357/ap)
+	default_armor = AP_PISTOL
 /obj/projectile/bullet/ms13/a357/ap
-	subtractible_armour_penetration = 25
 
 /obj/projectile/bullet/ms13/a357/fmj
-	damage = 40
 
 /obj/projectile/bullet/ms13/a357/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG

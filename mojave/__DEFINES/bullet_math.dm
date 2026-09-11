@@ -259,7 +259,7 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 /// Bullet Malus defines for fragmenting or expanding
 
 
-// Bullet Armors
+// Begin Bullet Armors
 
 #define BUCKSHOT list(BLUNT = 0, PUNCTURE = 100, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 #define SLUG list(BLUNT = 0, PUNCTURE = 75, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
@@ -287,7 +287,27 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 
 #define ANTI_MATERIEL list(BLUNT = 0, PUNCTURE = 350, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
-// End Armors
+// End Bullet Armors
+
+// Begin Bullet Damages
+
+#define SLUG_DAMAGE 80
+
+#define SMALL_RIFLE_DAMAGE 35
+#define MED_RIFLE_DAMAGE 60
+#define BIG_RIFLE_DAMAGE 80
+
+#define COMPACTPISTOL_DAMAGE 20
+#define PISTOL_DAMAGE 30
+#define MAGNUM_DAMAGE 50
+#define GIANT_PISTOL_DAMAGE 70
+
+#define GIANT_RIFLE_DAMAGE 100
+#define ANTI_MATERIEL_RIFLE_DAMAGE 150
+#define RAILGUN_DAMAGE 200
+
+// End Bullet Damages
+
 
 #define BULLET_FRAGMENT_MAXANGLEVARIATION  10
 #define BULLET_FRAGMENT_SPEEDMALUS 0.1
@@ -345,7 +365,9 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 /// Below this much leftover damage, the bullet just stops - not worth continuing as an overpenetration hit.
 #define MS13_BULLET_OVERPEN_MIN_REMAINING 10
 
+#define BULLET_SPEED_SLOWER -0.05
 #define BULLET_SPEED_PISTOL -0.1
+#define BULLET_SPEED_MAGNUM -0.2
 #define BULLET_SPEED_SMG -0.3
 #define BULLET_SPEED_RIFLE -0.4
 #define BULLET_SPEED_RIFLE_VFAST -0.5

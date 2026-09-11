@@ -1,60 +1,65 @@
 //.45
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c45)
+	default_armor = FMJ_PISTOL
 /obj/projectile/bullet/ms13/c45
 	name = ".45 bullet"
 	icon_state = "merehandgun_bullet"
-	damage = 30
-	subtractible_armour_penetration = 5
+	damage = MAGNUM_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
 
 /obj/projectile/bullet/ms13/c45/junk
-	subtractible_armour_penetration = 0
-
-/obj/projectile/bullet/ms13/c45/ap
-	subtractible_armour_penetration = 20
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
 
 /obj/projectile/bullet/ms13/c45/fmj
-	damage = 35
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c45/ap)
+	default_armor = AP_PISTOL
+/obj/projectile/bullet/ms13/c45/ap
 
 /obj/projectile/bullet/ms13/c45/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
 
 //.22
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c22)
+	default_armor = FMJ_PISTOL
 /obj/projectile/bullet/ms13/c22
 	name = ".22 bullet"
 	icon_state = "merehandgun_bullet"
-	damage = 16
-	subtractible_armour_penetration = 0
+	damage = COMPACTPISTOL_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
 
 /obj/projectile/bullet/ms13/c22/junk
-	damage = 14
-
-/obj/projectile/bullet/ms13/c22/ap
-	subtractible_armour_penetration = 5
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
 
 /obj/projectile/bullet/ms13/c22/fmj
-	damage = 20
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c22/ap)
+	default_armor = AP_PISTOL
+/obj/projectile/bullet/ms13/c22/ap
 
 /obj/projectile/bullet/ms13/c22/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
 
 //9mm
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c9mm)
+	default_armor = FMJ_PISTOL
 /obj/projectile/bullet/ms13/c9mm
 	name = "9mm bullet"
 	icon_state = "merehandgun_bullet"
-	damage = 20
-	subtractible_armour_penetration = 0
+	damage = PISTOL_DAMAGE
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
 
 /obj/projectile/bullet/ms13/c9mm/junk
-	subtractible_armour_penetration = 0
-	damage = 18
-
-/obj/projectile/bullet/ms13/c9mm/ap
-	subtractible_armour_penetration = 25
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
 
 /obj/projectile/bullet/ms13/c9mm/fmj
-	damage = 25
+
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/c9mm/ap)
+	default_armor = AP_PISTOL
+/obj/projectile/bullet/ms13/c9mm/ap
 
 /obj/projectile/bullet/ms13/c9mm/hv
-	speed = 0.4
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
 
 //10mm
 /obj/projectile/bullet/ms13/c10mm
