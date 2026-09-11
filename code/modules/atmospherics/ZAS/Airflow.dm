@@ -211,7 +211,7 @@ GLOBAL_LIST_INIT(airflow_step_blacklist, typecacheof(list(
 
 	playsound(src.loc, "smash.ogg", 25, 1, -1)
 
-	if(!uses_integrity)
+	if(!uses_integrity || QDELETED(src))
 		return
 
 	take_damage(zas_settings.airflow_damage, BRUTE)

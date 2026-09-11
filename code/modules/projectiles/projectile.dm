@@ -473,7 +473,9 @@
 			impacted[A] = TRUE
 			return TRUE
 		if(getBIntegrity() < getBIntegrityMax() * 0.3)
-			hitted.setBIntegrity(max(hitted.getBIntegrity() - calculatedDamage * clamp(armorDiff / 100, 0, 1), 0))
+			// A weak/spent bullet still weakly connects - just let process_hit() below resolve the actual hit
+			// (which reaches bullet_act(), now a real armored take_damage() for walls) rather than also
+			// applying a second, unarmored damage instance directly here on top of it.
 			return process_hit(A, select_target(A, A, A), A)
 		if(mult < 0 && abs(ricochetAngle) < GLOB.bulletStandardFragmentAngles["[bulletTipType]"][2] && abs(ricochetAngle) > GLOB.bulletStandardFragmentAngles["[bulletTipType]"][1] && canFragment)
 			impacted[A] = TRUE

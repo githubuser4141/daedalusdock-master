@@ -1,7 +1,7 @@
 {
 	"version": 1,
 	"map_name": "Drought",
-	"map_path": "map_files/Drought",
+	"map_path": "Drought",
 	"map_file": [
 		"Drought_below.dmm",
 		"Drought.dmm",

@@ -806,7 +806,7 @@
 	if(dir == NORTH)
 		layer = ABOVE_ALL_MOB_LAYER
 
-	AddElement(/datum/element/climbable, climb_time = 3 SECONDS, climb_stun = 0, no_stun = TRUE, jump_over = TRUE, jump_north = 12, jump_south = 17, jump_sides = 12)
+	AddElement(/datum/element/climbable, climb_time = 3 SECONDS, climb_stun = 0)
 
 /obj/structure/railing/ms13/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -1076,7 +1076,7 @@
 
 /obj/structure/ms13/turnstile/Initialize()
 	. = ..()
-	AddElement(/datum/element/climbable, climb_time = 1 SECONDS, climb_stun = 0, no_stun = TRUE, jump_over = TRUE)
+	AddElement(/datum/element/climbable, climb_time = 1 SECONDS, climb_stun = 0)
 
 	var/static/list/loc_connections = list(
 		COMSIG_ATOM_EXIT = PROC_REF(on_exit),

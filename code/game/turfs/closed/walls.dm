@@ -174,6 +174,14 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 
 /turf/closed/wall/examine(mob/user)
 	. += ..()
+	if(uses_integrity && get_integrity_percentage() < 100)
+		switch(get_integrity_percentage())
+			if(50 to 99)
+				. += span_notice("It looks slightly damaged.")
+			if(25 to 49)
+				. += span_warning("It appears heavily damaged.")
+			if(0 to 24)
+				. += span_warning("It's falling apart!")
 	if(wall_paint)
 		. += span_notice("It's coated with a <font color=[wall_paint]>layer of paint</font>.")
 	if(stripe_paint)
@@ -307,10 +315,11 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 			NT.contents_explosion(severity, target)
 			return
 		if(EXPLODE_HEAVY)
-			dismantle_wall(prob(50), TRUE)
+			if(!QDELETED(src))
+				take_damage(rand(0.5, 1.2) * max_integrity, BRUTE, BOMB, FALSE)
 		if(EXPLODE_LIGHT)
-			if (prob(hardness))
-				dismantle_wall(0,1)
+			if(!QDELETED(src))
+				take_damage(rand(0.3, 0.5) * max_integrity, BRUTE, BOMB, FALSE)
 	if(!density)
 		..()
 
@@ -331,9 +340,8 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 		user.changeNext_move(CLICK_CD_MELEE)
 		user.do_attack_animation(src)
 		if(!user.environment_smash)
-			// AI EDIT: an ordinary simple_animal (no environment_smash - most MS13 wildlife) used to do
-			// nothing to a wall at all here. Chips real integrity with its normal attack stats instead.
-			take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
+			if(!QDELETED(src))
+				take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
 			return
 		if(user.environment_smash & ENVIRONMENT_SMASH_RWALLS)
 			dismantle_wall(1)
@@ -348,8 +356,8 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 			playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
 			dismantle_wall(1)
 			return
-		// AI EDIT: same as above - a non-smashing animal against a normal wall used to be a no-op.
-		take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
+		if(!QDELETED(src))
+			take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
 
 /turf/closed/wall/attack_hulk(mob/living/carbon/user)
 	..()
@@ -414,12 +422,11 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 	var/turf/T = user.loc //get user's location for delay checks
 
 	//the istype cascade has been spread among various procs for easy overriding
-	if(try_clean(W, user, T) || try_wallmount(W, user, T) || try_decon(W, user, T))
+	if(try_clean(W, user, T) || try_wallmount(W, user, T) || try_decon(W, user, T) || try_repair(W, user, T))
 		return
 
-	// AI EDIT: a plain weapon swing (not a deconstruction tool) used to do nothing to the wall at all -
-	// now chips real integrity, same as bullet_act() below.
-	take_damage(W.force, W.damtype, W.get_attack_flag(), FALSE, get_dir(src, user), W.armor_penetration)
+	if(!QDELETED(src))
+		take_damage(W.force, W.damtype, W.get_attack_flag(), FALSE, get_dir(src, user), W.armor_penetration)
 
 	return ..()
 
@@ -440,6 +447,23 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 			return TRUE
 
 	return FALSE
+
+/// Welder-repairs combat damage to the wall's integrity, separate from try_clean()'s cosmetic dent removal.
+/turf/closed/wall/proc/try_repair(obj/item/W, mob/living/user, turf/T)
+	if(user.combat_mode || !uses_integrity || get_integrity() >= max_integrity || d_state != INTACT)
+		return FALSE
+
+	if(W.tool_behaviour != TOOL_WELDER)
+		return FALSE
+
+	if(!W.tool_start_check(user, amount=0))
+		return FALSE
+
+	to_chat(user, span_notice("You begin repairing the wall..."))
+	if(W.use_tool(src, user, 40, volume=100))
+		to_chat(user, span_notice("You repair the wall."))
+		repair_damage(max_integrity)
+	return TRUE
 
 /turf/closed/wall/proc/try_wallmount(obj/item/W, mob/user, turf/T)
 	//check for wall mounted frames

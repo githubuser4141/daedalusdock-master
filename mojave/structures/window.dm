@@ -25,7 +25,7 @@
 		COMSIG_ATOM_EXIT = PROC_REF(on_exit),
 	)
 
-	AddElement(/datum/element/climbable, climb_time = 3 SECONDS, climb_stun = 0, no_stun = TRUE, jump_over = TRUE, jump_north = 10, jump_south = 15, jump_sides = 7)
+	AddElement(/datum/element/climbable, climb_time = 3 SECONDS, climb_stun = 0)
 	update_appearance()
 
 	if (flags_1 & ON_BORDER_1)

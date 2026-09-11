@@ -1,7 +1,7 @@
 {
 	"version": 1,
 	"map_name": "MiniMammoth",
-	"map_path": "map_files/Mammoth_Mini",
+	"map_path": "Mammoth_Mini",
 	"map_file": [
 		"Mammoth_mini_below.dmm",
 		"Mammoth_mini.dmm",

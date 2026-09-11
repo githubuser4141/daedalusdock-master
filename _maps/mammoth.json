@@ -1,7 +1,7 @@
 {
 	"version": 1,
 	"map_name": "Mammoth",
-	"map_path": "map_files/Mammoth",
+	"map_path": "Mammoth",
 	"map_file": [
 		"Mammoth_below.dmm",
 		"Mammoth.dmm",

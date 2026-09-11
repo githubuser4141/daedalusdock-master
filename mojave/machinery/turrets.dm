@@ -1,4 +1,7 @@
 /obj/machinery/porta_turret/ms13
+	// Sets its own stun/lethal_projectile vars directly below instead of deriving them from a stored_gun
+	// item (installation is null - no gun object at all) - setup() assumes stored_gun always exists and
+	// crashes otherwise, so skip it here instead of stubbing out a fake gun just to satisfy it.
 	name = "BASE MS13 TURRET"
 	icon = 'mojave/icons/structure/turrets.dmi'
 	installation = null
@@ -18,6 +21,9 @@
 	icon_state = "turret"
 	base_icon_state = "turret"
 	desc = "A ballistic machine gun auto-turret."
+
+/obj/machinery/porta_turret/ms13/setup(obj/item/gun/turret_gun)
+	update_appearance()
 
 /obj/machinery/porta_turret/ms13/ballistic
 	name = "autoturret stand"
