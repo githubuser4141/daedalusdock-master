@@ -1,0 +1,11 @@
+{
+	"version": 1,
+	"map_name": "EagleLakes",
+	"map_path": "map_files/EagleLakes",
+	"map_file": "EagleLakesWhole.dmm",
+	"shuttles": {
+		"cargo": "cargo_delta"
+	},
+	"space_ruin_levels": 0,
+	"space_empty_levels": 0
+}

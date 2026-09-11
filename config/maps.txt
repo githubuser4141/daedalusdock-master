@@ -14,13 +14,29 @@ Format:
 endmap
 
 map theseus
-	#default
-	#voteweight 0.5
-	votable
+	disabled
 endmap
 
 map runtimestation
+	disabled
 endmap
 
 map multiz_debug
+endmap
+
+map drought
+	votable
+endmap
+
+map mammoth
+	default
+	votable
+endmap
+
+map minimammoth
+	votable
+endmap
+
+map eaglelakes
+	votable
 endmap
