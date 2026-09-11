@@ -911,6 +911,11 @@ DEFINE_INTERACTABLE(/obj/item)
 /obj/item/proc/equipped(mob/user, slot, initial = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
 
+	// Set before the signals below fire, not after - listeners (e.g. mojave's world_icon element)
+	// react to COMSIG_ITEM_EQUIPPED expecting the item to already read as equipped.
+	item_flags |= IN_INVENTORY
+	equipped_to = user
+
 	SEND_SIGNAL(src, COMSIG_ITEM_EQUIPPED, user, slot)
 	SEND_SIGNAL(user, COMSIG_MOB_EQUIPPED_ITEM, src, slot)
 
@@ -927,9 +932,6 @@ DEFINE_INTERACTABLE(/obj/item)
 	// Give out actions our item has to people who equip it.
 	for(var/datum/action/action as anything in actions)
 		give_item_action(action, user, slot)
-
-	item_flags |= IN_INVENTORY
-	equipped_to = user
 
 	if(!initial)
 		if(equip_sound && (slot_flags & slot))

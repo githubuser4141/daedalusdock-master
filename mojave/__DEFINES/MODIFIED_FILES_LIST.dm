@@ -46,6 +46,7 @@ code/__HELPERS/_lists.dm,
 code/datums/components/food/edible.dm,
 code/controllers/subsystem/mapping.dm,
 code/datums/looping_sounds/_looping_sound.dm,
+code/game/objects/items.dm,
 
 
 

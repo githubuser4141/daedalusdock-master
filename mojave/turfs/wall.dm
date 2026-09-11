@@ -20,6 +20,12 @@
 /turf/closed/wall/ms13/ex_act()
 	return
 
+// MS13 walls set their own icon/name/desc per subtype and never touch DD's paint/materials system -
+// set_materials() (called unconditionally from the parent Initialize()) would otherwise overwrite that
+// custom icon with plating_material's (default: iron) DD wall_icon.
+/turf/closed/wall/ms13/set_materials(plating_mat, reinf_mat, update_appearance = TRUE)
+	return
+
 /turf/closed/wall/ms13/deconstruction_hints()
 	return
 

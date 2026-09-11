@@ -100,6 +100,12 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 /turf/closed/wall/Initialize(mapload)
 	color = null // Remove the color that was set for mapping clarity
 	. = ..()
+	// /turf/Initialize() (code/game/turfs/turf.dm) skips /atom/Initialize() entirely for performance,
+	// so the generic uses_integrity -> atom_integrity = max_integrity seeding never runs for turfs.
+	// Without this, atom_integrity stays null forever, and null <= 0 in DM makes every wall read as
+	// already-destroyed on the very first hit, from any damage source.
+	if(uses_integrity)
+		atom_integrity = max_integrity
 	set_materials(plating_material, reinf_material, FALSE)
 
 /turf/closed/wall/copyTurf(turf/T)
