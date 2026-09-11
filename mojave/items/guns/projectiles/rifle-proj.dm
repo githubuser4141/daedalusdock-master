@@ -119,5 +119,6 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/gauss)
 //2mmEC
 /obj/projectile/bullet/ms13/gauss
 	icon_state = "gauss"
+	damage = 200
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN
 	bulletTipType = BULLET_ULTRASHARP

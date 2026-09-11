@@ -160,11 +160,11 @@
 	gone_fraction = MS13_BONE_ARMOR_GONE_FRACTION
 	absorb_fraction = MS13_BONE_ARMOR_ABSORB_FRACTION
 
-/// Below MS13_BONE_ARMOR_MIN_DAMAGE, bone doesn't intercept the hit at all - a scratch shouldn't interact
-/// with the skeleton.
+/// Below MS13_BONE_ARMOR_MIN_DAMAGE, the hit is too weak to so much as scratch the bone - so the bone stops
+/// it cold instead of the normal gone/absorbed/passthrough split, and it doesn't even register as organ damage.
 /datum/natural_armor_layer/bone/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone)
 	if(damage_amount < MS13_BONE_ARMOR_MIN_DAMAGE)
-		return damage_amount
+		return 0
 	return ..()
 
 /datum/natural_armor_layer/bone/get_organ(mob/living/carbon/human/H, obj/item/bodypart/hit_part, damagetype)

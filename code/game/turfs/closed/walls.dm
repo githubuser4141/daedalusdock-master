@@ -331,6 +331,9 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 		user.changeNext_move(CLICK_CD_MELEE)
 		user.do_attack_animation(src)
 		if(!user.environment_smash)
+			// AI EDIT: an ordinary simple_animal (no environment_smash - most MS13 wildlife) used to do
+			// nothing to a wall at all here. Chips real integrity with its normal attack stats instead.
+			take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
 			return
 		if(user.environment_smash & ENVIRONMENT_SMASH_RWALLS)
 			dismantle_wall(1)
@@ -345,6 +348,8 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 			playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
 			dismantle_wall(1)
 			return
+		// AI EDIT: same as above - a non-smashing animal against a normal wall used to be a no-op.
+		take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
 
 /turf/closed/wall/attack_hulk(mob/living/carbon/user)
 	..()
@@ -411,6 +416,10 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 	//the istype cascade has been spread among various procs for easy overriding
 	if(try_clean(W, user, T) || try_wallmount(W, user, T) || try_decon(W, user, T))
 		return
+
+	// AI EDIT: a plain weapon swing (not a deconstruction tool) used to do nothing to the wall at all -
+	// now chips real integrity, same as bullet_act() below.
+	take_damage(W.force, W.damtype, W.get_attack_flag(), FALSE, get_dir(src, user), W.armor_penetration)
 
 	return ..()
 
