@@ -38,6 +38,8 @@ code/modules/surgery/organs/heart.dm,
 code/modules/mob/living/blood.dm,
 code/modules/surgery/organs/liver.dm,
 code/modules/surgery/bodyparts/injuries.dm,
+code/modules/mob/living/carbon/human/human_defense.dm,
+code/modules/surgery/organs/_organ.dm,
 
 
 

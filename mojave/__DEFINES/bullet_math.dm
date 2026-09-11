@@ -292,6 +292,50 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 
 #define BULLET_EXPAND_SPEEDMALUS 0.05
 
+/// Mob overpenetration (mojave/code/modules/mob/living/carbon/human/bullet_penetration.dm) - fraction of a
+/// bullet's damage that stays in the body vs continues through as leftover damage, by what internal
+/// structure absorbed the hit. Denser structures transfer MORE, not less - they decelerate/deform the round
+/// instead of letting it pass through. TODO: unify with the wall penetration math above instead of a
+/// separate formula.
+#define MS13_BULLET_TRANSFER_BONE 0.85
+#define MS13_BULLET_TRANSFER_ORGAN 0.6
+#define MS13_BULLET_TRANSFER_MUSCLE 0.5
+#define MS13_BULLET_TRANSFER_VESSEL 0.4
+#define MS13_BULLET_TRANSFER_CLEAN 0.3
+/// What every structure's transfer fraction converges toward at low speed - a slow-moving round gets stopped
+/// by almost anything in its path, dense or soft, so the structures stop mattering much. Speed then SPREADS
+/// fractions apart from this point (not a uniform multiplier): a fast round makes bone transfer even MORE
+/// (violent fragmentation) while soft tissue transfers even LESS (clean pass-through) - see
+/// get_bullet_transfer_fraction() for the actual interpolation.
+#define MS13_BULLET_TRANSFER_CONVERGENCE 0.55
+/// Clamp on the spread factor - P.speed is a delay-per-tile (lower = faster), so the ratio used is
+/// initial(P.speed)/P.speed. 1 = exactly the baseline MS13_BULLET_TRANSFER_* fractions above; below 1
+/// compresses every structure toward MS13_BULLET_TRANSFER_CONVERGENCE, above 1 spreads them further apart.
+#define MS13_BULLET_SPEED_SPREAD_MIN 0.4
+#define MS13_BULLET_SPEED_SPREAD_MAX 1.8
+/// The bullet's own construction, from two signals: bulletTipType (shape) and its own armor-penetration
+/// rating (bulletArmorType via returnArmor() - AP rounds rate higher than softpoint). Combined into one
+/// hardness_ratio that DIVIDES the transfer fraction - harder/more solid ammo punches through more (divides
+/// down), softer/more frangible ammo dumps more energy (divides up, i.e. < 1).
+GLOBAL_LIST_INIT(bulletTipHardness, list(
+	"[BULLET_SHARP]" = 1.1,
+	"[BULLET_ROUNDED]" = 0.8,
+	"[BULLET_ULTRASHARP]" = 1.4,
+	"[BULLET_FRAGMENTED]" = 0.5,
+	"[BULLET_FLAT]" = 0.7,
+))
+/// "Neutral" reference armor-penetration rating (FMJ_RIFLE/HP_RIFLE's PUNCTURE value, both 50 above) - a
+/// round's own rating divided by this gives its hardness contribution.
+#define MS13_BULLET_HARDNESS_BASELINE 50
+#define MS13_BULLET_HARDNESS_MIN 0.5
+#define MS13_BULLET_HARDNESS_MAX 2.5
+/// Splash: fraction of transferred_amount up for grabs by nearby organs (carved out of, not added to, the
+/// struck organ's own share), and a multiplier on bullet_cross_section for the per-organ splash chance.
+#define MS13_BULLET_SPLASH_SHARE 0.15
+#define MS13_BULLET_SPLASH_CHANCE_MULT 60
+/// Below this much leftover damage, the bullet just stops - not worth continuing as an overpenetration hit.
+#define MS13_BULLET_OVERPEN_MIN_REMAINING 10
+
 #define BULLET_SPEED_PISTOL -0.1
 #define BULLET_SPEED_SMG -0.3
 #define BULLET_SPEED_RIFLE -0.4

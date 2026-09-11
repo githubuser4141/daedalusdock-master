@@ -102,7 +102,23 @@
 				client?.give_award(/datum/award/achievement/mr_president, src)
 			return BULLET_ACT_HIT
 
+	// AI EDIT: mojave overpenetration (bullet_penetration.dm) - only part of a bullet's damage stays in this
+	// body, scaled by what internal structure it hits; the rest continues on the same projectile via the
+	// real BULLET_ACT_FORCE_PIERCE pass-through below instead of being dumped here in full.
+	var/original_damage = P.damage
+	var/overpenetrates = (P.damage_type == BRUTE) && istype(P, /obj/projectile/bullet)
+	if(overpenetrates)
+		P.damage *= get_bullet_transfer_fraction(P, def_zone)
+
 	. = ..()
+
+	if(overpenetrates)
+		if(. == BULLET_ACT_HIT)
+			var/remaining_damage = original_damage - P.damage
+			if(remaining_damage >= 10) // MS13_BULLET_OVERPEN_MIN_REMAINING (bullet_math.dm) - mojave defines aren't visible from code/
+				P.damage = remaining_damage
+				return BULLET_ACT_FORCE_PIERCE
+		P.damage = original_damage
 
 	// If the shot isn't piercing, and we take it, let's try to award the Mr President achievement.
 	if(!piercing_hit && ((. == BULLET_ACT_HIT) || (. == BULLET_ACT_BLOCK)))

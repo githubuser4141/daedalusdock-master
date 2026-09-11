@@ -31,6 +31,12 @@
 	var/relative_size = 25
 	/// Amount of damage to take when taking damage from an external source
 	var/external_damage_modifier = 0.5
+	/// AI EDIT: mojave bullet overpenetration (mojave/code/modules/mob/living/carbon/human/
+	/// bullet_penetration.dm) - fraction (0-1) of this organ's bodypart's cross-section this organ occupies.
+	/// 0 (default) means this organ is invisible to a bullet's path. Unlike relative_size (a relative pick
+	/// weight, not a real proportion), these are meant to actually sum to roughly 1 per bodypart, with
+	/// whatever's left over being a clean pass through generic tissue.
+	var/bullet_cross_section = 0
 
 	///cooldown for severe effects, used for synthetic organ emp effects.
 	var/severe_cooldown
