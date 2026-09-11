@@ -20,6 +20,12 @@
 /turf/closed/wall/ms13/ex_act()
 	return
 
+// TODO: the "wallening" frill overlay (mojave/code/modules/wallening-temp/frill.dm) doesn't render
+// correctly against MS13 wall junctions - disabled until it's actually fixed.
+/turf/closed/wall/ms13/Initialize(mapload)
+	frill_icon = null
+	. = ..()
+
 // MS13 walls set their own icon/name/desc per subtype and never touch DD's paint/materials system -
 // set_materials() (called unconditionally from the parent Initialize()) would otherwise overwrite that
 // custom icon with plating_material's (default: iron) DD wall_icon.

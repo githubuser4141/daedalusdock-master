@@ -28,7 +28,7 @@
 	//used for mirrored overlays
 	var/mirrored = FALSE
 
-/obj/machinery/door/unpowered/ms13/Initialize()
+/obj/machinery/door/unpowered/ms13/Initialize(mapload)
 	. = ..()
 	if(dir == NORTH)
 		pixel_y = 8
@@ -45,6 +45,37 @@
 		pixel_x = -28
 		pixel_y = 16
 		add_overlay(image(icon,icon_state="[frametype]_frame_vertical_overlay", layer = ABOVE_ALL_MOB_LAYER))
+
+	if(mapload)
+		roll_for_roundstart_lock()
+
+/// Chance for a mapped-in door to start locked with a lockpickable difficulty, and a matching key
+/// dropped somewhere nearby (not inside a wall) as an alternative to picking it.
+#define DOOR_ROUNDSTART_LOCK_CHANCE 20
+#define DOOR_KEY_SEARCH_RADIUS 10
+/obj/machinery/door/unpowered/ms13/proc/roll_for_roundstart_lock()
+	if(!(ms13_flags_1 & LOCKABLE_1))
+		return
+	if(!prob(DOOR_ROUNDSTART_LOCK_CHANCE))
+		return
+
+	// Matches the manual flow (obj_defines.dm's attack_hand_secondary "Lock It") - a real padlock object
+	// attached to the door, closed and clasped shut, rather than an invisible lock state.
+	var/obj/item/ms13/lock/new_lock = new(src)
+	new_lock.lock_difficulty = rand(10, 17)
+	new_lock.item_lock_locked = TRUE
+	lock = new_lock
+	AddElement(/datum/element/lockpickable, difficulty = new_lock.lock_difficulty)
+	update_appearance()
+
+	var/list/turf/open/candidates = list()
+	for(var/turf/open/candidate in range(DOOR_KEY_SEARCH_RADIUS, src))
+		candidates += candidate
+	if(!candidates.len)
+		return
+
+	var/obj/item/ms13/key/door/new_key = new(pick(candidates))
+	new_key.matching_door = WEAKREF(src)
 
 /obj/machinery/door/unpowered/ms13/update_overlays()
 	. = ..()
@@ -135,7 +166,6 @@
 	if(operating)
 		return
 	operating = TRUE
-	sleep(1 SECONDS)
 	set_opacity(0)
 	set_density(FALSE)
 	flags_1 &= ~PREVENT_CLICK_UNDER_1
@@ -160,7 +190,6 @@
 			if(M.density && M != src) //something is blocking the door
 				return
 	operating = TRUE
-	sleep(1 SECONDS)
 	set_density(TRUE)
 	flags_1 |= PREVENT_CLICK_UNDER_1
 	open = FALSE
@@ -201,13 +230,34 @@
 		to_chat(M, span_warning("The [name] is locked."))
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
-	if(do_after(M, 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+	if(do_after(M, 1 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
 		try_to_activate_door(M)
 
 /obj/machinery/door/unpowered/ms13/attackby(obj/item/I, mob/living/M, params)
 	. = ..()
+	if(istype(I, /obj/item/ms13/key/door))
+		var/obj/item/ms13/key/door/key = I
+		if(key.matching_door?.resolve() == src)
+			if(lock_locked)
+				// Matches the lockpicking success path (lockpicking.dm) so both unlock methods leave
+				// the door in the same state.
+				locked = FALSE
+				lock_locked = FALSE
+				if(lock)
+					lock.item_lock_locked = FALSE
+					lock.lock_open = TRUE
+				RemoveElement(/datum/element/lockpickable)
+				to_chat(M, span_notice("You unlock [src] with [key]."))
+				playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
+			else
+				to_chat(M, span_notice("[src] is already unlocked."))
+			return
 	if(locked && !(M.combat_mode))
 		to_chat(M, "<span class='warning'> The [name] is locked.</span>")
+		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
+		return
+	if(ms13_flags_1 & LOCKABLE_1 && lock_locked && !(M.combat_mode))
+		to_chat(M, span_warning("The [name] is locked."))
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
 	if(!(I.item_flags & NOBLUDGEON || LOCKING_ITEM) && !(M.combat_mode) && do_after(M, 1.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))

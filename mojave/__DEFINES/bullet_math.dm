@@ -492,6 +492,11 @@ TYPEINFO_DEF(/obj/projectile)
 TYPEINFO_DEF(/obj/projectile/bullet/bmg50)
 	default_armor = list(BLUNT = 0, PUNCTURE = 350, SLASH = 0, LASER = 0, ENERGY = 0 , BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
+// Fragments (shrapnel) are already-broken pieces, not a constructed round - no self-toughness of their own,
+// so they dump their energy on the first hit instead of punching through.
+TYPEINFO_DEF(/obj/projectile/bullet/shrapnel)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/projectile/bullet/bmg50
 	name = ".50 BMG"
 	damage = 60

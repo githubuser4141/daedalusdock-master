@@ -15,3 +15,10 @@
 /obj/item/ms13/key/Initialize()
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/tools/keys_inventory.dmi')
+
+/// Spawned alongside a roundstart-locked door (doors.dm) - using it on its matching door (see that
+/// door's attackby()) unlocks that door specifically, as an alternative to lockpicking it.
+/obj/item/ms13/key/door
+	name = "worn key"
+	desc = "An old key. Looks like it belongs to a nearby door."
+	var/datum/weakref/matching_door
