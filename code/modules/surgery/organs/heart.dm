@@ -209,8 +209,16 @@
 	else
 		pulse = clamp(PULSE_NORM + pulse_mod, PULSE_SLOW, PULSE_THREADY)
 
-	// If fibrillation, then it can be PULSE_THREADY
-	var/fibrillation = blood_oxygenation <= BLOOD_CIRC_SURVIVE || (prob(30) && owner.shock_stage > SHOCK_AMT_FOR_FIBRILLATION)
+	// If fibrillation, then it can be PULSE_THREADY.
+	// MOJAVE EDIT: dropped the old "|| (prob(30) && owner.shock_stage > SHOCK_AMT_FOR_FIBRILLATION)"
+	// half of this - shock_stage climbs directly off pain (code/modules/mob/living/carbon/pain.dm and
+	// mojave's handle_shock() override), so that clause meant high pain from any source (a bad burn was
+	// the most common case) could force PULSE_THREADY on its own, and PULSE_THREADY is the only state
+	// the arrhythmia stop-check below rolls against - i.e. pain alone, with no actual blood/oxygen
+	// problem, could kill via cardiac arrest. Fibrillation is now purely a blood-oxygenation event, as
+	// the DEFINE name already implied it should be. Shock still speeds the heart up via pulse_mod a few
+	// lines up - that path is untouched, it just can't force full fibrillation by itself anymore.
+	var/fibrillation = blood_oxygenation <= BLOOD_CIRC_SURVIVE
 
 	if(pulse && fibrillation) //I SAID MOAR OXYGEN
 		pulse = PULSE_THREADY
