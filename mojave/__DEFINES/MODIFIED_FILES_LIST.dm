@@ -52,6 +52,7 @@ code/modules/codex/categories/plants.dm,
 code/modules/hydroponics/plant_gene_holder.dm,
 code/modules/hydroponics/hydroponics_tray/hydrotray_interaction.dm,
 code/modules/hydroponics/plant.dm,
+code/controllers/subsystem/icon_smooth.dm,
 
 
 

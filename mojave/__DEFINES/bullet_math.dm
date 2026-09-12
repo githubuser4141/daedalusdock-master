@@ -421,7 +421,7 @@ TYPEINFO_DEF(/obj/projectile)
 // hitbox (see /turf/closed/wall/New() above), a non-wall atom passed here would get silently coerced to
 // null by DM's typed-param check, crashing target.bIntegrity below. Loosened to atom.
 /obj/projectile/proc/getRelativeArmorRatingMultiplier(atom/target, datum/armor/targetArmor, datum/armor/bulletArmor)
-	if(targetArmor == null || bulletArmor == null || bulletArmorType == "")
+	if(targetArmor == null || bulletArmor == null || bulletArmorType == "" || !bulletArmor.vars[bulletArmorType])
 		return 0
 	var/ratingDiff = (bulletArmor.vars[bulletArmorType] * getBIntegrity() / getBIntegrityMax()) * initial(speed) / speed - targetArmor.vars[bulletArmorType] * target.getBIntegrity() / target.getBIntegrityMax()
 //message_admins("relative armor returning [ratingDiff / bulletArmor.vars[damage_type]]")

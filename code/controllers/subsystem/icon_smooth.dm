@@ -65,7 +65,26 @@ SUBSYSTEM_DEF(icon_smooth)
 		var/turf/item_loc = movable_item.loc
 		item_loc.add_blueprints(movable_item)
 
+	resmooth_orphaned_junctions()
+
 	return ..()
+
+/**
+ * Safety net for the boot-time smoothing pass above: a turf whose own Initialize() never actually ran
+ * (e.g. a corrupted map coordinate that failed to build - mojave's Mammoth map has confirmed instances of
+ * this) never calls QUEUE_SMOOTH(src), so its smoothing_junction stays stuck at its default NONE forever,
+ * even with real matching neighbors on every side. Sweeps every smoothable atom once, after the initial
+ * pass above has already finished, and re-queues anything still sitting at NONE - genuinely isolated atoms
+ * legitimately computing to NONE just get harmlessly re-queued and recompute the same NONE again.
+ */
+/datum/controller/subsystem/icon_smooth/proc/resmooth_orphaned_junctions()
+	for(var/z in 1 to world.maxz)
+		for(var/turf/orphan_check_turf in block(locate(1, 1, z), locate(world.maxx, world.maxy, z)))
+			if((orphan_check_turf.smoothing_flags & (SMOOTH_CORNERS|SMOOTH_BITMASK)) && !orphan_check_turf.smoothing_junction)
+				QUEUE_SMOOTH(orphan_check_turf)
+			for(var/obj/orphan_check_obj in orphan_check_turf)
+				if((orphan_check_obj.smoothing_flags & (SMOOTH_CORNERS|SMOOTH_BITMASK)) && !orphan_check_obj.smoothing_junction)
+					QUEUE_SMOOTH(orphan_check_obj)
 
 /datum/controller/subsystem/icon_smooth/StartLoadingMap()
 	can_fire = FALSE
