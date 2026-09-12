@@ -251,6 +251,14 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 				RemoveElement(/datum/element/lockpickable)
 				to_chat(M, span_notice("You unlock [src] with [key]."))
 				playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
+			else if(lock)
+				// A real key locks the door too, same as unlocking it - matches the padlock's manual
+				// "Lock It" flow (obj_defines.dm) and roll_for_roundstart_lock() above.
+				lock.lock_open = FALSE
+				lock.item_lock_locked = TRUE
+				AddElement(/datum/element/lockpickable, lock.lock_difficulty)
+				to_chat(M, span_notice("You lock [src] with [key]."))
+				playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
 			else
 				to_chat(M, span_notice("[src] is already unlocked."))
 			return

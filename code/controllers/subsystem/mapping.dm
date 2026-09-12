@@ -336,8 +336,15 @@ Used by the AI doomsday and the self-destruct nuke.
 	for (var/P in parsed_maps)
 		var/datum/parsed_map/pm = P
 		var/list/bounds = pm.bounds
-		var/x_offset = bounds ? round(world.maxx / 2 - bounds[MAP_MAXX] / 2) + 1 : 1
-		var/y_offset = bounds ? round(world.maxy / 2 - bounds[MAP_MAXY] / 2) + 1 : 1
+		// Centering assumes the map fits inside the world's current (pre-load) size. A map
+		// larger than that - e.g. Mammoth's 300-tall grid vs. the default 255 - drives this
+		// negative, which shoves rows below y/x 1 into invalid coordinates and silently
+		// drops them (world.maxx/maxy auto-expand upward to fit a bigger map, but BYOND
+		// turf coordinates can never go below 1, so there's no expanding downward).
+		// Clamping to 1 loads an oversized map flush against the origin instead of losing
+		// whatever would've landed off the low edge.
+		var/x_offset = bounds ? max(1, round(world.maxx / 2 - bounds[MAP_MAXX] / 2) + 1) : 1
+		var/y_offset = bounds ? max(1, round(world.maxy / 2 - bounds[MAP_MAXY] / 2) + 1) : 1
 		if (!pm.load(x_offset, y_offset, start_z + parsed_maps[P], no_changeturf = TRUE, new_z = TRUE))
 			errorList |= pm.original_path
 
