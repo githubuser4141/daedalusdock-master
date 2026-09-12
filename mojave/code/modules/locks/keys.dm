@@ -26,6 +26,14 @@
 	desc = "An old key. Looks like it belongs to a nearby door."
 	var/datum/weakref/matching_door
 
+/// A mapper-placed key covering every door/crate/locker sharing its lock_group string (set both here
+/// and on each lock-bearing /obj via VV - see the generic grouped-lock handling in obj_defines.dm).
+/// Distinct subtype purely for a clearer in-game name/desc; the actual grouping is the plain lock_group
+/// var every /obj/item/ms13/key already has.
+/obj/item/ms13/key/master
+	name = "master key"
+	desc = "A heavier, more ornate key. This one looks like it opens more than a single door."
+
 #define KEY_PLACEMENT_SEARCH_RADIUS 10
 #define KEY_PLACEMENT_MOB_CHANCE 25
 #define KEY_PLACEMENT_STORAGE_CHANCE 25

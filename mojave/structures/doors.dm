@@ -215,6 +215,15 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		icon_state = "[door_type]_open"
 
 /obj/machinery/door/unpowered/ms13/try_to_activate_door(mob/living/M)
+	// Called both from attack_hand() below (already lock-checked there) and from the core
+	// /obj/machinery/door/attackby() chain (code/game/machinery/doors/door.dm) when attacked with an
+	// item in hand - that path had no lock check at all, so holding literally any item and clicking a
+	// locked door bypassed both lock types entirely instead of falling through to the key/lock_group
+	// handling in /obj/attackby() (mojave/code/modules/locks/obj_defines.dm).
+	if(locked || (ms13_flags_1 & LOCKABLE_1 && lock_locked))
+		to_chat(M, span_warning("The [name] is locked."))
+		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
+		return FALSE
 	add_fingerprint(M)
 	if(density)
 		open()
