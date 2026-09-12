@@ -58,6 +58,9 @@
 
 ////Broken Wood/Foundation floors////
 
+TYPEINFO_DEF(/obj/structure/ms13/foundation)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 0, FIRE = 80, ACID = 50)
+
 /obj/structure/ms13/foundation
 	name = "floor"
 	icon = 'mojave/icons/turf/floors.dmi'
@@ -65,7 +68,6 @@
 	desc = "Exposed wooden foundation."
 	density = FALSE
 	anchored = TRUE
-	armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 0, FIRE = 80, ACID = 50)
 	max_integrity = 300
 	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN | BLOCK_Z_IN_UP
 	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)

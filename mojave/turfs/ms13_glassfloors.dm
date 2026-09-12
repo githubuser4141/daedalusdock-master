@@ -4,6 +4,9 @@
 
   ////Glass floors////
 
+TYPEINFO_DEF(/obj/structure/ms13/glassfloor)
+	default_armor = list(BLUNT = 90, PUNCTURE = 90, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+
 /obj/structure/ms13/glassfloor
 	name = "glass floor"
 	desc = ""
@@ -12,7 +15,6 @@
 	base_icon_state = "glass"
 	density = FALSE
 	anchored = TRUE
-	armor = list(BLUNT = 90, PUNCTURE = 90, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
 	max_integrity = 50
 	layer = CATWALK_LAYER
 	plane = FLOOR_PLANE

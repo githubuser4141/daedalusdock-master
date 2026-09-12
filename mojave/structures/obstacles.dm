@@ -608,6 +608,9 @@
 
 //Wire fence door, seperated unfortunately
 
+TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire)
+	default_armor = list(BLUNT = 50, PUNCTURE = 60, LASER = 40, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire
 	name = "wire fence door"
 	desc = "A wire fence door, the clattered gateway to freedom perhaps."
@@ -617,7 +620,6 @@
 	layer = ABOVE_MOB_LAYER
 	damage_deflection = 15
 	max_integrity = 600
-	armor = list(BLUNT = 50, PUNCTURE = 60, LASER = 40, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/seethrough/fence/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -715,6 +717,9 @@
 
 //Barbed Wire fence door
 
+TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
+	default_armor = list(BLUNT = 70, PUNCTURE = 80, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb
 	name = "barbed wire fence door"
 	desc = "A menacing wire fence door, no jumping this one, keep out!"
@@ -722,7 +727,6 @@
 	door_type = "barbfence"
 	max_integrity = 900
 	damage_deflection = 20
-	armor = list(BLUNT = 70, PUNCTURE = 80, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 // Sand bags
 

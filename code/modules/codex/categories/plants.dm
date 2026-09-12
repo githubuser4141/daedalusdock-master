@@ -6,6 +6,8 @@
 	var/list/mutations_by_plant = list()
 
 	for(var/datum/plant_mutation/mutation as anything in SShydroponics.mutation_list)
+		if(!mutation)
+			continue
 		mutations_by_plant[mutation.plant_type] = mutation.type
 
 	for(var/datum/plant/P as anything in subtypesof(/datum/plant))

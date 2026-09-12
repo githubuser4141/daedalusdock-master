@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
+	default_armor = list(BLUNT = 20, PUNCTURE = 90, LASER = 90, ENERGY = 90, BOMB = 0, BIO = 100, FIRE = 100, ACID = 100)
+
 /obj/structure/ms13/ore_deposit
 	name = "base ore deposit"
 	desc = "Full of valuable errors to sell to coders!"
@@ -6,7 +9,6 @@
 	density = FALSE
 	anchored = TRUE
 	resistance_flags = UNACIDABLE | FIRE_PROOF | LAVA_PROOF
-	armor = list(BLUNT = 20, PUNCTURE = 90, LASER = 90, ENERGY = 90, BOMB = 0, BIO = 100, FIRE = 100, ACID = 100)
 	hitted_sound = 'sound/effects/break_stone.ogg'
 	var/deposit_type = null
 	var/last_act = 0

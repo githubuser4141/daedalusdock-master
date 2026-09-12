@@ -1,5 +1,8 @@
 //This file contains the twohanded weapons and the base for them.
 
+TYPEINFO_DEF(/obj/item/ms13/twohanded)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
+
 /obj/item/ms13/twohanded
 	name = "wieldable weapon"
 	desc = "don't use the damn thing, you animal."
@@ -14,7 +17,6 @@
 	sharpness = SHARP_EDGED
 	w_class = WEIGHT_CLASS_HUGE
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
 	slot_flags = ITEM_SLOT_SUITSTORE | ITEM_SLOT_BACK
 	log_pickup_and_drop = TRUE

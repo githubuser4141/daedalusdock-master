@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
+
 /obj/item/clothing/suit/ms13
 	name = "generic ms13 suit"
 	desc = "You shouldn't be seeing this. It do be lookin' kinda clean doe."
@@ -5,7 +8,6 @@
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
 	body_parts_covered = CHEST|ARMS|LEGS|GROIN
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
 	max_integrity = 325
 	///Icon file for left inhand overlays
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
@@ -20,6 +22,9 @@
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/clothing/clothing_inventory/suits_inventory.dmi')
 
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
+
 /obj/item/clothing/suit/toggle/ms13
 	name = "generic ms13 toggleable"
 	desc = "Don't look. Don't look. NIGHTMARE NIGHTMARE NIGHTMARE."
@@ -29,7 +34,6 @@
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
 	body_parts_covered = CHEST|ARMS|LEGS|GROIN
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
 	///Icon file for left inhand overlays
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	///Icon file for right inhand overlays
@@ -131,6 +135,9 @@
 	desc = "A black, sleeveless padded coat."
 	icon_state = "veteran_coat_b"
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/veteran_coat/reinf)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/ms13/veteran_coat/reinf
 	name = "reinforced veteran coat"
 	desc = "A blue padded coat with additional leather and crude metal reinforcements. Common attire for hardened, dangerous mercenaries."
@@ -147,10 +154,12 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/ljacket/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/ms13/ljacket/reinforced
 	name = "reinforced leather jacket"
@@ -169,7 +178,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -197,6 +205,9 @@
 	desc = "A plain orange winter jacket. Nice and warm."
 	icon_state = "winterjacketorange"
 
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/orange/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/toggle/ms13/wjacket/orange/reinforced
 	name = "reinforced orange winter jacket"
 	desc = "A reinforced and padded orange winter jacket."
@@ -212,10 +223,12 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/orange/armored)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/orange/armored
 	name = "armored orange winter jacket"
@@ -232,7 +245,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -241,6 +253,9 @@
 	name = "brown winter jacket"
 	desc = "A very plain brown winter jacket. Nice and warm."
 	icon_state = "winterjacketbrown"
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/brown/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/brown/reinforced
 	name = "reinforced brown jacket"
@@ -257,10 +272,12 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/brown/armored)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/brown/armored
 	name = "armored brown jacket"
@@ -277,7 +294,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -286,6 +302,9 @@
 	name = "blue winter jacket"
 	desc = "A blue winter jacket."
 	icon_state = "winterjacketblue"
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/blue/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/blue/reinforced
 	name = "reinforced blue winter jacket"
@@ -302,10 +321,12 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/blue/armored)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/blue/armored
 	name = "armored blue winter jacket"
@@ -322,7 +343,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -331,6 +351,9 @@
 	name = "black winter jacket"
 	desc = "A dark, black winter jacket."
 	icon_state = "winterjacketblack"
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/black/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/black/reinforced
 	name = "reinforced black winter jacket"
@@ -347,10 +370,12 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13/wjacket/black/armored)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/toggle/ms13/wjacket/black/armored
 	name = "armored black winter jacket"
@@ -367,7 +392,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
@@ -580,6 +604,9 @@
                 ENERGY = 0, \
                 FIRE = 0)
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/trench/black/reinf)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/ms13/trench/black/reinf
 	name = "reinforced black trenchcoat"
 	desc = "A black trenchcoat with the addition of some heavy metal reinforcements and armor for added protection."
@@ -596,10 +623,12 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 	////storage_type = null
+
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/trench/black/armored)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/ms13/trench/black/armored
 	name = "armored black trenchcoat"
@@ -617,7 +646,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 	////storage_type = null
@@ -641,6 +669,9 @@
                 FIRE = 0)
 	////storage_type = /datum/storage/ms13/suit/large
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/duster/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/ms13/duster/reinforced
 	name = "reinforced duster"
 	desc = "A duster with added leather and padding for some more protection."
@@ -656,7 +687,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	////storage_type = /datum/storage/ms13/suit/med
@@ -686,6 +716,9 @@
 
 // labcoats //
 
+TYPEINFO_DEF(/obj/item/clothing/suit/toggle/labcoat/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/item/clothing/suit/toggle/labcoat/ms13
 	name = "doctor's coat"
 	desc = "The medical coat of a typical wasteland doctor."
@@ -702,11 +735,13 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	body_parts_covered = CHEST|ARMS
 	////storage_type = /datum/storage/ms13/suit/large
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/vaultlab)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
 /obj/item/clothing/suit/ms13/vaultlab
 	name = "vault lab coat"
@@ -722,7 +757,6 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	body_parts_covered = CHEST|ARMS
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
@@ -737,12 +771,14 @@
 	body_parts_covered = CHEST|GROIN|LEGS
 	permeability_coefficient = 0.5
 
+TYPEINFO_DEF(/obj/item/clothing/suit/hooded/ms13/hubologist)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 10, ENERGY = 5, BOMB = 15, BIO = 10, FIRE = 10, ACID = 10)
+
 /obj/item/clothing/suit/hooded/ms13/hubologist
 	name = "hubologist robes"
 	desc = "Long, dark, and imposing padded robes worn by Hubologists."
 	icon_state = "hubologist"
 	inhand_icon_state = "hostrench"
-	armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 10, ENERGY = 5, BOMB = 15, BIO = 10, FIRE = 10, ACID = 10)
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
 	hoodtype = /obj/item/clothing/head/hooded/ms13/hubologist
 
@@ -770,6 +806,9 @@
                 FIRE = 0)
 	////storage_type = /datum/storage/ms13/suit/large
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/drylander/hunter)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
+
 /obj/item/clothing/suit/ms13/drylander/hunter
 	name = "\improper Drylander hunter padded robes"
 	desc = "Lightly padded robes worn by hunters of the Drylander tribe. Light, breathable, and still somewhat protective."
@@ -785,8 +824,10 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 350
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	////storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/drylander/headtaker)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/ms13/drylander/headtaker
 	name = "\improper Drylander Headtaker padded robes"
@@ -804,7 +845,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	////storage_type = /datum/storage/ms13/suit/med
 
 /obj/item/clothing/suit/ms13/drylander/simple
@@ -828,6 +868,9 @@
 	body_parts_covered = CHEST|GROIN|LEGS|ARM_RIGHT
 	icon_state = "dry_bando"
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/drylander/chief)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
+
 /obj/item/clothing/suit/ms13/drylander/chief
 	name = "\improper Drylander chieftain robes"
 	desc = "An impressive set of robes worn by the chieftain of the Drylander tribe. This commands respect."
@@ -843,7 +886,6 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 350
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/suit/ms13/drylander/shaman
 	name = "\improper Drylander shaman robes"
@@ -968,6 +1010,9 @@
 
 // goldman //
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/goldman)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
+
 /obj/item/clothing/suit/ms13/goldman
 	name = "base type goldman suit"
 	desc = "You shouldn't be seeing this."
@@ -984,7 +1029,6 @@
                 FIRE = 0)
 	////storage_type = /datum/storage/ms13/suit/large
 	max_integrity = 350
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/suit/ms13/goldman/leader
 	name = "\improper goldman Ringleader trenchcoat"

@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/item/ms13/hammer)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
+
 /obj/item/ms13/hammer
 	name = "claw hammer"
 	desc = "A standard, small claw hammer. Can be used to hammer a nail and pry a nail!"
@@ -20,7 +23,6 @@
 	sharpness = NONE
 	slot_flags = ITEM_SLOT_BELT
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
 	w_class = WEIGHT_CLASS_SMALL
 	tool_behaviour = TOOL_CROWBAR
@@ -408,6 +410,9 @@
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/tools/tools_inventory.dmi')
 
+TYPEINFO_DEF(/obj/item/ms13/brick)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
+
 /obj/item/ms13/brick
 	name = "brick"
 	desc = "A literal brick. Nothing more."
@@ -430,7 +435,6 @@
 	sharpness = NONE
 	w_class = WEIGHT_CLASS_SMALL
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
 	slot_flags = ITEM_SLOT_BELT
 	log_pickup_and_drop = TRUE

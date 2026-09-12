@@ -246,11 +246,13 @@
 
 //Storage//
 
+TYPEINFO_DEF(/obj/structure/ms13/storage)
+	default_armor = list(BLUNT = 30, PUNCTURE = 40, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100,  FIRE = 80, ACID = 100)
+
 /obj/structure/ms13/storage
 	name = "generic ms13 storage"
 	desc = "You place stuff on/in/or around it or it pretends to at least, pretty generic right."
 	icon = 'mojave/icons/structure/32x64_tall_furniture.dmi'
-	armor = list(BLUNT = 30, PUNCTURE = 40, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100,  FIRE = 80, ACID = 100)
 	density = TRUE
 	anchored = TRUE
 	max_integrity = 225

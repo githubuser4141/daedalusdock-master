@@ -48,6 +48,10 @@ code/controllers/subsystem/mapping.dm,
 code/datums/looping_sounds/_looping_sound.dm,
 code/game/objects/items.dm,
 code/modules/mob/living/living_defense.dm,
+code/modules/codex/categories/plants.dm,
+code/modules/hydroponics/plant_gene_holder.dm,
+code/modules/hydroponics/hydroponics_tray/hydrotray_interaction.dm,
+code/modules/hydroponics/plant.dm,
 
 
 

@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/item/clothing/head/helmet/ms13
 	name = "generic ms13 helmet"
 	desc = "You shouldn't be seeing this helmet."
@@ -5,7 +8,6 @@
 	worn_icon = 'mojave/icons/mob/clothing/head.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	//dynamic_hair_suffix = "+generic"
 	//dynamic_fhair_suffix = "+generic"
 	flags_inv = HIDEHAIR
@@ -30,6 +32,9 @@
 	// whenever this gets built for real - this proc is just a no-op until then.
 	return
 
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/item/clothing/head/ms13/hood
 	name = "generic ms13 hood"
 	desc = "We in this."
@@ -37,7 +42,6 @@
 	worn_icon = 'mojave/icons/mob/clothing/head.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	flags_inv = HIDEHAIR
 	flags_cover = 0
 	//dynamic_hair_suffix = ""
@@ -60,6 +64,9 @@
 	// AI EDIT: disabled, not fixed - see the identical note on /obj/item/clothing/head/helmet/ms13/init_fov() above
 	return
 
+TYPEINFO_DEF(/obj/item/clothing/head/hooded/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/item/clothing/head/hooded/ms13
 	name = "generic ms13 suit hood"
 	desc = "Gamer phone home. Something is wrong."
@@ -67,11 +74,13 @@
 	worn_icon = 'mojave/icons/mob/clothing/head.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	flags_inv = HIDEHAIR
 	flags_cover = 0
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
+
+TYPEINFO_DEF(/obj/item/clothing/head/soft/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
 /obj/item/clothing/head/soft/ms13
 	name = "generic ms13 flip cap"
@@ -80,7 +89,6 @@
 	worn_icon = 'mojave/icons/mob/clothing/head.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	//grid_width = 32
 	//grid_height = 64
 
@@ -94,6 +102,9 @@
 	worn_y_dimension = 32
 
 // Helmets //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/assaultron)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/assaultron
 	name = "assaultron helmet"
@@ -110,12 +121,14 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/flight)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/flight
 	name = "brown flight helmet"
@@ -132,7 +145,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
@@ -152,6 +164,9 @@
 	desc = "A red and white pre-war flight helmet. All it's missing is some blue."
 	icon_state = "flightred"
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/bladed)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
+
 /obj/item/clothing/head/helmet/ms13/bladed
 	name = "bladed helmet"
 	desc = "A menancing metal helmet, adorned with two huge blades on the side."
@@ -167,11 +182,13 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/junk)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/junk
 	name = "junk helmet"
@@ -188,12 +205,14 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/skull)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/skull
 	name = "radstag skull helmet"
@@ -210,7 +229,6 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	has_fov = TRUE
 	fov_angle = 60
 	flags_inv = HIDEEARS|HIDEFACE
@@ -221,6 +239,9 @@
 	name = "brahmiluff skull helmet"
 	desc = "The skull of a brahmiluff with some padding to be used as a makeshift helmet."
 	icon_state = "muffalo"
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/eyebot)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/eyebot
 	name = "eyebot helmet"
@@ -237,7 +258,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
@@ -246,6 +266,9 @@
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/medical)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/medical
 	name = "medical helmet"
@@ -262,7 +285,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
 	flags_inv = HIDEEARS|HIDEHAIR
@@ -270,6 +292,9 @@
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/batter)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/batter
 	name = "batters helmet"
@@ -286,7 +311,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
@@ -301,6 +325,9 @@
 	name = "blue batters helmet"
 	desc = "A blue pre-war baseball batters helmet, helps protect your noggin a little."
 	icon_state = "batterblue"
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/hardhat)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/hardhat
 	name = "hardhat"
@@ -317,9 +344,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/hardhat/ms13/mining)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/hardhat/ms13/mining
 	name = "mining hardhat"
@@ -343,9 +372,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/welding/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
 
 /obj/item/clothing/head/welding/ms13
 	name = "welding helmet"
@@ -370,9 +401,11 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	//grid_width = 64
 	//grid_height = 64
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/army)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/army
 	name = "army helmet"
@@ -389,11 +422,13 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/army/civildefence)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/army/civildefence
 	name = "civil defense helmet"
@@ -409,17 +444,21 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 // Hoods //
+
+TYPEINFO_DEF(/obj/item/clothing/head/hooded/ms13/hubologist)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 10, ENERGY = 5, BOMB = 15, BIO = 10, FIRE = 10, ACID = 10)
 
 /obj/item/clothing/head/hooded/ms13/hubologist
 	name = "hubologist hood"
 	desc = "A mysterious hood worn by Hubologists."
 	icon_state = "hubologist"
 	inhand_icon_state = "hubologist"
-	armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 10, ENERGY = 5, BOMB = 15, BIO = 10, FIRE = 10, ACID = 10)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/banded)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/ms13/hood/banded
 	name = "banded helmet"
@@ -435,7 +474,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	inhand_icon_state = "harmorkit"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
@@ -443,6 +481,9 @@
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/plated)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/head/ms13/hood/plated
 	name = "plated cowl"
@@ -458,13 +499,15 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 300
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	inhand_icon_state = "armorkit"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/cowl)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/ms13/hood/cowl
 	name = "cowl"
@@ -480,8 +523,10 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	flags_inv = HIDEEARS|HIDEHAIR
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/inquisitor)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/ms13/hood/inquisitor
 	name = "inquisitors helm"
@@ -497,7 +542,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	inhand_icon_state = "headdress_l"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
@@ -505,6 +549,9 @@
 	fov_angle = 120
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/sack)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/ms13/hood/sack
 	name = "sack hood"
@@ -520,8 +567,10 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/sack/padded)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/ms13/hood/sack/padded
 	name = "padded sack hood"
@@ -537,11 +586,13 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/sack/metal)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/ms13/hood/sack/metal
 	name = "reinforced sack hood"
@@ -557,11 +608,13 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 300
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/green)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/ms13/hood/green
 	name = "green hood"
@@ -577,8 +630,10 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	flags_inv = HIDEEARS|HIDEHAIR
+
+TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood/hunter)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/ms13/hood/hunter
 	name = "hunter hood"
@@ -594,7 +649,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	inhand_icon_state = "winterglovesbrown"
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	has_fov = TRUE
@@ -603,6 +657,9 @@
 	equip_delay_other = 3 SECONDS
 
 // Brimmed Hats //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/sheriff)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/sheriff
 	name = "sheriff's hat"
@@ -618,7 +675,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/fedora)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/fedora
 	name = "gray fedora"
@@ -633,7 +692,6 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/fedora/blue
 	name = "blue fedora"
@@ -656,6 +714,9 @@
 	icon_state = "treasure"
 	inhand_icon_state = "sheriffhat"
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/bowler)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/bowler
 	name = "bowler hat"
 	desc = "A classy gentleman's bowler hat."
@@ -670,7 +731,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/cowboy)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/cowboy
 	name = "cowboy hat"
@@ -686,12 +749,14 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/cowboy/black
 	name = "black cowboy hat"
 	desc = "A black cowboy hat. Perhaps worn by desperados of old."
 	icon_state = "cowboyblack"
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/prospector)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/prospector
 	name = "prospector's hat"
@@ -707,11 +772,13 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/prospector/brown
 	icon_state = "prospectorbrown"
 	inhand_icon_state = "sheriffhat"
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/militia)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/militia
 	name = "militia hat"
@@ -727,7 +794,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/tricorn)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/tricorn
 	name = "tricorn"
@@ -743,7 +812,6 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/tricorn/pirate
 	name = "pirate hat"
@@ -751,6 +819,9 @@
 	icon_state = "pirate"
 
 // Tall Helmet //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/tall/regal)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/tall/regal
 	name = "fancy bicorn"
@@ -766,13 +837,15 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/tall/manny
 	name = "\improper Manny Mammoth head"
 	desc = "A perfectly preserved pre-war VINTAGE Manny Mammoth head! It smells of crusty pizza."
 	icon_state = "manny"
 	inhand_icon_state = "duster"
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/tall/tophat)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/tall/tophat
 	name = "top hat"
@@ -788,7 +861,6 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/tall/tophat/slick
 	name = "\improper Slickback top hat"
@@ -804,6 +876,9 @@
                 ENERGY = 0, \
                 FIRE = 0)
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/tall/cone)
+	default_armor = list(BLUNT = 10, PUNCTURE = 10, SLASH = 10, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 5, FIRE = 5, ACID = 5)
+
 /obj/item/clothing/head/helmet/ms13/tall/cone
 	desc = "A once bright warning device, now a staple of wasteland fashion."
 	name = "warning cone"
@@ -817,13 +892,15 @@
 	attack_verb_simple = list("warn", "caution", "smash")
 	resistance_flags = NONE
 	flags_inv = HIDEHAIR
-	armor = list(BLUNT = 10, PUNCTURE = 10, SLASH = 10, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 5, FIRE = 5, ACID = 5)
 	//dynamic_hair_suffix = ""
 
 /obj/item/clothing/head/helmet/ms13/tall/cone/attack_self(mob/user)
 	weldingvisortoggle(user)
 
 // Caps //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/baseball)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/baseball
 	name = "baseball cap"
@@ -839,7 +916,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/deputy)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/deputy
 	name = "deputy's cap"
@@ -855,7 +934,9 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/military)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/military
 	name = "military hat"
@@ -871,7 +952,6 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/military/officer
 	name = "officer's hat"
@@ -888,6 +968,9 @@
 	desc = "A pre-war strange military hat, likely used by Chinese communists."
 	icon_state = "captaincommie"
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/sailor)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/sailor
 	name = "sailor cap"
 	desc = "A light cap used by pre-war sailors."
@@ -902,7 +985,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/postman)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/postman
 	name = "postman hat"
@@ -918,7 +1003,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/police)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/police
 	name = "police hat"
@@ -934,7 +1021,9 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/fisher)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/fisher
 	name = "angler hat"
@@ -950,10 +1039,12 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/fisher/technobug
 	desc = "A waterproof angler's hat. About a quarter of what you need to get fishing! The name 'T. bugg' is crudely written on the inside."
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/bandanacap)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/bandanacap
 	name = "bandana cap"
@@ -969,10 +1060,12 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/bandanacap/ms13
 	desc = "A piece of cloth tied around a cap. A sense of gang activity radiates from this hat. The letters and numbers 'MS13' are inscribed on the inside."
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/beret)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/beret
 	name = "gray beret"
@@ -988,7 +1081,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/newsboy)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/newsboy
 	name = "newsboy cap"
@@ -1004,7 +1099,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/trilby)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/trilby
 	name = "trilby hat"
@@ -1020,7 +1117,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/beanie)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/beanie
 	name = "beanie"
@@ -1036,7 +1135,6 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/beret/slick
 	name = "light beret"
@@ -1055,6 +1153,9 @@
 
 // Misc Hats //
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/chef)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/chef
 	name = "chef hat"
 	desc = "A professional chef hat, hopefully there is no rat inside."
@@ -1069,7 +1170,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/ushanka)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/ushanka
 	name = "ushanka hat"
@@ -1084,7 +1187,6 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/ushanka/blue
 	name = "blue ushanka hat"
@@ -1097,6 +1199,9 @@
 	icon_state = "ushankagreen"
 
 // Wasteland helmets //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/metal)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/metal
 	name = "heavy metal helmet"
@@ -1113,7 +1218,6 @@
                 ENERGY = CLASS3_PLASMA, \
                 FIRE = CLASS4_FIRE)
 	max_integrity = 375
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 90
 	equip_delay_self = 2 SECONDS
@@ -1122,6 +1226,9 @@
 // Raider Helmets //
 
 // Combat Helmets //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/combat)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/combat
 	name = "combat helmet"
@@ -1138,7 +1245,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	has_fov = TRUE
@@ -1164,6 +1270,9 @@
 
 // Special Helmets //
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/tesla)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
+
 /obj/item/clothing/head/helmet/ms13/tesla
 	name = "tesla helmet"
 	desc = "An experimental helmet specialized to protect from laser weaponry."
@@ -1179,13 +1288,15 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 375
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	has_fov = TRUE
 	fov_angle = 90
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/eliteriot)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/eliteriot
 	name = "elite riot helmet"
@@ -1202,7 +1313,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 375
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	//dynamic_hair_suffix = ""
@@ -1211,6 +1321,9 @@
 	fov_angle = 90
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/vaulthelmet)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/vaulthelmet
 	name = "vault security helmet"
@@ -1227,7 +1340,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	flags_inv = HIDEEARS|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	has_fov = TRUE
@@ -1235,15 +1347,20 @@
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/eliteriot/bountyhunter)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 35, ENERGY = 25, BOMB = 50, BIO = 25, FIRE = 50, ACID = 25)
+
 /obj/item/clothing/head/helmet/ms13/eliteriot/bountyhunter
 	name = "bounty hunter's helmet"
 	desc = "A highly customized advanced Riot helmet. Featuring a thick furred hat slipped over the helmet to keep insulation at an all-time high."
 	icon_state = "bountyhunter"
 	inhand_icon_state = "riotgearhelmet"
-	armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 35, ENERGY = 25, BOMB = 50, BIO = 25, FIRE = 50, ACID = 25)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/enforcer)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/enforcer
 	name = "padded black hat and mask"
@@ -1259,8 +1376,10 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/metal/baron)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/metal/baron
 	name = "\improper Baron's Visage"
@@ -1276,13 +1395,15 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 90
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/snowguard)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/snowguard
 	name = "visored helmet"
@@ -1299,7 +1420,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	flags_inv = HIDEEARS|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	has_fov = TRUE
@@ -1308,6 +1428,9 @@
 	equip_delay_other = 3 SECONDS
 
 // Enviro Helmets //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/firehood)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 100, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/firehood
 	name = "fireproof hood"
@@ -1324,7 +1447,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS5_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 100, ACID = 0) //No wound armor
 	heat_protection = HEAD
 	resistance_flags = FIRE_PROOF
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
@@ -1347,6 +1469,9 @@
 	if(istype(user))
 		REMOVE_TRAIT(user, TRAIT_NON_FLAMMABLE, "fire_suit")
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/radiationhood)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/radiationhood
 	name = "radiation suit hood"
 	desc = "A hood to go along with your radiation suit. It's got a broken geiger counter mounted near the filter."
@@ -1361,7 +1486,6 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
@@ -1373,6 +1497,9 @@
 /obj/item/clothing/head/helmet/ms13/radiationhood/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/radiation_protected_clothing)
+
+TYPEINFO_DEF(/obj/item/clothing/head/hooded/ms13/hazmat)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/hooded/ms13/hazmat
 	name = "hazmat hood"
@@ -1391,7 +1518,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/ms13)
+	default_armor = list(BLUNT = 15, PUNCTURE = 15, SLASH = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 75, FIRE = 5, ACID = 75)
 
 /obj/item/clothing/head/helmet/space/ms13
 	name = "space helmet"
@@ -1400,12 +1529,14 @@
 	worn_icon = 'mojave/icons/mob/clothing/head.dmi'
 	icon_state = "spacehelmet"
 	inhand_icon_state = "spacehelmet"
-	armor = list(BLUNT = 15, PUNCTURE = 15, SLASH = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 75, FIRE = 5, ACID = 75)
 	flags_inv = HIDEHAIR
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
 
 // NCR Helmets //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/ncr)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/ncr
 	name = "\improper NCR infantry helmet"
@@ -1422,7 +1553,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	flags_cover = NONE
 	has_fov = TRUE
 	fov_angle = 60
@@ -1487,6 +1617,9 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/ncr/beret)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/ncr/beret
 	name = "\improper NCR beret"
 	desc = "A standard padded NCR beret. Normally reserved for NCOs."
@@ -1501,7 +1634,6 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	has_fov = FALSE
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 2 SECONDS
@@ -1518,6 +1650,9 @@
 
 // Legion Helmets //
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/vexillarius)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/legion/vexillarius
 	name = "vexillarius headdress"
 	desc = "A padded headdress used by only the loudest message relayers and heartiest morale boosters of the Legion"
@@ -1533,9 +1668,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0) //No wound armor
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/recruit)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/legion/recruit
 	name = "\improper Legion recruit helmet"
@@ -1552,12 +1689,14 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	flags_inv = HIDEEARS|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/prime)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/legion/prime
 	name = "\improper Legion prime helmet"
@@ -1574,12 +1713,14 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	flags_inv = HIDEEARS|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/veteran)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/legion/veteran
 	name = "\improper Legion veteran helmet"
@@ -1596,12 +1737,14 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 300
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 90
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/decanus)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/legion/decanus
 	name = "\improper Legion recruit decanus helmet"
@@ -1618,7 +1761,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 300
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES // Built in protection from the dust. yippie.
 	has_fov = TRUE
@@ -1636,6 +1778,9 @@
 	desc = "A feathery helmet used by only the most experienced decanii of the Legion. It's got striped feathers to signify superior rank."
 	icon_state = "leg_decv"
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/centurion)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
+
 /obj/item/clothing/head/helmet/ms13/legion/centurion
 	name = "\improper Legion centurion helmet"
 	desc = "A strong helmet donned by Centurions in the Legion. Some reinforcements on the helmet no doubt came from fallen enemies."
@@ -1651,7 +1796,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 375
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	has_fov = TRUE
 	fov_angle = 120
@@ -1659,21 +1803,28 @@
 	equip_delay_other = 4 SECONDS
 	worn_y_offset = 16
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/praetorian)
+	default_armor = list(BLUNT = 65, PUNCTURE = 65, SLASH = 65, LASER = 45, ENERGY = 20, BOMB = 65, BIO = 20, FIRE = 25, ACID = 20)
+
 /obj/item/clothing/head/helmet/ms13/legion/praetorian
 	name = "\improper Legion praetorian helmet"
 	desc = "A skillfuly forged helmet for a skill endowed man. Only the highest of guards may wear this."
 	icon_state = "leg_prae"
 	inhand_icon_state = "owl_mask"
-	armor = list(BLUNT = 65, PUNCTURE = 65, SLASH = 65, LASER = 45, ENERGY = 20, BOMB = 65, BIO = 20, FIRE = 25, ACID = 20)
 	flags_inv = HIDEEARS|HIDEHAIR
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/scout)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 25, ENERGY = 20, BOMB = 35, BIO = 20, FIRE = 25, ACID = 20)
 
 /obj/item/clothing/head/helmet/ms13/legion/scout
 	name = "\improper Legion scout bandana"
 	desc = "A red bandana, often seen tied aroudn the heads of Legion scouts."
 	icon_state = "leg_scout"
 	inhand_icon_state = "owl_mask"
-	armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 25, ENERGY = 20, BOMB = 35, BIO = 20, FIRE = 25, ACID = 20)
 	flags_inv = HIDEEARS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/legion/explorer)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 /obj/item/clothing/head/helmet/ms13/legion/explorer
 	name = "\improper Legion explorer hood"
@@ -1690,11 +1841,13 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 2 SECONDS
 
 // Brotherhood Helmets //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/initiate)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/initiate
 	name = "\improper Brotherhood kevlar helmet"
@@ -1711,11 +1864,13 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/combat/bos)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/combat/bos
 	name = "\improper Brotherhood combat helmet"
@@ -1732,7 +1887,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 325
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 90
 	equip_delay_self = 2 SECONDS
@@ -1757,6 +1911,9 @@
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/cowboy/ranger)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
+
 /obj/item/clothing/head/helmet/ms13/cowboy/ranger
 	name = "\improper Desert Ranger hat"
 	desc = "A sylish hat, often worn by Desert Rangers. Made with some thick leather and small internal layer of kevlar."
@@ -1772,9 +1929,11 @@
                 ENERGY = 0, \
                 FIRE = 0)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0) //No wound armor
 
 // Drylander Hoods //
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/drylander)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/drylander
 	name = "base type drylander hood"
@@ -1792,7 +1951,9 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/drylander/hunter)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/drylander/hunter
 	name = "\improper Drylander hunter hood"
@@ -1809,9 +1970,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/drylander/headtaker)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 25, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/drylander/headtaker
 	name = "\improper Drylander Headtaker hood"
@@ -1828,9 +1991,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 25, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/drylander/shaman)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/drylander/shaman
 	name = "\improper Drylander shaman hood"
@@ -1847,9 +2012,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/drylander/chief)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/head/helmet/ms13/drylander/chief
 	name = "cracked Deathclaw skull helmet"
@@ -1866,7 +2033,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 260
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
 
@@ -1892,6 +2058,9 @@
 
 // Mon City Helmets //
 
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/ushanka/mon_city)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
+
 /obj/item/clothing/head/helmet/ms13/ushanka/mon_city
 	name = "padded ushanka hat"
 	desc = "Thick, padded, and warm ushanka hat. Almost as good at keeping you alive as it is at keeping you warm."
@@ -1906,9 +2075,11 @@
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	max_integrity = 250
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	has_fov = TRUE
 	fov_angle = 60
+
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13/ushanka/mon_city/basic)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0) //no wound armor
 
 /obj/item/clothing/head/helmet/ms13/ushanka/mon_city/basic
 	name = "lightly padded ushanka hat"
@@ -1923,7 +2094,6 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0) //no wound armor
 	has_fov = FALSE
 	fov_angle = null
 

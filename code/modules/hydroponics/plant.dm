@@ -335,6 +335,8 @@
 	var/datum/plant/target_plant = seed_to_damage.plant_datum
 
 	for(var/datum/plant_mutation/mutation as anything in target_plant.possible_mutations)
+		if(!mutation)
+			continue
 		for(var/infusion_requirement in mutation.infusion_reagents)
 			if(!ispath(R.type, infusion_requirement))
 				continue

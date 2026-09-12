@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/structure/ms13/powerlines)
+	default_armor = list(BLUNT = 60, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+
 /obj/structure/ms13/powerlines
 	name = "overhead power line"
 	desc = "A suspended power line made of three thick parallel wires."
@@ -5,7 +8,6 @@
 	icon_state = "platrailings_full"
 	density = FALSE
 	anchored = TRUE
-	armor = list(BLUNT = 60, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
 	max_integrity = 120
 	layer = LATTICE_LAYER
 	plane = FLOOR_PLANE

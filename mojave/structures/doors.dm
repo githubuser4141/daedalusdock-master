@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
+	default_armor = list(BLUNT = 40, PUNCTURE = 70, LASER = 90, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 50, ACID = 100)
+
 /obj/machinery/door/unpowered/ms13
 	icon = 'mojave/icons/structure/doors.dmi'
 	name = "base state ms13 door"
@@ -9,7 +12,6 @@
 	can_crush = FALSE
 	spark_system = null
 	max_integrity = 1150
-	armor = list(BLUNT = 40, PUNCTURE = 70, LASER = 90, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 50, ACID = 100)
 	damage_deflection = 15
 	ms13_flags_1 = LOCKABLE_1
 	// AI EDIT: sparks and safe were never declared anywhere - added here (sparks was previously just dropped on
@@ -276,13 +278,15 @@
 /obj/machinery/door/unpowered/ms13/BumpedBy(atom/movable/AM)
 	return
 
+TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/metal)
+	default_armor = list(BLUNT = 65, PUNCTURE = 80, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
+
 /obj/machinery/door/unpowered/ms13/metal
 	name = "metal door"
 	icon_state = "metal_closed"
 	door_type = "metal"
 	assemblytype = /obj/item/stack/sheet/ms13/scrap
 	max_integrity = 2000 //its metal
-	armor = list(BLUNT = 65, PUNCTURE = 80, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
 	damage_deflection = 25
 	hitted_sound = 'mojave/sound/ms13effects/metal_door_hit.ogg'
 
@@ -392,13 +396,15 @@
 			return TRUE
 		return FALSE
 
+TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/metal)
+	default_armor = list(BLUNT = 65, PUNCTURE = 80, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
+
 /obj/machinery/door/unpowered/ms13/seethrough/metal
 	name = "metal door"
 	icon_state = "metal_window_closed"
 	door_type = "metal_window"
 	passthrough_chance = 40 //Small window!
 	max_integrity = 1800 //its metal
-	armor = list(BLUNT = 65, PUNCTURE = 80, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
 	damage_deflection = 25
 	hitted_sound = 'mojave/sound/ms13effects/metal_door_hit.ogg'
 

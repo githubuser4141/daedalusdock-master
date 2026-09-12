@@ -115,6 +115,8 @@
 
 		var/list/fresh_mut_list = list()
 		for(var/datum/plant_mutation/mut in growing.possible_mutations)
+			if(!mut)
+				continue
 			if(length(mut.infusion_reagents))
 				continue
 			if(!mut.can_mutate(growing))

@@ -1,10 +1,12 @@
+TYPEINFO_DEF(/obj/machinery/door/airlock/ms13)
+	default_armor = list(BLUNT = 100, PUNCTURE = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100)
+
 /obj/machinery/door/airlock/ms13
 	name = "mechanical door"
 	desc = "The very pinnacle of door technology. Even after all this time, still usually reliably opens and closes! Don't stick your head in it."
 	icon = 'mojave/icons/objects/airlocks/generic.dmi'
 	overlays_file = 'mojave/icons/objects/airlocks/overlays.dmi'
 	normal_integrity = 800 // big metal door
-	armor = list(BLUNT = 100, PUNCTURE = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100)
 	security_level = 1
 	layer = 4.5
 	closingLayer = CLOSED_DOOR_LAYER

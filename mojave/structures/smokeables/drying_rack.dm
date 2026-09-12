@@ -1,11 +1,13 @@
 ////////////////MOJAVE SUN DRYING RACK STORAGE/////////////////
 
+TYPEINFO_DEF(/obj/structure/ms13/drying_rack)
+	default_armor = list(BLUNT = 10, PUNCTURE = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100,  FIRE = 10, ACID = 100)
+
 /obj/structure/ms13/drying_rack
 	name = "drying rack"
 	desc = "A makeshift wooden herbal drying rack. For leaving plants in the sun."
 	icon = 'mojave/icons/structure/drying_rack.dmi'
 	icon_state = "drying_rack"
-	armor = list(BLUNT = 10, PUNCTURE = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100,  FIRE = 10, ACID = 100)
 	density = TRUE
 	anchored = TRUE
 	max_integrity = 200

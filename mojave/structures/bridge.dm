@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/structure/ms13/bridge)
+	default_armor = list(BLUNT = 50, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/structure/ms13/bridge
 	name = "makeshift bridge"
 	desc = "A makeshift bridge made of half-rotten planks held together by rusted nails. At least the ropes seem to be of decent quality."
@@ -5,7 +8,6 @@
 	icon_state = "planks_1"
 	density = FALSE
 	anchored = TRUE
-	armor = list(BLUNT = 50, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	max_integrity = 100
 	layer = ABOVE_OPEN_TURF_LAYER
 	plane = GAME_PLANE
@@ -104,6 +106,9 @@
 	. = ..()
 
 /// Stakes at the end of a makeshift bridge
+TYPEINFO_DEF(/obj/structure/ms13/bridge_stakes)
+	default_armor = list(BLUNT = 50, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/structure/ms13/bridge_stakes
 	name = "makeshift bridge stakes"
 	desc = "Two crude wooden poles that have been hammered down into the ground."
@@ -111,7 +116,6 @@
 	icon_state = "stake_default"
 	density = FALSE
 	anchored = TRUE
-	armor = list(BLUNT = 50, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	max_integrity = 100
 	layer = ABOVE_OPEN_TURF_LAYER
 	plane = GAME_PLANE

@@ -1,10 +1,12 @@
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13
 	name = "generic ms13 armor"
 	desc = "You shouldn't be seeing this."
 	icon = 'mojave/icons/objects/clothing/clothing_world/suits_world.dmi'
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing) // AI EDIT: flask -> glass/flask (DD's flask is at cup/glass/flask, not cup/flask; same fix in suit.dm)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	max_integrity = 400
 	///Icon file for left hand inhand overlays
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
@@ -19,6 +21,9 @@
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/clothing/clothing_inventory/suits_inventory.dmi')
 
+TYPEINFO_DEF(/obj/item/clothing/suit/hooded/ms13)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+
 /obj/item/clothing/suit/hooded/ms13
 	name = "generic ms13 hooded clothing"
 	desc = "BASE CLASE BASE CLASS. AAAAAAAAAAAAAAA"
@@ -27,7 +32,6 @@
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
 	hoodtype = /obj/item/clothing/head/hooded/ms13
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 	//grid_width = 64
 	//grid_height = 96
 
@@ -36,6 +40,9 @@
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/clothing/clothing_inventory/suits_inventory.dmi')
 
 // Armor Kits //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/kit)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/kit
 	name = "armor kit"
@@ -53,7 +60,6 @@
                 LASER = 0, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 
@@ -79,6 +85,9 @@
 
 // Light/Leather Armor //
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/tire)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/tire
 	name = "tire armor"
 	desc = "Sections of tire, roughly cut apart and bound together. Getting into a firefight isn't advised, but you shouldn't feel a punch in this."
@@ -95,9 +104,11 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/leatherarmor)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/leatherarmor
 	name = "leather armor"
@@ -115,9 +126,11 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/leatherarmor/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/leatherarmor/reinforced
 	name = "reinforced leather armor"
@@ -135,9 +148,11 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 // Metal Armor //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/metal
 	name = "metal armor"
@@ -156,7 +171,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -177,6 +191,9 @@
                 FIRE = CLASS3_FIRE)
 	max_integrity = 575
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal/heavy)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/metal/heavy
 	name = "heavy metal armor"
 	desc = "A full suit of heavy duty plated metal armor. Looks quite intimidating and offers the protection to match."
@@ -193,7 +210,9 @@
                 ENERGY = CLASS3_PLASMA, \
                 FIRE = CLASS4_FIRE)
 	max_integrity = 575
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 75, ACID = 0)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vaultvan)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vaultvan
 	name = "\improper Vault-tec van armor"
@@ -211,11 +230,13 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
 // Armor Vests //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest
 	name = "police kevlar vest"
@@ -234,10 +255,12 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/civilian)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest/civilian
 	name = "civilian kevlar vest"
@@ -252,8 +275,10 @@
                 LASER = 0, \
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	//storage_type = /datum/storage/ms13/suit/small
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/military)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest/military
 	name = "military kevlar vest"
@@ -270,7 +295,9 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/vault)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest/vault
 	name = "vault security vest"
@@ -286,7 +313,9 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/snowcrest)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/vest/snowcrest
 	name = "heavy kevlar vest"
@@ -303,7 +332,6 @@
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 // Raider Armor //
 
@@ -334,6 +362,9 @@
 	equip_delay_other = 3 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/ms13/raider
 	name = "raider reinforced jacket"
 	desc = "A winter jacket with some basic armoring and reinforcements. In recent times, it has become a staple for raiders in Mammoth."
@@ -352,7 +383,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
@@ -392,6 +422,9 @@
 
 // Combat Armor //
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/combat
 	name = "combat armor"
 	desc = "Pre-war military grade combat armor. Offers great all around protection."
@@ -409,7 +442,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -431,6 +463,9 @@
 
 // Special Armor //
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/assassin)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/assassin
 	name = "assassin armor"
 	desc = "A prototype pre-war lightweight suit of armor that is so light and optimized that it can serve to speed the wearer up and mask the sound of footsteps."
@@ -448,10 +483,12 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	clothing_traits = list(TRAIT_SILENT_FOOTSTEPS)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/tesla)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/tesla
 	name = "tesla armor"
@@ -471,9 +508,11 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/eliteriot)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/eliteriot
 	name = "elite riot gear"
@@ -492,7 +531,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 575
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -501,6 +539,9 @@
 	desc = "A unique fur lined leather coat featuring thick ballistic weave fibers through it. Built to hold up to the worse while retaining protection against the elements."
 	icon_state = "bountyhunter"
 	inhand_icon_state = "armoredwinterblack"
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat/enforcer)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/combat/enforcer
 	name = "surplus combat armor"
@@ -517,9 +558,11 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 // Enviro Armor //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/firesuit)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 100, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/firesuit
 	name = "fire suit"
@@ -538,7 +581,6 @@
                 ENERGY = 0, \
                 FIRE = CLASS5_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 100, ACID = 0)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	resistance_flags = FIRE_PROOF
 	equip_delay_self = 3.5 SECONDS
@@ -555,6 +597,9 @@
 	..()
 	if(istype(user))
 		REMOVE_TRAIT(user, TRAIT_NON_FLAMMABLE, "fire_suit")
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/radsuit)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/radsuit
 	name = "radiation suit"
@@ -573,13 +618,15 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 450
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
 /obj/item/clothing/suit/armor/ms13/radsuit/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/radiation_protected_clothing)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/hooded/ms13/hazmat)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 15, ACID = 0) //No wound armor
 
 /obj/item/clothing/suit/hooded/ms13/hazmat
 	name = "hazmat suit"
@@ -599,7 +646,9 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = 0)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 15, ACID = 0) //No wound armor
+
+TYPEINFO_DEF(/obj/item/clothing/suit/space/ms13)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 25, ENERGY = 25, BOMB = 5, BIO = 50, FIRE = 60, ACID = 50)
 
 /obj/item/clothing/suit/space/ms13
 	name = "\improper Space suit"
@@ -608,9 +657,11 @@
 	worn_icon = 'mojave/icons/mob/clothing/suit.dmi'
 	icon_state = "spacesuit"
 	inhand_icon_state = "spacesuit"
-	armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 25, ENERGY = 25, BOMB = 5, BIO = 50, FIRE = 60, ACID = 50)
 
 // NCR Armor //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/ncr)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/ncr
 	name = "\improper NCR infantry vest"
@@ -629,7 +680,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
@@ -665,6 +715,9 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/ncr/mantle/reinforced)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/ncr/mantle/reinforced
 	name = "\improper NCR reinforced mantle vest"
 	desc = "An NCR mantle vest with additional protective reinforcements."
@@ -682,11 +735,13 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
 
 // Legion Armor //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/legion
 	name = "standard Legion armor"
@@ -696,7 +751,6 @@
 	slowdown = 0.15
 	body_parts_covered = CHEST|GROIN|LEGS
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/legion/recruit
 	name = "\improper Legion recruit armor"
@@ -731,6 +785,9 @@
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/veteran)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/legion/veteran
 	name = "\improper Legion veteran armor"
 	desc = "A full suit of Legion armor with plenty of hardened leather, padding, and metal reinforcements. Worn by feared Legion Veterans."
@@ -746,15 +803,19 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/scout)
+	default_armor = list(BLUNT = 35, PUNCTURE = 35, SLASH = 35, LASER = 5, ENERGY = 5, BOMB = 20, BIO = 5, FIRE = 10, ACID = 5)
 
 /obj/item/clothing/suit/armor/ms13/legion/scout
 	name = "\improper Legion scout armor"
 	desc = "Legion recruit armor without a chestplate, slightly reduced protection as a result."
 	icon_state = "leg_scout"
-	armor = list(BLUNT = 35, PUNCTURE = 35, SLASH = 35, LASER = 5, ENERGY = 5, BOMB = 20, BIO = 5, FIRE = 10, ACID = 5)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/explorer)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/legion/explorer
 	name = "\improper Legion explorer armor"
@@ -771,15 +832,19 @@
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 10, ACID = 0)
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/speculatore)
+	default_armor = list(BLUNT = 45, PUNCTURE = 45, SLASH = 45, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 20, FIRE = 25, ACID = 20)
 
 /obj/item/clothing/suit/armor/ms13/legion/speculatore
 	name = "\improper Legion speculatore armor"
 	desc = "Legion veteran armor with less reinforcements, reducing some of it's protection."
 	icon_state = "leg_spec"
-	armor = list(BLUNT = 45, PUNCTURE = 45, SLASH = 45, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 20, FIRE = 25, ACID = 20)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/vexillarius)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/legion/vexillarius
 	name = "\improper Legion vexillarius armor"
@@ -795,15 +860,19 @@
                 ENERGY = 0, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/praetorian)
+	default_armor = list(BLUNT = 55, PUNCTURE = 55, SLASH = 55, LASER = 25, ENERGY = 25, BOMB = 30, BIO = 20, FIRE = 30, ACID = 20)
 
 /obj/item/clothing/suit/armor/ms13/legion/praetorian
 	name = "\improper Legion praetorian armor"
 	desc = "Legion praetorian armor, worn only by the most skilled guardians of the Legion."
 	icon_state = "leg_prae"
-	armor = list(BLUNT = 55, PUNCTURE = 55, SLASH = 55, LASER = 25, ENERGY = 25, BOMB = 30, BIO = 20, FIRE = 30, ACID = 20)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/legion/centurion)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/legion/centurion
 	name = "\improper Legion centurion armor"
@@ -821,7 +890,6 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 575
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
@@ -871,6 +939,9 @@
 	equip_delay_other = 3 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
 
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/bos)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
+
 /obj/item/clothing/suit/armor/ms13/vest/bos
 	name = "\improper Brotherhood kevlar vest"
 	desc = "A light kevlar vest in use by the Brotherhood of Steel. Normally given to low ranking members not worthy of the Brotherhood's standard combat armor, or Power Armor."
@@ -887,10 +958,12 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
 	max_integrity = 400
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat/bos)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/combat/bos
 	name = "\improper Brotherhood combat armor"
@@ -908,11 +981,13 @@
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
 
 // Desert Ranger Armor //
+
+TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat/ranger)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 
 /obj/item/clothing/suit/armor/ms13/combat/ranger
 	name = "\improper Desert Ranger combat armor"
@@ -931,7 +1006,6 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 0)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
@@ -992,6 +1066,9 @@
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
 
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/veteran_coat/reinf/mon_city/captain)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
+
 /obj/item/clothing/suit/ms13/veteran_coat/reinf/mon_city/captain
 	name = "padded winter fur coat"
 	desc = "A bulky winter fur coat with lots of padding and kevlar on the inside. This will probably protect you just as well from the cold as it would any bullets coming your way."
@@ -1007,7 +1084,9 @@
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 500
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
+
+TYPEINFO_DEF(/obj/item/clothing/suit/ms13/veteran_coat/reinf/mon_city/pointman)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 
 /obj/item/clothing/suit/ms13/veteran_coat/reinf/mon_city/pointman
 	name = "metal reinforced winter fur coat"
@@ -1023,5 +1102,4 @@
                 LASER = CLASS1_LASER, \
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
-	armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 60, ACID = 0)
 	//storage_type = /datum/storage/ms13/suit/small

@@ -1,5 +1,8 @@
 //punchy punchy melee
 
+TYPEINFO_DEF(/obj/item/ms13/knuckles)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
+
 /obj/item/ms13/knuckles
 	name = "brass knuckle"
 	desc = "A very small brass knuckle meant to be held in your hand to assist in making your punches quite a bit more dangerous."
@@ -18,7 +21,6 @@
 	slot_flags = ITEM_SLOT_BELT
 	throwforce = 5
 	max_integrity = 200
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
 	force = 15
 	subtractible_armour_penetration = 10

@@ -1,4 +1,7 @@
 //Generic power armor helmet
+TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
+
 /obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor
 	name = "Generic Power Armor Helmet"
 	desc = "A helmet belonging to Power Armor"
@@ -9,7 +12,6 @@
 	strip_delay = 15 SECONDS
 	max_integrity = 500
 	resistance_flags = FIRE_PROOF | ACID_PROOF
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
 	worn_x_dimension = 32
 	worn_y_dimension = 48
 	worn_y_offset = 2
@@ -124,6 +126,9 @@
 	name = "Toggle Internal Radio Settings"
 
 //Frame power armor based off of the hardsuit
+TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
+	default_armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
+
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor
 	name = "Power Armor"
 	desc = "A power armour frame. It is capable of accepting any armor module with a bit of elbow grease."
@@ -137,7 +142,6 @@
 	integrity_failure = 0.5
 	max_integrity = 450
 	resistance_flags = FIRE_PROOF | ACID_PROOF
-	armor = list(BLUNT = 0, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0,  FIRE = 0, ACID = 0)
 	subarmor = list(SUBARMOR_FLAGS = NONE, \
 					EDGE_PROTECTION = CLASS2_EDGE, \
 					CRUSHING = CLASS2_CRUSH, \

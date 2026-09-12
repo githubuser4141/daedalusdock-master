@@ -219,11 +219,13 @@
 	. += new /obj/item/stack/sheet/ms13/glass(location)
 	. += new /obj/effect/decal/cleanable/glass(location)
 
+TYPEINFO_DEF(/obj/structure/window/ms13/reinforced)
+	default_armor = list(BLUNT = 75, PUNCTURE = 75, LASER = 75, ENERGY = 75, BOMB = 25, BIO = 100, FIRE = 80, ACID = 100)
+
 /obj/structure/window/ms13/reinforced
 	name = "base MS13 reinforced window pane"
 	desc = "A window protected by metal bars."
 	max_integrity = 250
-	armor = list(BLUNT = 75, PUNCTURE = 75, LASER = 75, ENERGY = 75, BOMB = 25, BIO = 100, FIRE = 80, ACID = 100)
 	receive_ricochet_chance_mod = 0.75
 	damage_deflection = 20
 	has_crack_overlay = FALSE //wisi

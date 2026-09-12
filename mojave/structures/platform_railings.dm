@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/structure/ms13/platform_railings)
+	default_armor = list(BLUNT = 60, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+
 /obj/structure/ms13/platform_railings
 	name = "steel platform"
 	desc = "A durable industrial platform made of thick steel rods."
@@ -5,7 +8,6 @@
 	icon_state = "platrailings_full"
 	density = FALSE
 	anchored = TRUE
-	armor = list(BLUNT = 60, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
 	max_integrity = 200
 	layer = LATTICE_LAYER
 	plane = FLOOR_PLANE
