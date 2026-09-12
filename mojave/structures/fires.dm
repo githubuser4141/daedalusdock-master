@@ -103,7 +103,14 @@
 	fire_loop.stop()
 
 
+// Starting on fire immediately damages nearby objects (bonfire_burn() -> fire_act()) - deferred to
+// LateInitialize() since at Initialize() time a neighboring object may not have run its own Initialize()
+// yet, leaving its atom_integrity still unset and reading as already-destroyed on the first hit.
 /obj/structure/bonfire/ms13/campfire/prelit/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/bonfire/ms13/campfire/prelit/LateInitialize()
 	. = ..()
 	start_burning()
 	fire_loop.start()
@@ -166,7 +173,12 @@
 		else
 			return ..()
 
+// See campfire/prelit/Initialize() above for why this is deferred to LateInitialize().
 /obj/structure/bonfire/ms13/fire_barrel/prelit/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/bonfire/ms13/fire_barrel/prelit/LateInitialize()
 	. = ..()
 	start_burning()
 	fire_loop.start()

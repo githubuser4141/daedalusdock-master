@@ -222,7 +222,7 @@
 		return FALSE
 
 	if(user.attack_sound)
-		playsound(loc, user.attack_sound, 50, TRUE, TRUE)
+		playsound(loc, islist(user.attack_sound) ? pick(user.attack_sound) : user.attack_sound, 50, TRUE, TRUE)
 	user.do_attack_animation(src)
 	visible_message(span_danger("\The [user] [user.attack_verb_continuous] [src]!"), \
 					span_userdanger("\The [user] [user.attack_verb_continuous] you!"), null, COMBAT_MESSAGE_RANGE, user)
@@ -254,7 +254,7 @@
 		return FALSE
 
 	if(user.attack_sound)
-		playsound(src, user.attack_sound, 50, TRUE, TRUE)
+		playsound(src, islist(user.attack_sound) ? pick(user.attack_sound) : user.attack_sound, 50, TRUE, TRUE)
 
 
 	user.do_attack_animation(src)

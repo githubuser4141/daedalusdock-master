@@ -47,6 +47,7 @@ code/datums/components/food/edible.dm,
 code/controllers/subsystem/mapping.dm,
 code/datums/looping_sounds/_looping_sound.dm,
 code/game/objects/items.dm,
+code/modules/mob/living/living_defense.dm,
 
 
 
