@@ -153,6 +153,21 @@
 		log_world("map_config shuttles is not a list!")
 		return
 
+	// "particle_weather": {"Weather_Rain": true, "Weather_Snow": true} - see mojave/code/__DEFINES/
+	// maps.dm for the PARTICLEWEATHER_* keys and mojave/modules/outdoor_effects/code/controllers/
+	// subsystem/particle_weather.dm, which reads this list to decide which particle weather types
+	// are eligible to occur on this map. The particle_weather var itself is declared by that mojave
+	// module (monkey-patched onto /datum/map_config); this was the only piece missing to ever
+	// actually populate it from a map's .json.
+	if (islist(json["particle_weather"]))
+		var/list/L = json["particle_weather"]
+		for(var/key in L)
+			var/value = L[key]
+			particle_weather[key] = value
+	else if ("particle_weather" in json)
+		log_world("map_config particle_weather is not a list!")
+		return
+
 	traits = json["traits"]
 	// "traits": [{"Linkage": "Cross"}, {"Space Ruins": true}]
 	if (islist(traits))

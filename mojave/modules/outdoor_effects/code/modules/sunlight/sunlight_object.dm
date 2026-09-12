@@ -189,6 +189,17 @@ Sunlight System
 	else /* roofed, so turn off the lights */
 		TempState = SKY_BLOCKED
 
+	// get_ceiling_status() only finds a roof by walking up the z-stack looking for a turf placed
+	// directly above - that only exists for rooms actually mapped under another floor. A normal
+	// single-story MS13 house has nothing meaningful mapped on the z-level above its roof, so by
+	// that check alone it would register as exposed to weather despite clearly being indoors.
+	// Areas already carry a real, mapper-set outdoors flag (also used by the area lighting fix and
+	// the MS13 radiation storm's protect_indoors) - trust that over the z-stack guess whenever the
+	// area says this is indoor space.
+	var/area/our_area = get_area(src)
+	if(our_area && !our_area.outdoors)
+		roofStat["WEATHERPROOF"] = TRUE
+
 	/* if border or indoor, initialize. Set sunlight state if valid */
 	if(!outdoor_effect && (TempState <> SKY_BLOCKED || !roofStat["WEATHERPROOF"]))
 		outdoor_effect = new /atom/movable/outdoor_effect(src)
