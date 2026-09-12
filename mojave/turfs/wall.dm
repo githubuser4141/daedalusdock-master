@@ -5,7 +5,9 @@
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = list(SMOOTH_GROUP_MS13_WALL)
-	canSmoothWith= list(SMOOTH_GROUP_MS13_WALL)
+	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
+	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
+	canSmoothWith = list(SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WINDOW)
 	var/weldable = FALSE
 	var/girder_type
 	var/sheet_type
@@ -19,12 +21,6 @@
 
 /turf/closed/wall/ms13/ex_act()
 	return
-
-// TODO: the "wallening" frill overlay (mojave/code/modules/wallening-temp/frill.dm) doesn't render
-// correctly against MS13 wall junctions - disabled until it's actually fixed.
-/turf/closed/wall/ms13/Initialize(mapload)
-	frill_icon = null
-	. = ..()
 
 // MS13 walls set their own icon/name/desc per subtype and never touch DD's paint/materials system -
 // set_materials() (called unconditionally from the parent Initialize()) would otherwise overwrite that
@@ -259,7 +255,9 @@
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = list(SMOOTH_GROUP_MS13_WALL)
-	canSmoothWith= list(SMOOTH_GROUP_MS13_WALL)
+	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
+	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
+	canSmoothWith = list(SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WINDOW)
 
 /turf/closed/indestructible/ms13/comb
 	name = "comb wall"
@@ -270,7 +268,9 @@
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = list(SMOOTH_GROUP_MS13_WALL)
-	canSmoothWith= list(SMOOTH_GROUP_MS13_WALL)
+	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
+	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
+	canSmoothWith = list(SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WINDOW)
 
 // Vault Walls //
 

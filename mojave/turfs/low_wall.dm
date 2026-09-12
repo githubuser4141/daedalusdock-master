@@ -9,7 +9,7 @@
 	max_integrity = 1000
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = list(SMOOTH_GROUP_MS13_LOW_WALL)
-	canSmoothWith= list(SMOOTH_GROUP_MS13_LOW_WALL)
+	canSmoothWith = list(SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WALL)
 
 /obj/structure/table/ms13/low_wall/metal
 	name = "low metal wall"
