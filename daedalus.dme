@@ -5285,6 +5285,7 @@
 #include "mojave\code\modules\jobs\job_types\wasteland\hubologist.dm"
 #include "mojave\code\modules\jobs\job_types\wasteland\nomad.dm"
 #include "mojave\code\modules\jobs\job_types\wasteland\wastelander.dm"
+#include "mojave\code\modules\locks\container_locks.dm"
 #include "mojave\code\modules\locks\keys.dm"
 #include "mojave\code\modules\locks\lockpicking.dm"
 #include "mojave\code\modules\locks\lockpicks.dm"

@@ -8,6 +8,8 @@
 	max_integrity = 300
 	anchored = TRUE
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_hollow_2.wav'
+	ms13_flags_1 = LOCKABLE_1
+	can_have_lock = TRUE
 
 /obj/structure/closet/crate/ms13/verb_toggleopen()
 	return

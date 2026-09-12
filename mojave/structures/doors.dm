@@ -49,12 +49,13 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		add_overlay(image(icon,icon_state="[frametype]_frame_vertical_overlay", layer = ABOVE_ALL_MOB_LAYER))
 
 	if(mapload)
-		roll_for_roundstart_lock()
+		. = roll_for_roundstart_lock() || .
 
 /// Chance for a mapped-in door to start locked with a lockpickable difficulty, and a matching key
-/// dropped somewhere nearby (not inside a wall) as an alternative to picking it.
+/// placed somewhere nearby as an alternative to picking it. Key placement itself happens in
+/// LateInitialize (see place_roundstart_key_nearby() in keys.dm) since it can land on another mob
+/// or inside another structure's storage, and those need to already exist.
 #define DOOR_ROUNDSTART_LOCK_CHANCE 20
-#define DOOR_KEY_SEARCH_RADIUS 10
 /obj/machinery/door/unpowered/ms13/proc/roll_for_roundstart_lock()
 	if(!(ms13_flags_1 & LOCKABLE_1))
 		return
@@ -69,15 +70,15 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	lock = new_lock
 	AddElement(/datum/element/lockpickable, difficulty = new_lock.lock_difficulty)
 	update_appearance()
+	return INITIALIZE_HINT_LATELOAD
 
-	var/list/turf/open/candidates = list()
-	for(var/turf/open/candidate in range(DOOR_KEY_SEARCH_RADIUS, src))
-		candidates += candidate
-	if(!candidates.len)
+/obj/machinery/door/unpowered/ms13/LateInitialize()
+	. = ..()
+	if(!lock)
 		return
-
-	var/obj/item/ms13/key/door/new_key = new(pick(candidates))
+	var/obj/item/ms13/key/door/new_key = new
 	new_key.matching_door = WEAKREF(src)
+	place_roundstart_key_nearby(new_key, src)
 
 /obj/machinery/door/unpowered/ms13/update_overlays()
 	. = ..()
@@ -222,6 +223,15 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	return TRUE
 
 /obj/machinery/door/unpowered/ms13/attack_hand(mob/living/M)
+	if(M.combat_mode)
+		// Locks (either kind) only gate walking through the door, not taking a swing at it -
+		// smashing a locked door down bare-handed should always be possible, same as it already is
+		// with a weapon via attackby() below. ponytail: flat damage, not scaled to the attacker's
+		// actual unarmed-damage stats like a real punch would be.
+		if(!open)
+			add_fingerprint(M)
+			take_damage(rand(3, 7), BRUTE, BLUNT, TRUE)
+			return TRUE
 	if(locked)
 		to_chat(M, "<span class='warning'> The [name] is locked.</span>")
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)

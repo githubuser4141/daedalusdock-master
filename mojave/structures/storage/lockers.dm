@@ -6,6 +6,8 @@
 	material_drop = /obj/item/stack/sheet/ms13/scrap
 	door_anim_time = 0
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_sheet_4.wav'
+	ms13_flags_1 = LOCKABLE_1
+	can_have_lock = TRUE
 
 // reset_grid_inventory() doesn't exist in DD (the grid-layout storage UI it fed was never ported here either - see the
 // commented-out grid_height/grid_width vars throughout mojave/) - the Initialize() override that only called it is gone too.

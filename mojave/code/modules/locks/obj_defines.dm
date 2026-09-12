@@ -14,6 +14,10 @@
 	var/can_have_lock = FALSE
 	//moves the lock to the obj so it can be taken off etc.
 	var/obj/item/ms13/lock/lock
+	//non-null means any key sharing this exact string unlocks/locks this obj too - lets one key
+	//cover a whole group of containers instead of needing a separate key per container (doors keep
+	//their own separate 1:1 matching_door WEAKREF system - see mojave/structures/doors.dm)
+	var/lock_group
 
 //for storage items that open when lockpicked
 /obj/proc/unlock_storage()
@@ -32,6 +36,24 @@
 
 //for item interaction overrides on all general objects for placing locked items
 /obj/attackby(obj/item/I, mob/living/user, params)
+	if(lock_group && istype(I, /obj/item/ms13/key))
+		var/obj/item/ms13/key/key = I
+		if(key.lock_group == lock_group)
+			if(lock_locked)
+				lock_locked = FALSE
+				if(lock)
+					lock.item_lock_locked = FALSE
+					lock.lock_open = TRUE
+				RemoveElement(/datum/element/lockpickable)
+				to_chat(user, span_notice("You unlock [src] with [key]."))
+				playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
+			else if(lock)
+				lock.lock_open = FALSE
+				lock.item_lock_locked = TRUE
+				AddElement(/datum/element/lockpickable, lock.lock_difficulty)
+				to_chat(user, span_notice("You lock [src] with [key]."))
+				playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
+			return
 	if(I.item_flags & LOCKING_ITEM && ms13_flags_1 & LOCKABLE_1)
 		if(lock_locked)
 			to_chat(user, span_warning("The [name] already has a lock."))
