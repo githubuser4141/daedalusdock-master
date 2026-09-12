@@ -5174,6 +5174,7 @@
 #include "mojave\code\datums\wielding\twohand_required.dm"
 #include "mojave\code\datums\wielding\twohanded.dm"
 #include "mojave\code\datums\wielding\unwieldable.dm"
+#include "mojave\code\datums\weather\ms13_weather.dm"
 #include "mojave\code\game\atom.dm"
 #include "mojave\code\game\atom_defines.dm"
 #include "mojave\code\game\atoms_examine.dm"
