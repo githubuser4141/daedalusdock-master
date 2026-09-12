@@ -7,8 +7,8 @@
 	icon_state = "target_indicator-0"
 	base_icon_state = "target_indicator"
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_TARGET_INDICATOR)
-	canSmoothWith = list(SMOOTH_GROUP_TARGET_INDICATOR)
+	smoothing_groups = SMOOTH_GROUP_TARGET_INDICATOR
+	canSmoothWith = SMOOTH_GROUP_TARGET_INDICATOR
 	layer = FLY_LAYER
 	plane = ABOVE_GAME_PLANE
 	duration = 5 //0.5 SECONDS

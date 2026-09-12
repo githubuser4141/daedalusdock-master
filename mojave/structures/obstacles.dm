@@ -739,8 +739,8 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	density = TRUE
 	anchored = TRUE
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_SANDBAGS)
-	canSmoothWith = list(SMOOTH_GROUP_MS13_SANDBAGS)
+	smoothing_groups = SMOOTH_GROUP_MS13_SANDBAGS
+	canSmoothWith = SMOOTH_GROUP_MS13_SANDBAGS
 	max_integrity = 250
 	//projectile_passchance = 35
 
@@ -1044,8 +1044,8 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	density = FALSE
 	anchored = TRUE
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_BONEPILE)
-	canSmoothWith = list(SMOOTH_GROUP_MS13_BONEPILE, SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL)
+	smoothing_groups = SMOOTH_GROUP_MS13_BONEPILE
+	canSmoothWith = SMOOTH_GROUP_MS13_BONEPILE + SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_LOW_WALL
 
 /obj/structure/ms13/bonepile/Initialize(mapload)
 	. = ..()

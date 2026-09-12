@@ -6,8 +6,8 @@
 	icon_state = "wall-0"
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_MINERALS)
-	canSmoothWith= list(SMOOTH_GROUP_MS13_MINERALS)
+	smoothing_groups = SMOOTH_GROUP_MS13_MINERALS
+	canSmoothWith = SMOOTH_GROUP_MS13_MINERALS
 
 /turf/closed/indestructible/rock/ms13/drought
 	icon = 'mojave/icons/turf/walls/rockdrought.dmi'

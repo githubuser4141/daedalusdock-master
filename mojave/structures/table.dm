@@ -19,8 +19,8 @@
 	icon_state = "table-0"
 	base_icon_state = "table"
 	max_integrity = 225
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TABLE_METAL) //Don't smooth with SMOOTH_GROUP_TABLES
-	canSmoothWith = list(SMOOTH_GROUP_MS13_TABLE_METAL)
+	smoothing_groups = SMOOTH_GROUP_MS13_TABLE_METAL //Don't smooth with SMOOTH_GROUP_TABLES
+	canSmoothWith = SMOOTH_GROUP_MS13_TABLE_METAL
 	frame = /obj/item/stack/sheet/ms13/scrap
 
 /obj/structure/table/ms13/metal/alt
@@ -35,8 +35,8 @@
 /obj/structure/table/ms13/metal/small
 	desc = "A small, low down metal table. God only knows why these were sought out after in the old days."
 	icon = 'mojave/icons/structure/smooth_structures/tables/table_metal_small.dmi'
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TABLE_SMALL)
-	canSmoothWith = list(SMOOTH_GROUP_MS13_TABLE_SMALL)
+	smoothing_groups = SMOOTH_GROUP_MS13_TABLE_SMALL
+	canSmoothWith = SMOOTH_GROUP_MS13_TABLE_SMALL
 
 /obj/structure/table/ms13/metal/heavy
 	name = "heavy-duty metal table"
@@ -55,8 +55,8 @@
 	icon_state = "table-0"
 	base_icon_state = "table"
 	max_integrity = 150
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TABLE_WOOD)
-	canSmoothWith = list(SMOOTH_GROUP_MS13_TABLE_WOOD)
+	smoothing_groups = SMOOTH_GROUP_MS13_TABLE_WOOD
+	canSmoothWith = SMOOTH_GROUP_MS13_TABLE_WOOD
 	frame = /obj/item/stack/sheet/ms13/wood/scrap_wood
 	framestack = /obj/item/stack/sheet/ms13/wood/scrap_wood
 	framestackamount = 2
@@ -94,8 +94,8 @@
 	desc = "A crude table made of quality metal. Not too bad, as far as post apocalyptic furniture goes."
 	icon = 'mojave/icons/structure/smooth_structures/tables/table_metal_built.dmi'
 	max_integrity = 140
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TABLE_PLAYER) //Don't smooth with SMOOTH_GROUP_TABLES
-	canSmoothWith = list(SMOOTH_GROUP_MS13_TABLE_PLAYER)
+	smoothing_groups = SMOOTH_GROUP_MS13_TABLE_PLAYER //Don't smooth with SMOOTH_GROUP_TABLES
+	canSmoothWith = SMOOTH_GROUP_MS13_TABLE_PLAYER
 
 /obj/structure/table/ms13/metal/constructed/cobbled
 	name = "crude scrap metal table"
@@ -108,8 +108,8 @@
 	desc = "A crude wood table of decent quality. It probably won't fall apart any time soon."
 	icon = 'mojave/icons/structure/smooth_structures/tables/table_wood_built.dmi'
 	max_integrity = 120
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TABLE_PLAYER)
-	canSmoothWith = list(SMOOTH_GROUP_MS13_TABLE_PLAYER)
+	smoothing_groups = SMOOTH_GROUP_MS13_TABLE_PLAYER
+	canSmoothWith = SMOOTH_GROUP_MS13_TABLE_PLAYER
 
 /obj/structure/table/ms13/wood/constructed/cobbled
 	name = "crude scrap wood table"

@@ -70,7 +70,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	anchored = TRUE
 	max_integrity = 300
 	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN | BLOCK_Z_IN_UP
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 	layer = TURF_LAYER
 	plane = FLOOR_PLANE
 
@@ -222,7 +222,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	icon = 'mojave/icons/turf/floors.dmi'
 	icon_state = "floor"
 	floor_tile = /obj/item/stack/tile/ms13
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 	initial_gas = OPENTURF_DEFAULT_ATMOS
 	var/has_alternate_states = FALSE
 	var/alternate_states
@@ -324,7 +324,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 	icon_state = "steel_tiles"
 	desc = "Metal flooring."
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 
 /turf/open/floor/ms13/metal/plate
 	icon_state = "steel_solid"
@@ -352,7 +352,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 /turf/open/floor/ms13/concrete
 	icon_state = "concrete_big"
 	desc = "Concrete slabs."
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 	has_alternate_states = TRUE
 	alternate_states = 1
 
@@ -403,8 +403,8 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	base_icon_state = "floor"
 	desc = "Hard concrete sewer flooring, built to last."
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
-	canSmoothWith = list(SMOOTH_GROUP_CATWALK, SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_CATWALK, SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
+	canSmoothWith = SMOOTH_GROUP_CATWALK + SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_TILE
 
 ////Ceramic Floors////
 
@@ -414,7 +414,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	has_alternate_states = TRUE
 	alternate_states = 2
 	footstep = FOOTSTEP_FLOOR
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 
 /turf/open/floor/ms13/ceramic/ornate
 	icon_state = "ornate"
@@ -432,7 +432,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	has_alternate_states = TRUE
 	alternate_states = 8
 	footstep = FOOTSTEP_FLOOR
-	smoothing_groups = list(SMOOTH_GROUP_MS13_TILE)
+	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 
 ////Pipe Floors////
 

@@ -4,10 +4,10 @@
 	icon_state = "wall-0"
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_WALL)
+	smoothing_groups = SMOOTH_GROUP_MS13_WALL
 	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
 	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
-	canSmoothWith = list(SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WINDOW)
+	canSmoothWith = SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WINDOW
 	var/weldable = FALSE
 	var/girder_type
 	var/sheet_type
@@ -254,10 +254,10 @@
 	icon_state = "wall-0"
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_WALL)
+	smoothing_groups = SMOOTH_GROUP_MS13_WALL
 	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
 	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
-	canSmoothWith = list(SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WINDOW)
+	canSmoothWith = SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WINDOW
 
 /turf/closed/indestructible/ms13/comb
 	name = "comb wall"
@@ -267,10 +267,10 @@
 	icon_state = "wall-0"
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
-	smoothing_groups = list(SMOOTH_GROUP_MS13_WALL)
+	smoothing_groups = SMOOTH_GROUP_MS13_WALL
 	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
 	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
-	canSmoothWith = list(SMOOTH_GROUP_MS13_WALL, SMOOTH_GROUP_MS13_LOW_WALL, SMOOTH_GROUP_MS13_WINDOW)
+	canSmoothWith = SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WINDOW
 
 // Vault Walls //
 
