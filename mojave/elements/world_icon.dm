@@ -37,7 +37,14 @@
 	src.inventory_icon_state = inventory_icon_state
 	RegisterSignal(target, COMSIG_ATOM_UPDATE_ICON, PROC_REF(update_icon))
 	RegisterSignal(target, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(update_icon_state))
-	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_STORAGE_ENTERED, COMSIG_ITEM_UNEQUIPPED, COMSIG_STORAGE_EXITED), PROC_REF(inventory_updated))
+	// COMSIG_STORAGE_ENTERED/EXITED are defined but never actually sent anywhere in the codebase -
+	// the real signals DD fires when an item enters/exits a bag are COMSIG_ITEM_STORED/UNSTORED
+	// (sent with the item itself as src, from on_enter_storage()/on_exit_storage() - loc is already
+	// updated by then). Using the dead signal names meant the icon only ever got recalculated on
+	// equip/unequip, never on bag insertion/removal - it'd show correctly on initial mapload/spawn
+	// (loc already right when Attach() first runs update_appearance) and then just stay stuck at
+	// whatever it last was after that.
+	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED), PROC_REF(inventory_updated))
 	target.update_appearance(UPDATE_ICON)
 	target.update_appearance(UPDATE_ICON_STATE)
 
@@ -45,7 +52,7 @@
 	. = ..()
 	UnregisterSignal(source, COMSIG_ATOM_UPDATE_ICON)
 	UnregisterSignal(source, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(update_icon_state))
-	UnregisterSignal(source, list(COMSIG_ITEM_EQUIPPED, COMSIG_STORAGE_ENTERED, COMSIG_ITEM_UNEQUIPPED, COMSIG_STORAGE_EXITED))
+	UnregisterSignal(source, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED))
 	source.update_appearance(UPDATE_ICON)
 	source.update_appearance(UPDATE_ICON_STATE)
 

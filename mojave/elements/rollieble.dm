@@ -23,11 +23,13 @@
 	RegisterSignal(target, COMSIG_PARENT_ATTACKBY, PROC_REF(start_filling_papers))
 	RegisterSignal(target, COMSIG_ITEM_ATTACK_SELF, PROC_REF(start_rolling_that_shit))
 	RegisterSignal(target, COMSIG_ITEM_ATTACK_SELF_SECONDARY, PROC_REF(start_removing_that_shit))
-	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_STORAGE_ENTERED, COMSIG_ITEM_UNEQUIPPED, COMSIG_STORAGE_EXITED), PROC_REF(update_overlays))
+	// COMSIG_STORAGE_ENTERED/EXITED are defined but never sent anywhere in the codebase - see the
+	// same fix/comment in mojave/elements/world_icon.dm for the real signal names.
+	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED), PROC_REF(update_overlays))
 
 /datum/element/rollable/Detach(datum/target)
 	. = ..()
-	UnregisterSignal(target, list(COMSIG_PARENT_ATTACKBY, COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_ATTACK_HAND_SECONDARY, COMSIG_ITEM_EQUIPPED, COMSIG_STORAGE_ENTERED, COMSIG_ITEM_UNEQUIPPED, COMSIG_STORAGE_EXITED))
+	UnregisterSignal(target, list(COMSIG_PARENT_ATTACKBY, COMSIG_ATOM_ATTACK_HAND, COMSIG_ATOM_ATTACK_HAND_SECONDARY, COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED))
 
 /datum/element/rollable/proc/start_filling_papers(atom/target, obj/item/filling, mob/living/user)
 	SIGNAL_HANDLER
