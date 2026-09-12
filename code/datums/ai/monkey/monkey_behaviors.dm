@@ -141,7 +141,9 @@
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
 
 	living_pawn.set_combat_mode(TRUE)
-	if(QDELETED(target) || !strategy.can_attack(living_pawn, target)) // Check if they're a valid target
+	// AI EDIT: vision_range wasn't passed here either (see targetting.dm) - movement already
+	// required reach before this behavior runs, so pass an adjacency-sized range.
+	if(QDELETED(target) || !strategy.can_attack(living_pawn, target, 1)) // Check if they're a valid target
 		if(target)
 			try_lose_anger(delta_time, controller, target, MONKEY_HATRED_REDUCTION_FAILATTACK_PROB)
 		living_pawn.set_combat_mode(FALSE)

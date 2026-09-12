@@ -52,7 +52,7 @@
 	if(ismecha(the_target)) //Targeting vs mechas
 		var/obj/vehicle/sealed/mecha/M = the_target
 		for(var/occupant in M.occupants)
-			if(can_attack(pawn, occupant)) //Can we attack any of the occupants?
+			if(can_attack(pawn, occupant, vision_range)) //Can we attack any of the occupants?
 				return TRUE
 
 	if(istype(the_target, /obj/machinery/porta_turret)) //Cringe turret! kill it!

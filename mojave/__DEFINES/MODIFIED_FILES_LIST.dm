@@ -53,7 +53,10 @@ code/modules/hydroponics/plant_gene_holder.dm,
 code/modules/hydroponics/hydroponics_tray/hydrotray_interaction.dm,
 code/modules/hydroponics/plant.dm,
 code/controllers/subsystem/icon_smooth.dm,
-
+code/datums/ai/basic_mobs/basic_ai_behaviors/targetting.dm,
+code/datums/ai/basic_mobs/basic_ai_behaviors/basic_attacking.dm,
+code/datums/ai/monkey/monkey_behaviors.dm,
+code/datums/ai/targeting_strategies/targeting_strategy_generic.dm,
 
 
 

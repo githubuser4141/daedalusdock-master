@@ -26,7 +26,11 @@
 	var/list/filtered_targets = list()
 
 	for(var/atom/pot_target in potential_targets)
-		if(targeting_strategy.can_attack(living_mob, pot_target))//Can we attack it?
+		// AI EDIT: vision_range was never passed here, so can_attack() -> can_see() compared distance
+		// against a null length (DM coerces null to 0 in numeric comparisons), meaning every basic
+		// mob could only ever "see" a target already standing on its own tile - it never actually
+		// approached anything, only reacted once already hit/adjacent.
+		if(targeting_strategy.can_attack(living_mob, pot_target, vision_range))//Can we attack it?
 			filtered_targets += pot_target
 			continue
 

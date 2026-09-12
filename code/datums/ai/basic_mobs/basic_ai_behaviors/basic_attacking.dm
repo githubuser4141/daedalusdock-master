@@ -18,7 +18,10 @@
 	var/atom/target = controller.blackboard[target_key]
 	var/datum/targeting_strategy/targeting_strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
 
-	if(!targeting_strategy.can_attack(basic_mob, target))
+	// AI EDIT: vision_range wasn't passed here either (see the same fix/comment in targetting.dm) -
+	// movement already required reach before this behavior runs, so pass an adjacency-sized range
+	// rather than leaving it null (which get_dist() compares as 0, always failing).
+	if(!targeting_strategy.can_attack(basic_mob, target, 1))
 		return BEHAVIOR_PERFORM_COOLDOWN | BEHAVIOR_PERFORM_FAILURE
 
 	var/hiding_target = targeting_strategy.find_hidden_mobs(basic_mob, target) //If this is valid, theyre hidden in something!
@@ -53,7 +56,9 @@
 	var/datum/targeting_strategy/targeting_strategy = GET_TARGETING_STRATEGY(controller.blackboard[targeting_strategy_key])
 
 
-	if(!targeting_strategy.can_attack(basic_mob, target))
+	// AI EDIT: vision_range wasn't passed here (see targetting.dm) - use this behavior's own
+	// required_distance, same value the explicit can_see() check just below already uses.
+	if(!targeting_strategy.can_attack(basic_mob, target, required_distance))
 		return BEHAVIOR_PERFORM_INSTANT | BEHAVIOR_PERFORM_FAILURE
 
 	var/hiding_target = targeting_strategy.find_hidden_mobs(basic_mob, target) //If this is valid, theyre hidden in something!
