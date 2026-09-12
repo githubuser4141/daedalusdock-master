@@ -36,18 +36,21 @@
 	icon_state = "farmhouse"
 	atmosphere_sound = BUILDING_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/powerplant
 	name = "Power Plant"
 	icon_state = "powerplant"
 	atmosphere_sound = INDUSTRIAL_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/factory
 	name = "Factory"
 	icon_state = "factory"
 	atmosphere_sound = INDUSTRIAL_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/army_base
 	name = "Army Base"
@@ -58,6 +61,7 @@
 	icon_state = "army_base_building"
 	atmosphere_sound = BUILDING_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/underground/vault_atrium_upper
 	name = "Vault atrium upper"
@@ -93,6 +97,7 @@
 	name = "Supermarket Basement"
 	icon_state = "supermarket_basement"
 	atmosphere_sound = BUNKER_ATMOSPHERE
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/underground/enclave_base
 	name = "Enclave Base"
@@ -121,12 +126,14 @@
 	icon_state = "snowcrest_building"
 	atmosphere_sound = BUILDING_ATMOSPHERE
 	dissipation_rate = 0.18
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/snowcrest/republic
 	name = "Snowcrest NCR building"
 	icon_state = "snowcrest_ncr"
 	atmosphere_sound = INDUSTRIAL_ATMOSPHERE
 	dissipation_rate = 0.18
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 // Generic Underground Areas //
 
@@ -135,6 +142,10 @@
 	outdoors = FALSE
 	atmosphere_sound = CAVE_ATMOSPHERE
 	dissipation_rate = 2 //them gotdang firebarrels
+	// Enclosed spaces shouldn't inherit the base /area/ms13's fullbright outdoor daylight - they
+	// should actually go dark away from a real light source. Covers every nested underground area
+	// (vaults, bunkers, sewers, subway, tunnels, mountain/cave, bos, military_crypt) in one place.
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/underground/mountain
 	name = "mountain"
@@ -222,6 +233,7 @@
 	name = "NCR building"
 	icon_state = "NCR_building"
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/underground/bos
 	name = "BoS"
@@ -237,12 +249,14 @@
 	name = "Raider building"
 	icon_state = "raiders_building"
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/tribal_abandoned
 	name = "abandoned Tribal building"
 	icon_state = "town"
 	atmosphere_sound = BUILDING_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/underground/military_crypt
 	name = "Abandoned Outpost Bunker"
@@ -271,6 +285,7 @@
 	outdoors = FALSE
 	atmosphere_sound = BUILDING_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 
 /area/ms13/drylanders
@@ -283,6 +298,7 @@
 	outdoors = FALSE
 	atmosphere_sound = BUILDING_ATMOSPHERE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/goldman
 	name = "Goldman Outpost"
@@ -299,6 +315,7 @@
 	icon_state = "goldmanbase"
 	outdoors = FALSE
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/water_baron
 	name = "The Barony"
@@ -310,13 +327,16 @@
 	name = "The Barony building"
 	icon_state = "baronyinterior"
 	dissipation_rate = 0.18 //not much escapes enclosed rooms
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 // Mall/Eagle Lakes Areas //
 
+// The whole mall tree is indoor retail space - set once here, inherited by every /mall/* shop below.
 /area/ms13/mall
 	name = "Mall"
 	icon_state = "mall"
 	atmosphere_sound = BUILDING_ATMOSPHERE
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/mall/convenience
 	name = "Convenience Store"
@@ -386,9 +406,11 @@
 	icon_state = "combatarena_building"
 	outdoors = FALSE
 	atmosphere_sound = BUILDING_ATMOSPHERE
+	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/combattest/tunnels
 	name = "combat arena tunnel"
 	icon_state = "combatarena_tunnels"
 	outdoors = FALSE
 	atmosphere_sound = CAVE_ATMOSPHERE
+	area_lighting = AREA_LIGHTING_DYNAMIC
