@@ -480,9 +480,12 @@
 		if(mult < 0 && abs(ricochetAngle) < GLOB.bulletStandardFragmentAngles["[bulletTipType]"][2] && abs(ricochetAngle) > GLOB.bulletStandardFragmentAngles["[bulletTipType]"][1] && canFragment)
 			impacted[A] = TRUE
 			hitted.setBIntegrity(max(hitted.getBIntegrity() - calculatedDamage * clamp(armorDiff / 200, 0, 1), 0))
-			// AI EDIT: BULLET_FRAGMENT_SPAWNCOUNT (8) / BULLET_FRAGMENT_MAXANGLEVARIATION (10) - mojave
-			// defines, hardcoded here since mojave loads after code/ in daedalus.dme.
-			fragmentTowards(A, 8, abs(ricochetAngle) > 60 ? (ricochetAngle + orig + abs(ricochetAngle) + 90) : ricochetAngle + orig - sign(wallHitAngle) * 3, 10, abs(ricochetAngle) > 60)
+			// AI EDIT: fragment count was a flat 8 (BULLET_FRAGMENT_SPAWNCOUNT) regardless of what round
+			// fired - a .22 round fragmented into as many pieces as a .50 BMG. Now scales with the round's
+			// own bullet_mass (mojave/__DEFINES/bullet_math.dm), clamped 1-8 same as that var's own range.
+			// BULLET_FRAGMENT_MAXANGLEVARIATION (10) - mojave define, hardcoded here since mojave loads
+			// after code/ in daedalus.dme.
+			fragmentTowards(A, clamp(bullet_mass, 1, 8), abs(ricochetAngle) > 60 ? (ricochetAngle + orig + abs(ricochetAngle) + 90) : ricochetAngle + orig - sign(wallHitAngle) * 3, 10, abs(ricochetAngle) > 60)
 			qdel(src)
 			return TRUE
 		// low relative penetration but not enough to ricochet or fragment - let it fall through to the

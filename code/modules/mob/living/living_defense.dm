@@ -72,7 +72,10 @@
 				modifier = max(G.current_grab.point_blank_mult, modifier)
 		var/damage = P.damage * modifier
 
-		apply_damage(damage, P.damage_type, def_zone, armor_check, sharpness = P.sharpness, attack_direction = attack_direction)
+		// AI EDIT: armor_penetration wasn't passed through at all, so nothing downstream of here (e.g.
+		// human power armor components fully absorbing a hit up to their subarmor rating) could ever
+		// tell a heavily-AP projectile apart from a completely unarmored one - see human_armor.dm.
+		apply_damage(damage, P.damage_type, def_zone, armor_check, sharpness = P.sharpness, attack_direction = attack_direction, armor_penetration = P.armor_penetration)
 		apply_effects(P.stun, P.knockdown, P.unconscious, P.slur, P.stutter, P.eyeblur, P.drowsy, armor_check, P.stamina, P.jitter, P.paralyze, P.immobilize)
 		if(P.disorient_length)
 			var/stamina = P.disorient_damage * ((100-armor_check)/100)

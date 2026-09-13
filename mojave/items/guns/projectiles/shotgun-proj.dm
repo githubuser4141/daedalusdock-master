@@ -4,6 +4,9 @@
 	name = "base mojave sun shotgun pellet"
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
 	embedding = null
+	// a single shell fires several of these at once - letting each pellet independently trigger its own
+	// fragmentation event would multiply into a huge burst of extra projectiles from one shot
+	canFragment = FALSE
 
 //12 gauge
 TYPEINFO_DEF(/obj/projectile/bullet/pellet/ms13/buckshot)
@@ -37,3 +40,4 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/slug)
 	name = "12g slug"
 	damage = 70
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
+	bullet_mass = 3

@@ -6,6 +6,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/m44)
 	icon_state = "medium_bullet"
 	damage = MAGNUM_DAMAGE
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
+	bullet_mass = 3
 
 /obj/projectile/bullet/ms13/m44/junk
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
@@ -28,6 +29,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c4570)
 	icon_state = "medium_bullet"
 	damage = BIG_RIFLE_DAMAGE
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG
+	bullet_mass = 4
 
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/c4570/ap)
 	default_armor = HIGH_CAL_AP_RIFLE
@@ -46,6 +48,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/a357)
 	icon_state = "medium_bullet"
 	damage = MAGNUM_DAMAGE - 10
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
+	bullet_mass = 2
 
 /obj/projectile/bullet/ms13/a357/junk
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL

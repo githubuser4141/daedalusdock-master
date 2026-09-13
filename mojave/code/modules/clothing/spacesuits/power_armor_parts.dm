@@ -54,6 +54,12 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 			modules[radial_result] = null
 			if(PA.actions_modules)
 				actions_modules.Remove(PA.actions_modules)
+			// AI EDIT: this is the actual common way a module leaves a part (screwdriver radial menu on
+			// an already-installed part) - removed_from_pa() previously only fired when the whole PART
+			// was detached from the suit at a jack (power_armor.dm), so a module swapped out this way
+			// never got a teardown hook at all.
+			PA.part_pa = null
+			PA.removed_from_pa()
 			to_chat(user, span_notice("You successfully uninstall \the [I] into [src]."))
 		return
 
@@ -70,6 +76,11 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 			if(module.actions_modules)
 				LAZYINITLIST(actions_modules)
 				actions_modules |= module.actions_modules
+			// AI EDIT: part_pa was declared (power_armor_modules.dm) but never actually assigned
+			// anywhere, and added_to_pa() was never called from this, the actual common install path -
+			// see the matching removed_from_pa() note above.
+			module.part_pa = src
+			module.added_to_pa()
 			to_chat(user, span_notice("You successfully install \the [module] into [src]."))
 		return
 

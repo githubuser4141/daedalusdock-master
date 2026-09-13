@@ -405,6 +405,10 @@ TYPEINFO_DEF(/obj/projectile)
 	var/bulletArmorType = PUNCTURE
 	var/canRicochet = TRUE
 	var/canFragment = TRUE
+	/// How physically large/heavy this round is, 1-8 - directly the fragment count on a fragmenting hit (see
+	/// the fragmentTowards() call in projectile.dm's Impact()). Deliberately separate from armor_penetration:
+	/// an AP round trades size for penetration, so this can't be inferred from the round's own armor rating.
+	var/bullet_mass = 3
 
 /// The bullet's own toughness against deforming/fragmenting on impact - shared by the mob overpenetration
 /// system (bullet_penetration.dm) and wall overpenetration (wall_integrity.dm) so the same round behaves

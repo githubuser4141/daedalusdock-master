@@ -7,6 +7,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762)
 	name = "7.62 bullet"
 	icon_state = "bigroilfe_bullet"
 	damage = 70
+	bullet_mass = 4
 
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/a762/junk)
 	default_armor = HP_RIFLE
@@ -41,6 +42,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/a308)
 	icon_state = "bigroilfe_bullet"
 	damage = 80
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE
+	bullet_mass = 5
 
 /obj/projectile/bullet/ms13/a308/junk
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SMG
@@ -72,6 +74,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/a556)
 	icon_state = "medium_bullet"
 	damage = 50
 	bulletTipType = BULLET_SHARP
+	bullet_mass = 3
 
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
 
@@ -104,6 +107,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/a50MG)
 	damage = 150
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE
 	bulletTipType = BULLET_SHARP
+	bullet_mass = 8
 
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/a50MG/ap)
 	default_armor = ANTI_MATERIEL
@@ -122,3 +126,5 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/gauss)
 	damage = 200
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN
 	bulletTipType = BULLET_ULTRASHARP
+	// physically a tiny 2mm flechette despite the damage - mass is about size, not power
+	bullet_mass = 1

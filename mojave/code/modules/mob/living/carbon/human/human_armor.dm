@@ -2,10 +2,12 @@
  * While wearing power armor, BRUTE damage to a zone with an intact component routes entirely to
  * that component instead of the wearer: subarmor absorbs part of the hit, the component's own
  * take_damage() eats the rest (using its own subarmor/integrity), and the wearer takes 0. Once a
- * zone's component is missing or destroyed it no longer intercepts anything, and that hit skips
- * subarmor entirely (ignore_subarmor = TRUE) rather than half-protecting through a broken part.
+ * zone's component is missing or destroyed - or the hit's own armor_penetration meets or exceeds
+ * that zone's total subarmor rating for the relevant damage type - it no longer intercepts
+ * anything, and that hit skips subarmor entirely (ignore_subarmor = TRUE) rather than
+ * half-protecting through a part that was either broken or punched clean through.
  */
-/mob/living/carbon/human/apply_damage(damage = 0, damagetype = BRUTE, def_zone = null, blocked = 0, forced = FALSE, spread_damage = FALSE, sharpness = NONE, attack_direction = null, obj/item/attacking_item = null, ignore_subarmor = FALSE)
+/mob/living/carbon/human/apply_damage(damage = 0, damagetype = BRUTE, def_zone = null, blocked = 0, forced = FALSE, spread_damage = FALSE, sharpness = NONE, attack_direction = null, obj/item/attacking_item = null, ignore_subarmor = FALSE, armor_penetration = 0)
 	blocked += physiology?.damage_resistance // DD's real human apply_damage() did this - see damage_procs.dm
 	if(!forced && damagetype == BRUTE && !ignore_subarmor && istype(wear_suit, /obj/item/clothing/suit/space/hardsuit/ms13/power_armor))
 		var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : get_bodypart(deprecise_zone(def_zone))
@@ -20,14 +22,20 @@
 					subarmor_flag = PIERCING
 				else if(sharpness & SHARP_EDGED)
 					subarmor_flag = CUTTING
-				var/routed_damage = max(damage * 0.2, damage - (getsubarmor(hit_part, subarmor_flag) || 0))
-				// AI EDIT: no damage_flag here on purpose - take_damage() internally re-runs
-				// run_atom_subarmor() using PA_part's own subarmor, which is already folded into
-				// getsubarmor() above (checksubarmor() adds the part's rating on top of the suit's).
-				// Passing subarmor_flag through double-applies the same reduction twice, making the
-				// component nearly unbreakable in practice.
-				PA_part.take_damage(routed_damage, damagetype)
-				return 0
+				var/zone_subarmor = getsubarmor(hit_part, subarmor_flag) || 0
+				// melee weapons carry their own armor_penetration on the item; projectiles have
+				// nowhere else to put it since /obj/projectile isn't an /obj/item, so bullet_act()
+				// passes theirs through the armor_penetration arg instead - see living_defense.dm.
+				var/incoming_ap = max(armor_penetration, attacking_item?.armor_penetration || 0)
+				if(incoming_ap < zone_subarmor)
+					var/routed_damage = max(damage * 0.2, damage - zone_subarmor)
+					// AI EDIT: no damage_flag here on purpose - take_damage() internally re-runs
+					// run_atom_subarmor() using PA_part's own subarmor, which is already folded into
+					// getsubarmor() above (checksubarmor() adds the part's rating on top of the suit's).
+					// Passing subarmor_flag through double-applies the same reduction twice, making the
+					// component nearly unbreakable in practice.
+					PA_part.take_damage(routed_damage, damagetype)
+					return 0
 			return ..(damage, damagetype, def_zone, blocked, forced, spread_damage, sharpness, attack_direction, attacking_item, ignore_subarmor = TRUE)
 	return ..()
 

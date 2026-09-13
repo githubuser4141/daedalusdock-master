@@ -6,6 +6,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c45)
 	icon_state = "merehandgun_bullet"
 	damage = MAGNUM_DAMAGE
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
+	bullet_mass = 2
 
 /obj/projectile/bullet/ms13/c45/junk
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
@@ -27,6 +28,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c22)
 	icon_state = "merehandgun_bullet"
 	damage = COMPACTPISTOL_DAMAGE
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
+	bullet_mass = 1
 
 /obj/projectile/bullet/ms13/c22/junk
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
@@ -48,6 +50,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c9mm)
 	icon_state = "merehandgun_bullet"
 	damage = PISTOL_DAMAGE
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
+	bullet_mass = 1
 
 /obj/projectile/bullet/ms13/c9mm/junk
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
@@ -67,6 +70,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c9mm/ap)
 	icon_state = "merehandgun_bullet"
 	damage = 25
 	subtractible_armour_penetration = 15
+	bullet_mass = 2
 
 /obj/projectile/bullet/ms13/c10mm/junk
 	subtractible_armour_penetration = 5
@@ -86,6 +90,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c9mm/ap)
 	icon_state = "medium_bullet"
 	damage = 40
 	subtractible_armour_penetration = 35
+	bullet_mass = 3
 
 /obj/projectile/bullet/ms13/m12mm/ap
 	subtractible_armour_penetration = 45

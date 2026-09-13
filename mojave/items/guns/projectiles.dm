@@ -11,6 +11,7 @@
 	icon_state = "cbbolt"
 	damage = 30
 	armor_penetration = 30
+	bullet_mass = 1
 
 /* /obj/projectile/bullet/ms13/a762m
 	damage = 0

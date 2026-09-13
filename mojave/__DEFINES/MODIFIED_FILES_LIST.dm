@@ -59,6 +59,7 @@ code/datums/ai/monkey/monkey_behaviors.dm,
 code/datums/ai/targeting_strategies/targeting_strategy_generic.dm,
 code/datums/map_config.dm,
 code/modules/surgery/bodyparts/wounds/burns.dm,
+code/modules/mob/living/living_defense.dm,
 
 
 */

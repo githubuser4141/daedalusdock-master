@@ -152,6 +152,8 @@
 	armor_penetration = 0
 	damage = 0
 	speed = 0.95
+	// superheated matter, not a solid round with any real mass to shed
+	bullet_mass = 1
 
 /obj/projectile/bullet/ms13/plasma/stan_pistol
 	damage = 30
