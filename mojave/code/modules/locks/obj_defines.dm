@@ -31,7 +31,7 @@
 		return
 	if(ms13_flags_1 & LOCKABLE_1 && lock_locked)
 		to_chat(user, span_warning("The [name] is locked."))
-		return
+		return TRUE
 	. = ..()
 
 //for item interaction overrides on all general objects for placing locked items
