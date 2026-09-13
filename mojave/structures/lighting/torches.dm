@@ -66,10 +66,8 @@
 		pixel_y = 28
 	if(dir == WEST)
 		pixel_x = 10
-		pixel_y = 11
 	if(dir == EAST)
 		pixel_x = -10
-		pixel_y = 11
 
 /obj/structure/ms13/torch/wall_mounted/prelit
 
