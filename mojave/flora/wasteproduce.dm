@@ -64,7 +64,7 @@
 	harvest_icon = 1
 	seed_path = /obj/item/seeds/ms13/barrelcactus
 	product_path = /obj/item/food/grown/ms13/barrelcactus
-	possible_mutations = list(/obj/item/seeds/ms13/pricklypear)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 200
 	base_endurance = 45
 	base_harvest_amt = 3
@@ -100,7 +100,7 @@
 	innate_genes =list(/datum/plant_gene/product_trait/squash)
 	seed_path = /obj/item/seeds/ms13/mutfruit
 	product_path = /obj/item/food/grown/ms13/mutfruit
-	possible_mutations = list(/obj/item/seeds/ms13/cmutfruit)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 164
 	base_endurance = 45
 	base_harvest_amt = 3
@@ -170,7 +170,7 @@
 	harvest_icon = 1
 	seed_path = /obj/item/seeds/ms13/apple
 	product_path = /obj/item/food/grown/ms13/apple
-	possible_mutations = list(/obj/item/seeds/ms13/cmutfruit)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 96
 	base_endurance = 40
 	base_harvest_amt = 5
@@ -206,7 +206,7 @@
 	innate_genes =list(/datum/plant_gene/product_trait/stinging)
 	seed_path = /obj/item/seeds/ms13/pricklypear
 	product_path = /obj/item/food/grown/ms13/pricklypear
-	possible_mutations = list(/obj/item/seeds/ms13/barrelcactus)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 118
 	base_endurance = 35
 	base_harvest_amt = 3
@@ -362,7 +362,7 @@
 	harvest_icon = 1
 	seed_path = /obj/item/seeds/ms13/tarberry
 	product_path = /obj/item/food/grown/ms13/tarberry
-	possible_mutations = list(/obj/item/seeds/ms13/blackberry)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 118
 	base_endurance = 35
 	base_harvest_amt = 2
@@ -397,7 +397,7 @@
 	harvest_icon = 1
 	seed_path = /obj/item/seeds/ms13/blackberry
 	product_path = /obj/item/food/grown/ms13/blackberry
-	possible_mutations = list(/obj/item/seeds/ms13/radberry, /obj/item/seeds/ms13/tarberry)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 96
 	base_endurance = 15
 	base_harvest_amt = 2
@@ -501,7 +501,7 @@
 	innate_genes =list(/datum/plant_gene/product_trait/squash)
 	seed_path = /obj/item/seeds/ms13/tomato
 	product_path = /obj/item/food/grown/ms13/tomato
-	possible_mutations = list(/obj/item/seeds/ms13/tato)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 72
 	base_endurance = 20
 	base_harvest_amt = 2
@@ -540,7 +540,7 @@
 	harvest_icon = 1
 	seed_path = /obj/item/seeds/ms13/tato
 	product_path = /obj/item/food/grown/ms13/tato
-	possible_mutations = list(/obj/item/seeds/ms13/tomato, /obj/item/seeds/ms13/potato)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 88
 	base_endurance = 60
 	base_harvest_amt = 3
@@ -573,7 +573,7 @@
 	name = "Potatos"
 	seed_path = /obj/item/seeds/ms13/potato
 	product_path = /obj/item/food/grown/ms13/potato
-	possible_mutations = list(/obj/item/seeds/ms13/tato)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 50
 	base_endurance = 60
 	base_harvest_amt = 4
@@ -608,7 +608,7 @@
 	harvest_icon = 1
 	seed_path = /obj/item/seeds/ms13/jalepeno
 	product_path = /obj/item/food/grown/ms13/jalepeno
-	possible_mutations = list(/obj/item/seeds/ms13/radpepper)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 90
 	base_endurance = 35
 	base_harvest_amt = 3
@@ -643,7 +643,7 @@
 	innate_genes =list(/datum/plant_gene/product_trait/squash)
 	seed_path = /obj/item/seeds/ms13/radpepper
 	product_path = /obj/item/food/grown/ms13/radpepper
-	possible_mutations = list(/obj/item/seeds/ms13/jalepeno)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 88
 	genome = 90
 	base_endurance = 30
@@ -676,7 +676,7 @@
 	name = "Onions"
 	seed_path = /obj/item/seeds/ms13/onion
 	product_path = /obj/item/food/grown/ms13/onion
-	possible_mutations = list(/obj/item/seeds/ms13/garlic)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 40
 	base_endurance = 50
 	base_harvest_amt = 4
@@ -708,7 +708,7 @@
 	name = "Garlic Plant"
 	seed_path = /obj/item/seeds/ms13/garlic
 	product_path = /obj/item/food/grown/ms13/garlic
-	possible_mutations = list(/obj/item/seeds/ms13/onion)
+	possible_mutations = null // ponytail: was set to seed paths, not /datum/plant_mutation datums - crashed the codex. No real mutation datums exist for these yet.
 	//lifespan = 60
 	base_endurance = 50
 	base_maturation = 38
