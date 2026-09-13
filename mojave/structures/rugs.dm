@@ -83,7 +83,8 @@
 	rolltime = 5 SECONDS
 	remarks = null
 
-/obj/structure/ms13/rug/mat/Initialize()
+/obj/structure/ms13/rug/mat/Initialize(mapload)
+	. = ..()
 	AddComponent(/datum/component/simple_rotation)
 
 /obj/structure/ms13/rug/mat/welcome
@@ -138,8 +139,8 @@
 	"Yep...",
 	"They don't make them like they used to.")
 
-/obj/structure/ms13/rug/mat/rubber/Initialize()
-	return
+/obj/structure/ms13/rug/mat/rubber/Initialize(mapload)
+	. = ..()
 
 /obj/structure/ms13/rug/mat/rubber/single
 	name = "rubber mat"
