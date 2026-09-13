@@ -133,7 +133,7 @@
 
 			playsound(H, H.dna?.species.get_deathgasp_sound(H), 100, 0)
 			return
-		playsound(user, user.deathsound, 200, TRUE, TRUE)
+		playsound(user, islist(user.deathsound) ? pick(user.deathsound) : user.deathsound, 200, TRUE, TRUE)
 
 /datum/emote/living/drool
 	key = "drool"
