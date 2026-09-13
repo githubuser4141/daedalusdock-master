@@ -16,12 +16,7 @@
 	. = ..()
 	radio = new(src)
 
-/obj/item/storage/ms13/radiopack/PopulateContents()
-	. = ..()
-	START_PROCESSING(SSobj, src)
-
 /obj/item/storage/ms13/radiopack/Destroy()
-	STOP_PROCESSING(SSobj, src)
 	QDEL_NULL(radio)
 	return ..()
 
