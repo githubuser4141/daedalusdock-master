@@ -200,8 +200,16 @@ Sunlight System
 	if(our_area && !our_area.outdoors)
 		roofStat["WEATHERPROOF"] = TRUE
 
+	// get_ceiling_status() unconditionally marks every closed turf WEATHERPROOF (a solid rock wall
+	// obviously blocks weather), which used to also skip it from ever getting an outdoor_effect at
+	// all - even standing outdoors, so an exposed cliff face could never receive the SKY_BLOCKED
+	// corner light this system otherwise promises ("affected by SKY_VISIBLE_BORDER"), leaving it
+	// pitch black regardless of daylight. Buried/indoor rock should stay dark - only exempt closed
+	// turfs that are themselves outdoors.
+	var/outdoor_opaque_turf = isclosedturf(src) && our_area?.outdoors
+
 	/* if border or indoor, initialize. Set sunlight state if valid */
-	if(!outdoor_effect && (TempState <> SKY_BLOCKED || !roofStat["WEATHERPROOF"]))
+	if(!outdoor_effect && (TempState <> SKY_BLOCKED || !roofStat["WEATHERPROOF"] || outdoor_opaque_turf))
 		outdoor_effect = new /atom/movable/outdoor_effect(src)
 	if(outdoor_effect)
 		outdoor_effect.state = TempState
