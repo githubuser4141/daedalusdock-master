@@ -147,7 +147,6 @@
 	if(managed_overlay)
 		if(my_turf)
 			my_turf.underlays -= managed_overlay
-		qdel(managed_overlay)
 		managed_overlay = null
 	REMOVE_VAPOUR_CURRENTRUN(src)
 	SET_UNACTIVE_VAPOUR(src)
