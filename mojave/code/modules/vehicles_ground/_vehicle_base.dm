@@ -25,6 +25,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/list/obj/structure/ms13_vehicle_frame/frames = list()
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
 	var/list/obj/structure/ms13_vehicle_part/parts = list()
+	/// Atoms which deliberately entered an armored interior, mapped to the frame carrying them.
+	var/list/carried_atoms = list()
 	var/obj/structure/ms13_vehicle_part/engine/engine
 	var/datum/looping_sound/running_gear_soundloop
 	var/running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_wheels
@@ -50,6 +52,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/engine_integrity = 200
 	var/fuel_capacity = 100
 	var/fuel_per_tile = 0.1
+	/// A sealed floor keeps exterior hazards and loose ground clutter out of the passenger manifest.
+	var/has_floor_armor = FALSE
 	var/rev_sound = 'sound/vehicles/carrev.ogg'
 	var/ram_sound = 'sound/effects/bang.ogg'
 	var/crash_sound = 'mojave/sound/ms13effects/impact/metal/metal_crunch_3.wav'
@@ -254,11 +258,42 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/get_manifest()
 	var/list/parts = get_all_parts()
 	. = list()
+	if(has_floor_armor)
+		for(var/atom/movable/passenger as anything in carried_atoms)
+			var/obj/structure/ms13_vehicle_frame/frame = carried_atoms[passenger]
+			if(QDELETED(passenger) || QDELETED(frame) || get_turf(passenger) != get_turf(frame))
+				carried_atoms -= passenger
+				continue
+			.[passenger] = frame
+		return
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		for(var/atom/movable/passenger in frame.loc)
 			if(passenger in parts)
 				continue
 			.[passenger] = frame
+
+/// Moves loose exterior objects away from the next footprint before protected occupants arrive.
+/datum/ms13_ground_vehicle/proc/displace_exterior_contents(direction, list/manifest)
+	var/list/destinations = list()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		destinations |= get_step(frame, direction)
+	var/list/vehicle_parts = get_all_parts()
+	for(var/turf/destination as anything in destinations)
+		for(var/atom/movable/exterior in destination)
+			if(exterior.anchored || isliving(exterior) || exterior in vehicle_parts || exterior in manifest)
+				continue
+			for(var/escape_dir in list(turn(direction, 90), turn(direction, -90), turn(direction, 180), direction))
+				var/turf/escape_turf = get_step(destination, escape_dir)
+				if(!escape_turf || escape_turf.density || escape_turf in destinations)
+					continue
+				var/blocked = FALSE
+				for(var/atom/movable/blocker in escape_turf)
+					if(blocker.density)
+						blocked = TRUE
+						break
+				if(!blocked)
+					exterior.forceMove(escape_turf)
+					break
 
 /// Moves every frame, every wall, and everyone/everything currently aboard one tile in direction.
 /datum/ms13_ground_vehicle/proc/do_move(direction, bypass_cooldown = FALSE)
@@ -268,6 +303,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	// First reject terrain/structures, then resolve mobs and finally make sure their old tiles cleared.
 	if(!can_move(direction, TRUE) || !ram_living(direction, manifest) || !can_move(direction))
 		return FALSE
+	if(has_floor_armor)
+		displace_exterior_contents(direction, manifest)
 	if(!bypass_cooldown)
 		next_move_time = world.time + speed_delays[max(speed, 1)]
 
@@ -426,6 +463,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/vehicle_controller_type = /datum/ms13_ground_vehicle
 	/// Opaque top-down cover shown to outsiders and hidden from clients aboard this vehicle.
 	var/image/roof
+	var/roof_undamaged_icon
+	var/roof_damaged_icon = 'mojave/icons/objects/vehicles_ground/vehicleparts_damaged.dmi'
+	/// Used by roofs such as the M113 which have no matching damaged sheet in Civ13.
+	var/roof_damage_color
+	var/roof_hull_breached = FALSE
 	/// Position relative to the vehicle's pivot, in vehicle-local (forward, right) tiles - see
 	/// get_relative_turf(). Zero for the pivot itself.
 	var/forward_offset = 0
@@ -433,11 +475,41 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /obj/structure/ms13_vehicle_frame/Initialize(mapload)
 	. = ..()
+	roof_undamaged_icon = icon
 	roof = image(icon = icon, loc = src, icon_state = "roof_steel", layer = ABOVE_ALL_MOB_LAYER, dir = dir)
 	roof.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	GLOB.ms13_vehicle_roofs |= roof
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images |= roof
+	var/static/list/loc_connections = list(
+		COMSIG_ATOM_ENTERED = PROC_REF(on_atom_entered),
+		COMSIG_ATOM_EXITED = PROC_REF(on_atom_exited),
+	)
+	AddElement(/datum/element/connect_loc, loc_connections)
+
+/obj/structure/ms13_vehicle_frame/proc/on_atom_entered(datum/source, atom/movable/arrived)
+	SIGNAL_HANDLER
+	if(!vehicle?.has_floor_armor || arrived in vehicle.get_all_parts())
+		return
+	if(arrived.anchored && !istype(arrived, /obj/structure/chair/ms13_vehicle_seat))
+		return
+	vehicle.carried_atoms[arrived] = src
+
+/obj/structure/ms13_vehicle_frame/proc/on_atom_exited(datum/source, atom/movable/departed)
+	SIGNAL_HANDLER
+	if(vehicle?.carried_atoms[departed] == src)
+		vehicle.carried_atoms -= departed
+
+/obj/structure/ms13_vehicle_frame/proc/update_roof_damage()
+	if(!roof)
+		return
+	var/is_damaged = roof_hull_breached
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle?.walls)
+		if(wall.parent_frame == src && wall.get_integrity() < wall.max_integrity)
+			is_damaged = TRUE
+			break
+	roof.icon = is_damaged && roof_damaged_icon ? roof_damaged_icon : roof_undamaged_icon
+	roof.color = is_damaged && !roof_damaged_icon ? roof_damage_color : null
 
 /obj/structure/ms13_vehicle_frame/Destroy()
 	GLOB.ms13_vehicle_roofs -= roof
@@ -455,6 +527,40 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	. = ..()
 	if(roof)
 		roof.dir = dir
+
+/// An armored vehicle's floor separates its occupants from Mojave's ground-fire effect.
+/mob/living/proc/ms13_vehicle_floor_protected()
+	return get_ms13_ground_vehicle_at(src)?.has_floor_armor
+
+/mob/living/flamer_fire_crossed(burnlevel, firelevel, fire_mod = 1)
+	if(ms13_vehicle_floor_protected())
+		return
+	return ..()
+
+/mob/living/flamer_fire_act(burnlevel, firelevel)
+	if(ms13_vehicle_floor_protected())
+		return
+	return ..()
+
+/// Unarmored vehicle pieces pass over mines so the occupant can trigger them; an armored floor
+/// presents the frame itself as the trigger instead, keeping the mine outside the carried manifest.
+/obj/effect/mine/on_entered(datum/source, atom/movable/arrived)
+	SIGNAL_HANDLER
+	var/datum/ms13_ground_vehicle/vehicle
+	if(istype(arrived, /obj/structure/ms13_vehicle_frame))
+		var/obj/structure/ms13_vehicle_frame/frame = arrived
+		vehicle = frame.vehicle
+	else if(istype(arrived, /obj/structure/window/ms13_vehicle_wall))
+		var/obj/structure/window/ms13_vehicle_wall/wall = arrived
+		vehicle = wall.parent_frame?.vehicle
+	else if(istype(arrived, /obj/structure/ms13_vehicle_part))
+		var/obj/structure/ms13_vehicle_part/part = arrived
+		vehicle = part.vehicle
+	else if(!isliving(arrived))
+		vehicle = get_ms13_ground_vehicle_at(arrived)
+	if(vehicle && !vehicle.has_floor_armor)
+		return
+	return ..()
 
 /// Shared assembly helper: mount one directional wall on frame, facing wall_dir (an absolute
 /// direction - convert with turn(vehicle.dir, relative_turn) if building from a relative angle).

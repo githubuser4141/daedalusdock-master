@@ -36,8 +36,15 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 /obj/structure/window/ms13_vehicle_wall/proc/finish_mount()
 	return
 
+/obj/structure/window/ms13_vehicle_wall/update_integrity(new_value, damage_flag = NONE, allow_break = TRUE)
+	. = ..()
+	parent_frame?.update_roof_damage()
+
 /obj/structure/window/ms13_vehicle_wall/Destroy()
 	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
+	if(parent_frame)
+		parent_frame.roof_hull_breached = TRUE
+		parent_frame.update_roof_damage()
 	vehicle?.walls -= src
 	vehicle?.update_interior_masks()
 	parent_frame = null

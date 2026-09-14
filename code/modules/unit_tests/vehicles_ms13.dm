@@ -175,15 +175,22 @@
 	var/solid_count = 0
 	var/door_count = 0
 	var/obj/structure/window/ms13_vehicle_wall/solid/door/door
+	var/obj/structure/window/ms13_vehicle_wall/solid/damage_test_wall
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in front_left.vehicle.walls)
 		if(istype(wall, /obj/structure/window/ms13_vehicle_wall/solid/door))
 			door_count++
 			door = wall
 		else if(istype(wall, /obj/structure/window/ms13_vehicle_wall/solid))
 			solid_count++
+			damage_test_wall ||= wall
 	TEST_ASSERT_EQUAL(door_count, 1, "Armored truck should have exactly one door.")
 	TEST_ASSERT_EQUAL(solid_count, 5, "Armored truck should have 5 solid (non-door, non-windshield) hull panels.")
 	TEST_ASSERT(door, "Could not find the truck's rear door.")
+	var/image/damage_test_roof = damage_test_wall.parent_frame.roof
+	damage_test_wall.take_damage(10, BRUTE, BLUNT, FALSE)
+	TEST_ASSERT_EQUAL(damage_test_roof.icon, 'mojave/icons/objects/vehicles_ground/vehicleparts_damaged.dmi', "Damaging a hull segment did not switch its frame roof to damaged artwork.")
+	damage_test_wall.repair_damage(damage_test_wall.max_integrity)
+	TEST_ASSERT_EQUAL(damage_test_roof.icon, 'mojave/icons/objects/vehicles_ground/vehicleparts.dmi', "Repairing all damage did not restore the frame's normal roof artwork.")
 	for(var/obj/structure/window/ms13_vehicle_wall/solid/solid_wall in front_left.vehicle.walls)
 		TEST_ASSERT(solid_wall.layer > solid_wall.parent_frame.roof.layer, "A solid hull panel would be hidden below the exterior roof.")
 		TEST_ASSERT(!solid_wall.opacity, "A solid hull panel made its entire interior frame tile opaque.")
@@ -320,5 +327,48 @@
 			seat_count++
 	TEST_ASSERT_EQUAL(seat_count, 7, "M113 did not assemble its driver and six troop seats.")
 
+	var/obj/structure/window/ms13_vehicle_wall/solid/m113/damage_test_wall
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/m113/candidate in vehicle.walls)
+		damage_test_wall = candidate
+		break
+	damage_test_wall.take_damage(10, BRUTE, BOMB, FALSE)
+	TEST_ASSERT_EQUAL(damage_test_wall.parent_frame.roof.color, "#8f7676", "Damaging M113 hull did not apply its fallback damaged-roof appearance.")
+
 	track_to_break.take_damage(track_to_break.max_integrity, BRUTE, BOMB, FALSE)
 	TEST_ASSERT(!vehicle.has_motive_power(), "M113 still had motive power after losing one of its four required track units.")
+
+/// A sealed floor carries only deliberate occupants/cargo, deflects loose exterior objects, and
+/// prevents the ground-fire callbacks from treating passengers as if they stood in the road.
+/datum/unit_test/ms13_ground_vehicle_floor_armor
+	name = "VEHICLES: Floor Armor Separates Cabin From Ground Hazards"
+
+/datum/unit_test/ms13_ground_vehicle_floor_armor/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 5, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/armored_truck_front_left/front_left = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front_left.vehicle
+	TEST_ASSERT(vehicle.has_floor_armor, "Armored truck did not receive floor armor.")
+
+	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent)
+	passenger.forceMove(get_turf(front_left))
+	TEST_ASSERT_EQUAL(vehicle.get_manifest()[passenger], front_left, "A mob deliberately entering the cabin was not registered as a passenger.")
+
+	var/turf/exterior_turf = get_step(front_left, vehicle.dir)
+	var/obj/item/grenade/exterior_grenade = new(exterior_turf)
+	var/obj/structure/ms13_vehicle_frame/mine_frame
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
+		if(frame.forward_offset == 0 && frame.right_offset == 1)
+			mine_frame = frame
+			break
+	TEST_ASSERT(mine_frame, "Could not find the second leading frame for the floor-armor mine check.")
+	var/obj/effect/mine/exterior_mine = new(get_step(mine_frame, vehicle.dir))
+	vehicle.next_move_time = 0
+	TEST_ASSERT(vehicle.do_move(vehicle.dir), "Floor-armored vehicle could not move over loose exterior clutter.")
+	TEST_ASSERT(!vehicle.get_frame_at(get_turf(exterior_grenade)), "An exterior grenade was imported into the vehicle instead of being deflected clear.")
+	TEST_ASSERT(!(exterior_grenade in vehicle.get_manifest()), "An exterior grenade was added to the protected passenger manifest.")
+	TEST_ASSERT(QDELETED(exterior_mine) || exterior_mine.triggered, "An exterior mine passed through the floor armor into the cabin.")
+	TEST_ASSERT_EQUAL(get_turf(passenger), get_turf(front_left), "Registered passenger was not carried with the floor-armored vehicle.")
+
+	var/fire_stacks_before = passenger.fire_stacks
+	passenger.flamer_fire_crossed(10, 10)
+	passenger.flamer_fire_act(10, 10)
+	TEST_ASSERT_EQUAL(passenger.fire_stacks, fire_stacks_before, "Exterior ground fire affected a passenger through the armored floor.")
