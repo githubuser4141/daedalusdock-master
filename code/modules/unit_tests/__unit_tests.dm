@@ -186,6 +186,7 @@
 #include "tgui_create_message.dm"
 #include "timer_sanity.dm"
 #include "traitor.dm"
+#include "cover_ms13.dm"
 #include "vehicles_ms13.dm"
 
 #include "wizard_loadout.dm"

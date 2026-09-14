@@ -92,3 +92,41 @@
     attack_verb_continuous = "saws"
     attack_verb_simple = "saw"
     attack_sound = list('mojave/sound/ms13weapons/meleesounds/ripper_hit1.ogg', 'mojave/sound/ms13weapons/meleesounds/ripper_hit2.ogg')
+
+/**
+ * The reference consumer for the cover AI in mojave/code/datums/ai/ms13_cover_ai.dm - a ranged mob on the
+ * modern controller framework, which until now only drove melee ones (every existing gun-carrying robot is
+ * on the legacy simple_animal AI instead). It takes cover when shot at and keeps firing at where it last saw
+ * you after you break line of sight.
+ */
+/mob/living/basic/ms13/robot/handy/gun
+	name = "Mr. Gutsy"
+	desc = "A combat model Mr. Handy, still running a war's worth of engagement doctrine on badly degraded tape."
+	icon_state = "mrhandy_gun"
+	health = 160
+	maxHealth = 160
+	melee_damage_lower = 10
+	melee_damage_upper = 10
+	speed = 0.75
+	attack_verb_continuous = "batters"
+	attack_verb_simple = "batter"
+	attack_sound = 'sound/weapons/punch1.ogg'
+	sharpness = NONE
+	ai_controller = /datum/ai_controller/basic_controller/ms13/robot/gunner
+
+/mob/living/basic/ms13/robot/handy/gun/Initialize(mapload)
+	. = ..()
+	AddElement(/datum/element/ranged_attacks, /obj/item/ammo_casing/ms13/c10mm)
+
+/datum/ai_controller/basic_controller/ms13/robot/gunner
+	// Cover-seeking needs to actually path around the thing it's getting behind, which the shared
+	// bypass_tables mover can't do - it walks straight lines and vaults.
+	ai_movement = /datum/ai_movement/jps
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/random_speech/ms13/robot,
+		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/ms13_combat_awareness,
+		/datum/ai_planning_subtree/ms13_take_cover,
+		/datum/ai_planning_subtree/basic_ranged_attack_subtree,
+		/datum/ai_planning_subtree/ms13_suppressing_fire,
+	)
