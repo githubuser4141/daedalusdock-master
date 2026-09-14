@@ -420,6 +420,8 @@
 	smoothing_groups = SMOOTH_GROUP_MS13_ROAD
 	canSmoothWith = SMOOTH_GROUP_MS13_ROAD + SMOOTH_GROUP_MS13_SIDEWALK + SMOOTH_GROUP_MS13_TILE + SMOOTH_GROUP_MS13_SNOW + SMOOTH_GROUP_MS13_SNOW + SMOOTH_GROUP_MS13_WATER + SMOOTH_GROUP_MS13_OPENSPACE
 	layer = TURF_LAYER_ROAD
+	var/image/road_border_overlay
+	var/image/road_crack_overlay
 
 /turf/open/floor/plating/ms13/ground/road/Initialize()
 	. = ..()
@@ -427,6 +429,10 @@
 
 /turf/open/floor/plating/ms13/ground/road/update_icon()
 	. = ..() //Inheritance required for road decals
+	if(road_border_overlay)
+		cut_overlay(road_border_overlay)
+	if(road_crack_overlay)
+		cut_overlay(road_crack_overlay)
 	var/rand_icon = rand(1,3)
 	var/crack_randomiser = "crack_[rand(1,24)]"
 	var/road_randomiser = rand(-10,10)
@@ -444,9 +450,13 @@
 			border_icon = 'mojave/icons/turf/64x/road_3_border.dmi'
 
 	if(prob(20))
-		add_overlay(image('mojave/icons/turf/road.dmi', crack_randomiser, TURF_LAYER_ROAD_DECAL, direction_randomiser, road_randomiser, road_randomiser))
+		road_crack_overlay = image('mojave/icons/turf/road.dmi', crack_randomiser, TURF_LAYER_ROAD_DECAL, direction_randomiser, road_randomiser, road_randomiser)
+		add_overlay(road_crack_overlay)
+	else
+		road_crack_overlay = null
 
-	add_overlay(image(border_icon, icon_state, TURF_LAYER_ROAD_BORDER, pixel_x = -16, pixel_y = -16))
+	road_border_overlay = image(border_icon, icon_state, TURF_LAYER_ROAD_BORDER, pixel_x = -16, pixel_y = -16)
+	add_overlay(road_border_overlay)
 
 
 ////Sidewalks////

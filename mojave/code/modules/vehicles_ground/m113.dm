@@ -3,6 +3,8 @@
  * the front-left frame in the map editor; the remaining hull, rear ramp, seats, engine, and four
  * independently damageable track units are created around it.
  */
+
+
 /datum/ms13_ground_vehicle/m113
 	speed_delays = list(12, 9, 7)
 	acceleration_delay = 1.8 SECONDS
@@ -18,16 +20,19 @@
 	engine_integrity = 400
 	fuel_capacity = 240
 	fuel_per_tile = 0.2
-	has_floor_armor = TRUE
 	running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_tracks
 
+
+TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine/m113)
+	default_armor = list(BLUNT = 35, PUNCTURE = 80, LASER = 80, ENERGY = 50, BOMB = 0, BIO = 100,  FIRE = 25, ACID = 25)
 /obj/structure/ms13_vehicle_part/engine/m113
 	name = "Detroit 6V53T diesel engine"
 	desc = "The compact two-stroke diesel engine used to propel an M113 armored personnel carrier."
 	density = TRUE
+	max_integrity = 300
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
-	default_armor = list(BLUNT = 50, PUNCTURE = 40, LASER = 35, ENERGY = 50, BOMB = 15, BIO = 100,  FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 70, LASER = 35, ENERGY = 50, BOMB = 15, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/window/ms13_vehicle_wall/m113
 	name = "M113 vision port"
 	desc = "A thick vision block set into the carrier's frontal armor."

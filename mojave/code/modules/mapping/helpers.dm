@@ -17,6 +17,9 @@
 
 // TO Do - Custom Sprites for Pre-spawn locked objects here
 /obj/effect/mapping_helpers/atom_injector/element_injector/ms13/lockedpickable/inject(atom/target)
+	var/obj/target_object = target
+	if(target_object?.lock_locked)
+		return
 	element_args = list(difficulty = rand(lowest_no, highest_no))
 	. = ..()
 	return

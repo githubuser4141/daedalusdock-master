@@ -28,6 +28,7 @@
 	attack_direction = null,
 	obj/item/attacking_item = null,
 	ignore_subarmor = FALSE,
+	armor_penetration = 0,
 )
 	SHOULD_CALL_PARENT(TRUE)
 

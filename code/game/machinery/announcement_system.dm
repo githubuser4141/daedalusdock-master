@@ -315,6 +315,8 @@ GLOBAL_LIST_EMPTY(announcement_systems)
 	return aas_mass_pda_message(., message, reason)
 
 /proc/aas_radio_message(message, list/channels)
+	if(!length(GLOB.announcement_systems))
+		return FALSE
 	var/obj/machinery/announcement_system/AAS = pick(GLOB.announcement_systems)
 	if(!AAS)
 		return FALSE

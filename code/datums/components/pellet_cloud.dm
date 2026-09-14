@@ -25,7 +25,7 @@
 	/// What's the projectile path of the shrapnel we're shooting?
 	var/projectile_type
 
-	/// How many shrapnel projectiles are we responsible for tracking? May be reduced for grenades if someone dives on top of it. Defined by ammo casing for casings, derived from magnitude otherwise
+	/// How many projectiles we are responsible for tracking. Defined by ammo casings and counted as blast pellets are created.
 	var/num_pellets
 	/// For grenades/landmines, how big is the radius of turfs we're targeting? Note this does not effect the projectiles range, only how many we generate
 	var/radius = 4
@@ -39,14 +39,14 @@
 	/// For grenades, tracking people who die covering a grenade for achievement purposes, see [/datum/component/pellet_cloud/proc/handle_martyrs]
 	var/list/purple_hearts
 
-	/// For grenades, tracking how many pellets are removed due to martyrs and how many pellets are added due to the last person to touch it being on top of it
-	var/pellet_delta = 0
 	/// how many pellets ranged out without hitting anything
 	var/terminated
 	/// how many pellets impacted something
 	var/hits
 	/// If the parent tried deleting and we're not done yet, we send it to nullspace then delete it after
 	var/queued_delete = FALSE
+	/// Prevents a projectile which resolves immediately from finalizing the cloud before the rest are created.
+	var/spawning_pellets = FALSE
 
 	/// for if we're an ammo casing being fired
 	var/mob/living/shooter
@@ -90,6 +90,7 @@
 
 /datum/component/pellet_cloud/UnregisterFromParent()
 	UnregisterSignal(parent, list(COMSIG_PARENT_PREQDELETED, COMSIG_PELLET_CLOUD_INIT, COMSIG_GRENADE_DETONATE, COMSIG_GRENADE_ARMED, COMSIG_MOVABLE_MOVED, COMSIG_MINE_TRIGGERED, COMSIG_ITEM_UNEQUIPPED))
+	qdel(GetComponent(/datum/component/connect_loc_behalf))
 
 /**
  * create_casing_pellets() is for directed pellet clouds for ammo casings that have multiple pellets (buckshot and scatter lasers for instance)
@@ -141,31 +142,29 @@
 	SIGNAL_HANDLER
 
 	var/atom/A = parent
+	num_pellets = 0
+	spawning_pellets = TRUE
 
 	if(isgrenade(parent)) // handle_martyrs can reduce the radius and thus the number of pellets we produce if someone dives on top of a frag grenade
-		// AI EDIT: was INVOKE_ASYNC - that doesn't block, so num_pellets below was computed from the
-		// pre-martyr radius/pellet_delta despite this comment's own assumption that handle_martyrs already
-		// ran. handle_martyrs's own pellet_delta increments and pew() calls (added afterward, async) then
-		// went uncounted in num_pellets, so terminated could hit that too-low target and finalize() would
-		// qdel() this component while those extra martyr pellets were still in flight and registered - their
-		// later hit/range-out signal firing on the dead component was the "null -= pellet" crash.
 		handle_martyrs(triggerer)
 	else if(islandmine(parent))
 		var/obj/effect/mine/shrapnel/triggered_mine = parent
 		if(triggered_mine.shred_triggerer && istype(triggerer)) // free shrapnel for the idiot who stepped on it if we're a mine that shreds the triggerer
-			pellet_delta += radius // so they don't count against the later total
 			for(var/i in 1 to radius)
-				INVOKE_ASYNC(src, PROC_REF(pew), triggerer, TRUE)
+				pew(triggerer, TRUE)
 
 	if(radius < 1)
+		spawning_pellets = FALSE
+		try_finalize()
 		return
 
 	var/list/all_the_turfs_were_gonna_lacerate = RANGE_TURFS(radius, A) - RANGE_TURFS(radius-1, A)
-	num_pellets = all_the_turfs_were_gonna_lacerate.len + pellet_delta
 
 	for(var/T in all_the_turfs_were_gonna_lacerate)
 		var/turf/shootat_turf = T
-		INVOKE_ASYNC(src, PROC_REF(pew), shootat_turf)
+		pew(shootat_turf)
+	spawning_pellets = FALSE
+	try_finalize()
 
 /**
  * handle_martyrs() is used for grenades that shoot shrapnel to check if anyone threw themselves/were thrown on top of the grenade, thus absorbing a good chunk of the shrapnel
@@ -185,13 +184,11 @@
 	if(punishable_triggerer && prob(60))
 		to_chat(punishable_triggerer, span_userdanger("Your plan to whack someone with a grenade on a stick backfires on you, literally!"))
 		self_harm_radius_mult = 1 // we'll still give the guy who got hit some extra shredding, but not 3*radius
-		pellet_delta += radius
 		for(var/i in 1 to radius)
 			pew(punishable_triggerer) // thought you could be tricky and lance someone with no ill effects!!
 
 	for(var/mob/living/body in get_turf(parent))
 		if(body == shooter)
-			pellet_delta += radius * self_harm_radius_mult
 			for(var/i in 1 to radius * self_harm_radius_mult)
 				pew(body) // free shrapnel if it goes off in your hand, and it doesn't even count towards the absorbed. fun!
 		else if(!(body in bodies))
@@ -211,7 +208,6 @@
 
 		var/pellets_absorbed = (radius ** 2) - ((radius - magnitude_absorbed - 1) ** 2)
 		radius -= magnitude_absorbed
-		pellet_delta -= round(pellets_absorbed * 0.5)
 
 		if(martyr.stat != DEAD && martyr.client)
 			LAZYADD(purple_hearts, martyr)
@@ -254,8 +250,7 @@
 	if(targets_hit[target]["hits"] == 1)
 		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_qdel), override=TRUE)
 	UnregisterSignal(P, list(COMSIG_PARENT_QDELETING, COMSIG_PROJECTILE_RANGE_OUT, COMSIG_PROJECTILE_SELF_ON_HIT))
-	if(terminated == num_pellets)
-		finalize()
+	try_finalize()
 
 ///One of our pellets disappeared due to hitting their max range (or just somehow got qdel'd), remove it from our list and check if we're done (terminated == num_pellets)
 /datum/component/pellet_cloud/proc/pellet_range(obj/projectile/P)
@@ -264,12 +259,14 @@
 		pellets -= P
 	terminated++
 	UnregisterSignal(P, list(COMSIG_PARENT_QDELETING, COMSIG_PROJECTILE_RANGE_OUT, COMSIG_PROJECTILE_SELF_ON_HIT))
-	if(terminated == num_pellets)
-		finalize()
+	try_finalize()
 
 /// Minor convenience function for creating each shrapnel piece with circle explosions, mostly stolen from the MIRV component
 /datum/component/pellet_cloud/proc/pew(atom/target, landmine_victim)
-	var/obj/projectile/P = new projectile_type(get_turf(parent))
+	var/turf/source_turf = get_turf(parent)
+	if(!source_turf)
+		return
+	var/obj/projectile/P = new projectile_type(source_turf)
 
 	//Shooting Code:
 	P.spread = 0
@@ -278,13 +275,19 @@
 	P.firer = parent // don't hit ourself that would be really annoying
 	P.impacted = list(parent = TRUE) // don't hit the target we hit already with the flak
 	P.suppressed = SUPPRESSED_VERY // set the projectiles to make no message so we can do our own aggregate message
-	P.preparePixelProjectile(target, parent)
+	if(!P.preparePixelProjectile(target, parent))
+		return
 	RegisterSignal(P, COMSIG_PROJECTILE_SELF_ON_HIT, PROC_REF(pellet_hit))
 	RegisterSignal(P, list(COMSIG_PROJECTILE_RANGE_OUT, COMSIG_PARENT_QDELETING), PROC_REF(pellet_range))
 	pellets += P
+	num_pellets++
 	P.fire()
-	if(landmine_victim)
+	if(landmine_victim && !QDELETED(P))
 		P.process_hit(get_turf(target), target)
+
+/datum/component/pellet_cloud/proc/try_finalize()
+	if(!spawning_pellets && terminated >= num_pellets)
+		finalize()
 
 ///All of our pellets are accounted for, time to go target by target and tell them how many things they got hit by.
 /datum/component/pellet_cloud/proc/finalize()
@@ -355,7 +358,8 @@
 /datum/component/pellet_cloud/proc/grenade_uncrossed(datum/source, atom/movable/gone, direction)
 	SIGNAL_HANDLER
 
-	bodies -= gone
+	if(bodies)
+		bodies -= gone
 
 /// Our grenade or landmine or caseless shell or whatever tried deleting itself, so we intervene and nullspace it until we're done here
 /datum/component/pellet_cloud/proc/nullspace_parent()

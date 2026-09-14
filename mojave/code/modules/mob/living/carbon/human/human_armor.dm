@@ -36,7 +36,7 @@
 					// component nearly unbreakable in practice.
 					PA_part.take_damage(routed_damage, damagetype)
 					return 0
-			return ..(damage, damagetype, def_zone, blocked, forced, spread_damage, sharpness, attack_direction, attacking_item, ignore_subarmor = TRUE)
+			return ..(damage, damagetype, def_zone, blocked, forced, spread_damage, sharpness, attack_direction, attacking_item, ignore_subarmor = TRUE, armor_penetration = armor_penetration)
 	return ..()
 
 /mob/living/carbon/human/wearing_power_armor()

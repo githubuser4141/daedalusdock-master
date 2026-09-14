@@ -11,6 +11,7 @@
 	attack_direction = null,
 	obj/item/attacking_item = null,
 	ignore_subarmor = FALSE,
+	armor_penetration = 0,
 )
 	// Spread damage should always have def zone be null
 	if(spread_damage)

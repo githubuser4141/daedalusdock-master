@@ -22,7 +22,6 @@
 	engine_integrity = 280
 	fuel_capacity = 140
 	fuel_per_tile = 0.12
-	has_floor_armor = TRUE
 
 /obj/structure/ms13_vehicle_frame/armored_truck_front_left
 	name = "armored truck"

@@ -119,8 +119,10 @@ SUBSYSTEM_DEF(timer)
 
 		var/datum/callback/callBack = ctime_timer.callBack
 		if (!callBack)
-			CRASH("Invalid timer: [get_timer_debug_string(ctime_timer)] world.time: [world.time], \
-				head_offset: [head_offset], practical_offset: [practical_offset], REALTIMEOFDAY: [REALTIMEOFDAY]")
+			if(!QDELETED(ctime_timer))
+				stack_trace("Invalid timer: [get_timer_debug_string(ctime_timer)] world.time: [world.time], \
+					head_offset: [head_offset], practical_offset: [practical_offset], REALTIMEOFDAY: [REALTIMEOFDAY]")
+			continue
 
 		ctime_timer.spent = REALTIMEOFDAY
 		callBack.InvokeAsync()

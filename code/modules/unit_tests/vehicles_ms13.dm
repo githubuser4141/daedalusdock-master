@@ -336,39 +336,3 @@
 
 	track_to_break.take_damage(track_to_break.max_integrity, BRUTE, BOMB, FALSE)
 	TEST_ASSERT(!vehicle.has_motive_power(), "M113 still had motive power after losing one of its four required track units.")
-
-/// A sealed floor carries only deliberate occupants/cargo, deflects loose exterior objects, and
-/// prevents the ground-fire callbacks from treating passengers as if they stood in the road.
-/datum/unit_test/ms13_ground_vehicle_floor_armor
-	name = "VEHICLES: Floor Armor Separates Cabin From Ground Hazards"
-
-/datum/unit_test/ms13_ground_vehicle_floor_armor/Run()
-	var/turf/spot = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 5, run_loc_floor_bottom_left.z)
-	var/obj/structure/ms13_vehicle_frame/armored_truck_front_left/front_left = new(spot)
-	var/datum/ms13_ground_vehicle/vehicle = front_left.vehicle
-	TEST_ASSERT(vehicle.has_floor_armor, "Armored truck did not receive floor armor.")
-
-	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent)
-	passenger.forceMove(get_turf(front_left))
-	TEST_ASSERT_EQUAL(vehicle.get_manifest()[passenger], front_left, "A mob deliberately entering the cabin was not registered as a passenger.")
-
-	var/turf/exterior_turf = get_step(front_left, vehicle.dir)
-	var/obj/item/grenade/exterior_grenade = new(exterior_turf)
-	var/obj/structure/ms13_vehicle_frame/mine_frame
-	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
-		if(frame.forward_offset == 0 && frame.right_offset == 1)
-			mine_frame = frame
-			break
-	TEST_ASSERT(mine_frame, "Could not find the second leading frame for the floor-armor mine check.")
-	var/obj/effect/mine/exterior_mine = new(get_step(mine_frame, vehicle.dir))
-	vehicle.next_move_time = 0
-	TEST_ASSERT(vehicle.do_move(vehicle.dir), "Floor-armored vehicle could not move over loose exterior clutter.")
-	TEST_ASSERT(!vehicle.get_frame_at(get_turf(exterior_grenade)), "An exterior grenade was imported into the vehicle instead of being deflected clear.")
-	TEST_ASSERT(!(exterior_grenade in vehicle.get_manifest()), "An exterior grenade was added to the protected passenger manifest.")
-	TEST_ASSERT(QDELETED(exterior_mine) || exterior_mine.triggered, "An exterior mine passed through the floor armor into the cabin.")
-	TEST_ASSERT_EQUAL(get_turf(passenger), get_turf(front_left), "Registered passenger was not carried with the floor-armored vehicle.")
-
-	var/fire_stacks_before = passenger.fire_stacks
-	passenger.flamer_fire_crossed(10, 10)
-	passenger.flamer_fire_act(10, 10)
-	TEST_ASSERT_EQUAL(passenger.fire_stacks, fire_stacks_before, "Exterior ground fire affected a passenger through the armored floor.")

@@ -156,6 +156,8 @@
 			burn_victim.ignite_mob()
 		else if(isobj(burn_target))
 			var/obj/burned_object = burn_target
+			if(QDELETED(burned_object))
+				continue
 			if(grill && isitem(burned_object))
 				var/obj/item/grilled_item = burned_object
 				SEND_SIGNAL(grilled_item, COMSIG_ITEM_GRILLED, src, delta_time) //Not a big fan, maybe make this use fire_act() in the future.
