@@ -1,6 +1,3 @@
-#define MS13_PA_LINK_CABLE "cable"
-#define MS13_PA_LINK_RADIO "radio"
-
 /// A real, fully-functional human body (breathes, bleeds, dies normally) that a remote-control
 /// operator's mind is transferred into while piloting an unoccupied power armor suit. Deliberately
 /// NOT /mob/living/carbon/human/dummy - that type is a GODMODE, Life()-disabled preview-only mob used
