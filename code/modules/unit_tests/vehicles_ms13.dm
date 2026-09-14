@@ -73,8 +73,8 @@
 	TEST_ASSERT(!blocked_result, "do_move() reported success while a dense obstacle blocked the path.")
 	TEST_ASSERT_EQUAL(get_turf(front), before_block, "Vehicle moved despite a blocked path.")
 
-/// Confirms the boxier armored truck assembles its full 2x2 footprint, that its solid hull panels
-/// actually block sight (opacity), and that its rear door can be opened/closed to toggle passability.
+/// Confirms the boxier armored truck assembles its full 2x2 footprint, masks sight across solid hull,
+/// leaves every interior frame visible, and toggles its rear door's movement/vision boundary.
 /datum/unit_test/ms13_ground_vehicle_armored_truck
 	name = "VEHICLES: Armored Truck Has Solid Walls And A Working Door"
 
@@ -100,27 +100,31 @@
 			door = wall
 		else if(istype(wall, /obj/structure/window/ms13_vehicle_wall/solid))
 			solid_count++
-			TEST_ASSERT(wall.opacity, "A solid hull panel wasn't actually opaque.")
 	TEST_ASSERT_EQUAL(door_count, 1, "Armored truck should have exactly one door.")
 	TEST_ASSERT_EQUAL(solid_count, 5, "Armored truck should have 5 solid (non-door, non-windshield) hull panels.")
 	TEST_ASSERT(door, "Could not find the truck's rear door.")
 	for(var/obj/structure/window/ms13_vehicle_wall/solid/solid_wall in front_left.vehicle.walls)
 		TEST_ASSERT(solid_wall.layer > solid_wall.parent_frame.roof.layer, "A solid hull panel would be hidden below the exterior roof.")
-		TEST_ASSERT(solid_wall.sight_blocker, "A solid hull panel did not create its exterior sight blocker.")
-		TEST_ASSERT_EQUAL(get_turf(solid_wall.sight_blocker), get_step(solid_wall, solid_wall.dir), "A solid hull panel's sight blocker is not immediately outside it.")
-		for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
-			TEST_ASSERT(get_turf(solid_wall.sight_blocker) != get_turf(frame), "A solid hull panel put its sight blocker inside the vehicle.")
+		TEST_ASSERT(!solid_wall.opacity, "A solid hull panel made its entire interior frame tile opaque.")
+		TEST_ASSERT(solid_wall.blocks_vision, "A closed solid hull panel did not mark its boundary as vision-blocking.")
+		TEST_ASSERT(front_left.vehicle.blocks_sight_from(get_turf(solid_wall.parent_frame), get_step(solid_wall, solid_wall.dir)), "A solid hull boundary did not mask the exterior turf beyond it.")
+	for(var/obj/structure/ms13_vehicle_frame/source_frame as anything in front_left.vehicle.frames)
+		for(var/obj/structure/ms13_vehicle_frame/target_frame as anything in front_left.vehicle.frames)
+			TEST_ASSERT(!front_left.vehicle.blocks_sight_from(get_turf(source_frame), get_turf(target_frame)), "Sight masking blacked out a turf inside the vehicle.")
+	for(var/obj/structure/window/ms13_vehicle_wall/window in front_left.vehicle.walls)
+		if(!istype(window, /obj/structure/window/ms13_vehicle_wall/solid))
+			TEST_ASSERT(!front_left.vehicle.blocks_sight_from(get_turf(window.parent_frame), get_step(window, window.dir)), "A windshield port incorrectly masked the exterior beyond it.")
 
 	TEST_ASSERT(door.density, "Door should start closed (dense).")
-	TEST_ASSERT(door.opacity, "Door should start closed (opaque).")
+	TEST_ASSERT(door.blocks_vision, "Door should start closed (vision-blocking).")
 	door.open()
 	TEST_ASSERT(!door.density, "Door did not lose density after opening.")
-	TEST_ASSERT(!door.opacity, "Door did not lose opacity after opening.")
-	TEST_ASSERT(!door.sight_blocker.opacity, "Door's exterior sight blocker stayed opaque after opening.")
+	TEST_ASSERT(!door.blocks_vision, "Door still blocked vision after opening.")
+	TEST_ASSERT(!front_left.vehicle.blocks_sight_from(get_turf(door.parent_frame), get_step(door, door.dir)), "The open door still masked the exterior beyond it.")
 	door.close()
 	TEST_ASSERT(door.density, "Door did not regain density after closing.")
-	TEST_ASSERT(door.opacity, "Door did not regain opacity after closing.")
-	TEST_ASSERT(door.sight_blocker.opacity, "Door's exterior sight blocker did not become opaque after closing.")
+	TEST_ASSERT(door.blocks_vision, "Door did not block vision after closing.")
+	TEST_ASSERT(front_left.vehicle.blocks_sight_from(get_turf(door.parent_frame), get_step(door, door.dir)), "The closed door did not mask the exterior beyond it.")
 
 	// Rotation on a 2-wide vehicle: every frame and wall should land exactly where its own
 	// forward/right offset says it should, same check the (already-passing) jeep test does, just
@@ -161,6 +165,6 @@
 			all_walls_match = FALSE
 		if(istype(wall, /obj/structure/window/ms13_vehicle_wall/solid))
 			var/obj/structure/window/ms13_vehicle_wall/solid/solid_wall = wall
-			if(get_turf(solid_wall.sight_blocker) != get_step(solid_wall, solid_wall.dir))
+			if(!front_left.vehicle.blocks_sight_from(get_turf(solid_wall.parent_frame), get_step(solid_wall, solid_wall.dir)))
 				all_walls_match = FALSE
 	TEST_ASSERT(all_walls_match, "At least one truck wall did not land at/facing the position its own offsets say it should after rotating.")

@@ -50,6 +50,41 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		else
 			viewer.images -= frame.roof
 
+/// Returns this vehicle's frame on turf_to_check, if it has one there.
+/datum/ms13_ground_vehicle/proc/get_frame_at(turf/turf_to_check)
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		if(get_turf(frame) == turf_to_check)
+			return frame
+
+/// Does a sight ray leaving frame in exit_dir cross a closed solid hull panel?
+/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir)
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/wall in walls)
+		if(wall.parent_frame == frame && wall.blocks_vision && (wall.dir & exit_dir))
+			return TRUE
+	return FALSE
+
+/// True when the line from an interior turf to target first exits through solid hull.
+/datum/ms13_ground_vehicle/proc/blocks_sight_from(turf/source, turf/target)
+	var/obj/structure/ms13_vehicle_frame/current_frame = get_frame_at(source)
+	if(!current_frame || get_frame_at(target))
+		return FALSE
+	var/list/sight_line = get_line(source, target)
+	var/turf/current_turf = source
+	for(var/index in 2 to length(sight_line))
+		var/turf/next_turf = sight_line[index]
+		var/obj/structure/ms13_vehicle_frame/next_frame = get_frame_at(next_turf)
+		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf)))
+			return TRUE
+		current_turf = next_turf
+		current_frame = next_frame
+	return FALSE
+
+/// Door state changes need to refresh occupants even though nobody moved.
+/datum/ms13_ground_vehicle/proc/update_interior_masks()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		for(var/mob/living/passenger in get_turf(frame))
+			passenger.update_ms13_vehicle_interior_mask()
+
 /// Returns the vehicle occupying location's turf, if any.
 /proc/get_ms13_ground_vehicle_at(atom/location)
 	var/turf/vehicle_turf = get_turf(location)
@@ -241,6 +276,34 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	return wall
 
 /// Roofs are client images: outsiders see them, while somebody on a vehicle frame sees its cabin.
+/mob
+	var/list/ms13_vehicle_interior_masks
+
+/mob/proc/clear_ms13_vehicle_interior_mask()
+	if(client && length(ms13_vehicle_interior_masks))
+		client.images -= ms13_vehicle_interior_masks
+	ms13_vehicle_interior_masks = null
+
+/// Black out only exterior turfs whose ray from this occupant crosses closed solid hull.
+/mob/proc/update_ms13_vehicle_interior_mask()
+	clear_ms13_vehicle_interior_mask()
+	if(!client)
+		return
+	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
+	if(!vehicle)
+		return
+	ms13_vehicle_interior_masks = list()
+	// ponytail: rebuilds the small visible mask on movement; cache rays if vehicle sizes grow.
+	for(var/turf/target in range(client.view, src))
+		if(!vehicle.blocks_sight_from(get_turf(src), target))
+			continue
+		var/image/mask = image(icon = 'icons/effects/alphacolors.dmi', loc = target, layer = ABOVE_ALL_MOB_LAYER)
+		mask.color = "#000000"
+		mask.plane = ABOVE_GAME_PLANE
+		mask.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		ms13_vehicle_interior_masks += mask
+	client.images += ms13_vehicle_interior_masks
+
 /mob/Login()
 	. = ..()
 	if(!. || !client)
@@ -248,6 +311,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	client.images |= GLOB.ms13_vehicle_roofs
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
 	vehicle?.set_roof_visible(client, FALSE)
+	update_ms13_vehicle_interior_mask()
+
+/mob/Logout()
+	clear_ms13_vehicle_interior_mask()
+	return ..()
 
 /mob/living/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
 	. = ..()
@@ -255,7 +323,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		return
 	var/datum/ms13_ground_vehicle/old_vehicle = get_ms13_ground_vehicle_at(old_loc)
 	var/datum/ms13_ground_vehicle/new_vehicle = get_ms13_ground_vehicle_at(src)
-	if(old_vehicle == new_vehicle)
-		return
-	old_vehicle?.set_roof_visible(client, TRUE)
-	new_vehicle?.set_roof_visible(client, FALSE)
+	if(old_vehicle != new_vehicle)
+		old_vehicle?.set_roof_visible(client, TRUE)
+		new_vehicle?.set_roof_visible(client, FALSE)
+	update_ms13_vehicle_interior_mask()

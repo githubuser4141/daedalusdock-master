@@ -32,58 +32,26 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	var/relative_turn = 0
 
 /obj/structure/window/ms13_vehicle_wall/Destroy()
-	parent_frame?.vehicle?.walls -= src
+	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
+	vehicle?.walls -= src
+	vehicle?.update_interior_masks()
 	parent_frame = null
 	return ..()
 
 /**
  * A solid hull panel instead of a see-through pane. It keeps the border-object mechanic for movement
- * and gunfire; its exterior sight blocker handles BYOND's non-directional opacity without placing
- * blackness inside the vehicle. The frame roof supplies top-down cover for outside viewers.
+ * and gunfire. Interior clients mask sight rays which cross this boundary; native opacity cannot be
+ * used because BYOND applies it to the whole frame tile. The frame roof covers outside viewers.
  */
 /obj/structure/window/ms13_vehicle_wall/solid
 	name = "vehicle hull plating"
 	desc = "A solid section of vehicle armor plating."
 	icon_state = "c_armoredwall"
-	opacity = TRUE
-	var/obj/effect/ms13_vehicle_sight_blocker/sight_blocker
-
-/obj/structure/window/ms13_vehicle_wall/solid/Initialize(mapload, direct)
-	. = ..()
-	sight_blocker = new(get_step(src, dir))
-
-/obj/structure/window/ms13_vehicle_wall/solid/Destroy()
-	QDEL_NULL(sight_blocker)
-	return ..()
-
-/obj/structure/window/ms13_vehicle_wall/solid/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
-	. = ..()
-	update_sight_blocker()
-
-/obj/structure/window/ms13_vehicle_wall/solid/setDir(new_dir)
-	. = ..()
-	update_sight_blocker()
-
-/obj/structure/window/ms13_vehicle_wall/solid/set_opacity(new_opacity)
-	. = ..()
-	if(sight_blocker)
-		sight_blocker.set_opacity(opacity)
-
-/// BYOND ignores opacity on the viewer's own tile. Keep the sight boundary immediately outside
-/// the hull instead, where it can occlude the exterior without blacking out a vehicle frame.
-/obj/structure/window/ms13_vehicle_wall/solid/proc/update_sight_blocker()
-	if(sight_blocker)
-		sight_blocker.forceMove(get_step(src, dir))
-
-/obj/effect/ms13_vehicle_sight_blocker
-	name = ""
-	anchored = TRUE
-	opacity = TRUE
-	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	var/blocks_vision = TRUE
 
 /**
  * A manually-operated door mounted in place of a hull panel - same border mechanic as the rest of the
- * hull, just with a toggleable density/opacity so it can actually be walked through. Left-click toggles
+ * hull, just with toggleable density/vision blocking so it can actually be walked through. Left-click toggles
  * it open/closed (matching the base window's own attack_hand() combat_mode split - a combat-mode click
  * still bashes it like any other wall instead of opening it).
  */
@@ -112,8 +80,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 		return
 	opened = TRUE
 	set_density(FALSE)
-	set_opacity(FALSE)
+	blocks_vision = FALSE
 	icon_state = open_icon_state
+	parent_frame?.vehicle?.update_interior_masks()
 	if(user)
 		user.visible_message(span_notice("[user] opens [src]."), span_notice("You open [src]."))
 	playsound(src, 'sound/machines/door_open.ogg', 50, TRUE)
@@ -123,8 +92,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 		return
 	opened = FALSE
 	set_density(TRUE)
-	set_opacity(TRUE)
+	blocks_vision = TRUE
 	icon_state = initial(icon_state)
+	parent_frame?.vehicle?.update_interior_masks()
 	if(user)
 		user.visible_message(span_notice("[user] closes [src]."), span_notice("You close [src]."))
 	playsound(src, 'sound/machines/door_close.ogg', 50, TRUE)
