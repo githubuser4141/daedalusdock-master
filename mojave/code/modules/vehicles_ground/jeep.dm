@@ -16,6 +16,10 @@
 	ram_damage_base = 3
 	ram_damage_per_speed = 3
 	ram_knockdown_per_speed = 4
+	wheel_integrity = 65
+	engine_integrity = 160
+	fuel_capacity = 70
+	fuel_per_tile = 0.08
 
 /obj/structure/ms13_vehicle_frame/jeep_front
 	name = "jeep"
@@ -44,11 +48,11 @@
 	back.forward_offset = -1
 	vehicle.frames += back
 
-	spawn_wall(dir, "c_windshield") // front
-	spawn_wall(turn(dir, 90), "c_window") // left
-	spawn_wall(turn(dir, -90), "c_window") // right
-	back.spawn_wall(turn(dir, 90), "c_window") // left
-	back.spawn_wall(turn(dir, -90), "c_window") // right
+	spawn_wall(dir, "c_windshield", /obj/structure/window/ms13_vehicle_wall/shuttered) // front
+	spawn_wall(turn(dir, 90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered) // left
+	spawn_wall(turn(dir, -90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered) // right
+	back.spawn_wall(turn(dir, 90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered) // left
+	back.spawn_wall(turn(dir, -90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered) // right
 	// back.spawn_wall(turn(dir, 180), ...) intentionally skipped - that's the entrance
 
 	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = new(front_turf)
@@ -61,3 +65,9 @@
 	passenger_seat.parent_frame = back
 	passenger_seat.icon_state = "commanders_seat"
 	passenger_seat.setDir(dir)
+
+	spawn_part(/obj/structure/ms13_vehicle_part/engine)
+	spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
+	spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)

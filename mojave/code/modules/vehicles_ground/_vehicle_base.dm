@@ -2,8 +2,8 @@
  * Minimal ground vehicle controller - a real, multi-tile object formation that moves together one
  * tile at a time. No separate z-level, no possession, no turf-swapping: ported from Civ13's vehicle
  * system (github.com/Civ13/Civ13, code/modules/1713/machinery/modular_vehicles/, AGPLv3 - same
- * license as this codebase), stripped down to just the core mechanic - no modular crafting, no
- * engine/fuel. See jeep.dm for the one concrete vehicle this currently assembles into.
+ * license as this codebase), stripped down to code-configured parts rather than in-game modular
+ * crafting. See jeep.dm and armored_truck.dm for the concrete vehicle layouts.
  *
  * A vehicle is a set of frame tiles (the floor of each cell - see /obj/structure/ms13_vehicle_frame
  * below) plus directional walls sitting on those tiles (border objects, exactly like the game's
@@ -19,10 +19,14 @@
  *
  */
 GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
+GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /datum/ms13_ground_vehicle
 	var/list/obj/structure/ms13_vehicle_frame/frames = list()
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
+	var/list/obj/structure/ms13_vehicle_part/parts = list()
+	var/obj/structure/ms13_vehicle_part/engine/engine
+	var/datum/looping_sound/ms13/vehicle_wheels/wheel_soundloop
 	var/mob/living/driver
 	/// The frame rotation pivots around; never moves position during a turn.
 	var/obj/structure/ms13_vehicle_frame/pivot
@@ -40,6 +44,17 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	var/ram_damage_base = 4
 	var/ram_damage_per_speed = 4
 	var/ram_knockdown_per_speed = 5
+	var/required_wheels = 4
+	var/wheel_integrity = 80
+	var/engine_integrity = 200
+	var/fuel_capacity = 100
+	var/fuel_per_tile = 0.1
+	var/rev_sound = 'sound/vehicles/carrev.ogg'
+	var/ram_sound = 'sound/effects/bang.ogg'
+	var/crash_sound = 'mojave/sound/ms13effects/impact/metal/metal_crunch_3.wav'
+	var/rev_sound_volume = 35
+	var/ram_sound_volume = 45
+	var/crash_sound_volume = 55
 
 	/// Current momentum state. Speed is an index into speed_delays, not tiles per tick.
 	var/speed = 0
@@ -55,6 +70,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	. = list()
 	. += frames
 	. += walls
+	. += parts
 
 /// Shows this vehicle's roof to an outside viewer, or hides it from somebody aboard.
 /datum/ms13_ground_vehicle/proc/set_roof_visible(client/viewer, visible)
@@ -65,6 +81,31 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 			viewer.images |= frame.roof
 		else
 			viewer.images -= frame.roof
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
+		if(!part.exterior_image)
+			continue
+		if(visible)
+			viewer.images |= part.exterior_image
+		else
+			viewer.images -= part.exterior_image
+
+/// Engines and the configured number of intact wheels provide motive power. Losing either prevents
+/// new throttle, while the existing momentum loop remains free to coast to a stop.
+/datum/ms13_ground_vehicle/proc/has_motive_power()
+	if(!engine?.is_operational())
+		return FALSE
+	var/working_wheels = 0
+	for(var/obj/structure/ms13_vehicle_part/wheel/wheel in parts)
+		if(wheel.is_operational())
+			working_wheels++
+	return working_wheels >= required_wheels
+
+/datum/ms13_ground_vehicle/proc/set_parts_moving(is_moving)
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
+		part.set_moving(is_moving)
+
+/datum/ms13_ground_vehicle/proc/destroy_soundloops()
+	QDEL_NULL(wheel_soundloop)
 
 /// Returns this vehicle's frame on turf_to_check, if it has one there.
 /datum/ms13_ground_vehicle/proc/get_frame_at(turf/turf_to_check)
@@ -74,7 +115,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 
 /// Does a sight ray leaving frame in exit_dir cross a closed solid hull panel?
 /datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir)
-	for(var/obj/structure/window/ms13_vehicle_wall/solid/wall in walls)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
 		if(wall.parent_frame == frame && wall.blocks_vision && (wall.dir & exit_dir))
 			return TRUE
 	return FALSE
@@ -186,6 +227,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		if(!can_push)
 			return FALSE
 		victim.forceMove(push_turf)
+	if(length(victims))
+		playsound(pivot, ram_sound, ram_sound_volume, TRUE)
 	return TRUE
 
 /// Would every frame have a clear tile to land on if the vehicle turned to face new_dir right now?
@@ -231,20 +274,25 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		frame.forceMove(get_step(frame, direction))
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
 		wall.forceMove(get_step(wall, direction))
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
+		part.forceMove(get_step(part, direction))
 	for(var/atom/movable/passenger as anything in manifest)
 		passenger.forceMove(get_step(passenger, direction))
+	engine?.consume_fuel(fuel_per_tile)
 	return TRUE
 
 /// Starts at low speed, accelerates while the driver holds the travel direction, and uses the
 /// opposite input as a brake before allowing a change between forward and reverse.
 /datum/ms13_ground_vehicle/proc/apply_throttle(direction)
+	if(!has_motive_power())
+		return FALSE
 	if(!speed)
 		travel_dir = direction
 		speed = 1
 		last_throttle_time = world.time
 		next_acceleration_time = world.time + acceleration_delay
 		start_motion()
-		return
+		return TRUE
 
 	last_throttle_time = world.time
 	if(direction != travel_dir)
@@ -252,11 +300,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		next_acceleration_time = world.time + acceleration_delay
 		if(!speed)
 			stop_motion()
-		return
+		return TRUE
 
 	if(world.time >= next_acceleration_time && speed < length(speed_delays))
 		speed++
 		next_acceleration_time = world.time + acceleration_delay
+		playsound(pivot, rev_sound, rev_sound_volume, TRUE)
+	return TRUE
 
 /// Turns in place while stopped. At speed, reversing preserves reversed travel through the turn;
 /// taking a corner also sheds configurable momentum, and an over-speed turn input only brakes.
@@ -278,8 +328,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	if(!(direction in list(NORTH, SOUTH, EAST, WEST)))
 		return FALSE
 	if(direction == dir || direction == turn(dir, 180))
-		apply_throttle(direction)
-		return TRUE
+		return apply_throttle(direction)
 	return apply_steering(direction)
 
 /datum/ms13_ground_vehicle/proc/start_motion()
@@ -287,6 +336,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		return
 	moving = TRUE
 	movement_generation++
+	set_parts_moving(TRUE)
+	if(!wheel_soundloop)
+		wheel_soundloop = new(pivot)
+	wheel_soundloop.start()
 	movement_tick(movement_generation)
 
 /datum/ms13_ground_vehicle/proc/stop_motion()
@@ -294,6 +347,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	speed = 0
 	travel_dir = null
 	movement_generation++
+	set_parts_moving(FALSE)
+	wheel_soundloop?.stop()
 
 /// Self-schedules one tile at a time. Releasing the throttle coasts briefly, drops through the
 /// configured speed bands, then stops; collisions cancel the remaining momentum immediately.
@@ -307,6 +362,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 			stop_motion()
 			return
 	if(!do_move(travel_dir, TRUE))
+		playsound(pivot, crash_sound, crash_sound_volume, TRUE)
 		stop_motion()
 		return
 	addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), speed_delays[speed])
@@ -332,6 +388,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
 		wall_dest[wall] = get_relative_turf(wall.forward_offset, wall.right_offset, new_dir)
 		wall_dir[wall] = turn(new_dir, wall.relative_turn)
+	var/list/part_dest = list()
+	var/list/part_dir = list()
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
+		part_dest[part] = get_relative_turf(part.forward_offset, part.right_offset, new_dir)
+		part_dir[part] = turn(new_dir, part.relative_turn)
 
 	dir = new_dir
 
@@ -341,6 +402,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
 		wall.forceMove(wall_dest[wall])
 		wall.setDir(wall_dir[wall])
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
+		part.forceMove(part_dest[part])
+		part.setDir(part_dir[part])
 	for(var/atom/movable/passenger as anything in manifest)
 		var/obj/structure/ms13_vehicle_frame/old_frame = manifest[passenger]
 		passenger.forceMove(frame_dest[old_frame])
@@ -379,6 +443,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images -= roof
 	roof = null
+	if(vehicle?.pivot == src)
+		vehicle.destroy_soundloops()
 	vehicle?.stop_motion()
 	vehicle?.frames -= src
 	vehicle = null
@@ -401,6 +467,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	wall.relative_turn = (dir2angle(vehicle.dir) - dir2angle(wall_dir) + 360) % 360
 	if(icon_state_override)
 		wall.icon_state = icon_state_override
+	wall.finish_mount()
 	vehicle.walls += wall
 	return wall
 
@@ -442,6 +509,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	if(!. || !client)
 		return
 	client.images |= GLOB.ms13_vehicle_roofs
+	client.images |= GLOB.ms13_vehicle_exterior_part_images
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
 	vehicle?.set_roof_visible(client, FALSE)
 	update_ms13_vehicle_interior_mask()

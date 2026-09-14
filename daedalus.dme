@@ -5397,6 +5397,7 @@
 #include "mojave\code\modules\vapour\subsystem\vapour_emitters.dm"
 #include "mojave\code\modules\vapour\subsystem\vapour_subsystem.dm"
 #include "mojave\code\modules\vehicles_ground\_vehicle_base.dm"
+#include "mojave\code\modules\vehicles_ground\vehicle_parts.dm"
 #include "mojave\code\modules\vehicles_ground\armored_truck.dm"
 #include "mojave\code\modules\vehicles_ground\jeep.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_seats.dm"

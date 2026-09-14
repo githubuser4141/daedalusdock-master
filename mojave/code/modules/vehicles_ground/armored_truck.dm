@@ -18,6 +18,10 @@
 	ram_damage_base = 5
 	ram_damage_per_speed = 5
 	ram_knockdown_per_speed = 5
+	wheel_integrity = 110
+	engine_integrity = 280
+	fuel_capacity = 140
+	fuel_per_tile = 0.12
 
 /obj/structure/ms13_vehicle_frame/armored_truck_front_left
 	name = "armored truck"
@@ -66,8 +70,8 @@
 
 	// Front: windshield across both front tiles - still see-through/driveable-by-sight, unlike the
 	// solid hull everywhere else.
-	spawn_wall(dir, "c_windshield")
-	front_right.spawn_wall(dir, "c_windshield")
+	spawn_wall(dir, "c_windshield", /obj/structure/window/ms13_vehicle_wall/shuttered)
+	front_right.spawn_wall(dir, "c_windshield", /obj/structure/window/ms13_vehicle_wall/shuttered)
 
 	// Sides: solid armor plating down both long edges - blocks sight in and out, per the solid
 	// subtype's opacity.
@@ -90,5 +94,11 @@
 	passenger_seat.parent_frame = front_right
 	passenger_seat.icon_state = "commanders_seat"
 	passenger_seat.setDir(dir)
+
+	spawn_part(/obj/structure/ms13_vehicle_part/engine)
+	spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
+	back_right.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
 	// back_left/back_right are left as open floor - standing room/cargo space behind the driver,
 	// reachable through the rear door.

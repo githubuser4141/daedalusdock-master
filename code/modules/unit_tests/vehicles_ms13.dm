@@ -10,6 +10,16 @@
 	TEST_ASSERT_EQUAL(length(front.vehicle.frames), 2, "Jeep did not assemble both frame tiles.")
 	// Front tile: front/left/right (3). Back tile: left/right (2) - its rear stays open as the entrance.
 	TEST_ASSERT_EQUAL(length(front.vehicle.walls), 5, "Jeep did not assemble all 5 expected wall segments.")
+	TEST_ASSERT_EQUAL(length(front.vehicle.parts), 5, "Jeep did not assemble its engine and four wheels.")
+	TEST_ASSERT(front.vehicle.has_motive_power(), "A complete, fueled jeep did not have motive power.")
+	var/wheel_count = 0
+	for(var/obj/structure/ms13_vehicle_part/wheel/wheel in front.vehicle.parts)
+		wheel_count++
+		TEST_ASSERT(!wheel.density, "A vehicle wheel was dense and would prevent somebody standing over it.")
+		TEST_ASSERT(wheel.exterior_image, "A vehicle wheel did not create its exterior-only image.")
+		TEST_ASSERT_EQUAL(wheel.exterior_image.mouse_opacity, MOUSE_OPACITY_ICON, "A wheel image would intercept clicks outside its visible pixels.")
+	TEST_ASSERT_EQUAL(wheel_count, 4, "Jeep did not assemble four independently damageable wheels.")
+	TEST_ASSERT(front.vehicle.engine?.reagents?.has_reagent(/datum/reagent/fuel), "Jeep engine did not start with reagent fuel.")
 
 	var/obj/structure/ms13_vehicle_frame/back
 	for(var/obj/structure/ms13_vehicle_frame/candidate as anything in front.vehicle.frames)
@@ -36,11 +46,13 @@
 	TEST_ASSERT(expected_front_dest && !expected_front_dest.density, "No clear tile east of the front frame for this test.")
 	TEST_ASSERT(expected_back_dest && !expected_back_dest.density, "No clear tile east of the back frame for this test.")
 
+	var/fuel_before_move = front.vehicle.engine.reagents.get_reagent_amount(/datum/reagent/fuel)
 	var/result = front.vehicle.do_move(EAST)
 	TEST_ASSERT(result, "do_move() reported failure on a clear path.")
 	TEST_ASSERT_EQUAL(get_turf(front), expected_front_dest, "Front frame did not move to the expected tile.")
 	TEST_ASSERT_EQUAL(get_turf(back), expected_back_dest, "Back frame did not move to the expected tile.")
 	TEST_ASSERT_EQUAL(get_turf(driver), expected_front_dest, "Driver was not carried along with the vehicle.")
+	TEST_ASSERT(front.vehicle.engine.reagents.get_reagent_amount(/datum/reagent/fuel) < fuel_before_move, "A powered movement step consumed no engine fuel.")
 
 	// Rotation: turn 90 degrees and confirm the back frame, its walls, and the driver all land where
 	// expected, and that the walls' own facings turned with them, not just their positions.
@@ -100,12 +112,16 @@
 	vehicle.apply_throttle(vehicle.dir)
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Vehicle did not start in its first speed band.")
 	TEST_ASSERT(vehicle.moving, "Vehicle did not enter its self-driven movement loop.")
+	TEST_ASSERT(vehicle.engine.soundloop?.is_active(), "The engine running loop did not start with the vehicle.")
+	TEST_ASSERT(vehicle.wheel_soundloop?.is_active(), "The wheel movement loop did not start with the vehicle.")
 	vehicle.next_acceleration_time = 0
 	vehicle.apply_throttle(vehicle.travel_dir)
 	TEST_ASSERT_EQUAL(vehicle.speed, 2, "Held throttle did not advance to the next configured speed band.")
 	vehicle.apply_throttle(turn(vehicle.travel_dir, 180))
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Opposite input did not brake the vehicle by one speed band.")
 	vehicle.stop_motion()
+	TEST_ASSERT(!vehicle.engine.soundloop?.is_active(), "The engine running loop continued after the vehicle stopped.")
+	TEST_ASSERT(!vehicle.wheel_soundloop?.is_active(), "The wheel movement loop continued after the vehicle stopped.")
 
 	var/turf/ram_turf = get_step(front, vehicle.dir)
 	var/turf/push_turf = get_step(ram_turf, vehicle.dir)
@@ -145,6 +161,8 @@
 	TEST_ASSERT(front_left.vehicle, "Armored truck front-left tile did not build a vehicle controller.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.frames), 4, "Armored truck did not assemble all 4 frame tiles.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.walls), 8, "Armored truck did not assemble all 8 expected wall segments.")
+	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 5, "Armored truck did not assemble its engine and four wheels.")
+	TEST_ASSERT(front_left.vehicle.has_motive_power(), "A complete, fueled truck did not have motive power.")
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
 		TEST_ASSERT(frame.roof, "An armored truck frame did not create its opaque roof image.")
 		TEST_ASSERT_EQUAL(frame.roof.loc, frame, "A truck roof image was not attached to its frame.")
@@ -203,6 +221,17 @@
 	TEST_ASSERT(istype(front_left.vehicle, /datum/ms13_ground_vehicle/armored_truck), "Truck did not instantiate its own handling configuration.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.speed_delays), 3, "Truck did not receive its configured three speed bands.")
 
+	var/obj/structure/window/ms13_vehicle_wall/shuttered/shutter
+	for(var/obj/structure/window/ms13_vehicle_wall/shuttered/candidate in front_left.vehicle.walls)
+		shutter = candidate
+		break
+	TEST_ASSERT(shutter, "Truck windshields did not receive shutter capability.")
+	shutter.attack_hand(driver)
+	TEST_ASSERT(shutter.shutters_closed && shutter.blocks_vision, "Closing a window shutter did not block its sight boundary.")
+	TEST_ASSERT(front_left.vehicle.blocks_sight_from(get_turf(shutter.parent_frame), get_step(shutter, shutter.dir)), "Closed shutter did not mask the exterior beyond its window.")
+	shutter.attack_hand(driver)
+	TEST_ASSERT(!shutter.shutters_closed && !shutter.blocks_vision, "Opening a window shutter did not restore visibility.")
+
 	var/original_dir = front_left.vehicle.dir
 	var/new_facing = turn(original_dir, 90)
 
@@ -211,6 +240,9 @@
 		var/turf/dest = front_left.vehicle.get_relative_turf(frame.forward_offset, frame.right_offset, new_facing)
 		TEST_ASSERT(dest && !dest.density, "No clear tile to rotate into for one of the truck's frames.")
 		expected_frame_dest[frame] = dest
+	var/list/expected_part_dest = list()
+	for(var/obj/structure/ms13_vehicle_part/part as anything in front_left.vehicle.parts)
+		expected_part_dest[part] = front_left.vehicle.get_relative_turf(part.forward_offset, part.right_offset, new_facing)
 
 	front_left.vehicle.next_move_time = 0
 	var/rotate_result = front_left.vehicle.do_rotate(new_facing)
@@ -220,6 +252,8 @@
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
 		TEST_ASSERT_EQUAL(get_turf(frame), expected_frame_dest[frame], "A truck frame did not land where its own forward/right offset says it should after rotating.")
 		TEST_ASSERT_EQUAL(frame.roof.dir, new_facing, "A truck roof did not rotate with its frame.")
+	for(var/obj/structure/ms13_vehicle_part/part as anything in front_left.vehicle.parts)
+		TEST_ASSERT_EQUAL(get_turf(part), expected_part_dest[part], "A truck component did not rotate with its configured frame offset.")
 
 	var/all_walls_match = TRUE
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in front_left.vehicle.walls)
@@ -231,3 +265,15 @@
 			if(!front_left.vehicle.blocks_sight_from(get_turf(solid_wall.parent_frame), get_step(solid_wall, solid_wall.dir)))
 				all_walls_match = FALSE
 	TEST_ASSERT(all_walls_match, "At least one truck wall did not land at/facing the position its own offsets say it should after rotating.")
+
+	var/obj/structure/ms13_vehicle_part/engine/engine = front_left.vehicle.engine
+	var/fuel_before_emptying = engine.reagents.get_reagent_amount(/datum/reagent/fuel)
+	engine.reagents.remove_reagent(/datum/reagent/fuel, fuel_before_emptying)
+	TEST_ASSERT(!front_left.vehicle.has_motive_power(), "An empty engine still provided motive power.")
+	TEST_ASSERT(!front_left.vehicle.apply_throttle(front_left.vehicle.dir), "An empty engine still allowed acceleration.")
+	engine.reagents.add_reagent(/datum/reagent/fuel, fuel_before_emptying)
+	TEST_ASSERT(front_left.vehicle.has_motive_power(), "Refueling did not restore motive power.")
+	engine.take_damage(engine.max_integrity, BRUTE, BOMB, FALSE)
+	TEST_ASSERT(!front_left.vehicle.has_motive_power(), "A broken engine still provided motive power.")
+	front_left.vehicle.stop_motion()
+	TEST_ASSERT(!front_left.vehicle.apply_throttle(front_left.vehicle.dir), "A broken engine still allowed acceleration.")

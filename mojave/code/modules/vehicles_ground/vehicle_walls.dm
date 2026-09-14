@@ -30,6 +30,11 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	/// front wall, 90/270 for the sides) - set once at spawn_wall() and never changes, so turning just
 	/// re-applies turn(new_dir, relative_turn) to get this wall's new absolute facing.
 	var/relative_turn = 0
+	/// Solid panels and closed shutters use this logical boundary instead of tile-wide opacity.
+	var/blocks_vision = FALSE
+
+/obj/structure/window/ms13_vehicle_wall/proc/finish_mount()
+	return
 
 /obj/structure/window/ms13_vehicle_wall/Destroy()
 	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
@@ -47,7 +52,31 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	name = "vehicle hull plating"
 	desc = "A solid section of vehicle armor plating."
 	icon_state = "c_armoredwall"
-	var/blocks_vision = TRUE
+	blocks_vision = TRUE
+
+/** A window with manually-operated armored shutters. It remains a normal window while open. */
+/obj/structure/window/ms13_vehicle_wall/shuttered
+	name = "shuttered vehicle window"
+	desc = "A vehicle window fitted with sliding armored shutters. Click to open or close them."
+	var/shutters_closed = FALSE
+	var/open_icon_state
+	var/closed_icon_state = "c_armoredwall"
+
+/obj/structure/window/ms13_vehicle_wall/shuttered/finish_mount()
+	open_icon_state = icon_state
+
+/obj/structure/window/ms13_vehicle_wall/shuttered/attack_hand(mob/living/user, list/modifiers)
+	if(user.combat_mode)
+		return ..()
+	shutters_closed = !shutters_closed
+	blocks_vision = shutters_closed
+	icon_state = shutters_closed ? closed_icon_state : open_icon_state
+	parent_frame?.vehicle?.update_interior_masks()
+	var/third_person_action = shutters_closed ? "closes" : "opens"
+	var/second_person_action = shutters_closed ? "close" : "open"
+	user.visible_message(span_notice("[user] [third_person_action] [src]'s shutters."), span_notice("You [second_person_action] [src]'s shutters."))
+	playsound(src, 'sound/machines/door_open.ogg', 35, TRUE)
+	return TRUE
 
 /**
  * A manually-operated door mounted in place of a hull panel - same border mechanic as the rest of the

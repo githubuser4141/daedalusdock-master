@@ -61,6 +61,7 @@ code/datums/map_config.dm,
 code/modules/surgery/bodyparts/wounds/burns.dm,
 code/modules/mob/living/living_defense.dm,
 code/modules/unit_tests/vehicles_ms13.dm,
+daedalus.dme,
 
 
 */
