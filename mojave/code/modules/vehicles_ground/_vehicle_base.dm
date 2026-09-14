@@ -293,13 +293,17 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	if(!vehicle)
 		return
 	ms13_vehicle_interior_masks = list()
-	// ponytail: rebuilds the small visible mask on movement; cache rays if vehicle sizes grow.
-	for(var/turf/target in range(client.view, src))
+	var/list/mask_view = getviewsize(client.view)
+	var/extended_view = "[mask_view[1] + 4]x[mask_view[2] + 4]"
+	// ponytail: rebuilds the visible mask plus a two-tile margin; cache rays if vehicle sizes grow.
+	for(var/turf/target in range(extended_view, src))
 		if(!vehicle.blocks_sight_from(get_turf(src), target))
 			continue
 		var/image/mask = image(icon = 'icons/effects/alphacolors.dmi', loc = target, layer = ABOVE_ALL_MOB_LAYER)
 		mask.color = "#000000"
-		mask.plane = ABOVE_GAME_PLANE
+		mask.plane = FULLSCREEN_PLANE
+		mask.layer = FOV_EFFECTS_LAYER
+		mask.appearance_flags = RESET_COLOR | RESET_TRANSFORM
 		mask.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		ms13_vehicle_interior_masks += mask
 	client.images += ms13_vehicle_interior_masks
