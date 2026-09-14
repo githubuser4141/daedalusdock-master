@@ -18,6 +18,8 @@
 		TEST_ASSERT(!wheel.density, "A vehicle wheel was dense and would prevent somebody standing over it.")
 		TEST_ASSERT(wheel.exterior_image, "A vehicle wheel did not create its exterior-only image.")
 		TEST_ASSERT_EQUAL(wheel.exterior_image.mouse_opacity, MOUSE_OPACITY_ICON, "A wheel image would intercept clicks outside its visible pixels.")
+		TEST_ASSERT_EQUAL(wheel.exterior_image.pixel_x, wheel.dir == EAST ? 12 : wheel.dir == WEST ? -12 : 0, "A wheel was not offset horizontally toward its outside edge.")
+		TEST_ASSERT_EQUAL(wheel.exterior_image.pixel_y, wheel.dir == NORTH ? 12 : wheel.dir == SOUTH ? -12 : 0, "A wheel was not offset vertically toward its outside edge.")
 	TEST_ASSERT_EQUAL(wheel_count, 4, "Jeep did not assemble four independently damageable wheels.")
 	TEST_ASSERT(front.vehicle.engine?.reagents?.has_reagent(/datum/reagent/fuel), "Jeep engine did not start with reagent fuel.")
 

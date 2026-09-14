@@ -101,6 +101,8 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	var/stationary_icon_state
 	var/moving_icon_state
 	var/broken_icon_state
+	/// Pushes centered sprites such as wheels outside the frame edge; Civ13's tracks are pre-aligned.
+	var/exterior_offset = 0
 
 /obj/structure/ms13_vehicle_part/running_gear/Initialize(mapload)
 	. = ..()
@@ -112,6 +114,12 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 
 /obj/structure/ms13_vehicle_part/running_gear/configure_from_vehicle()
 	modify_max_integrity(vehicle.running_gear_integrity)
+
+/obj/structure/ms13_vehicle_part/running_gear/setDir(new_dir)
+	. = ..()
+	if(exterior_image)
+		exterior_image.pixel_x = dir == EAST ? exterior_offset : dir == WEST ? -exterior_offset : 0
+		exterior_image.pixel_y = dir == NORTH ? exterior_offset : dir == SOUTH ? -exterior_offset : 0
 
 /obj/structure/ms13_vehicle_part/running_gear/set_moving(is_moving)
 	if(exterior_image && !broken)
@@ -133,6 +141,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	stationary_icon_state = "wheel_t_dark"
 	moving_icon_state = "wheel_t_dark_m"
 	broken_icon_state = "wheel_t_dark_broken"
+	exterior_offset = 12
 
 /obj/structure/ms13_vehicle_part/running_gear/track
 	name = "M113 track assembly"
