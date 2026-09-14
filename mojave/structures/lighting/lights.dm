@@ -42,18 +42,13 @@
 
 /obj/machinery/light/ms13/Initialize(mapload) //shoutout to the shartcoder that coded in lights backwards
 	. = ..()
-	// MOJAVE EDIT: WEST/EAST used to also push pixel_y by 16 alongside pixel_x, on top of the sprite's
-	// own facing offset - shoving the light diagonally out past the edge of its own tile instead of
-	// flush against the wall like the NORTH/SOUTH cases (single-axis, matches core DD's own
-	// /obj/machinery/light/setDir() in code/modules/power/lighting/light.dm). Made WEST/EAST
-	// single-axis too.
 	switch(dir)
 		if(SOUTH)
 			pixel_x = 0
-			pixel_y = -2
+			pixel_y = 2
 		if(NORTH)
 			pixel_x = 0
-			pixel_y = 2
+			pixel_y = 35
 		if(WEST)
 			pixel_x = -16
 			pixel_y = 0

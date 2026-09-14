@@ -33,19 +33,21 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 /obj/machinery/door/unpowered/ms13/Initialize(mapload)
 	. = ..()
 	if(dir == NORTH)
-		pixel_y = 8
+		pixel_y = -8
 
 	if(dir == SOUTH)
 		pixel_y = -8
 
 	if(dir == EAST)
 		pixel_x = -3
-		pixel_y = 16
+		pixel_y = -16 // MOJAVE FIX: was +16 - the 64x64 icon needs centering on its 32-tall bounding
+		// box the same way the class's own pixel_x = -16 centers it for NORTH/SOUTH, just on the
+		// other axis now that it's rotated - that's -16, not +16 (unconfirmed in-game, verify).
 		add_overlay(image(icon,icon_state="[frametype]_frame_vertical_overlay", layer = ABOVE_ALL_MOB_LAYER))
 
 	if(dir == WEST)
 		pixel_x = -28
-		pixel_y = 16
+		pixel_y = -16 // MOJAVE FIX: see EAST above
 		add_overlay(image(icon,icon_state="[frametype]_frame_vertical_overlay", layer = ABOVE_ALL_MOB_LAYER))
 
 	if(mapload)

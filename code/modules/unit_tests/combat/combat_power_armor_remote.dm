@@ -39,15 +39,14 @@
 	var/turf/start_turf = get_turf(link.drone)
 	var/turf/next_turf = get_step(start_turf, EAST)
 	TEST_ASSERT(next_turf, "No adjacent turf to move the drone into for the cable test.")
-	// Two step_to() calls back-to-back with no elapsed time between them otherwise hit the normal
-	// movement cooldown (next_move) - a real player would never chain moves this fast, but a unit
-	// test does, so bypass it the same way other movement-driving tests do (e.g. combat_cuffs.dm).
-	link.drone.next_move = -1
-	step_to(link.drone, next_turf)
+	// forceMove() rather than step_to() - two client-driven moves back-to-back with no elapsed time
+	// between them hit the normal movement cooldown (next_move), which a real player would never do
+	// but a synchronous test does. forceMove() isn't subject to that throttle and still fires the
+	// same COMSIG_MOVABLE_MOVED completion signal on_drone_moved() relies on.
+	link.drone.forceMove(next_turf)
 	TEST_ASSERT_EQUAL(length(link.cable_trail), 1, "Moving the drone one tile did not lay exactly one cable segment.")
 
-	link.drone.next_move = -1
-	step_to(link.drone, start_turf)
+	link.drone.forceMove(start_turf)
 	TEST_ASSERT_EQUAL(length(link.cable_trail), 0, "Stepping back over its own cable did not reel the segment back in.")
 
 	link.sever("unit test teardown")

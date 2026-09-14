@@ -1,0 +1,200 @@
+/**
+ * Minimal ground vehicle controller - a real, multi-tile object formation that moves together one
+ * tile at a time. No separate z-level, no possession, no turf-swapping: ported from Civ13's vehicle
+ * system (github.com/Civ13/Civ13, code/modules/1713/machinery/modular_vehicles/, AGPLv3 - same
+ * license as this codebase), stripped down to just the core mechanic - no modular crafting, no
+ * engine/fuel. See jeep.dm for the one concrete vehicle this currently assembles into.
+ *
+ * A vehicle is a set of frame tiles (the floor of each cell - see /obj/structure/ms13_vehicle_frame
+ * below) plus directional walls sitting on those tiles (border objects, exactly like the game's
+ * existing windows - see vehicle_walls.dm). Moving or turning the vehicle just forceMoves every
+ * frame, every wall, and everything currently standing on any frame tile - the "vehicle" has no
+ * existence beyond that set of ordinary map objects moving in lockstep, so shooting one of its walls
+ * is exactly as real as shooting any other wall in the game.
+ *
+ * Rotation pivots on one designated frame (pivot), which never itself changes position - every other
+ * frame/wall records its position as a (forward, right) offset from the pivot in the vehicle's OWN
+ * current facing, and turning just recomputes where those offsets land in the new facing.
+ *
+ * ponytail: no bystander collision handling beyond "is a dense obstacle in the way" - a loose mob
+ * standing in the vehicle's path does not get pushed/run over like Civ13's own version does.
+ */
+/datum/ms13_ground_vehicle
+	var/list/obj/structure/ms13_vehicle_frame/frames = list()
+	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
+	var/mob/living/driver
+	/// The frame rotation pivots around; never moves position during a turn.
+	var/obj/structure/ms13_vehicle_frame/pivot
+	/// The vehicle's current facing - kept in sync with pivot.dir, but tracked here too since a plain
+	/// datum has no dir var of its own.
+	var/dir = NORTH
+	/// Deciseconds between tiles/turns - matches a brisk walking pace.
+	var/move_delay = 4
+	var/next_move_time = 0
+
+/datum/ms13_ground_vehicle/proc/get_all_parts()
+	. = list()
+	. += frames
+	. += walls
+
+/// Walks forward_offset tiles along facing_dir (negative = backward) then right_offset tiles
+/// perpendicular to it (negative = left), starting from the pivot's current turf. Used to find where
+/// every frame/wall belongs both when driving straight (facing_dir = dir) and when turning
+/// (facing_dir = the new dir being turned to).
+/datum/ms13_ground_vehicle/proc/get_relative_turf(forward_offset, right_offset, facing_dir)
+	var/turf/current = get_turf(pivot)
+	var/forward_dir = facing_dir
+	var/backward_dir = turn(facing_dir, 180)
+	var/right_dir = turn(facing_dir, -90)
+	var/left_dir = turn(facing_dir, 90)
+
+	var/steps = forward_offset
+	while(steps > 0 && current)
+		current = get_step(current, forward_dir)
+		steps--
+	while(steps < 0 && current)
+		current = get_step(current, backward_dir)
+		steps++
+
+	steps = right_offset
+	while(steps > 0 && current)
+		current = get_step(current, right_dir)
+		steps--
+	while(steps < 0 && current)
+		current = get_step(current, left_dir)
+		steps++
+
+	return current
+
+/// Is every frame's next tile in this direction free of anything that isn't part of this same
+/// vehicle - including its current passengers, who are expected to come along for the ride rather
+/// than count as obstacles to their own vehicle (this matters most for rotation, below: the pivot's
+/// own "destination" is its current tile, which its driver is standing on).
+/datum/ms13_ground_vehicle/proc/can_move(direction)
+	var/list/parts = get_all_parts() + get_manifest()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		var/turf/dest = get_step(frame, direction)
+		if(!dest || dest.density)
+			return FALSE
+		for(var/atom/movable/blocker in dest)
+			if(blocker in parts)
+				continue
+			if(blocker.density)
+				return FALSE
+	return TRUE
+
+/// Would every frame have a clear tile to land on if the vehicle turned to face new_dir right now?
+/datum/ms13_ground_vehicle/proc/can_rotate(new_dir)
+	if(new_dir == dir)
+		return FALSE
+	var/list/parts = get_all_parts() + get_manifest()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		var/turf/dest = get_relative_turf(frame.forward_offset, frame.right_offset, new_dir)
+		if(!dest || dest.density)
+			return FALSE
+		for(var/atom/movable/blocker in dest)
+			if(blocker in parts)
+				continue
+			if(blocker.density)
+				return FALSE
+	return TRUE
+
+/// Builds the manifest of everything currently standing on any frame tile that isn't part of the
+/// vehicle itself, tagged with which frame it was on - shared by do_move() and do_rotate() so both
+/// carry passengers along the same way.
+/datum/ms13_ground_vehicle/proc/get_manifest()
+	var/list/parts = get_all_parts()
+	. = list()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		for(var/atom/movable/passenger in frame.loc)
+			if(passenger in parts)
+				continue
+			.[passenger] = frame
+
+/// Moves every frame, every wall, and everyone/everything currently aboard one tile in direction.
+/datum/ms13_ground_vehicle/proc/do_move(direction)
+	if(!driver || world.time < next_move_time)
+		return FALSE
+	if(!can_move(direction))
+		return FALSE
+	next_move_time = world.time + move_delay
+
+	var/list/manifest = get_manifest()
+
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		frame.forceMove(get_step(frame, direction))
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+		wall.forceMove(get_step(wall, direction))
+	for(var/atom/movable/passenger as anything in manifest)
+		passenger.forceMove(get_step(passenger, direction))
+	return TRUE
+
+/// Turns the whole vehicle in place to face new_dir, rotating every frame/wall's position around the
+/// pivot and every wall's own facing to match, and carrying passengers to their frame's new tile.
+/datum/ms13_ground_vehicle/proc/do_rotate(new_dir)
+	if(!driver || world.time < next_move_time)
+		return FALSE
+	if(!can_rotate(new_dir))
+		return FALSE
+	next_move_time = world.time + move_delay
+
+	var/list/manifest = get_manifest()
+
+	// Compute every destination before moving anything, so later lookups aren't thrown off by a
+	// frame that's already relocated.
+	var/list/frame_dest = list()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		frame_dest[frame] = get_relative_turf(frame.forward_offset, frame.right_offset, new_dir)
+	var/list/wall_dest = list()
+	var/list/wall_dir = list()
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+		wall_dest[wall] = get_relative_turf(wall.forward_offset, wall.right_offset, new_dir)
+		wall_dir[wall] = turn(new_dir, wall.relative_turn)
+
+	dir = new_dir
+
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		frame.forceMove(frame_dest[frame])
+		frame.setDir(new_dir)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+		wall.forceMove(wall_dest[wall])
+		wall.setDir(wall_dir[wall])
+	for(var/atom/movable/passenger as anything in manifest)
+		var/obj/structure/ms13_vehicle_frame/old_frame = manifest[passenger]
+		passenger.forceMove(frame_dest[old_frame])
+	return TRUE
+
+/// One cell of a vehicle's footprint - just a floor. Walls (vehicle_walls.dm) mounted on it, plus
+/// whatever's standing on it, are what actually make it feel like part of a vehicle.
+/obj/structure/ms13_vehicle_frame
+	name = "vehicle frame"
+	desc = "The floor of a ground vehicle."
+	icon = 'mojave/icons/objects/vehicles_ground/vehicleparts.dmi'
+	icon_state = "frame_steel"
+	density = FALSE
+	anchored = TRUE
+	max_integrity = 200
+	var/datum/ms13_ground_vehicle/vehicle
+	/// Position relative to the vehicle's pivot, in vehicle-local (forward, right) tiles - see
+	/// get_relative_turf(). Zero for the pivot itself.
+	var/forward_offset = 0
+	var/right_offset = 0
+
+/obj/structure/ms13_vehicle_frame/Destroy()
+	vehicle?.frames -= src
+	vehicle = null
+	return ..()
+
+/// Shared assembly helper: mount one directional wall on frame, facing wall_dir (an absolute
+/// direction - convert with turn(vehicle.dir, relative_turn) if building from a relative angle).
+/// wall_type lets callers mount a solid/door variant instead of the default see-through one.
+/obj/structure/ms13_vehicle_frame/proc/spawn_wall(wall_dir, icon_state_override, wall_type = /obj/structure/window/ms13_vehicle_wall)
+	var/obj/structure/window/ms13_vehicle_wall/wall = new wall_type(get_turf(src), wall_dir)
+	wall.parent_frame = src
+	wall.forward_offset = forward_offset
+	wall.right_offset = right_offset
+	wall.relative_turn = (dir2angle(wall_dir) - dir2angle(vehicle.dir) + 360) % 360
+	if(icon_state_override)
+		wall.icon_state = icon_state_override
+	vehicle.walls += wall
+	return wall

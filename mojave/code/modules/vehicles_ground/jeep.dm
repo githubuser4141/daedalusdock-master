@@ -1,0 +1,49 @@
+/**
+ * The one concrete vehicle this basic pass ships with: a plain 1x2 jeep, front driver seat + back
+ * passenger seat, a windshield up front and windows on both long sides, open at the back as the
+ * entrance. Hand-assembled here in Initialize() rather than built from separate craftable parts -
+ * place this single object in the map editor and rotate it to set which way the jeep initially faces;
+ * the rest (back tile, walls, seats) spawns itself alongside it, and the whole thing can drive/turn
+ * freely afterward.
+ */
+/obj/structure/ms13_vehicle_frame/jeep_front
+	name = "jeep"
+	desc = "A simple open-top jeep."
+
+/obj/structure/ms13_vehicle_frame/jeep_front/Initialize(mapload)
+	. = ..()
+	vehicle = new /datum/ms13_ground_vehicle()
+	vehicle.pivot = src
+	vehicle.dir = dir
+	vehicle.frames += src
+
+	var/turf/front_turf = get_turf(src)
+	var/turf/back_turf = get_step(front_turf, turn(dir, 180))
+	if(!back_turf || back_turf.density)
+		// Nowhere to put the back half - bail out as a plain, undrivable frame tile rather than
+		// leaving a half-built vehicle with no driver seat behind.
+		return
+
+	var/obj/structure/ms13_vehicle_frame/back = new(back_turf)
+	back.vehicle = vehicle
+	back.dir = dir
+	back.forward_offset = -1
+	vehicle.frames += back
+
+	spawn_wall(dir, "c_windshield") // front
+	spawn_wall(turn(dir, 90), "c_window") // left
+	spawn_wall(turn(dir, -90), "c_window") // right
+	back.spawn_wall(turn(dir, 90), "c_window") // left
+	back.spawn_wall(turn(dir, -90), "c_window") // right
+	// back.spawn_wall(turn(dir, 180), ...) intentionally skipped - that's the entrance
+
+	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = new(front_turf)
+	driver_seat.parent_frame = src
+	driver_seat.is_driver_seat = TRUE
+	driver_seat.icon_state = "driver_car"
+	driver_seat.setDir(dir)
+
+	var/obj/structure/chair/ms13_vehicle_seat/passenger_seat = new(back_turf)
+	passenger_seat.parent_frame = back
+	passenger_seat.icon_state = "commanders_seat"
+	passenger_seat.setDir(dir)
