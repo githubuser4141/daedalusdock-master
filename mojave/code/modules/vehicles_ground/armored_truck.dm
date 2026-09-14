@@ -18,7 +18,7 @@
 	ram_damage_base = 5
 	ram_damage_per_speed = 5
 	ram_knockdown_per_speed = 5
-	wheel_integrity = 110
+	running_gear_integrity = 110
 	engine_integrity = 280
 	fuel_capacity = 140
 	fuel_per_tile = 0.12
@@ -96,9 +96,9 @@
 	passenger_seat.setDir(dir)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/engine)
-	spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
-	back_left.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
-	front_right.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
-	back_right.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
+	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)
+	back_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)
 	// back_left/back_right are left as open floor - standing room/cargo space behind the driver,
 	// reachable through the rear door.

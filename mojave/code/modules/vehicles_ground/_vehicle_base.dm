@@ -26,7 +26,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
 	var/list/obj/structure/ms13_vehicle_part/parts = list()
 	var/obj/structure/ms13_vehicle_part/engine/engine
-	var/datum/looping_sound/ms13/vehicle_wheels/wheel_soundloop
+	var/datum/looping_sound/running_gear_soundloop
+	var/running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_wheels
 	var/mob/living/driver
 	/// The frame rotation pivots around; never moves position during a turn.
 	var/obj/structure/ms13_vehicle_frame/pivot
@@ -44,8 +45,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/ram_damage_base = 4
 	var/ram_damage_per_speed = 4
 	var/ram_knockdown_per_speed = 5
-	var/required_wheels = 4
-	var/wheel_integrity = 80
+	var/required_running_gear = 4
+	var/running_gear_integrity = 80
 	var/engine_integrity = 200
 	var/fuel_capacity = 100
 	var/fuel_per_tile = 0.1
@@ -89,23 +90,23 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		else
 			viewer.images -= part.exterior_image
 
-/// Engines and the configured number of intact wheels provide motive power. Losing either prevents
+/// Engines and the configured number of intact wheels/tracks provide motive power. Losing either prevents
 /// new throttle, while the existing momentum loop remains free to coast to a stop.
 /datum/ms13_ground_vehicle/proc/has_motive_power()
 	if(!engine?.is_operational())
 		return FALSE
-	var/working_wheels = 0
-	for(var/obj/structure/ms13_vehicle_part/wheel/wheel in parts)
-		if(wheel.is_operational())
-			working_wheels++
-	return working_wheels >= required_wheels
+	var/working_running_gear = 0
+	for(var/obj/structure/ms13_vehicle_part/running_gear/running_gear in parts)
+		if(running_gear.is_operational())
+			working_running_gear++
+	return working_running_gear >= required_running_gear
 
 /datum/ms13_ground_vehicle/proc/set_parts_moving(is_moving)
 	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
 		part.set_moving(is_moving)
 
 /datum/ms13_ground_vehicle/proc/destroy_soundloops()
-	QDEL_NULL(wheel_soundloop)
+	QDEL_NULL(running_gear_soundloop)
 
 /// Returns this vehicle's frame on turf_to_check, if it has one there.
 /datum/ms13_ground_vehicle/proc/get_frame_at(turf/turf_to_check)
@@ -337,9 +338,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	moving = TRUE
 	movement_generation++
 	set_parts_moving(TRUE)
-	if(!wheel_soundloop)
-		wheel_soundloop = new(pivot)
-	wheel_soundloop.start()
+	if(!running_gear_soundloop)
+		running_gear_soundloop = new running_gear_soundloop_type(pivot)
+	running_gear_soundloop.start()
 	movement_tick(movement_generation)
 
 /datum/ms13_ground_vehicle/proc/stop_motion()
@@ -348,7 +349,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	travel_dir = null
 	movement_generation++
 	set_parts_moving(FALSE)
-	wheel_soundloop?.stop()
+	running_gear_soundloop?.stop()
 
 /// Self-schedules one tile at a time. Releasing the throttle coasts briefly, drops through the
 /// configured speed bands, then stops; collisions cancel the remaining momentum immediately.

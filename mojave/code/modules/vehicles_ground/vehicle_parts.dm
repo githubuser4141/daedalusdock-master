@@ -22,6 +22,14 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	vary = TRUE
 	falloff_distance = 1
 
+/datum/looping_sound/ms13/vehicle_tracks
+	mid_sounds = list('sound/effects/tank_treads.ogg' = 1)
+	mid_length = 1 SECONDS
+	volume = 30
+	vary = TRUE
+	extra_range = 2
+	falloff_distance = 1
+
 /**
  * A damageable component mounted on a vehicle frame. Parts use the same local offsets as frames and
  * walls, so the shared controller moves and rotates them without knowing which concrete vehicle
@@ -84,37 +92,60 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/proc/configure_from_vehicle()
 	return
 
-/** Wheels are real, non-dense damage targets; only their clickable client image is exterior-only. */
-/obj/structure/ms13_vehicle_part/wheel
-	name = "vehicle wheel"
-	desc = "An exposed rubber wheel. It looks vulnerable to a determined attacker."
+/** Running gear is a real, non-dense damage target; only its clickable image is exterior-only. */
+/obj/structure/ms13_vehicle_part/running_gear
+	name = "vehicle running gear"
+	desc = "Exposed running gear. It looks vulnerable to a determined attacker."
 	icon_state = "none"
 	max_integrity = 80
+	var/stationary_icon_state
+	var/moving_icon_state
+	var/broken_icon_state
 
-/obj/structure/ms13_vehicle_part/wheel/Initialize(mapload)
+/obj/structure/ms13_vehicle_part/running_gear/Initialize(mapload)
 	. = ..()
-	exterior_image = image(icon = icon, loc = src, icon_state = "wheel_t_dark", layer = ABOVE_ALL_MOB_LAYER + 0.02, dir = dir)
+	exterior_image = image(icon = icon, loc = src, icon_state = stationary_icon_state, layer = ABOVE_ALL_MOB_LAYER + 0.02, dir = dir)
 	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
 	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images |= exterior_image
 
-/obj/structure/ms13_vehicle_part/wheel/configure_from_vehicle()
-	modify_max_integrity(vehicle.wheel_integrity)
+/obj/structure/ms13_vehicle_part/running_gear/configure_from_vehicle()
+	modify_max_integrity(vehicle.running_gear_integrity)
 
-/obj/structure/ms13_vehicle_part/wheel/set_moving(is_moving)
+/obj/structure/ms13_vehicle_part/running_gear/set_moving(is_moving)
 	if(exterior_image && !broken)
-		exterior_image.icon_state = is_moving ? "wheel_t_dark_m" : "wheel_t_dark"
+		exterior_image.icon_state = is_moving ? moving_icon_state : stationary_icon_state
 
-/obj/structure/ms13_vehicle_part/wheel/atom_break(damage_flag)
+/obj/structure/ms13_vehicle_part/running_gear/atom_break(damage_flag)
 	. = ..()
 	broken = TRUE
-	exterior_image.icon_state = "wheel_t_dark_broken"
+	exterior_image.icon_state = broken_icon_state
 
-/obj/structure/ms13_vehicle_part/wheel/atom_fix()
+/obj/structure/ms13_vehicle_part/running_gear/atom_fix()
 	. = ..()
 	broken = FALSE
 	set_moving(vehicle?.moving)
+
+/obj/structure/ms13_vehicle_part/running_gear/wheel
+	name = "vehicle wheel"
+	desc = "An exposed rubber wheel. It looks vulnerable to a determined attacker."
+	stationary_icon_state = "wheel_t_dark"
+	moving_icon_state = "wheel_t_dark_m"
+	broken_icon_state = "wheel_t_dark_broken"
+
+/obj/structure/ms13_vehicle_part/running_gear/track
+	name = "M113 track assembly"
+	desc = "An exposed armored track unit. Damaging enough of these will prevent acceleration."
+	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
+	stationary_icon_state = "m113_tracks_end_left"
+	moving_icon_state = "m113_tracks_end_left_m"
+	broken_icon_state = "m113_tracks_end_left_broken"
+
+/obj/structure/ms13_vehicle_part/running_gear/track/right
+	stationary_icon_state = "m113_tracks_end_right"
+	moving_icon_state = "m113_tracks_end_right_m"
+	broken_icon_state = "m113_tracks_end_right_broken"
 
 /** The engine is an ordinary interior structure backed by the existing reagent fuel system. */
 /obj/structure/ms13_vehicle_part/engine

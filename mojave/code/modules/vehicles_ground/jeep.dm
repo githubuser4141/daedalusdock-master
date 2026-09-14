@@ -16,7 +16,7 @@
 	ram_damage_base = 3
 	ram_damage_per_speed = 3
 	ram_knockdown_per_speed = 4
-	wheel_integrity = 65
+	running_gear_integrity = 65
 	engine_integrity = 160
 	fuel_capacity = 70
 	fuel_per_tile = 0.08
@@ -67,7 +67,7 @@
 	passenger_seat.setDir(dir)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/engine)
-	spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
-	spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
-	back.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 90)
-	back.spawn_part(/obj/structure/ms13_vehicle_part/wheel, 270)
+	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
+	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)

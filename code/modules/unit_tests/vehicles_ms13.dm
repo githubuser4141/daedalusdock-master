@@ -13,7 +13,7 @@
 	TEST_ASSERT_EQUAL(length(front.vehicle.parts), 5, "Jeep did not assemble its engine and four wheels.")
 	TEST_ASSERT(front.vehicle.has_motive_power(), "A complete, fueled jeep did not have motive power.")
 	var/wheel_count = 0
-	for(var/obj/structure/ms13_vehicle_part/wheel/wheel in front.vehicle.parts)
+	for(var/obj/structure/ms13_vehicle_part/running_gear/wheel/wheel in front.vehicle.parts)
 		wheel_count++
 		TEST_ASSERT(!wheel.density, "A vehicle wheel was dense and would prevent somebody standing over it.")
 		TEST_ASSERT(wheel.exterior_image, "A vehicle wheel did not create its exterior-only image.")
@@ -113,7 +113,7 @@
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Vehicle did not start in its first speed band.")
 	TEST_ASSERT(vehicle.moving, "Vehicle did not enter its self-driven movement loop.")
 	TEST_ASSERT(vehicle.engine.soundloop?.is_active(), "The engine running loop did not start with the vehicle.")
-	TEST_ASSERT(vehicle.wheel_soundloop?.is_active(), "The wheel movement loop did not start with the vehicle.")
+	TEST_ASSERT(vehicle.running_gear_soundloop?.is_active(), "The wheel movement loop did not start with the vehicle.")
 	vehicle.next_acceleration_time = 0
 	vehicle.apply_throttle(vehicle.travel_dir)
 	TEST_ASSERT_EQUAL(vehicle.speed, 2, "Held throttle did not advance to the next configured speed band.")
@@ -121,7 +121,7 @@
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Opposite input did not brake the vehicle by one speed band.")
 	vehicle.stop_motion()
 	TEST_ASSERT(!vehicle.engine.soundloop?.is_active(), "The engine running loop continued after the vehicle stopped.")
-	TEST_ASSERT(!vehicle.wheel_soundloop?.is_active(), "The wheel movement loop continued after the vehicle stopped.")
+	TEST_ASSERT(!vehicle.running_gear_soundloop?.is_active(), "The wheel movement loop continued after the vehicle stopped.")
 
 	var/turf/ram_turf = get_step(front, vehicle.dir)
 	var/turf/push_turf = get_step(ram_turf, vehicle.dir)
@@ -277,3 +277,46 @@
 	TEST_ASSERT(!front_left.vehicle.has_motive_power(), "A broken engine still provided motive power.")
 	front_left.vehicle.stop_motion()
 	TEST_ASSERT(!front_left.vehicle.apply_throttle(front_left.vehicle.dir), "A broken engine still allowed acceleration.")
+
+/// Confirms the Civ13 M113 assembles as a complete 3x4 carrier with a rear ramp, troop seats, and
+/// four real track units which participate in the shared motive-power rules.
+/datum/unit_test/ms13_ground_vehicle_m113
+	name = "VEHICLES: M113 Assembles As A Tracked Personnel Carrier"
+
+/datum/unit_test/ms13_ground_vehicle_m113/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 5, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/m113/front_left = new(spot)
+	var/datum/ms13_ground_vehicle/m113/vehicle = front_left.vehicle
+	TEST_ASSERT(vehicle, "M113 did not create its configured controller.")
+	TEST_ASSERT_EQUAL(length(vehicle.frames), 12, "M113 did not assemble its full 3x4 frame footprint.")
+	TEST_ASSERT_EQUAL(length(vehicle.walls), 14, "M113 did not assemble its complete outer hull.")
+	TEST_ASSERT_EQUAL(length(vehicle.parts), 5, "M113 did not assemble one engine and four track units.")
+	TEST_ASSERT_EQUAL(vehicle.running_gear_soundloop_type, /datum/looping_sound/ms13/vehicle_tracks, "M113 did not select tracked movement audio.")
+	TEST_ASSERT(vehicle.has_motive_power(), "A complete, fueled M113 did not have motive power.")
+
+	var/track_count = 0
+	var/obj/structure/ms13_vehicle_part/running_gear/track/track_to_break
+	for(var/obj/structure/ms13_vehicle_part/running_gear/track/track in vehicle.parts)
+		track_count++
+		if(!track_to_break)
+			track_to_break = track
+		TEST_ASSERT(!track.density, "An M113 track prevented somebody standing over and attacking it.")
+		TEST_ASSERT(track.exterior_image, "An M113 track did not create an exterior-only clickable image.")
+	TEST_ASSERT_EQUAL(track_count, 4, "M113 did not assemble four independently damageable track units.")
+	TEST_ASSERT(istype(vehicle.engine, /obj/structure/ms13_vehicle_part/engine/m113), "M113 did not receive its Detroit diesel engine.")
+
+	var/ramp_count = 0
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/door/m113/ramp in vehicle.walls)
+		ramp_count++
+	TEST_ASSERT_EQUAL(ramp_count, 1, "M113 should have exactly one rear ramp.")
+
+	var/seat_count = 0
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
+		TEST_ASSERT(findtext(frame.icon_state, "m113_frame_steel_"), "An M113 frame did not use its Civ13 floor sprite.")
+		TEST_ASSERT(findtext(frame.roof.icon_state, "m113_roof_steel_"), "An M113 frame did not use its matching Civ13 roof sprite.")
+		for(var/obj/structure/chair/ms13_vehicle_seat/seat in get_turf(frame))
+			seat_count++
+	TEST_ASSERT_EQUAL(seat_count, 7, "M113 did not assemble its driver and six troop seats.")
+
+	track_to_break.take_damage(track_to_break.max_integrity, BRUTE, BOMB, FALSE)
+	TEST_ASSERT(!vehicle.has_motive_power(), "M113 still had motive power after losing one of its four required track units.")
