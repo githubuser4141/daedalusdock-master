@@ -10,7 +10,8 @@
  * existing windows - see vehicle_walls.dm). Moving or turning the vehicle just forceMoves every
  * frame, every wall, and everything currently standing on any frame tile - the "vehicle" has no
  * existence beyond that set of ordinary map objects moving in lockstep, so shooting one of its walls
- * is exactly as real as shooting any other wall in the game.
+ * is exactly as real as shooting any other wall in the game. Each frame also carries a top-down roof
+ * image which hides the cabin from outsiders and is removed from the view of clients aboard.
  *
  * Rotation pivots on one designated frame (pivot), which never itself changes position - every other
  * frame/wall records its position as a (forward, right) offset from the pivot in the vehicle's OWN
@@ -19,6 +20,8 @@
  * ponytail: no bystander collision handling beyond "is a dense obstacle in the way" - a loose mob
  * standing in the vehicle's path does not get pushed/run over like Civ13's own version does.
  */
+GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
+
 /datum/ms13_ground_vehicle
 	var/list/obj/structure/ms13_vehicle_frame/frames = list()
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
@@ -36,6 +39,24 @@
 	. = list()
 	. += frames
 	. += walls
+
+/// Shows this vehicle's roof to an outside viewer, or hides it from somebody aboard.
+/datum/ms13_ground_vehicle/proc/set_roof_visible(client/viewer, visible)
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		if(!frame.roof)
+			continue
+		if(visible)
+			viewer.images |= frame.roof
+		else
+			viewer.images -= frame.roof
+
+/// Returns the vehicle occupying location's turf, if any.
+/proc/get_ms13_ground_vehicle_at(atom/location)
+	var/turf/vehicle_turf = get_turf(location)
+	if(!vehicle_turf)
+		return
+	var/obj/structure/ms13_vehicle_frame/frame = locate() in vehicle_turf
+	return frame?.vehicle
 
 /// Walks forward_offset tiles along facing_dir (negative = backward) then right_offset tiles
 /// perpendicular to it (negative = left), starting from the pivot's current turf. Used to find where
@@ -175,15 +196,34 @@
 	anchored = TRUE
 	max_integrity = 200
 	var/datum/ms13_ground_vehicle/vehicle
+	/// Opaque top-down cover shown to outsiders and hidden from clients aboard this vehicle.
+	var/image/roof
 	/// Position relative to the vehicle's pivot, in vehicle-local (forward, right) tiles - see
 	/// get_relative_turf(). Zero for the pivot itself.
 	var/forward_offset = 0
 	var/right_offset = 0
 
+/obj/structure/ms13_vehicle_frame/Initialize(mapload)
+	. = ..()
+	roof = image(icon = icon, loc = src, icon_state = "roof_steel", layer = ABOVE_ALL_MOB_LAYER, dir = dir)
+	roof.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	GLOB.ms13_vehicle_roofs |= roof
+	for(var/client/viewer as anything in GLOB.clients)
+		viewer.images |= roof
+
 /obj/structure/ms13_vehicle_frame/Destroy()
+	GLOB.ms13_vehicle_roofs -= roof
+	for(var/client/viewer as anything in GLOB.clients)
+		viewer.images -= roof
+	roof = null
 	vehicle?.frames -= src
 	vehicle = null
 	return ..()
+
+/obj/structure/ms13_vehicle_frame/setDir(new_dir)
+	. = ..()
+	if(roof)
+		roof.dir = dir
 
 /// Shared assembly helper: mount one directional wall on frame, facing wall_dir (an absolute
 /// direction - convert with turn(vehicle.dir, relative_turn) if building from a relative angle).
@@ -193,8 +233,29 @@
 	wall.parent_frame = src
 	wall.forward_offset = forward_offset
 	wall.right_offset = right_offset
-	wall.relative_turn = (dir2angle(wall_dir) - dir2angle(vehicle.dir) + 360) % 360
+	// dir2angle() increases clockwise, while turn() increases counter-clockwise.
+	wall.relative_turn = (dir2angle(vehicle.dir) - dir2angle(wall_dir) + 360) % 360
 	if(icon_state_override)
 		wall.icon_state = icon_state_override
 	vehicle.walls += wall
 	return wall
+
+/// Roofs are client images: outsiders see them, while somebody on a vehicle frame sees its cabin.
+/mob/Login()
+	. = ..()
+	if(!. || !client)
+		return
+	client.images |= GLOB.ms13_vehicle_roofs
+	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
+	vehicle?.set_roof_visible(client, FALSE)
+
+/mob/living/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(!client)
+		return
+	var/datum/ms13_ground_vehicle/old_vehicle = get_ms13_ground_vehicle_at(old_loc)
+	var/datum/ms13_ground_vehicle/new_vehicle = get_ms13_ground_vehicle_at(src)
+	if(old_vehicle == new_vehicle)
+		return
+	old_vehicle?.set_roof_visible(client, TRUE)
+	new_vehicle?.set_roof_visible(client, FALSE)

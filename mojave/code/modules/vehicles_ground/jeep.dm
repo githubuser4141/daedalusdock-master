@@ -12,6 +12,7 @@
 
 /obj/structure/ms13_vehicle_frame/jeep_front/Initialize(mapload)
 	. = ..()
+	roof.icon_state = "roof_steel_hatch_driver"
 	vehicle = new /datum/ms13_ground_vehicle()
 	vehicle.pivot = src
 	vehicle.dir = dir
@@ -25,6 +26,7 @@
 		return
 
 	var/obj/structure/ms13_vehicle_frame/back = new(back_turf)
+	back.roof.icon_state = "roof_steel_exhaust"
 	back.vehicle = vehicle
 	back.dir = dir
 	back.forward_offset = -1

@@ -4,8 +4,8 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 /**
  * One side's worth of vehicle hull - a directional/border object. Extends the game's existing window
  * type (code/game/objects/structures/window.dm) specifically for its ON_BORDER_1 + CanAllowThrough()
- * behavior: it only blocks movement, sight, and gunfire crossing the one edge of the tile it's mounted
- * on. The other 3 sides of that same tile stay completely open - this is the specific behavior that
+ * behavior: it only blocks movement and gunfire crossing the one edge of the tile it's mounted on.
+ * The other 3 sides of that same tile stay completely open - this is the specific behavior that
  * made Civ13's own vehicle walls interesting rather than just a solid box, and it comes for free from
  * the same border-object pipeline every window/railing in the game already uses, armor and all.
  *
@@ -16,6 +16,8 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	desc = "A section of vehicle armor plating."
 	icon = 'mojave/icons/objects/vehicles_ground/vehicleparts.dmi'
 	icon_state = "c_wall"
+	// Keep the exterior hull visible over the opaque roof shown to bystanders.
+	layer = ABOVE_ALL_MOB_LAYER + 0.01
 	max_integrity = 150
 	fulltile = FALSE
 	wtype = "metal"
@@ -35,17 +37,49 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	return ..()
 
 /**
- * A solid hull panel instead of a see-through pane - same border-object mechanic (still only blocks
- * the one edge it's mounted on for movement/gunfire), but opaque = TRUE means BYOND's own sight check
- * treats the whole tile as blocked, the same trick the game's existing tinted windows already use
- * (code/game/objects/structures/window.dm's /obj/structure/window/reinforced/tinted) - nobody outside
- * can see into a solid-walled compartment, and nobody inside can see out through it.
+ * A solid hull panel instead of a see-through pane. It keeps the border-object mechanic for movement
+ * and gunfire; its exterior sight blocker handles BYOND's non-directional opacity without placing
+ * blackness inside the vehicle. The frame roof supplies top-down cover for outside viewers.
  */
 /obj/structure/window/ms13_vehicle_wall/solid
 	name = "vehicle hull plating"
 	desc = "A solid section of vehicle armor plating."
 	icon_state = "c_armoredwall"
 	opacity = TRUE
+	var/obj/effect/ms13_vehicle_sight_blocker/sight_blocker
+
+/obj/structure/window/ms13_vehicle_wall/solid/Initialize(mapload, direct)
+	. = ..()
+	sight_blocker = new(get_step(src, dir))
+
+/obj/structure/window/ms13_vehicle_wall/solid/Destroy()
+	QDEL_NULL(sight_blocker)
+	return ..()
+
+/obj/structure/window/ms13_vehicle_wall/solid/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	update_sight_blocker()
+
+/obj/structure/window/ms13_vehicle_wall/solid/setDir(new_dir)
+	. = ..()
+	update_sight_blocker()
+
+/obj/structure/window/ms13_vehicle_wall/solid/set_opacity(new_opacity)
+	. = ..()
+	if(sight_blocker)
+		sight_blocker.set_opacity(opacity)
+
+/// BYOND ignores opacity on the viewer's own tile. Keep the sight boundary immediately outside
+/// the hull instead, where it can occlude the exterior without blacking out a vehicle frame.
+/obj/structure/window/ms13_vehicle_wall/solid/proc/update_sight_blocker()
+	if(sight_blocker)
+		sight_blocker.forceMove(get_step(src, dir))
+
+/obj/effect/ms13_vehicle_sight_blocker
+	name = ""
+	anchored = TRUE
+	opacity = TRUE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 
 /**
  * A manually-operated door mounted in place of a hull panel - same border mechanic as the rest of the

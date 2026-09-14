@@ -46,6 +46,10 @@
 	var/new_facing = turn(original_dir, 90)
 	var/turf/expected_back_after_turn = front.vehicle.get_relative_turf(-1, 0, new_facing)
 	TEST_ASSERT(expected_back_after_turn && !expected_back_after_turn.density, "No clear tile to test rotation into.")
+	var/list/expected_wall_dirs = list()
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in front.vehicle.walls)
+		var/relative_dir = wall.dir == original_dir ? 0 : wall.dir == turn(original_dir, 90) ? 90 : 270
+		expected_wall_dirs[wall] = turn(new_facing, relative_dir)
 
 	front.vehicle.next_move_time = 0
 	var/rotate_result = front.vehicle.do_rotate(new_facing)
@@ -56,9 +60,9 @@
 
 	var/all_walls_match = TRUE
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in front.vehicle.walls)
-		if(wall.dir != turn(new_facing, wall.relative_turn))
+		if(wall.dir != expected_wall_dirs[wall])
 			all_walls_match = FALSE
-	TEST_ASSERT(all_walls_match, "At least one wall's facing did not rotate to match its relative_turn after turning.")
+	TEST_ASSERT(all_walls_match, "At least one wall swapped its left/right side when the jeep turned.")
 
 	// Now block the path and confirm the vehicle correctly refuses to move through a real obstacle,
 	// rather than phasing through it.
@@ -80,6 +84,12 @@
 	TEST_ASSERT(front_left.vehicle, "Armored truck front-left tile did not build a vehicle controller.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.frames), 4, "Armored truck did not assemble all 4 frame tiles.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.walls), 8, "Armored truck did not assemble all 8 expected wall segments.")
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
+		TEST_ASSERT(frame.roof, "An armored truck frame did not create its opaque roof image.")
+		TEST_ASSERT_EQUAL(frame.roof.loc, frame, "A truck roof image was not attached to its frame.")
+		TEST_ASSERT(frame.roof.layer > MOB_LAYER, "A truck roof image would render below its occupants.")
+		TEST_ASSERT_EQUAL(frame.roof.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "A truck roof image would intercept clicks meant for its doors or hull.")
+		TEST_ASSERT(frame.roof.icon_state != "roof_steel", "An armored truck frame still has the featureless placeholder roof.")
 
 	var/solid_count = 0
 	var/door_count = 0
@@ -94,12 +104,63 @@
 	TEST_ASSERT_EQUAL(door_count, 1, "Armored truck should have exactly one door.")
 	TEST_ASSERT_EQUAL(solid_count, 5, "Armored truck should have 5 solid (non-door, non-windshield) hull panels.")
 	TEST_ASSERT(door, "Could not find the truck's rear door.")
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/solid_wall in front_left.vehicle.walls)
+		TEST_ASSERT(solid_wall.layer > solid_wall.parent_frame.roof.layer, "A solid hull panel would be hidden below the exterior roof.")
+		TEST_ASSERT(solid_wall.sight_blocker, "A solid hull panel did not create its exterior sight blocker.")
+		TEST_ASSERT_EQUAL(get_turf(solid_wall.sight_blocker), get_step(solid_wall, solid_wall.dir), "A solid hull panel's sight blocker is not immediately outside it.")
+		for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
+			TEST_ASSERT(get_turf(solid_wall.sight_blocker) != get_turf(frame), "A solid hull panel put its sight blocker inside the vehicle.")
 
 	TEST_ASSERT(door.density, "Door should start closed (dense).")
 	TEST_ASSERT(door.opacity, "Door should start closed (opaque).")
 	door.open()
 	TEST_ASSERT(!door.density, "Door did not lose density after opening.")
 	TEST_ASSERT(!door.opacity, "Door did not lose opacity after opening.")
+	TEST_ASSERT(!door.sight_blocker.opacity, "Door's exterior sight blocker stayed opaque after opening.")
 	door.close()
 	TEST_ASSERT(door.density, "Door did not regain density after closing.")
 	TEST_ASSERT(door.opacity, "Door did not regain opacity after closing.")
+	TEST_ASSERT(door.sight_blocker.opacity, "Door's exterior sight blocker did not become opaque after closing.")
+
+	// Rotation on a 2-wide vehicle: every frame and wall should land exactly where its own
+	// forward/right offset says it should, same check the (already-passing) jeep test does, just
+	// generalized to all 4 frames/8 walls instead of assuming a 1-wide, 2-long shape.
+	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent)
+	driver.forceMove(get_turf(front_left))
+
+	var/obj/structure/chair/ms13_vehicle_seat/driver_seat
+	for(var/obj/structure/chair/ms13_vehicle_seat/seat in get_turf(front_left))
+		if(seat.is_driver_seat)
+			driver_seat = seat
+	TEST_ASSERT(driver_seat, "No driver seat found on the truck's front-left tile.")
+	driver_seat.user_buckle_mob(driver, driver)
+	TEST_ASSERT_EQUAL(front_left.vehicle.driver, driver, "Buckling did not register as the truck's driver.")
+
+	var/original_dir = front_left.vehicle.dir
+	var/new_facing = turn(original_dir, 90)
+
+	var/list/expected_frame_dest = list()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
+		var/turf/dest = front_left.vehicle.get_relative_turf(frame.forward_offset, frame.right_offset, new_facing)
+		TEST_ASSERT(dest && !dest.density, "No clear tile to rotate into for one of the truck's frames.")
+		expected_frame_dest[frame] = dest
+
+	front_left.vehicle.next_move_time = 0
+	var/rotate_result = front_left.vehicle.do_rotate(new_facing)
+	TEST_ASSERT(rotate_result, "do_rotate() reported failure on a clear path for the armored truck.")
+	TEST_ASSERT_EQUAL(front_left.vehicle.dir, new_facing, "Truck's tracked dir did not update after rotating.")
+
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
+		TEST_ASSERT_EQUAL(get_turf(frame), expected_frame_dest[frame], "A truck frame did not land where its own forward/right offset says it should after rotating.")
+		TEST_ASSERT_EQUAL(frame.roof.dir, new_facing, "A truck roof did not rotate with its frame.")
+
+	var/all_walls_match = TRUE
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in front_left.vehicle.walls)
+		var/turf/expected_wall_turf = front_left.vehicle.get_relative_turf(wall.forward_offset, wall.right_offset, new_facing)
+		if(get_turf(wall) != expected_wall_turf || wall.dir != turn(new_facing, wall.relative_turn))
+			all_walls_match = FALSE
+		if(istype(wall, /obj/structure/window/ms13_vehicle_wall/solid))
+			var/obj/structure/window/ms13_vehicle_wall/solid/solid_wall = wall
+			if(get_turf(solid_wall.sight_blocker) != get_step(solid_wall, solid_wall.dir))
+				all_walls_match = FALSE
+	TEST_ASSERT(all_walls_match, "At least one truck wall did not land at/facing the position its own offsets say it should after rotating.")

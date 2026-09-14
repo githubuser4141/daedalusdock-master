@@ -14,6 +14,7 @@
 
 /obj/structure/ms13_vehicle_frame/armored_truck_front_left/Initialize(mapload)
 	. = ..()
+	roof.icon_state = "roof_steel_hatch_driver"
 	vehicle = new /datum/ms13_ground_vehicle()
 	vehicle.pivot = src
 	vehicle.dir = dir
@@ -28,6 +29,7 @@
 		return
 
 	var/obj/structure/ms13_vehicle_frame/front_right = new(front_right_turf)
+	front_right.roof.icon_state = "roof_steel_hatch"
 	front_right.vehicle = vehicle
 	front_right.dir = dir
 	front_right.forward_offset = 0
@@ -35,6 +37,7 @@
 	vehicle.frames += front_right
 
 	var/obj/structure/ms13_vehicle_frame/back_left = new(back_left_turf)
+	back_left.roof.icon_state = "roof_steel_exhaust"
 	back_left.vehicle = vehicle
 	back_left.dir = dir
 	back_left.forward_offset = -1
@@ -42,6 +45,7 @@
 	vehicle.frames += back_left
 
 	var/obj/structure/ms13_vehicle_frame/back_right = new(back_right_turf)
+	back_right.roof.icon_state = "roof_steel_closedhatch"
 	back_right.vehicle = vehicle
 	back_right.dir = dir
 	back_right.forward_offset = -1
