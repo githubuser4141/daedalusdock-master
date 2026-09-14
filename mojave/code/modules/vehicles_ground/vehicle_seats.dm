@@ -48,8 +48,4 @@
 	if(!(direction in list(NORTH, SOUTH, EAST, WEST)))
 		return
 
-	var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
-	if(direction == vehicle.dir || direction == turn(vehicle.dir, 180))
-		vehicle.do_move(direction)
-	else
-		vehicle.do_rotate(direction)
+	parent_frame.vehicle.handle_drive_input(direction)

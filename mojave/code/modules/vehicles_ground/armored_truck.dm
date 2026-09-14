@@ -8,14 +8,26 @@
  * Pivot is the front-left tile; place this one object in the map editor and rotate it to set the
  * truck's facing, same as the jeep.
  */
+/datum/ms13_ground_vehicle/armored_truck
+	speed_delays = list(8, 6, 4)
+	acceleration_delay = 1.2 SECONDS
+	coast_delay = 1.6 SECONDS
+	turn_delay = 5
+	max_turn_speed = 1
+	turn_speed_loss = 1
+	ram_damage_base = 5
+	ram_damage_per_speed = 5
+	ram_knockdown_per_speed = 5
+
 /obj/structure/ms13_vehicle_frame/armored_truck_front_left
 	name = "armored truck"
 	desc = "A boxy, armor-plated transport truck."
+	vehicle_controller_type = /datum/ms13_ground_vehicle/armored_truck
 
 /obj/structure/ms13_vehicle_frame/armored_truck_front_left/Initialize(mapload)
 	. = ..()
 	roof.icon_state = "roof_steel_hatch_driver"
-	vehicle = new /datum/ms13_ground_vehicle()
+	vehicle = new vehicle_controller_type
 	vehicle.pivot = src
 	vehicle.dir = dir
 	vehicle.frames += src

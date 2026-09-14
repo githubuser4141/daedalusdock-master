@@ -17,8 +17,6 @@
  * frame/wall records its position as a (forward, right) offset from the pivot in the vehicle's OWN
  * current facing, and turning just recomputes where those offsets land in the new facing.
  *
- * ponytail: no bystander collision handling beyond "is a dense obstacle in the way" - a loose mob
- * standing in the vehicle's path does not get pushed/run over like Civ13's own version does.
  */
 GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 
@@ -31,8 +29,26 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	/// The vehicle's current facing - kept in sync with pivot.dir, but tracked here too since a plain
 	/// datum has no dir var of its own.
 	var/dir = NORTH
-	/// Deciseconds between tiles/turns - matches a brisk walking pace.
-	var/move_delay = 4
+	/// Handling values are overridden by each concrete controller subtype; the shared movement code
+	/// never needs to know whether it is driving a jeep, truck, or a future vehicle.
+	var/list/speed_delays = list(6, 4, 2)
+	var/acceleration_delay = 1 SECONDS
+	var/coast_delay = 1.2 SECONDS
+	var/turn_delay = 4
+	var/max_turn_speed = 2
+	var/turn_speed_loss = 1
+	var/ram_damage_base = 4
+	var/ram_damage_per_speed = 4
+	var/ram_knockdown_per_speed = 5
+
+	/// Current momentum state. Speed is an index into speed_delays, not tiles per tick.
+	var/speed = 0
+	var/travel_dir
+	var/moving = FALSE
+	var/last_throttle_time = 0
+	var/next_acceleration_time = 0
+	/// Invalidates a pending movement callback when motion stops and later restarts.
+	var/movement_generation = 0
 	var/next_move_time = 0
 
 /datum/ms13_ground_vehicle/proc/get_all_parts()
@@ -126,7 +142,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 /// vehicle - including its current passengers, who are expected to come along for the ride rather
 /// than count as obstacles to their own vehicle (this matters most for rotation, below: the pivot's
 /// own "destination" is its current tile, which its driver is standing on).
-/datum/ms13_ground_vehicle/proc/can_move(direction)
+/datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE)
 	var/list/parts = get_all_parts() + get_manifest()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/dest = get_step(frame, direction)
@@ -135,8 +151,41 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		for(var/atom/movable/blocker in dest)
 			if(blocker in parts)
 				continue
+			if(ignore_living && isliving(blocker))
+				continue
 			if(blocker.density)
 				return FALSE
+	return TRUE
+
+/// Is turf_to_check a safe place to push a bystander, without shoving them into the vehicle itself?
+/datum/ms13_ground_vehicle/proc/can_push_living(mob/living/victim, turf/turf_to_check)
+	if(!turf_to_check || turf_to_check.density || get_frame_at(turf_to_check))
+		return FALSE
+	for(var/atom/movable/blocker in turf_to_check)
+		if(blocker != victim && blocker.density)
+			return FALSE
+	return TRUE
+
+/// Lightly runs over loose living mobs on the new leading edge. A trapped victim is hurt but stops
+/// the vehicle; one with a clear tile ahead is knocked down and pushed out of its path.
+/datum/ms13_ground_vehicle/proc/ram_living(direction, list/manifest)
+	var/list/victims = list()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		var/turf/destination = get_step(frame, direction)
+		for(var/mob/living/victim in destination)
+			if(!(victim in manifest))
+				victims |= victim
+
+	var/impact_speed = max(speed, 1)
+	for(var/mob/living/victim as anything in victims)
+		var/turf/push_turf = get_step(victim, direction)
+		var/can_push = can_push_living(victim, push_turf)
+		victim.visible_message(span_danger("[pivot] rams [victim]!"), span_userdanger("[pivot] rams into you!"))
+		victim.apply_damage(ram_damage_base + ram_damage_per_speed * impact_speed, BRUTE, BODY_ZONE_CHEST)
+		victim.Knockdown(ram_knockdown_per_speed * impact_speed)
+		if(!can_push)
+			return FALSE
+		victim.forceMove(push_turf)
 	return TRUE
 
 /// Would every frame have a clear tile to land on if the vehicle turned to face new_dir right now?
@@ -168,14 +217,15 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 			.[passenger] = frame
 
 /// Moves every frame, every wall, and everyone/everything currently aboard one tile in direction.
-/datum/ms13_ground_vehicle/proc/do_move(direction)
-	if(!driver || world.time < next_move_time)
+/datum/ms13_ground_vehicle/proc/do_move(direction, bypass_cooldown = FALSE)
+	if(!bypass_cooldown && world.time < next_move_time)
 		return FALSE
-	if(!can_move(direction))
-		return FALSE
-	next_move_time = world.time + move_delay
-
 	var/list/manifest = get_manifest()
+	// First reject terrain/structures, then resolve mobs and finally make sure their old tiles cleared.
+	if(!can_move(direction, TRUE) || !ram_living(direction, manifest) || !can_move(direction))
+		return FALSE
+	if(!bypass_cooldown)
+		next_move_time = world.time + speed_delays[max(speed, 1)]
 
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		frame.forceMove(get_step(frame, direction))
@@ -185,6 +235,82 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		passenger.forceMove(get_step(passenger, direction))
 	return TRUE
 
+/// Starts at low speed, accelerates while the driver holds the travel direction, and uses the
+/// opposite input as a brake before allowing a change between forward and reverse.
+/datum/ms13_ground_vehicle/proc/apply_throttle(direction)
+	if(!speed)
+		travel_dir = direction
+		speed = 1
+		last_throttle_time = world.time
+		next_acceleration_time = world.time + acceleration_delay
+		start_motion()
+		return
+
+	last_throttle_time = world.time
+	if(direction != travel_dir)
+		speed--
+		next_acceleration_time = world.time + acceleration_delay
+		if(!speed)
+			stop_motion()
+		return
+
+	if(world.time >= next_acceleration_time && speed < length(speed_delays))
+		speed++
+		next_acceleration_time = world.time + acceleration_delay
+
+/// Turns in place while stopped. At speed, reversing preserves reversed travel through the turn;
+/// taking a corner also sheds configurable momentum, and an over-speed turn input only brakes.
+/datum/ms13_ground_vehicle/proc/apply_steering(new_dir)
+	if(speed > max_turn_speed)
+		speed = max(1, speed - turn_speed_loss)
+		last_throttle_time = world.time
+		return FALSE
+	var/reversing = speed && travel_dir == turn(dir, 180)
+	if(!do_rotate(new_dir))
+		return FALSE
+	if(speed)
+		travel_dir = reversing ? turn(new_dir, 180) : new_dir
+		speed = max(1, speed - turn_speed_loss)
+		last_throttle_time = world.time
+	return TRUE
+
+/datum/ms13_ground_vehicle/proc/handle_drive_input(direction)
+	if(!(direction in list(NORTH, SOUTH, EAST, WEST)))
+		return FALSE
+	if(direction == dir || direction == turn(dir, 180))
+		apply_throttle(direction)
+		return TRUE
+	return apply_steering(direction)
+
+/datum/ms13_ground_vehicle/proc/start_motion()
+	if(moving)
+		return
+	moving = TRUE
+	movement_generation++
+	movement_tick(movement_generation)
+
+/datum/ms13_ground_vehicle/proc/stop_motion()
+	moving = FALSE
+	speed = 0
+	travel_dir = null
+	movement_generation++
+
+/// Self-schedules one tile at a time. Releasing the throttle coasts briefly, drops through the
+/// configured speed bands, then stops; collisions cancel the remaining momentum immediately.
+/datum/ms13_ground_vehicle/proc/movement_tick(generation)
+	if(generation != movement_generation || !moving || !speed)
+		return
+	if(world.time >= last_throttle_time + coast_delay)
+		speed--
+		last_throttle_time = world.time
+		if(!speed)
+			stop_motion()
+			return
+	if(!do_move(travel_dir, TRUE))
+		stop_motion()
+		return
+	addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), speed_delays[speed])
+
 /// Turns the whole vehicle in place to face new_dir, rotating every frame/wall's position around the
 /// pivot and every wall's own facing to match, and carrying passengers to their frame's new tile.
 /datum/ms13_ground_vehicle/proc/do_rotate(new_dir)
@@ -192,7 +318,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 		return FALSE
 	if(!can_rotate(new_dir))
 		return FALSE
-	next_move_time = world.time + move_delay
+	next_move_time = world.time + turn_delay
 
 	var/list/manifest = get_manifest()
 
@@ -231,6 +357,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	anchored = TRUE
 	max_integrity = 200
 	var/datum/ms13_ground_vehicle/vehicle
+	/// Concrete frames select a controller subtype containing their handling/impact configuration.
+	var/vehicle_controller_type = /datum/ms13_ground_vehicle
 	/// Opaque top-down cover shown to outsiders and hidden from clients aboard this vehicle.
 	var/image/roof
 	/// Position relative to the vehicle's pivot, in vehicle-local (forward, right) tiles - see
@@ -251,6 +379,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images -= roof
 	roof = null
+	vehicle?.stop_motion()
 	vehicle?.frames -= src
 	vehicle = null
 	return ..()

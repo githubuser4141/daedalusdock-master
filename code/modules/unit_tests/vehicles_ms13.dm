@@ -28,6 +28,8 @@
 
 	driver_seat.user_buckle_mob(driver, driver)
 	TEST_ASSERT_EQUAL(front.vehicle.driver, driver, "Buckling into the driver seat did not register as the vehicle's driver.")
+	TEST_ASSERT(istype(front.vehicle, /datum/ms13_ground_vehicle/jeep), "Jeep did not instantiate its own handling configuration.")
+	TEST_ASSERT_EQUAL(length(front.vehicle.speed_delays), 4, "Jeep did not receive its configured four speed bands.")
 
 	var/turf/expected_front_dest = get_step(front, EAST)
 	var/turf/expected_back_dest = get_step(back, EAST)
@@ -72,6 +74,65 @@
 	var/blocked_result = front.vehicle.do_move(new_facing)
 	TEST_ASSERT(!blocked_result, "do_move() reported success while a dense obstacle blocked the path.")
 	TEST_ASSERT_EQUAL(get_turf(front), before_block, "Vehicle moved despite a blocked path.")
+
+/// Confirms acceleration/braking state comes from the concrete vehicle config and that a moving
+/// vehicle lightly damages and pushes a loose mob instead of treating it as an immovable wall.
+/datum/unit_test/ms13_ground_vehicle_momentum
+	name = "VEHICLES: Momentum And Light Ramming"
+
+/datum/unit_test/ms13_ground_vehicle_momentum/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/jeep/vehicle = front.vehicle
+	TEST_ASSERT(vehicle, "Jeep did not build a configured controller for the momentum test.")
+
+	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent)
+	driver.forceMove(get_turf(front))
+	var/obj/structure/chair/ms13_vehicle_seat/driver_seat
+	for(var/obj/structure/chair/ms13_vehicle_seat/seat in get_turf(front))
+		if(seat.is_driver_seat)
+			driver_seat = seat
+	TEST_ASSERT(driver_seat, "No driver seat found for the momentum test.")
+	driver_seat.user_buckle_mob(driver, driver)
+
+	// Exercise throttle state without leaving a live timer behind: the first input performs one
+	// immediate low-speed step, then later held inputs climb the configured bands.
+	vehicle.apply_throttle(vehicle.dir)
+	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Vehicle did not start in its first speed band.")
+	TEST_ASSERT(vehicle.moving, "Vehicle did not enter its self-driven movement loop.")
+	vehicle.next_acceleration_time = 0
+	vehicle.apply_throttle(vehicle.travel_dir)
+	TEST_ASSERT_EQUAL(vehicle.speed, 2, "Held throttle did not advance to the next configured speed band.")
+	vehicle.apply_throttle(turn(vehicle.travel_dir, 180))
+	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Opposite input did not brake the vehicle by one speed band.")
+	vehicle.stop_motion()
+
+	var/turf/ram_turf = get_step(front, vehicle.dir)
+	var/turf/push_turf = get_step(ram_turf, vehicle.dir)
+	TEST_ASSERT(ram_turf && push_turf && !ram_turf.density && !push_turf.density, "No clear straight path for the ramming test.")
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	victim.forceMove(ram_turf)
+	var/brute_before = victim.getBruteLoss()
+	vehicle.speed = 2
+	vehicle.next_move_time = 0
+	var/ram_result = vehicle.do_move(vehicle.dir)
+	TEST_ASSERT(ram_result, "Vehicle failed to enter a mob's tile when the mob could be pushed clear.")
+	TEST_ASSERT_EQUAL(get_turf(victim), push_turf, "Rammed mob was not pushed one tile ahead of the vehicle.")
+	TEST_ASSERT(victim.getBruteLoss() > brute_before, "Rammed mob took no brute damage.")
+	vehicle.stop_motion()
+
+	// Momentum belongs to the vehicle, so losing the driver prevents new input but does not cancel
+	// an already-moving vehicle's next coast step.
+	vehicle.driver = null
+	vehicle.speed = 1
+	vehicle.travel_dir = vehicle.dir
+	vehicle.last_throttle_time = world.time
+	vehicle.moving = TRUE
+	vehicle.movement_generation++
+	var/turf/driverless_destination = get_step(front, vehicle.travel_dir)
+	vehicle.movement_tick(vehicle.movement_generation)
+	TEST_ASSERT_EQUAL(get_turf(front), driverless_destination, "Vehicle stopped immediately when its driver was lost despite having momentum.")
+	vehicle.stop_motion()
 
 /// Confirms the boxier armored truck assembles its full 2x2 footprint, masks sight across solid hull,
 /// leaves every interior frame visible, and toggles its rear door's movement/vision boundary.
@@ -139,6 +200,8 @@
 	TEST_ASSERT(driver_seat, "No driver seat found on the truck's front-left tile.")
 	driver_seat.user_buckle_mob(driver, driver)
 	TEST_ASSERT_EQUAL(front_left.vehicle.driver, driver, "Buckling did not register as the truck's driver.")
+	TEST_ASSERT(istype(front_left.vehicle, /datum/ms13_ground_vehicle/armored_truck), "Truck did not instantiate its own handling configuration.")
+	TEST_ASSERT_EQUAL(length(front_left.vehicle.speed_delays), 3, "Truck did not receive its configured three speed bands.")
 
 	var/original_dir = front_left.vehicle.dir
 	var/new_facing = turn(original_dir, 90)

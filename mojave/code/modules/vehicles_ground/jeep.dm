@@ -6,14 +6,26 @@
  * the rest (back tile, walls, seats) spawns itself alongside it, and the whole thing can drive/turn
  * freely afterward.
  */
+/datum/ms13_ground_vehicle/jeep
+	speed_delays = list(6, 4, 3, 2)
+	acceleration_delay = 0.8 SECONDS
+	coast_delay = 1 SECONDS
+	turn_delay = 3
+	max_turn_speed = 2
+	turn_speed_loss = 1
+	ram_damage_base = 3
+	ram_damage_per_speed = 3
+	ram_knockdown_per_speed = 4
+
 /obj/structure/ms13_vehicle_frame/jeep_front
 	name = "jeep"
 	desc = "A simple open-top jeep."
+	vehicle_controller_type = /datum/ms13_ground_vehicle/jeep
 
 /obj/structure/ms13_vehicle_frame/jeep_front/Initialize(mapload)
 	. = ..()
 	roof.icon_state = "roof_steel_hatch_driver"
-	vehicle = new /datum/ms13_ground_vehicle()
+	vehicle = new vehicle_controller_type
 	vehicle.pivot = src
 	vehicle.dir = dir
 	vehicle.frames += src
