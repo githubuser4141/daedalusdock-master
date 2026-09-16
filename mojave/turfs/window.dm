@@ -154,3 +154,18 @@
 	base_icon_state = "glass"
 	smoothing_groups = SMOOTH_GROUP_MS13_WINDOW
 	canSmoothWith = SMOOTH_GROUP_MS13_WINDOW + SMOOTH_GROUP_MS13_WALL
+
+// AI EDIT: glass.dmi is 32x48, so a pane with a north neighbour draws 16px into that tile. On ABOVE_GAME_PLANE
+// that strip covered the wall capping a north-south run; tucking those panes just under closed turfs hides it.
+/proc/ms13_window_layering(obj/structure/window/pane)
+	var/north = pane.smoothing_junction & NORTH_JUNCTION
+	pane.plane = north ? WALL_PLANE : initial(pane.plane)
+	pane.layer = north ? CLOSED_TURF_LAYER - 0.01 : initial(pane.layer)
+
+/obj/structure/window/fulltile/ms13/set_smoothed_icon_state(new_junction)
+	. = ..()
+	ms13_window_layering(src)
+
+/obj/structure/window/reinforced/fulltile/ms13/set_smoothed_icon_state(new_junction)
+	. = ..()
+	ms13_window_layering(src)
