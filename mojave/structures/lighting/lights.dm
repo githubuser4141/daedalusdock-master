@@ -45,16 +45,16 @@
 	switch(dir)
 		if(SOUTH)
 			pixel_x = 0
-			pixel_y = -16
+			pixel_y = -2
 		if(NORTH)
 			pixel_x = 0
 			pixel_y = 35
 		if(WEST)
 			pixel_x = -16
-			pixel_y = 0
+			pixel_y = 16
 		if(EAST)
 			pixel_x = 16
-			pixel_y = 0
+			pixel_y = 16
 
 /obj/machinery/light/ms13/broken
 	icon_state = "light_tube-broken"
