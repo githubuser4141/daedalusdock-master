@@ -296,7 +296,11 @@
 			visible_message("<b>[src]</b> falls limp!")
 		Unconscious(20 SECONDS)
 
-	if(message && !COOLDOWN_FINISHED(src, pain_cooldowns["shock"]))
+	// AI EDIT (bugfix): inverted - it only spoke while the cooldown was still running, and since the
+	// cooldown starts inside this same branch it could never fire the first time either, so shock never
+	// announced itself. Mojave overrides this proc wholesale (pain_debilitation.dm) and carried the same
+	// bug; fixed in both rather than only in the copy that currently runs.
+	if(message && COOLDOWN_FINISHED(src, pain_cooldowns["shock"]))
 		COOLDOWN_START(src, pain_cooldowns["shock"], 20 SECONDS)
 		pain_message(message, shock_stage - CHEM_EFFECT_MAGNITUDE(src, CE_PAINKILLER)/3, TRUE)
 

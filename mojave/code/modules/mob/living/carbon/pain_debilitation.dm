@@ -266,7 +266,10 @@
 			visible_message("<b>[src]</b> staggers, barely able to keep moving!")
 		apply_status_effect(/datum/status_effect/ms13_pain_debilitation, 1.5)
 
-	if(message && !COOLDOWN_FINISHED(src, pain_cooldowns["shock"]))
+	// AI EDIT (bugfix, carried from DD's original): this condition was inverted - it only spoke while the
+	// cooldown was still running, and since the cooldown starts inside the same branch it could never fire
+	// the first time either. The net effect was that shock never announced itself at all.
+	if(message && COOLDOWN_FINISHED(src, pain_cooldowns["shock"]))
 		COOLDOWN_START(src, pain_cooldowns["shock"], 20 SECONDS)
 		pain_message(message, shock_stage - CHEM_EFFECT_MAGNITUDE(src, CE_PAINKILLER)/3, TRUE)
 
