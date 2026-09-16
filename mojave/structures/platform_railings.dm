@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/structure/ms13/platform_railings)
-	default_armor = list(BLUNT = 60, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+	default_armor = list(BLUNT = 60, PUNCTURE = 0, SLASH = 60, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
 
 /obj/structure/ms13/platform_railings
 	name = "steel platform"

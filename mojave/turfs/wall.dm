@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/turf/closed/wall/ms13)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+
 /turf/closed/wall/ms13
 	name = "base class wall"
 	desc = "God has abandoned us"
@@ -15,6 +18,8 @@
 	var/girder_type
 	var/sheet_type
 	var/sheet_amount = 2
+	max_integrity = 500
+	damage_deflection = 20
 
 /turf/closed/wall/ms13/try_decon(obj/item/I, mob/user, turf/T)
 	if(!weldable)
@@ -34,35 +39,51 @@
 /turf/closed/wall/ms13/deconstruction_hints()
 	return
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/metal) // Thin iron sheet wall
+	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+
 /turf/closed/wall/ms13/metal
 	name = "metal wall"
 	desc = "A sturdy metal wall."
 	icon = 'mojave/icons/turf/walls/metal.dmi'
 	frill_icon = 'mojave/icons/turf/walls/metal_frill.dmi'
+	max_integrity = 500
+	damage_deflection = 25
 
 /turf/closed/wall/ms13/metal/rust
 	name = "rusted metal wall"
 	desc = "A metal wall rusted with age."
 	icon = 'mojave/icons/turf/walls/rustmetal.dmi'
 	frill_icon = 'mojave/icons/turf/walls/rustmetal_frill.dmi'
+	max_integrity = 300
+
+TYPEINFO_DEF(/turf/closed/wall/ms13/wood)
+	default_armor = list(BLUNT = 50, PUNCTURE = 15, SLASH = 80, LASER = 35, ENERGY = 25, BOMB = 10, BIO = 100, FIRE = 10, ACID = 50)
 
 /turf/closed/wall/ms13/wood
 	name = "log wall"
 	desc = "A rustic log wall."
 	icon = 'mojave/icons/turf/walls/wood.dmi'
 	frill_icon = 'mojave/icons/turf/walls/wood_frill.dmi'
+	max_integrity = 200
+	damage_deflection = 20
+
+TYPEINFO_DEF(/turf/closed/wall/ms13/wood/fresh)
+	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/wood/fresh
 	name = "fresh log wall"
 	desc = "A somewhat freshly made log wall."
 	icon = 'mojave/icons/turf/walls/woodfresh.dmi'
 	frill_icon = 'mojave/icons/turf/walls/woodfresh_frill.dmi'
+	max_integrity = 500
 
 /turf/closed/wall/ms13/scrap
 	name = "scrap wall"
 	desc = "A wall made of scrap metal."
 	icon = 'mojave/icons/turf/walls/scrap.dmi'
 	frill_icon = 'mojave/icons/turf/walls/scrap_frill.dmi'
+	max_integrity = 400
 
 /turf/closed/wall/ms13/scrap/white
 	icon = 'mojave/icons/turf/walls/scrapwhite.dmi'
@@ -76,11 +97,16 @@
 	icon = 'mojave/icons/turf/walls/scrapblue.dmi'
 	frill_icon = 'mojave/icons/turf/walls/scrapblue_frill.dmi'
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/adobe)
+	default_armor = list(BLUNT = 50, PUNCTURE = 40, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 15, BIO = 100, FIRE = 50, ACID = 50)
+
 /turf/closed/wall/ms13/adobe
 	name = "adobe wall"
 	desc = ""
 	icon = 'mojave/icons/turf/walls/drought/adobe.dmi'
 	frill_icon = 'mojave/icons/turf/walls/drought/adobe_frill.dmi'
+	max_integrity = 400
+	damage_deflection = 15
 
 /turf/closed/wall/ms13/siding
 	name = "sided wall"
@@ -173,11 +199,16 @@
 			icon = 'mojave/icons/turf/walls/drought/siding_red.dmi'
 			frill_icon = 'mojave/icons/turf/walls/drought/siding_red_frill.dmi'
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/prison)
+	default_armor = list(BLUNT = 60, PUNCTURE = 40, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 50, ACID = 75)
+
 /turf/closed/wall/ms13/prison
 	name = "prison wall"
 	desc = ""
 	icon = 'mojave/icons/turf/walls/drought/prison.dmi'
 	frill_icon = 'mojave/icons/turf/walls/drought/prison_frill.dmi'
+	max_integrity = 800
+	damage_deflection = 30
 
 /turf/closed/wall/ms13/prison/Initialize()
 	. = ..()
@@ -195,12 +226,16 @@
 		else
 			return
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/brick)
+	default_armor = list(BLUNT = 50, PUNCTURE = 40, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/brick
 	name = "brick wall"
 	desc = "A brick wall. Try banging your head against this."
 	icon = 'mojave/icons/turf/walls/brick.dmi'
 	frill_icon = 'mojave/icons/turf/walls/brick_frill.dmi'
+	max_integrity = 800
+	damage_deflection = 15
 
 /turf/closed/wall/ms13/brick/alt
 	icon = 'mojave/icons/turf/walls/brickalt.dmi'
@@ -210,11 +245,16 @@
 	icon = 'mojave/icons/turf/walls/brickgray.dmi'
 	frill_icon = 'mojave/icons/turf/walls/brickgray_frill.dmi'
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/metal/reinforced)
+	default_armor = list(BLUNT = 75, PUNCTURE = 65, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 50, ACID = 75)
+
 /turf/closed/wall/ms13/metal/reinforced
 	name = "reinforced metal wall"
 	desc = "A heavy duty, reinforced metal wall."
 	icon = 'mojave/icons/turf/walls/rmetal.dmi'
 	frill_icon = 'mojave/icons/turf/walls/rmetal_frill.dmi'
+	max_integrity = 2000
+	damage_deflection = 40
 
 /turf/closed/wall/ms13/metal/reinforced/industrial
 	desc = "A reinforced metal wall with some patches of rust."
@@ -227,11 +267,16 @@
 	icon = 'mojave/icons/turf/walls/rrustmetal.dmi'
 	frill_icon = 'mojave/icons/turf/walls/rrustmetal_frill.dmi'
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/concrete)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+
 /turf/closed/wall/ms13/concrete
 	name = "concrete wall"
 	desc = "A tough concrete wall."
 	icon = 'mojave/icons/turf/walls/concrete.dmi'
 	frill_icon = 'mojave/icons/turf/walls/concrete_frill.dmi'
+	max_integrity = 1000
+	damage_deflection = 20
 
 /turf/closed/wall/ms13/concrete/alt
 	icon = 'mojave/icons/turf/walls/concretealt.dmi'
@@ -243,11 +288,15 @@
 	icon = 'mojave/icons/turf/walls/sewer.dmi'
 	frill_icon = 'mojave/icons/turf/walls/sewer_frill.dmi'
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/bunker)
+	default_armor = list(BLUNT = 65, PUNCTURE = 55, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
+
 /turf/closed/wall/ms13/bunker
 	name = "bunker wall"
 	desc = "A bunker wall. Serious business."
 	icon = 'mojave/icons/turf/walls/bunker.dmi'
 	frill_icon = 'mojave/icons/turf/walls/bunker_frill.dmi'
+	damage_deflection = 30
 
 /turf/closed/indestructible/ms13/metal
 	name = "metal wall"
@@ -277,11 +326,16 @@
 
 // Vault Walls //
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/vault)
+	default_armor = list(BLUNT = 65, PUNCTURE = 55, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
+
 /turf/closed/wall/ms13/vault
 	name = "vault wall"
 	desc = "A secure vault wall."
 	icon = 'mojave/icons/turf/walls/vault_wall.dmi'
 	frill_icon = 'mojave/icons/turf/walls/vault_wall_rust_frill.dmi'
+	max_integrity = 2000
+	damage_deflection = 35
 
 /turf/closed/wall/ms13/vault/vent
 	name = "vent section"
@@ -303,11 +357,16 @@
 
 // Dungeon Walls //
 
+TYPEINFO_DEF(/turf/closed/wall/ms13/dungeon)
+	default_armor = list(BLUNT = 75, PUNCTURE = 75, SLASH = 80, LASER = 75, ENERGY = 75, BOMB = 75, BIO = 100, FIRE = 75, ACID = 100)
+
 /turf/closed/wall/ms13/dungeon
 	name = "reinforced bunker wall"
 	desc = "A reinforced bunker wall. The pinnacle of pre-war engineering."
 	icon = 'mojave/icons/turf/walls/dungeon_1.dmi'
 	frill_icon = 'mojave/icons/turf/walls/dungeon_1_frill.dmi'
+	max_integrity = 4000
+	damage_deflection = 50
 
 /turf/closed/wall/ms13/dungeon/Initialize()
 	. = ..()
@@ -403,18 +462,21 @@
 	name = "base class wall support"
 	desc = "No more girder spam, circa mojave sun - 2021"
 	can_displace = FALSE
-	girderpasschance = 100
 	icon = 'mojave/icons/turf/walls/girder.dmi'
 	var/list/material_used
 	var/wall_type = /turf/closed/wall/ms13/craftable
+
+TYPEINFO_DEF(/obj/structure/girder/ms13/bars)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 50, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /obj/structure/girder/ms13/bars
 	name = "rebar supports"
 	desc = "Cheap building supports for makeshift construction projects."
 	icon_state = "rebar"
-	max_integrity = 200
+	max_integrity = 300
 	material_used = list(/obj/item/stack/sheet/ms13/scrap)
 	wall_type = list(/turf/closed/wall/ms13/craftable/scrap, /turf/closed/wall/ms13/craftable/wood)
+	projectile_passchance = 50
 
 /obj/structure/girder/ms13/bars/Initialize()
 	. = ..()

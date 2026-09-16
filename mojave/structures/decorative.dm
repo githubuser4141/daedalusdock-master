@@ -3,7 +3,7 @@
 //street//
 
 TYPEINFO_DEF(/obj/structure/filingcabinet/ms13/mail)
-	default_armor = list(BLUNT = 15, PUNCTURE = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 15, PUNCTURE = 15, SLASH = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/filingcabinet/ms13/mail
 	name = "postbox"
@@ -24,7 +24,7 @@ TYPEINFO_DEF(/obj/structure/filingcabinet/ms13/mail)
 	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/household, use_atom_storage = FALSE, search_message = "You pull open the postbox flap.")
 
 TYPEINFO_DEF(/obj/structure/ms13/storage/trashcan)
-	default_armor = list(BLUNT = 15, PUNCTURE = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 15, PUNCTURE = 20, SLASH = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/storage/trashcan
 	name = "trash can"
@@ -46,7 +46,7 @@ TYPEINFO_DEF(/obj/structure/ms13/storage/trashcan)
 //signs/flags//
 
 TYPEINFO_DEF(/obj/structure/ms13)
-	default_armor = list(BLUNT = 15, PUNCTURE = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 15, PUNCTURE = 10, SLASH = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13
 	name = "fluff ms13 basetype"
@@ -172,7 +172,7 @@ TYPEINFO_DEF(/obj/structure/ms13)
 // Medical Decoration //
 
 TYPEINFO_DEF(/obj/structure/ms13/medical_curtain)
-	default_armor = list(BLUNT = 50, PUNCTURE = 5, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 5, SLASH = 50, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/medical_curtain
 	name = "medical curtain"
@@ -200,7 +200,7 @@ TYPEINFO_DEF(/obj/structure/ms13/medical_curtain)
 // Barrels //
 
 TYPEINFO_DEF(/obj/structure/ms13/barrel)
-	default_armor = list(BLUNT = 50, PUNCTURE = 15, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 15, SLASH = 50, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/barrel
 	name = "barrel"
@@ -398,7 +398,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barrel)
 	unique = TRUE
 
 TYPEINFO_DEF(/obj/structure/ms13/barrel/double)
-	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, SLASH = 50, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/barrel/double
 	name = "barrels"
@@ -447,7 +447,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barrel/double)
 	amount = 1
 
 TYPEINFO_DEF(/obj/structure/ms13/barrel/triple)
-	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, SLASH = 50, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/barrel/triple
 	name = "barrels"
@@ -512,7 +512,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barrel/triple)
 	unique = TRUE
 
 TYPEINFO_DEF(/obj/structure/ms13/barrel/quadruple)
-	default_armor = list(BLUNT = 50, PUNCTURE = 45, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 45, SLASH = 50, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/barrel/quadruple
 	name = "barrels"
@@ -594,7 +594,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barrel/quadruple)
 		return TRUE
 
 TYPEINFO_DEF(/obj/structure/ms13/pallet/stack)
-	default_armor = list(BLUNT = 30, PUNCTURE = 20, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 30, PUNCTURE = 20, SLASH = 30, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/pallet/stack
 	name = "pallet stack"
@@ -619,7 +619,7 @@ TYPEINFO_DEF(/obj/structure/ms13/pallet/stack)
 // brix.... //
 
 TYPEINFO_DEF(/obj/structure/ms13/brickstack)
-	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 60, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 60, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/brickstack
 	name = "brick stack"
@@ -640,7 +640,7 @@ TYPEINFO_DEF(/obj/structure/ms13/brickstack)
 // TRASH.... //
 
 TYPEINFO_DEF(/obj/structure/ms13/trash)
-	default_armor = list(BLUNT = 10, PUNCTURE = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 0)
+	default_armor = list(BLUNT = 10, PUNCTURE = 5, SLASH = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 0)
 
 /obj/structure/ms13/trash
 	name = "Base type MS13 TRASH"
@@ -685,7 +685,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash)
 	icon_state = "papers_3"
 
 TYPEINFO_DEF(/obj/structure/ms13/trash/books)
-	default_armor = list(BLUNT = 10, PUNCTURE = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 10, PUNCTURE = 20, SLASH = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/trash/books
 	name = "ruined stack of books"
@@ -714,7 +714,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/books)
 				qdel(src)
 
 TYPEINFO_DEF(/obj/structure/ms13/trash/books/piles)
-	default_armor = list(BLUNT = 10, PUNCTURE = 25, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 10, PUNCTURE = 25, SLASH = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/trash/books/pile
 	name = "pile of books"
@@ -756,7 +756,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/books/piles)
 			qdel(src)
 
 TYPEINFO_DEF(/obj/structure/ms13/trash/bricks)
-	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 50, ENERGY = 20, BOMB = 25, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 50, ENERGY = 20, BOMB = 25, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/trash/bricks
 	name = "brick rubble"
@@ -838,7 +838,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/bricks)
 				qdel(src)
 
 TYPEINFO_DEF(/obj/structure/ms13/trash/food/glass)
-	default_armor = list(BLUNT = 10, PUNCTURE = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100) // more cans?!
+	default_armor = list(BLUNT = 10, PUNCTURE = 10, SLASH = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100) // more cans?!
 
 /obj/structure/ms13/trash/food/glass
 	name = "empty bottle and can"
@@ -898,7 +898,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/food/glass)
 	icon_state = "glass_1"
 
 TYPEINFO_DEF(/obj/structure/ms13/glass/cans)
-	default_armor = list(BLUNT = 10, PUNCTURE = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 10, PUNCTURE = 20, SLASH = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/trash/glass/cans
 	name = "empty bottles and cans"
@@ -982,7 +982,7 @@ TYPEINFO_DEF(/obj/structure/ms13/glass/cans)
 // Cave Decor
 
 TYPEINFO_DEF(/obj/structure/ms13/cave_decor)
-	default_armor = list(BLUNT = 35, PUNCTURE = 25, LASER = 40, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 35, PUNCTURE = 25, SLASH = 35, LASER = 40, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/cave_decor
 	icon = 'mojave/icons/structure/cave_decor.dmi'

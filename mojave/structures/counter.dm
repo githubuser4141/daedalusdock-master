@@ -7,7 +7,7 @@
 // Metal Counters //
 
 TYPEINFO_DEF(/obj/structure/table/ms13/no_smooth/counter/metal)
-	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, SLASH = 50, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/table/ms13/no_smooth/counter/metal
 	name = "metal counter"
@@ -31,7 +31,7 @@ TYPEINFO_DEF(/obj/structure/table/ms13/no_smooth/counter/metal)
 // Wood Counters //
 
 TYPEINFO_DEF(/obj/structure/table/ms13/no_smooth/counter/metal)
-	default_armor = list(BLUNT = 50, PUNCTURE = 10, LASER = 35, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 10, SLASH = 50, LASER = 35, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/table/ms13/no_smooth/counter/wood
 	name = "wooden counter"

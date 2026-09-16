@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
-	default_armor = list(BLUNT = 20, PUNCTURE = 90, LASER = 90, ENERGY = 90, BOMB = 0, BIO = 100, FIRE = 100, ACID = 100)
+	default_armor = list(BLUNT = 20, PUNCTURE = 90, SLASH = 20, LASER = 90, ENERGY = 90, BOMB = 0, BIO = 100, FIRE = 100, ACID = 100)
 
 /obj/structure/ms13/ore_deposit
 	name = "base ore deposit"

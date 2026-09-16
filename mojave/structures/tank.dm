@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/structure/ms13/tank)
-	default_armor = list(BLUNT = 50, PUNCTURE = 25, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 50, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/tank
 	name = "storage tank"
@@ -21,7 +21,7 @@ TYPEINFO_DEF(/obj/structure/ms13/tank)
 	icon_state = "largetank_chemical"
 
 TYPEINFO_DEF(/obj/structure/ms13/tank/chemical/huge)
-	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, SLASH = 50, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/tank/chemical/huge
 	name = "huge chemical storage tank"
@@ -41,7 +41,7 @@ TYPEINFO_DEF(/obj/structure/ms13/tank/chemical/huge)
 	icon_state = "chemical_container_broken"
 
 TYPEINFO_DEF(/obj/structure/ms13/tank/massive)
-	default_armor = list(BLUNT = 50, PUNCTURE = 35, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 50, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/tank/massive
 	name = "massive storage tank"

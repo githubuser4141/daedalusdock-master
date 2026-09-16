@@ -1,7 +1,7 @@
 //For non-table sub-type crafting benches
 
 TYPEINFO_DEF(/obj/structure/ms13/smelter)
-	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, SLASH = 50, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/smelter
 	name = "makeshift smelter"
@@ -36,7 +36,7 @@ TYPEINFO_DEF(/obj/structure/ms13/smelter)
 	qdel(src)
 
 TYPEINFO_DEF(/obj/structure/ms13/chem_set)
-	default_armor = list(BLUNT = 15, PUNCTURE = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 15, PUNCTURE = 10, SLASH = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/chem_set
 	name = "chemistry set"

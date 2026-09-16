@@ -59,7 +59,7 @@
 ////Broken Wood/Foundation floors////
 
 TYPEINFO_DEF(/obj/structure/ms13/foundation)
-	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 0, FIRE = 80, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 0, FIRE = 80, ACID = 50)
 
 /obj/structure/ms13/foundation
 	name = "floor"

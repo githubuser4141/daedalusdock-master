@@ -9,7 +9,7 @@
 //Cars//
 
 TYPEINFO_DEF(/obj/structure/window/vehicle_ruin)
-	default_armor = list(BLUNT = 50, PUNCTURE = 35, LASER = 75, ENERGY = 20, BOMB = 25, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 50, LASER = 75, ENERGY = 20, BOMB = 25, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/vehicle_ruin
 	name = "vehicle ruin"

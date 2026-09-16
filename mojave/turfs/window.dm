@@ -83,15 +83,21 @@
 	. += new /obj/item/stack/sheet/ms13/glass(location)
 	. += new /obj/effect/decal/cleanable/glass(location)
 
+TYPEINFO_DEF(/obj/structure/window/fulltile/ms13/glass)
+	default_armor = list(BLUNT = 25, PUNCTURE = 10, SLASH = 25, LASER = 20, ENERGY = 10, BOMB = 0, BIO = 100, FIRE = 50, ACID = 100)
+
 /obj/structure/window/fulltile/ms13/glass
 	name = "glass window"
 	desc = ""
 	icon = 'mojave/icons/turf/walls/glass.dmi'
-	max_integrity = 40
+	max_integrity = 100
 	icon_state = "glass-0"
 	base_icon_state = "glass"
 	smoothing_groups = SMOOTH_GROUP_MS13_WINDOW
 	canSmoothWith = SMOOTH_GROUP_MS13_WINDOW + SMOOTH_GROUP_MS13_WALL
+
+TYPEINFO_DEF(/obj/structure/window/reinforced/fulltile/ms13)
+	default_armor = list(BLUNT = 25, PUNCTURE = 10, SLASH = 25, LASER = 20, ENERGY = 10, BOMB = 0, BIO = 100, FIRE = 50, ACID = 100)
 
 /obj/structure/window/reinforced/fulltile/ms13
 	name = "base class reinforced window"
@@ -99,9 +105,8 @@
 	smoothing_flags = SMOOTH_BITMASK
 	layer = ABOVE_ALL_MOB_LAYER
 	plane = ABOVE_GAME_PLANE
-	damage_deflection = 20
+	damage_deflection = 15
 	max_integrity = 300
-	damage_deflection = 16 //This basically means it blocks 15 damage weapons and weaker
 	glass_type = /obj/item/stack/sheet/ms13/glass
 	glass_amount = 1
 	var/breaking = FALSE
@@ -146,6 +151,9 @@
 	. += new /obj/item/stack/sheet/ms13/scrap(location)
 	. += new /obj/effect/decal/cleanable/glass(location)
 
+TYPEINFO_DEF(/obj/structure/window/reinforced/fulltile/ms13/glass)
+	default_armor = list(BLUNT = 40, PUNCTURE = 20, SLASH = 40, LASER = 30, ENERGY = 20, BOMB = 10, BIO = 100, FIRE = 50, ACID = 100)
+
 /obj/structure/window/reinforced/fulltile/ms13/glass
 	name = "reinforced glass window"
 	desc = ""
@@ -154,6 +162,7 @@
 	base_icon_state = "glass"
 	smoothing_groups = SMOOTH_GROUP_MS13_WINDOW
 	canSmoothWith = SMOOTH_GROUP_MS13_WINDOW + SMOOTH_GROUP_MS13_WALL
+	max_integrity = 300
 
 // AI EDIT: glass.dmi is 32x48, so a pane with a north neighbour draws 16px into that tile. On ABOVE_GAME_PLANE
 // that strip covered the wall capping a north-south run; tucking those panes just under closed turfs hides it.

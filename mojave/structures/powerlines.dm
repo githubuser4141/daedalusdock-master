@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/structure/ms13/powerlines)
-	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 75, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 50, LASER = 75, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
 
 /obj/structure/ms13/powerlines
 	name = "overhead power line"
@@ -53,7 +53,7 @@ TYPEINFO_DEF(/obj/structure/ms13/powerlines)
 			dir = pdir
 
 TYPEINFO_DEF(/obj/structure/ms13/powerlines/cord)
-	default_armor = list(BLUNT = 5, PUNCTURE = 5, LASER = 5, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+	default_armor = list(BLUNT = 5, PUNCTURE = 5, SLASH = 5, LASER = 5, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
 
 /obj/structure/ms13/powerlines/cord
 	icon_state = ""

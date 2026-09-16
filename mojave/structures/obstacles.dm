@@ -7,7 +7,7 @@
 //Metal Bars
 
 TYPEINFO_DEF(/obj/structure/ms13/bars)
- 	default_armor = list(BLUNT = 75, PUNCTURE = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 75, ACID = 50)
+ 	default_armor = list(BLUNT = 75, PUNCTURE = 50, SLASH = 75, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 75, ACID = 50)
 
 /obj/structure/ms13/bars
 	name = "metal bars"
@@ -176,7 +176,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bars)
 		return COMPONENT_ATOM_BLOCK_EXIT
 
 TYPEINFO_DEF(/obj/structure/ms13/celldoor)
- 	default_armor = list(BLUNT = 75, PUNCTURE = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 75, ACID = 50)
+ 	default_armor = list(BLUNT = 75, PUNCTURE = 50, SLASH = 75, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 75, ACID = 50)
 
 /obj/structure/ms13/celldoor
 	name = "cell door"
@@ -557,7 +557,7 @@ TYPEINFO_DEF(/obj/structure/ms13/celldoor)
 //Plain Wire Fence
 
 TYPEINFO_DEF(/obj/structure/ms13/fence/wire)
- 	default_armor = list(BLUNT = 75, PUNCTURE = 10, LASER = 10, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 50)
+ 	default_armor = list(BLUNT = 75, PUNCTURE = 10, SLASH = 75, LASER = 10, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 50)
 
 /obj/structure/ms13/fence/wire
 	name = "wire fence"
@@ -618,7 +618,7 @@ TYPEINFO_DEF(/obj/structure/ms13/fence/wire)
 //Wire fence door, seperated unfortunately
 
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire)
-	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 50, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, SLASH = 50, LASER = 50, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire
 	name = "wire fence door"
@@ -727,7 +727,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire)
 //Barbed Wire fence door
 
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
-	default_armor = list(BLUNT = 70, PUNCTURE = 20, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 70, PUNCTURE = 20, SLASH = 70, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb
 	name = "barbed wire fence door"
@@ -740,7 +740,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 // Sand bags
 
 TYPEINFO_DEF(/obj/structure/ms13/sandbag)
-	default_armor = list(BLUNT = 70, PUNCTURE = 80, LASER = 80, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 70, PUNCTURE = 80, SLASH = 70, LASER = 80, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/sandbag
 	name = "sandbag"
@@ -769,7 +769,7 @@ TYPEINFO_DEF(/obj/structure/ms13/sandbag)
 	qdel(src)
 
 TYPEINFO_DEF(/obj/structure/ms13/road_barrier)
-	default_armor = list(BLUNT = 25, PUNCTURE = 10, LASER = 25, ENERGY = 15, BOMB = 5, BIO = 100, FIRE = 5, ACID = 50)
+	default_armor = list(BLUNT = 25, PUNCTURE = 10, SLASH = 25, LASER = 25, ENERGY = 15, BOMB = 5, BIO = 100, FIRE = 5, ACID = 50)
 
 /obj/structure/ms13/road_barrier
 	name = "road barrier"
@@ -793,7 +793,7 @@ TYPEINFO_DEF(/obj/structure/ms13/road_barrier)
 		icon_state = "[initial(icon_state)]_[rand(1,(altstates))]"
 
 TYPEINFO_DEF(/obj/structure/ms13/road_barrier/concrete)
-	default_armor = list(BLUNT = 50, PUNCTURE = 75, LASER = 90, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 75, SLASH = 50, LASER = 90, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 50)
 
 /obj/structure/ms13/road_barrier/concrete
 	desc = "A heavy duty concrete road barrier, used to direct traffic and prevent going off the lane. Great to take cover behind."
@@ -813,7 +813,7 @@ TYPEINFO_DEF(/obj/structure/ms13/road_barrier/concrete)
 // Railings //
 
 TYPEINFO_DEF(/obj/structure/railing/ms13)
-	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, SLASH = 50, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
 
 /obj/structure/railing/ms13
 	name = "base state MS13 guard rail"
@@ -853,7 +853,7 @@ TYPEINFO_DEF(/obj/structure/railing/ms13)
 	icon_state = "railings_sewer"
 
 TYPEINFO_DEF(/obj/structure/railing/ms13/wood)
-	default_armor = list(BLUNT = 25, PUNCTURE = 15, LASER = 25, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 5, ACID = 50)
+	default_armor = list(BLUNT = 25, PUNCTURE = 15, SLASH = 25, LASER = 25, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 5, ACID = 50)
 
 // Fences. Huzzah! //
 /obj/structure/railing/ms13/wood
@@ -926,7 +926,7 @@ TYPEINFO_DEF(/obj/structure/railing/ms13/wood)
 // Wood Barricade //
 
 TYPEINFO_DEF(/obj/structure/ms13/barricade)
-	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 30, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 10, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, SLASH = 50, LASER = 30, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 10, ACID = 50)
 
 /obj/structure/ms13/barricade
 	name = "wooden barricade"
@@ -1063,7 +1063,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barricade)
 // Bone Piles //
 
 TYPEINFO_DEF(/obj/structure/ms13/bonepile)
-	default_armor = list(BLUNT = 50, PUNCTURE = 35, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 50, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
 
 /obj/structure/ms13/bonepile
 	name = "pile of bones"
@@ -1100,7 +1100,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bonepile)
 */
 
 TYPEINFO_DEF(/obj/structure/ms13/turnstile)
-	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, SLASH = 50, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
 
 /obj/structure/ms13/turnstile
 	name = "turnstile"

@@ -3,7 +3,7 @@
 //MS13 BASE FRAME//
 
 TYPEINFO_DEF(/obj/structure/ms13/frame)
-	default_armor = list(BLUNT = 20, PUNCTURE = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 20, PUNCTURE = 20, SLASH = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/frame
 	icon_state = "test"
@@ -126,7 +126,7 @@ TYPEINFO_DEF(/obj/structure/ms13/frame)
 //MS13 BASE PANE//
 
 TYPEINFO_DEF(/obj/structure/window/ms13)
-	default_armor = list(BLUNT = 20, PUNCTURE = 15, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 20, PUNCTURE = 15, SLASH = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/window/ms13
 	name = "base MS13 window pane"
@@ -225,7 +225,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13)
 	. += new /obj/effect/decal/cleanable/glass(location)
 
 TYPEINFO_DEF(/obj/structure/window/ms13/reinforced)
-	default_armor = list(BLUNT = 50, PUNCTURE = 25, LASER = 50, ENERGY = 25, BOMB = 10, BIO = 100, FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 50, LASER = 50, ENERGY = 25, BOMB = 10, BIO = 100, FIRE = 50, ACID = 50)
 
 /obj/structure/window/ms13/reinforced
 	name = "base MS13 reinforced window pane"

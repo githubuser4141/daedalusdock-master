@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/structure/ms13/bridge)
-	default_armor = list(BLUNT = 50, PUNCTURE = 10, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+	default_armor = list(BLUNT = 50, PUNCTURE = 10, SLASH = 50, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
 /obj/structure/ms13/bridge
 	name = "makeshift bridge"
@@ -107,7 +107,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bridge)
 
 /// Stakes at the end of a makeshift bridge
 TYPEINFO_DEF(/obj/structure/ms13/bridge_stakes)
-	default_armor = list(BLUNT = 50, PUNCTURE = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+	default_armor = list(BLUNT = 50, PUNCTURE = 0, SLASH = 50, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
 /obj/structure/ms13/bridge_stakes
 	name = "makeshift bridge stakes"

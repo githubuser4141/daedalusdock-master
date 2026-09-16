@@ -1,7 +1,7 @@
 ////////////////MOJAVE SUN DRYING RACK STORAGE/////////////////
 
 TYPEINFO_DEF(/obj/structure/ms13/drying_rack)
-	default_armor = list(BLUNT = 10, PUNCTURE = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100,  FIRE = 10, ACID = 100)
+	default_armor = list(BLUNT = 10, PUNCTURE = 10, SLASH = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100,  FIRE = 10, ACID = 100)
 
 /obj/structure/ms13/drying_rack
 	name = "drying rack"

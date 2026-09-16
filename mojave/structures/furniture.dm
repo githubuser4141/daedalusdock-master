@@ -7,7 +7,7 @@
 //TVs//
 
 TYPEINFO_DEF(/obj/structure/ms13/tv)
-	default_armor = list(BLUNT = 25, PUNCTURE = 30, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 25, PUNCTURE = 30, SLASH = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/tv
 	name = "base class MS13 television"
@@ -142,7 +142,7 @@ TYPEINFO_DEF(/obj/structure/ms13/tv)
 //Phones//
 
 TYPEINFO_DEF(/obj/structure/ms13/pay_phone)
-	default_armor = list(BLUNT = 25, PUNCTURE = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/pay_phone
 	name = "payphone"
@@ -253,7 +253,7 @@ TYPEINFO_DEF(/obj/structure/ms13/pay_phone)
 //Storage//
 
 TYPEINFO_DEF(/obj/structure/ms13/storage)
-	default_armor = list(BLUNT = 30, PUNCTURE = 20, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100,  FIRE = 80, ACID = 100)
+	default_armor = list(BLUNT = 30, PUNCTURE = 20, SLASH = 30, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100,  FIRE = 80, ACID = 100)
 
 /obj/structure/ms13/storage
 	name = "generic ms13 storage"
@@ -371,7 +371,7 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 // Dresser Stuff //
 
 TYPEINFO_DEF(/obj/structure/dresser/ms13)
-	default_armor = list(BLUNT = 25, PUNCTURE = 30, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 25, PUNCTURE = 30, SLASH = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/dresser/ms13
 	name = "dresser"
@@ -419,7 +419,7 @@ TYPEINFO_DEF(/obj/structure/dresser/ms13)
 // Filing Cabinets //
 
 TYPEINFO_DEF(/obj/structure/filingcabinet/ms13)
-	default_armor = list(BLUNT = 25, PUNCTURE = 30, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 25, PUNCTURE = 30, SLASH = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/filingcabinet/ms13
 	name = "filing cabinet"
@@ -510,7 +510,7 @@ TYPEINFO_DEF(/obj/structure/filingcabinet/ms13)
 // Plant decor //
 
 TYPEINFO_DEF(/obj/structure/ms13/pot)
-	default_armor = list(BLUNT = 20, PUNCTURE = 35, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 20, PUNCTURE = 35, SLASH = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/pot
 	name = "plant pot"
@@ -543,7 +543,7 @@ TYPEINFO_DEF(/obj/structure/ms13/pot)
 // Grocery Store Displays //
 
 TYPEINFO_DEF(/obj/structure/ms13/deli)
-	default_armor = list(BLUNT = 20, PUNCTURE = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 20, PUNCTURE = 25, SLASH = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/deli
 	name = "deli stand"
@@ -592,7 +592,7 @@ TYPEINFO_DEF(/obj/structure/ms13/deli)
 			return CONTEXTUAL_SCREENTIP_SET
 
 TYPEINFO_DEF(/obj/structure/ms13/fruit_empty)
-	default_armor = list(BLUNT = 20, PUNCTURE = 35, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 20, PUNCTURE = 35, SLASH = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/fruit_empty
 	name = "fruit stand"

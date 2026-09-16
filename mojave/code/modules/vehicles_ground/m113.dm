@@ -24,7 +24,7 @@
 
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine/m113)
-	default_armor = list(BLUNT = 35, PUNCTURE = 80, LASER = 80, ENERGY = 50, BOMB = 0, BIO = 100,  FIRE = 25, ACID = 25)
+	default_armor = list(BLUNT = 35, PUNCTURE = 80, SLASH = 35, LASER = 80, ENERGY = 50, BOMB = 0, BIO = 100,  FIRE = 25, ACID = 25)
 /obj/structure/ms13_vehicle_part/engine/m113
 	name = "Detroit 6V53T diesel engine"
 	desc = "The compact two-stroke diesel engine used to propel an M113 armored personnel carrier."
@@ -32,7 +32,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine/m113)
 	max_integrity = 300
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
-	default_armor = list(BLUNT = 50, PUNCTURE = 70, LASER = 35, ENERGY = 50, BOMB = 15, BIO = 100,  FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 35, ENERGY = 50, BOMB = 15, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/window/ms13_vehicle_wall/m113
 	name = "M113 vision port"
 	desc = "A thick vision block set into the carrier's frontal armor."
@@ -40,14 +40,14 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
 	max_integrity = 400
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/m113)
-	default_armor = list(BLUNT = 50, PUNCTURE = 70, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/window/ms13_vehicle_wall/solid/m113
 	name = "M113 hull plating"
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	max_integrity = 1000
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/m113)
-	default_armor = list(BLUNT = 50, PUNCTURE = 70, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/window/ms13_vehicle_wall/solid/door/m113
 	name = "M113 rear ramp"
 	desc = "The carrier's heavy rear access ramp. Click to open or close it."
@@ -57,7 +57,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/m113)
 	max_integrity = 700
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
-	default_armor = list(BLUNT = 75, PUNCTURE = 75, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 75, PUNCTURE = 75, SLASH = 75, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/ms13_vehicle_frame/m113
 	name = "M113 armored personnel carrier"
 	desc = "A tracked armored personnel carrier with room for a driver and infantry squad."
