@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
-	default_armor = list(BLUNT = 40, PUNCTURE = 70, LASER = 90, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 50, ACID = 100)
+	default_armor = list(BLUNT = 40, PUNCTURE = 20, LASER = 90, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 50, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13
 	icon = 'mojave/icons/structure/doors.dmi'
@@ -308,7 +308,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	return
 
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/metal)
-	default_armor = list(BLUNT = 65, PUNCTURE = 80, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
+	default_armor = list(BLUNT = 75, PUNCTURE = 30, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/metal
 	name = "metal door"
@@ -426,7 +426,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/metal)
 		return FALSE
 
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/metal)
-	default_armor = list(BLUNT = 65, PUNCTURE = 80, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
+	default_armor = list(BLUNT = 75, PUNCTURE = 30, LASER = 75, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 60, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/seethrough/metal
 	name = "metal door"

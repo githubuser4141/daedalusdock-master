@@ -14,6 +14,7 @@
 
 /obj/machinery/power/ms13/streetlamp/Initialize()
 	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/tools/lights, slots = 1, max_item_size = WEIGHT_CLASS_TINY, max_total = 2, search_message = "You pry open the access panel at the base of the lamp.")
 	//AddComponent(/datum/component/largetransparency, 1, 1, 1, 1) // Busted right now. After the first time it turns the icon transparent, the entire icon's dimensions block mouse clicks.
 
 /obj/machinery/power/ms13/streetlamp/CanAllowThrough(atom/movable/mover, turf/target)
@@ -86,6 +87,7 @@
 
 /obj/structure/ms13/street_sign/Initialize()
 	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/lowrandom, slots = 1, max_item_size = WEIGHT_CLASS_TINY, max_total = 2, search_message = "You feel around the back of the sign.")
 	//AddComponent(/datum/component/largetransparency, 1, 1, 1, 1) // Busted right now. After the first time it turns the icon transparent, the entire icon's dimensions block mouse clicks.
 	register_context()
 

@@ -11,6 +11,9 @@
 		new /obj/item/stack/sheet/ms13/scrap(loc)
 	qdel(src)
 
+TYPEINFO_DEF(/obj/structure/kitchenspike/ms13/cross)
+	default_armor = list(BLUNT = 15, PUNCTURE = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/kitchenspike/ms13/cross
 	name = "cross"
 	icon = 'mojave/icons/structure/cross.dmi'

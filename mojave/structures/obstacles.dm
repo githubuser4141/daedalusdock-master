@@ -6,6 +6,9 @@
 
 //Metal Bars
 
+TYPEINFO_DEF(/obj/structure/ms13/bars)
+ 	default_armor = list(BLUNT = 75, PUNCTURE = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 75, ACID = 50)
+
 /obj/structure/ms13/bars
 	name = "metal bars"
 	desc = "Sturdy metal bars."
@@ -172,6 +175,9 @@
 		leaving.Bump(src)
 		return COMPONENT_ATOM_BLOCK_EXIT
 
+TYPEINFO_DEF(/obj/structure/ms13/celldoor)
+ 	default_armor = list(BLUNT = 75, PUNCTURE = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 75, ACID = 50)
+
 /obj/structure/ms13/celldoor
 	name = "cell door"
 	desc = "Better hope you aren't rotting on the wrong side, slick."
@@ -182,7 +188,7 @@
 	opacity = FALSE
 	layer = ABOVE_MOB_LAYER
 	max_integrity = 1000
-	damage_deflection = 21
+	damage_deflection = 25
 	flags_1 = ON_BORDER_1
 	ms13_flags_1 = LOCKABLE_1
 	hitted_sound = 'mojave/sound/ms13effects/metal_door_hit.ogg'
@@ -550,6 +556,9 @@
 
 //Plain Wire Fence
 
+TYPEINFO_DEF(/obj/structure/ms13/fence/wire)
+ 	default_armor = list(BLUNT = 75, PUNCTURE = 10, LASER = 10, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 50)
+
 /obj/structure/ms13/fence/wire
 	name = "wire fence"
 	desc = "A basic wire fence, rusted and still standing."
@@ -609,7 +618,7 @@
 //Wire fence door, seperated unfortunately
 
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire)
-	default_armor = list(BLUNT = 50, PUNCTURE = 60, LASER = 40, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 50, ENERGY = 50, BOMB = 30, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire
 	name = "wire fence door"
@@ -718,7 +727,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire)
 //Barbed Wire fence door
 
 TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
-	default_armor = list(BLUNT = 70, PUNCTURE = 80, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+	default_armor = list(BLUNT = 70, PUNCTURE = 20, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb
 	name = "barbed wire fence door"
@@ -729,6 +738,9 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	damage_deflection = 20
 
 // Sand bags
+
+TYPEINFO_DEF(/obj/structure/ms13/sandbag)
+	default_armor = list(BLUNT = 70, PUNCTURE = 80, LASER = 80, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/sandbag
 	name = "sandbag"
@@ -742,7 +754,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	smoothing_groups = SMOOTH_GROUP_MS13_SANDBAGS
 	canSmoothWith = SMOOTH_GROUP_MS13_SANDBAGS
 	max_integrity = 250
-	//projectile_passchance = 35
+	projectile_passchance = 35
 
 /obj/structure/ms13/sandbag/Initialize(mapload)
 	. = ..()
@@ -756,6 +768,9 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 			new /obj/item/stack/sheet/ms13/cloth(loc, 3)
 	qdel(src)
 
+TYPEINFO_DEF(/obj/structure/ms13/road_barrier)
+	default_armor = list(BLUNT = 25, PUNCTURE = 10, LASER = 25, ENERGY = 15, BOMB = 5, BIO = 100, FIRE = 5, ACID = 50)
+
 /obj/structure/ms13/road_barrier
 	name = "road barrier"
 	desc = "A light and portable road barrier, used to direct traffic and stop people from going to dead ends."
@@ -763,7 +778,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	icon_state = "road_barrier"
 	density = TRUE
 	max_integrity = 150
-	//projectile_passchance = 85
+	projectile_passchance = 85
 	var/hasaltstates = FALSE
 	var/altstates = 0
 	var/climbable = FALSE
@@ -777,15 +792,18 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	if(prob(45))
 		icon_state = "[initial(icon_state)]_[rand(1,(altstates))]"
 
+TYPEINFO_DEF(/obj/structure/ms13/road_barrier/concrete)
+	default_armor = list(BLUNT = 50, PUNCTURE = 75, LASER = 90, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 50)
+
 /obj/structure/ms13/road_barrier/concrete
 	desc = "A heavy duty concrete road barrier, used to direct traffic and prevent going off the lane. Great to take cover behind."
 	icon_state = "concrete_barrier"
 	anchored = TRUE
 	hasaltstates = TRUE
 	climbable = TRUE
-	max_integrity = 550
+	max_integrity = 500
 	altstates = 5
-	//projectile_passchance = 40
+	projectile_passchance = 40
 
 /obj/structure/ms13/road_barrier/concrete/alt
 	desc = "A heavy duty concrete road barrier featuring a pattern that to this day is still somewhat vibrant. Used to direct traffic and prevent going off the lane."
@@ -794,14 +812,17 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 
 // Railings //
 
+TYPEINFO_DEF(/obj/structure/railing/ms13)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
+
 /obj/structure/railing/ms13
 	name = "base state MS13 guard rail"
 	icon = 'mojave/icons/structure/railings.dmi'
 	plane = WALL_PLANE
 	layer = CLOSED_TURF_LAYER
-	max_integrity = 150
+	max_integrity = 200
 	climbable = FALSE //so we can override TG
-	//projectile_passchance = 80
+	projectile_passchance = 80
 
 /obj/structure/railing/ms13/Initialize()
 	. = ..()
@@ -831,12 +852,15 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	desc = "A rusty guard rail used to prevent you from falling into the region's sewage. Thank the lord it's there."
 	icon_state = "railings_sewer"
 
+TYPEINFO_DEF(/obj/structure/railing/ms13/wood)
+	default_armor = list(BLUNT = 25, PUNCTURE = 15, LASER = 25, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 5, ACID = 50)
+
 // Fences. Huzzah! //
 /obj/structure/railing/ms13/wood
 	name = "wooden fence"
 	desc = "A classic wooden fence. It doesn't get more homely than this."
 	icon_state = "wood_full"
-	//projectile_passchance = 75
+	projectile_passchance = 75
 
 /obj/structure/railing/ms13/wood/Initialize()
 	. = ..()
@@ -900,6 +924,9 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 	icon_state = "wood_snow_solo"
 
 // Wood Barricade //
+
+TYPEINFO_DEF(/obj/structure/ms13/barricade)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 30, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 10, ACID = 50)
 
 /obj/structure/ms13/barricade
 	name = "wooden barricade"
@@ -1035,6 +1062,9 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
 
 // Bone Piles //
 
+TYPEINFO_DEF(/obj/structure/ms13/bonepile)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
+
 /obj/structure/ms13/bonepile
 	name = "pile of bones"
 	desc = "A seemingly never ending pile of bones... There's been a lot of death, here."
@@ -1068,6 +1098,10 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb)
  * NOTE: we only have sprites for NORTH and SOUTH turnstiles.
  *
 */
+
+TYPEINFO_DEF(/obj/structure/ms13/turnstile)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, FIRE = 40, ACID = 50)
+
 /obj/structure/ms13/turnstile
 	name = "turnstile"
 	desc = "You can only go one way... assuming you don't hop over."

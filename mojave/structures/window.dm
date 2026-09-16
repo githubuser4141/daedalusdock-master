@@ -2,6 +2,9 @@
 
 //MS13 BASE FRAME//
 
+TYPEINFO_DEF(/obj/structure/ms13/frame)
+	default_armor = list(BLUNT = 20, PUNCTURE = 20, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/frame
 	icon_state = "test"
 	icon = 'mojave/icons/structure/windows/frames.dmi'
@@ -11,7 +14,6 @@
 	layer = CLOSED_TURF_LAYER
 	density = TRUE
 	anchored = TRUE
-	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	can_atmos_pass = CANPASS_DENSITY
 	flags_1 = ON_BORDER_1
 	var/passchance = 60 //windowframes give minor cover
@@ -123,12 +125,15 @@
 
 //MS13 BASE PANE//
 
+TYPEINFO_DEF(/obj/structure/window/ms13)
+	default_armor = list(BLUNT = 20, PUNCTURE = 15, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/window/ms13
 	name = "base MS13 window pane"
 	desc = "A window."
 	icon = 'mojave/icons/structure/windows/panes.dmi'
 	layer = ABOVE_ALL_MOB_LAYER
-	max_integrity = 35
+	max_integrity = 50
 	damage_deflection = 5
 	glass_type = /obj/item/stack/sheet/ms13/glass
 	glass_amount = 1
@@ -220,12 +225,12 @@
 	. += new /obj/effect/decal/cleanable/glass(location)
 
 TYPEINFO_DEF(/obj/structure/window/ms13/reinforced)
-	default_armor = list(BLUNT = 75, PUNCTURE = 75, LASER = 75, ENERGY = 75, BOMB = 25, BIO = 100, FIRE = 80, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = 25, LASER = 50, ENERGY = 25, BOMB = 10, BIO = 100, FIRE = 50, ACID = 50)
 
 /obj/structure/window/ms13/reinforced
 	name = "base MS13 reinforced window pane"
 	desc = "A window protected by metal bars."
-	max_integrity = 250
+	max_integrity = 300
 	receive_ricochet_chance_mod = 0.75
 	damage_deflection = 20
 	has_crack_overlay = FALSE //wisi

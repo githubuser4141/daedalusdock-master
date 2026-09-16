@@ -2,6 +2,9 @@
 
 //street//
 
+TYPEINFO_DEF(/obj/structure/filingcabinet/ms13/mail)
+	default_armor = list(BLUNT = 15, PUNCTURE = 15, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/filingcabinet/ms13/mail
 	name = "postbox"
 	desc = "Last pickup, October 22nd, 2077."
@@ -9,10 +12,19 @@
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_hollow_2.wav'
 	icon_state = "mailbox"
 	pixel_y = 12
-	//projectile_passchance = 50
+	projectile_passchance = 50
 
 /obj/structure/filingcabinet/ms13/mail/old
 	icon_state = "mailbox_old"
+
+/// use_atom_storage = FALSE: this inherits DD's filing cabinet, which already stores items through its
+/// own TGUI and its own attack_hand. It wants the one-time loot roll, not a second competing container.
+/obj/structure/filingcabinet/ms13/mail/Initialize()
+	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/household, use_atom_storage = FALSE, search_message = "You pull open the postbox flap.")
+
+TYPEINFO_DEF(/obj/structure/ms13/storage/trashcan)
+	default_armor = list(BLUNT = 15, PUNCTURE = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/storage/trashcan
 	name = "trash can"
@@ -22,15 +34,19 @@
 	anchored = FALSE
 	pixel_y = 10
 	materialtype = /obj/item/stack/sheet/ms13/scrap
-	//projectile_passchance = 65
+	projectile_passchance = 65
 
 /obj/structure/ms13/storage/trashcan/Initialize()
 	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/lowrandom, slots = 3, max_item_size = WEIGHT_CLASS_SMALL, max_total = 8, search_message = "You root through the trash.")
 	if(prob(25))
 		icon_state = "[initial(icon_state)]-[rand(1,3)]"
 		return
 
 //signs/flags//
+
+TYPEINFO_DEF(/obj/structure/ms13)
+	default_armor = list(BLUNT = 15, PUNCTURE = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13
 	name = "fluff ms13 basetype"
@@ -155,6 +171,9 @@
 
 // Medical Decoration //
 
+TYPEINFO_DEF(/obj/structure/ms13/medical_curtain)
+	default_armor = list(BLUNT = 50, PUNCTURE = 5, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/medical_curtain
 	name = "medical curtain"
 	desc = "A vision blocker, used to shield eyes of the innocent from the sights of the deathly. These ones are secured firmly in the ground."
@@ -166,7 +185,7 @@
 	pixel_y = 12
 	opacity = TRUE
 	density = TRUE
-	//projectile_passchance = 95 // occasional dink off a pole or somethin...
+	projectile_passchance = 5 // occasional dink off a pole or somethin... // actually it should hit 9/10 times?
 
 // Skeletons //
 
@@ -180,6 +199,9 @@
 
 // Barrels //
 
+TYPEINFO_DEF(/obj/structure/ms13/barrel)
+	default_armor = list(BLUNT = 50, PUNCTURE = 15, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/barrel
 	name = "barrel"
 	desc = "A sealed canister of mystery, closed to time."
@@ -190,7 +212,6 @@
 	var/icon_type = null
 	var/amount = 3 //used for icon randomisation amount
 	var/unique = FALSE //used to set if the icon is randomised or not
-	//projectile_passchance = 65
 
 /obj/structure/ms13/barrel/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -376,6 +397,9 @@
 	icon_state = "warning_3"
 	unique = TRUE
 
+TYPEINFO_DEF(/obj/structure/ms13/barrel/double)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/barrel/double
 	name = "barrels"
 	desc = "Sealed canisters of mystery, closed to time."
@@ -421,6 +445,9 @@
 	icon_state = "double_waste_1"
 	icon_type = "double_waste"
 	amount = 1
+
+TYPEINFO_DEF(/obj/structure/ms13/barrel/triple)
+	default_armor = list(BLUNT = 50, PUNCTURE = 30, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/barrel/triple
 	name = "barrels"
@@ -483,6 +510,9 @@
 /obj/structure/ms13/barrel/triple/waste/two
 	icon_state = "triple_waste_2"
 	unique = TRUE
+
+TYPEINFO_DEF(/obj/structure/ms13/barrel/quadruple)
+	default_armor = list(BLUNT = 50, PUNCTURE = 45, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/barrel/quadruple
 	name = "barrels"
@@ -563,13 +593,18 @@
 		deconstruct(disassembled = TRUE)
 		return TRUE
 
+TYPEINFO_DEF(/obj/structure/ms13/pallet/stack)
+	default_armor = list(BLUNT = 30, PUNCTURE = 20, LASER = 10, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/pallet/stack
 	name = "pallet stack"
 	desc = "A stack of wooden pallets. Some good planks in there, still."
 	icon_state = "pallet_stack"
 	max_integrity = 250
 	density = TRUE
-	//projectile_passchance = 65
+	projectile_passchance = 25
+
+#warn remember that passchance is MISS chance
 
 /obj/structure/ms13/pallet/stack/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -583,6 +618,9 @@
 
 // brix.... //
 
+TYPEINFO_DEF(/obj/structure/ms13/brickstack)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 60, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/brickstack
 	name = "brick stack"
 	desc = "A stack of bricks. They're all stuck together... Great."
@@ -591,7 +629,7 @@
 	max_integrity = 600
 	density = TRUE
 	anchored = TRUE
-	//projectile_passchance = 35
+	projectile_passchance = 5
 
 /obj/structure/ms13/brickstack/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -600,6 +638,10 @@
 
 
 // TRASH.... //
+
+TYPEINFO_DEF(/obj/structure/ms13/trash)
+	default_armor = list(BLUNT = 10, PUNCTURE = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 0)
+
 /obj/structure/ms13/trash
 	name = "Base type MS13 TRASH"
 	desc = "Who the hell littered this here? Call a mapper!"
@@ -642,6 +684,9 @@
 	desc = "Some scattered papers. All sorts of stuff, from pages to envelopes."
 	icon_state = "papers_3"
 
+TYPEINFO_DEF(/obj/structure/ms13/trash/books)
+	default_armor = list(BLUNT = 10, PUNCTURE = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/trash/books
 	name = "ruined stack of books"
 	desc = "A small stack of ruined books. A librarian's worst nightmare."
@@ -667,6 +712,9 @@
 				span_notice("You fail to find any usable paper within [src]."))
 			if(prob(50)) // SO YOU'RE TELLING ME THERE'S A CHANCE...
 				qdel(src)
+
+TYPEINFO_DEF(/obj/structure/ms13/trash/books/piles)
+	default_armor = list(BLUNT = 10, PUNCTURE = 25, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/trash/books/pile
 	name = "pile of books"
@@ -707,10 +755,14 @@
 				span_notice("You fail to find any usable paper within the [src]."))
 			qdel(src)
 
+TYPEINFO_DEF(/obj/structure/ms13/trash/bricks)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, LASER = 50, ENERGY = 20, BOMB = 25, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/trash/bricks
 	name = "brick rubble"
 	desc = "A bunch of old bricks. Perhaps you can still find a few that will hold up."
 	icon_state = "brickrubble"
+	projectile_passchance = 95
 
 /obj/structure/ms13/trash/bricks/attack_hand_secondary(mob/user, list/modifiers)
 	. = ..()
@@ -733,6 +785,7 @@
 	name = "scrap wood"
 	desc = "A bunch of scrap wood. You could probably get a few loose pieces."
 	icon_state = "woodscrap"
+	projectile_passchance = 95
 
 /obj/structure/ms13/trash/wood/attack_hand_secondary(mob/living/user, list/modifiers)
 	. = ..()
@@ -783,6 +836,9 @@
 				span_notice("You don't manage to find anything useful from [src]."))
 			if(prob(65)) // SO YOU'RE TELLING ME THERE'S A CHANCE...
 				qdel(src)
+
+TYPEINFO_DEF(/obj/structure/ms13/trash/food/glass)
+	default_armor = list(BLUNT = 10, PUNCTURE = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100) // more cans?!
 
 /obj/structure/ms13/trash/food/glass
 	name = "empty bottle and can"
@@ -840,6 +896,9 @@
 	name = "DO NOT USE ME - base type glass trash"
 	desc = "I am a base type and if you see me in the map someone made a mistake."
 	icon_state = "glass_1"
+
+TYPEINFO_DEF(/obj/structure/ms13/glass/cans)
+	default_armor = list(BLUNT = 10, PUNCTURE = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/trash/glass/cans
 	name = "empty bottles and cans"
@@ -922,6 +981,9 @@
 
 // Cave Decor
 
+TYPEINFO_DEF(/obj/structure/ms13/cave_decor)
+	default_armor = list(BLUNT = 35, PUNCTURE = 25, LASER = 40, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/cave_decor
 	icon = 'mojave/icons/structure/cave_decor.dmi'
 
@@ -932,6 +994,7 @@
 	max_integrity = 120
 	anchored = TRUE
 	density = TRUE
+	projectile_passchance = 50
 
 /obj/structure/ms13/cave_decor/stalagmite/Initialize()
 	. = ..()

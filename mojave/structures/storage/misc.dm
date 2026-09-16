@@ -210,7 +210,7 @@
 	desc = "A large washing machine, for when you need to wash a lot of clothes! Unfortunately, it's been broken for a long time."
 	icon_state = "industwasher"
 
-/obj/structure/ms13/storage/washingmachine/Initialize(mapload)
+/obj/structure/ms13/storage/washingmachine/industrial/Initialize(mapload)
 	. = ..()
 	if(working)
 		desc = "A large washing machine, for when you need to wash a lot of clothes! Still a has a bit of life in it somehow."

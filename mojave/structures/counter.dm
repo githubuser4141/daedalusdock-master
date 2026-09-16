@@ -6,6 +6,9 @@
 
 // Metal Counters //
 
+TYPEINFO_DEF(/obj/structure/table/ms13/no_smooth/counter/metal)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/table/ms13/no_smooth/counter/metal
 	name = "metal counter"
 	desc = "A sterile, culinary and professional metal counter with underneath storage, this one is in good condition." //add alt click open at some point maybe? (Yeah that'd be cool. WYCI.)
@@ -14,6 +17,7 @@
 	frame = /obj/item/stack/sheet/ms13/scrap
 	framestack = /obj/item/stack/sheet/ms13/scrap
 	framestackamount = 2
+	projectile_passchance = 80
 
 /obj/structure/table/ms13/no_smooth/counter/metal/bend
 	icon_state = "metal_counter_bend"
@@ -25,6 +29,9 @@
 	icon_state = "metal_counter_cross"
 
 // Wood Counters //
+
+TYPEINFO_DEF(/obj/structure/table/ms13/no_smooth/counter/metal)
+	default_armor = list(BLUNT = 50, PUNCTURE = 10, LASER = 35, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/table/ms13/no_smooth/counter/wood
 	name = "wooden counter"

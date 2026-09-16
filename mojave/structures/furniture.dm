@@ -6,6 +6,9 @@
 
 //TVs//
 
+TYPEINFO_DEF(/obj/structure/ms13/tv)
+	default_armor = list(BLUNT = 25, PUNCTURE = 30, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/tv
 	name = "base class MS13 television"
 	desc = "A message asking the audience to please not use this asset appears on screen."
@@ -138,6 +141,9 @@
 
 //Phones//
 
+TYPEINFO_DEF(/obj/structure/ms13/pay_phone)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/pay_phone
 	name = "payphone"
 	desc = "A long unused and dead payphone, sure as hell ain't anyone to call on this thing no more."
@@ -247,7 +253,7 @@
 //Storage//
 
 TYPEINFO_DEF(/obj/structure/ms13/storage)
-	default_armor = list(BLUNT = 30, PUNCTURE = 40, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100,  FIRE = 80, ACID = 100)
+	default_armor = list(BLUNT = 30, PUNCTURE = 20, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100,  FIRE = 80, ACID = 100)
 
 /obj/structure/ms13/storage
 	name = "generic ms13 storage"
@@ -364,13 +370,15 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 
 // Dresser Stuff //
 
+TYPEINFO_DEF(/obj/structure/dresser/ms13)
+	default_armor = list(BLUNT = 25, PUNCTURE = 30, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/dresser/ms13
 	name = "dresser"
 	desc = "A nicely-crafted steel dresser. It's filled with lots of undies."
 	icon = 'mojave/icons/structure/cabinets.dmi'
 	var/dresser_type = "circabinet_orange"
 	max_integrity = 225
-	//projectile_passchance = 85
 	pixel_y = 12
 
 /obj/structure/dresser/ms13/attack_hand(mob/user)
@@ -410,13 +418,15 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 
 // Filing Cabinets //
 
+TYPEINFO_DEF(/obj/structure/filingcabinet/ms13)
+	default_armor = list(BLUNT = 25, PUNCTURE = 30, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/filingcabinet/ms13
 	name = "filing cabinet"
 	desc = "Perfect for filing with radioactive dust."
 	icon = 'mojave/icons/structure/cabinets.dmi'
 	icon_state = "filing_cabinet"
-	max_integrity = 150
-	//projectile_passchance = 70
+	max_integrity = 300
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_sheet_2.wav'
 
 /obj/structure/filingcabinet/ms13/deconstruct(disassembled = TRUE)
@@ -449,7 +459,6 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 	max_integrity = 350
 	density = TRUE
 	anchored = TRUE
-	//projectile_passchance = 65
 	hitted_sound = 'mojave/sound/ms13effects/impact/wood/wood_generic_2.wav'
 
 /obj/structure/ms13/jukebox/Initialize()
@@ -500,6 +509,9 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 
 // Plant decor //
 
+TYPEINFO_DEF(/obj/structure/ms13/pot)
+	default_armor = list(BLUNT = 20, PUNCTURE = 35, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/pot
 	name = "plant pot"
 	desc = "An old ceramic plant pot. It has faint cracks lining it in random patterns, but it holds strong."
@@ -508,7 +520,7 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 	max_integrity = 50
 	density = FALSE
 	anchored = TRUE
-	//projectile_passchance = 100
+	projectile_passchance = 80
 
 /obj/structure/ms13/pot/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -530,6 +542,9 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 
 // Grocery Store Displays //
 
+TYPEINFO_DEF(/obj/structure/ms13/deli)
+	default_armor = list(BLUNT = 20, PUNCTURE = 25, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/deli
 	name = "deli stand"
 	desc = "Hot food used to be served here to customers, now nothing is left."
@@ -538,7 +553,7 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 	density = TRUE
 	anchored = TRUE
 	max_integrity = 200
-	//projectile_passchance = 80
+	projectile_passchance = 25
 
 /obj/structure/ms13/deli/Initialize()
 	. = ..()
@@ -576,6 +591,9 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 			context[SCREENTIP_CONTEXT_RMB] = "Disassemble"
 			return CONTEXTUAL_SCREENTIP_SET
 
+TYPEINFO_DEF(/obj/structure/ms13/fruit_empty)
+	default_armor = list(BLUNT = 20, PUNCTURE = 35, LASER = 30, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/fruit_empty
 	name = "fruit stand"
 	desc = "These stands used to be full of the freshest fruit from all over."
@@ -584,7 +602,7 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 	density = TRUE
 	anchored = TRUE
 	max_integrity = 200
-	//projectile_passchance = 80
+	projectile_passchance = 15
 
 /obj/structure/ms13/fruit_empty/attackby(obj/item/W, mob/user, params)
 	if(W.sharpness & SHARP_AXE)

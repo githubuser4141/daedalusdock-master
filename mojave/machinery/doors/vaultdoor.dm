@@ -9,6 +9,10 @@
  * I'm gonna be real, this has a bunch of shitcode that can probably be improved.
  * Breathing too hard on this will break everything. Handle with care.
  */
+
+ TYPEINFO_DEF(/obj/machinery/door/airlock/ms13/vault_door)
+ 	default_armor = list(BLUNT = 95, PUNCTURE = 150, LASER = 100, ENERGY = 100, BOMB = 90, BIO = 100, FIRE = 100, ACID = 100)
+
 /obj/machinery/door/airlock/ms13/vault_door
 	name = "vault door"
 	desc = "A massive door shielding a vault from the disgusting, irradiated outside world. Operated externally."
@@ -21,10 +25,9 @@
 	base_pixel_x = -32
 	pixel_x = -32
 	pixel_y = -16
+	max_integrity = 5000
 	assemblytype = null
 	id_tag = VAULT_DOOR_TAG
-	flags_1 = INDESTRUCTIBLE
-	// AI EDIT: safe isn't declared on this branch (/obj/machinery/door/airlock) and was never read here either - dropped
 	autoclose = FALSE
 	var/list/atom/movable/follower/opaque_followers
 	var/dangerous_close = FALSE

@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/machinery/door/airlock/ms13)
-	default_armor = list(BLUNT = 100, PUNCTURE = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, FIRE = 100, ACID = 100)
+	default_armor = list(BLUNT = 90, PUNCTURE = 90, LASER = 100, ENERGY = 100, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
 
 /obj/machinery/door/airlock/ms13
 	name = "mechanical door"

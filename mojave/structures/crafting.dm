@@ -1,14 +1,17 @@
 //For non-table sub-type crafting benches
 
+TYPEINFO_DEF(/obj/structure/ms13/smelter)
+	default_armor = list(BLUNT = 50, PUNCTURE = 20, LASER = 50, ENERGY = 60, BOMB = 40, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/smelter
 	name = "makeshift smelter"
 	desc = "A crude, makeshift smelter used to refine or melt down ingots. At least it works.... probably."
 	icon = 'mojave/icons/structure/smelter.dmi'
 	icon_state = "smelter"
-	max_integrity = 160
+	max_integrity = 200
 	density = TRUE
 	anchored = TRUE
-	//projectile_passchance = 75
+	projectile_passchance = 75
 	pixel_y = 12
 
 /obj/structure/ms13/smelter/examine(mob/user)
@@ -32,16 +35,18 @@
 		new /obj/item/stack/sheet/ms13/scrap(loc, 4)
 	qdel(src)
 
+TYPEINFO_DEF(/obj/structure/ms13/chem_set)
+	default_armor = list(BLUNT = 15, PUNCTURE = 10, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 100, FIRE = 40, ACID = 100)
 
 /obj/structure/ms13/chem_set
 	name = "chemistry set"
 	desc = "A set of chemistry equipment, heaters, beakers, and filters for synthesizing and brewing concoctions."
 	icon = 'mojave/icons/structure/chemset.dmi'
 	icon_state = "chemicalset"
-	max_integrity = 120
+	max_integrity = 100
 	density = TRUE
 	anchored = TRUE
-	//projectile_passchance = 75
+	projectile_passchance = 75
 	pixel_y = 6
 
 /obj/structure/ms13/chem_set/examine(mob/user)

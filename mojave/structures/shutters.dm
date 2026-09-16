@@ -2,6 +2,9 @@
 
 //MS13 BASE SHUTTER//
 
+TYPEINFO_DEF(/obj/machinery/door/poddoor/shutters/ms13)
+	default_armor = list(BLUNT = 75, PUNCTURE = 50, LASER = 75, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 80, ACID = 50)
+
 /obj/machinery/door/poddoor/shutters/ms13
 	desc = "Mechanical pre-war shutters, somewhat still functional."
 	icon = 'mojave/icons/structure/shutters.dmi'

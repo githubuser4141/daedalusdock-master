@@ -8,6 +8,9 @@
 
 //Cars//
 
+TYPEINFO_DEF(/obj/structure/window/vehicle_ruin)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, LASER = 75, ENERGY = 20, BOMB = 25, BIO = 100, FIRE = 40, ACID = 100)
+
 /obj/structure/ms13/vehicle_ruin
 	name = "vehicle ruin"
 	desc = "A base class unrandomised vehicle, if you see it, report it foo."
@@ -16,12 +19,12 @@
 	bound_width = 96
 	density = TRUE
 	anchored = TRUE
-	max_integrity = 10000
+	max_integrity = 5000
 	resistance_flags = INDESTRUCTIBLE
 	var/body_state = null
 	layer = ABOVE_ALL_MOB_LAYER
 	plane = ABOVE_GAME_PLANE
-	//projectile_passchance = 45
+	projectile_passchance = 45
 
 /obj/structure/ms13/vehicle_ruin/welder_act_secondary(mob/living/user, obj/item/I)
 	if(!I.tool_start_check(user, amount=0))
@@ -72,7 +75,7 @@
 
 /obj/structure/ms13/vehicle_ruin/van
 	body_state = "van"
-	//projectile_passchance = 35
+	projectile_passchance = 35
 
 /obj/structure/ms13/vehicle_ruin/Initialize()
 	. = ..()
