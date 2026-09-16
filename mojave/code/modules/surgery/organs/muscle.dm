@@ -8,6 +8,9 @@
 // Organ sprites are ported from CEV-Eris (icons/obj/surgery.dmi, AGPL-3.0) into
 // mojave/icons/objects/organs/tissue_organs.dmi.
 
+TYPEINFO_DEF(/obj/item/organ/muscle)
+	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+
 /obj/item/organ/muscle
 	name = "muscle tissue"
 	desc = "A bundle of muscle fibers. Best left where it is."

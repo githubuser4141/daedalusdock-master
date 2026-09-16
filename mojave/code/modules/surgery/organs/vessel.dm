@@ -10,6 +10,9 @@
 		return
 	to_chat(recipient, span_notice("[DEBUG] [message]"))
 
+TYPEINFO_DEF(/obj/item/organ/vessel)
+	default_armor = list(BLUNT = 25, PUNCTURE = 10, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25) // famously low slash armor
+
 /obj/item/organ/vessel
 	name = "blood vessel"
 	desc = "A major blood vessel. Best left where it is."

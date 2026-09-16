@@ -40,7 +40,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13)
 	return
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/metal) // Thin iron sheet wall
-	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/metal
 	name = "metal wall"
@@ -58,7 +58,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/metal) // Thin iron sheet wall
 	max_integrity = 300
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/wood)
-	default_armor = list(BLUNT = 50, PUNCTURE = 15, SLASH = 80, LASER = 35, ENERGY = 25, BOMB = 10, BIO = 100, FIRE = 10, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 80, LASER = 35, ENERGY = 25, BOMB = 10, BIO = 100, FIRE = 10, ACID = 50)
 
 /turf/closed/wall/ms13/wood
 	name = "log wall"
@@ -69,7 +69,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/wood)
 	damage_deflection = 20
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/wood/fresh)
-	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/wood/fresh
 	name = "fresh log wall"
@@ -200,7 +200,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/adobe)
 			frill_icon = 'mojave/icons/turf/walls/drought/siding_red_frill.dmi'
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/prison)
-	default_armor = list(BLUNT = 60, PUNCTURE = 40, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 50, ACID = 75)
+	default_armor = list(BLUNT = 60, PUNCTURE = 50, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 50, ACID = 75)
 
 /turf/closed/wall/ms13/prison
 	name = "prison wall"
@@ -227,7 +227,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/prison)
 			return
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/brick)
-	default_armor = list(BLUNT = 50, PUNCTURE = 40, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/brick
 	name = "brick wall"
@@ -246,7 +246,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/brick)
 	frill_icon = 'mojave/icons/turf/walls/brickgray_frill.dmi'
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/metal/reinforced)
-	default_armor = list(BLUNT = 75, PUNCTURE = 65, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 50, ACID = 75)
+	default_armor = list(BLUNT = 75, PUNCTURE = 75, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 50, BIO = 100, FIRE = 50, ACID = 75)
 
 /turf/closed/wall/ms13/metal/reinforced
 	name = "reinforced metal wall"
@@ -268,7 +268,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/metal/reinforced)
 	frill_icon = 'mojave/icons/turf/walls/rrustmetal_frill.dmi'
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/concrete)
-	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 75, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/concrete
 	name = "concrete wall"
@@ -289,7 +289,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/concrete)
 	frill_icon = 'mojave/icons/turf/walls/sewer_frill.dmi'
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/bunker)
-	default_armor = list(BLUNT = 65, PUNCTURE = 55, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
+	default_armor = list(BLUNT = 65, PUNCTURE = 75, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
 
 /turf/closed/wall/ms13/bunker
 	name = "bunker wall"
@@ -327,7 +327,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/bunker)
 // Vault Walls //
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/vault)
-	default_armor = list(BLUNT = 65, PUNCTURE = 55, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
+	default_armor = list(BLUNT = 65, PUNCTURE = 75, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
 
 /turf/closed/wall/ms13/vault
 	name = "vault wall"
@@ -358,7 +358,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/vault)
 // Dungeon Walls //
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/dungeon)
-	default_armor = list(BLUNT = 75, PUNCTURE = 75, SLASH = 80, LASER = 75, ENERGY = 75, BOMB = 75, BIO = 100, FIRE = 75, ACID = 100)
+	default_armor = list(BLUNT = 75, PUNCTURE = 90, SLASH = 80, LASER = 75, ENERGY = 75, BOMB = 75, BIO = 100, FIRE = 75, ACID = 100)
 
 /turf/closed/wall/ms13/dungeon
 	name = "reinforced bunker wall"

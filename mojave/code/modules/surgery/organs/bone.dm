@@ -4,6 +4,9 @@
 // Organ sprites are ported from CEV-Eris (icons/obj/surgery.dmi, AGPL-3.0) into
 // mojave/icons/objects/organs/tissue_organs.dmi.
 
+TYPEINFO_DEF(/obj/item/organ/bone)
+	default_armor = list(BLUNT = 15, PUNCTURE = 50, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+
 /obj/item/organ/bone
 	name = "bone"
 	desc = "Load-bearing skeletal structure. Best left where it is."
@@ -29,24 +32,28 @@
 	zone = BODY_ZONE_L_ARM
 	slot = ORGAN_SLOT_BONE_L_ARM
 	icon_state = "left_arm"
+	relative_size = 40
 
 /obj/item/organ/bone/r_arm
 	name = "right arm bone"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_BONE_R_ARM
 	icon_state = "right_arm"
+	relative_size = 40
 
 /obj/item/organ/bone/l_leg
 	name = "left leg bone"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_BONE_L_LEG
 	icon_state = "left_leg"
+	relative_size = 40
 
 /obj/item/organ/bone/r_leg
 	name = "right leg bone"
 	zone = BODY_ZONE_R_LEG
 	slot = ORGAN_SLOT_BONE_R_LEG
 	icon_state = "right_leg"
+	relative_size = 40
 
 /obj/item/organ/bone/chest
 	name = "ribcage"
@@ -54,6 +61,10 @@
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_BONE_CHEST
 	icon_state = "ribcage"
+	relative_size = 35
+
+TYPEINFO_DEF(/obj/item/organ/bone/head)
+	default_armor = list(BLUNT = 15, PUNCTURE = 75, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
 
 /obj/item/organ/bone/head
 	name = "skull"
@@ -62,6 +73,7 @@
 	slot = ORGAN_SLOT_BONE_HEAD
 	icon_state = "skull"
 	external_damage_modifier = MS13_BONE_SKULL_EXTERNAL_DAMAGE_MODIFIER
+	relative_size = 100
 
 /// 0-100, own damage ratio. Always 0 once destroyed (broken).
 /obj/item/organ/bone/proc/get_stability()
