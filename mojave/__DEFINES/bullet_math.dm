@@ -117,12 +117,6 @@
 
 /atom
 	var/datum/hitbox/atomHitbox = null
-	// the lower clamp for bullet damage. This is reached when the bullet
-	// has a lot of penetration power against this
-	var/minimumBulletOverpenThreshold = 0.1
-	// The threshold reached when the bullet has little penetration power
-	// against this
-	var/maximumBulletOverpenThreshld = 1
 	// AI EDIT: was a plain "var/bIntegrity = 100" - a second, disconnected integrity number that never
 	// matched what the atom's real health/damage system (atom_integrity/max_integrity, code/game/atom/
 	// atoms.dm) showed or did, even for things that DO track real integrity (most /obj/structure and /obj/
@@ -365,12 +359,24 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 /// Below this much leftover damage, the bullet just stops - not worth continuing as an overpenetration hit.
 #define MS13_BULLET_OVERPEN_MIN_REMAINING 10
 
-/// Wall overpenetration (mojave/code/game/turfs/wall_integrity.dm) - baseline fraction of a bullet's damage
-/// that transfers into a "neutral" wall (same armor rating as MS13_BULLET_HARDNESS_BASELINE) before the
-/// wall's own armor and the bullet's own construction (get_own_hardness_ratio()) adjust it. A tougher wall
-/// pushes this UP (stops more of the round); a tougher/harder bullet divides it back DOWN (punches through).
-#define MS13_WALL_BULLET_TRANSFER_BASE 0.5
+/// Armor is how sturdy something is against bullets: each point of its rating for the round's damage type
+/// strips this much penetration power (see get_penetration_power()) from a round crossing it. A round only
+/// gets through with what it has left over, so small slow rounds stop in a wall and big fast ones keep going.
+/// Rough guide: 5 armor stops nothing, 15 stops a .22, 40 (brick) stops pistol rounds up to a .45.
+#define MS13_BULLET_STOPPING_PER_ARMOR 1.75
+/// A barrier always takes at least this share of a round that passes through it.
 #define MS13_WALL_BULLET_TRANSFER_MIN 0.1
+/// Share of the damage a body keeps that goes into the struck organ rather than the limb as a whole.
+#define MS13_BULLET_ORGAN_SHARE 0.5
+/// Share of a round a glancing hit leaves in the barrier it bounces off.
+#define MS13_BULLET_RICOCHET_LOSS 0.2
+/// A round this far ahead of a barrier's stopping power (see hitbox_impact()) bites in instead of glancing off.
+#define MS13_BULLET_RICOCHET_MAX_MARGIN 0.5
+/// Share of a round that flies on as fragments when it breaks up on a barrier; the barrier takes the rest.
+#define MS13_BULLET_FRAGMENT_SHARE 0.6
+/// Clamp on BULLET_SPEED_BASELINE / speed. Pistols sit near 1.1, rifles near 2.
+#define MS13_BULLET_VELOCITY_MIN 0.3
+#define MS13_BULLET_VELOCITY_MAX 3
 
 #define BULLET_SPEED_SLOWER -0.05
 #define BULLET_SPEED_PISTOL -0.1
@@ -421,28 +427,163 @@ TYPEINFO_DEF(/obj/projectile)
 	return clamp(tip_hardness * rating_hardness * integrity_ratio, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX)
 
 /**
- * What fraction of a projectile's damage a struck target absorbs, the remainder carrying on through it as
- * an overpenetration hit. A tougher target (higher armor rating for the damage type being dealt) absorbs
- * more; a tougher round (get_own_hardness_ratio()) pushes it back down and keeps going.
- *
- * Shared by walls (wall_integrity.dm) and by structures/machinery (cover.dm) so the same round behaves
- * consistently against all of them, rather than each growing its own copy of the formula.
+ * How hard this round hits whatever it meets. Damage stands in for its energy and speed for how fast it
+ * arrives; the round's own armor only says whether it holds together doing so (get_own_hardness_ratio()).
  */
-/proc/ms13_bullet_transfer_fraction(datum/armor/target_armor, obj/projectile/hitting_projectile)
-	var/target_toughness = (target_armor && hitting_projectile.armor_flag) ? clamp(sqrt(target_armor.getRating(hitting_projectile.armor_flag) / MS13_BULLET_HARDNESS_BASELINE), MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
-	var/transfer_fraction = MS13_WALL_BULLET_TRANSFER_BASE * target_toughness / hitting_projectile.get_own_hardness_ratio()
-	return clamp(transfer_fraction, MS13_WALL_BULLET_TRANSFER_MIN, 1)
+/obj/projectile/proc/get_penetration_power()
+	var/velocity = clamp(BULLET_SPEED_BASELINE / max(speed, 0.1), MS13_BULLET_VELOCITY_MIN, MS13_BULLET_VELOCITY_MAX)
+	return damage * velocity * get_own_hardness_ratio()
 
-// returns a exponential multiplier for calculations.
-// AI EDIT: param was typed turf/closed/wall - now that /obj/structure and /obj/machinery also carry a
-// hitbox (see /turf/closed/wall/New() above), a non-wall atom passed here would get silently coerced to
-// null by DM's typed-param check, crashing target.bIntegrity below. Loosened to atom.
-/obj/projectile/proc/getRelativeArmorRatingMultiplier(atom/target, datum/armor/targetArmor, datum/armor/bulletArmor)
-	if(targetArmor == null || bulletArmor == null || bulletArmorType == "" || !bulletArmor.vars[bulletArmorType])
-		return 0
-	var/ratingDiff = (bulletArmor.vars[bulletArmorType] * getBIntegrity() / getBIntegrityMax()) * initial(speed) / speed - targetArmor.vars[bulletArmorType] * target.getBIntegrity() / target.getBIntegrityMax()
-//message_admins("relative armor returning [ratingDiff / bulletArmor.vars[damage_type]]")
-	return (ratingDiff+0.001) / bulletArmor.vars[bulletArmorType]
+/*
+ * Penetration, for everything a bullet can hit.
+ *
+ * Every hit goes through penetrating_hit() (called from process_hit() in projectile.dm). The target says what
+ * share of the round it stops (get_bullet_transfer_fraction()); it takes that share times its
+ * bullet_damage_ratio, and the round carries the rest on to whatever is behind it. Nothing here ever adds
+ * damage: across every target a round touches, it never deals more than it started with.
+ */
+
+/atom
+	/// Share of a round's damage this atom always keeps, however powerful the round.
+	var/bullet_min_absorb = MS13_WALL_BULLET_TRANSFER_MIN
+	/// Of the energy this atom stops (set by its armor), the share that becomes damage to it, 0-1. The rest is
+	/// lost as noise, heat and vibration. Higher takes more damage: a skull or a log soaks it all up (1); a
+	/// reinforced wall or armor plate mostly shrugs it off (0.2).
+	var/bullet_damage_ratio = 1
+
+/mob/living
+	bullet_min_absorb = MS13_BULLET_TRANSFER_CONVERGENCE
+	/// Set while a bullet's damage is being applied. That damage was already split between tissue and limb, so
+	/// natural armor layers (natural_armor.dm) must not split it again.
+	var/tmp/resolving_bullet_hit = FALSE
+
+/// Nothing gets through something that can't be broken.
+/turf/closed/indestructible
+	bullet_min_absorb = 1
+	bullet_damage_ratio = 0
+
+/obj/projectile
+	/// blocked value from the latest on_hit(); 100 means the target stopped the round without taking it.
+	var/tmp/last_hit_blocked = 0
+
+/obj/projectile/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	last_hit_blocked = blocked
+	return ..()
+
+/// Only solid bullets carry on through things. Lasers, rockets and the like stop where they hit.
+/obj/projectile/proc/can_overpenetrate(atom/target)
+	return damage > 0 && damage_type == BRUTE && istype(src, /obj/projectile/bullet) && (target.density || isliving(target))
+
+/// Penetration power this atom strips from P, from its armor against P's damage type.
+/atom/proc/get_bullet_stopping_power(obj/projectile/P)
+	var/datum/armor/armor = returnArmor()
+	return ms13_armor_stopping_power(armor ? armor.getRating(P.armor_flag) : 0)
+
+/proc/ms13_armor_stopping_power(rating)
+	return max(rating, 0) * MS13_BULLET_STOPPING_PER_ARMOR
+
+/// Share (0-1) of P's damage this atom stops. The rest may carry on through it.
+/atom/proc/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
+	return ms13_bullet_stop_fraction(get_bullet_stopping_power(P), bullet_min_absorb, P)
+
+/proc/ms13_bullet_stop_fraction(stopping_power, min_absorb, obj/projectile/P)
+	return clamp(max(min_absorb, stopping_power / max(P.get_penetration_power(), 1)), 0, 1)
+
+/// Damage about to be applied to this atom by a bullet that should land somewhere else instead (an organ).
+/// Returns how much to take out of the hit; finish_bullet_hit() is told whether it landed.
+/atom/proc/divert_bullet_damage(obj/projectile/P)
+	return 0
+
+/atom/proc/finish_bullet_hit(obj/projectile/P, diverted, landed)
+	return
+
+/**
+ * The one place a bullet hit resolves. Takes the target's share out of the round, lets the target apply it
+ * through its normal bullet_act(), then sends the remainder on if the target let it through.
+ */
+/obj/projectile/proc/penetrating_hit(atom/target, def_zone, piercing_hit)
+	if(!can_overpenetrate(target))
+		return target.bullet_act(src, def_zone, piercing_hit)
+	var/original_damage = damage
+	var/stop_fraction = target.get_bullet_transfer_fraction(src, def_zone)
+	if(original_damage * (1 - stop_fraction) < MS13_BULLET_OVERPEN_MIN_REMAINING)
+		stop_fraction = 1
+	damage = original_damage * stop_fraction * clamp(target.bullet_damage_ratio, 0, 1)
+	var/diverted = min(target.divert_bullet_damage(src), damage)
+	damage -= diverted
+	last_hit_blocked = 0
+
+	var/mob/living/living_target = isliving(target) ? target : null
+	if(living_target)
+		living_target.resolving_bullet_hit = TRUE
+	. = target.bullet_act(src, def_zone, piercing_hit)
+	if(living_target)
+		living_target.resolving_bullet_hit = FALSE
+	if(QDELETED(src))
+		return
+
+	var/landed = (. == BULLET_ACT_HIT) && last_hit_blocked < 100
+	target.finish_bullet_hit(src, diverted, landed)
+	if(!landed || stop_fraction >= 1 || QDELETED(target))
+		damage = original_damage
+		return
+	damage = original_damage * (1 - stop_fraction)
+	return BULLET_ACT_FORCE_PIERCE
+
+/// target stops `amount` of this round's damage and takes its bullet_damage_ratio share of that.
+/obj/projectile/proc/bullet_barrier_damage(atom/target, amount)
+	amount = clamp(amount, 0, damage)
+	damage -= amount
+	var/taken = amount * clamp(target.bullet_damage_ratio, 0, 1)
+	if(taken > 0 && target.uses_integrity && !QDELETED(target))
+		target.take_damage(taken, damage_type, armor_flag, FALSE, turn(dir, 180), armor_penetration)
+
+/**
+ * Shallow and head-on hits on hitbox atoms (walls, structures, machinery). A glancing hit on something the
+ * round can't comfortably punch through ricochets; a head-on hit it can't get through at all can break it
+ * apart. Returns TRUE if either happened, otherwise the hit resolves normally through penetrating_hit().
+ */
+/obj/projectile/proc/hitbox_impact(atom/target)
+	if(!can_overpenetrate(target))
+		return FALSE
+	var/wx
+	var/wy
+	var/wallHitAngle
+	target.atomHitbox.getPointOfCollision(BM_LINE(trajectory.starting_x, trajectory.starting_y, trajectory.x + trajectory.mpx * 10, trajectory.y + trajectory.mpy * 10), &wx, &wy, &wallHitAngle)
+	var/orig = Angle
+	var/ricochetAngle = wallHitAngle
+	if(abs(wallHitAngle) > 90)
+		ricochetAngle = abs(sign(wallHitAngle) * 180 - wallHitAngle)
+	var/reflected_angle = (Angle + wallHitAngle * 2) % 360
+	if(reflected_angle > 180)
+		reflected_angle -= 360
+	else if(reflected_angle < -180)
+		reflected_angle += 360
+
+	var/power = get_penetration_power()
+	// Below 0 the barrier outclasses the round; above 0 the round could punch through it.
+	var/margin = (power - target.get_bullet_stopping_power(src)) / max(power, 1)
+
+	if(canRicochet && margin < MS13_BULLET_RICOCHET_MAX_MARGIN && abs(ricochetAngle) < GLOB.bulletStandardRicochetAngles["[bulletTipType]"])
+		impacted[target] = TRUE
+		bullet_barrier_damage(target, damage * MS13_BULLET_RICOCHET_LOSS)
+		set_angle(reflected_angle)
+		trajectory.starting_x = wx
+		trajectory.starting_y = wy
+		ricochets++
+		decayedRange = max(0, decayedRange - 1)
+		adjustSpeed(-0.1 * speed)
+		adjustIntegrity(-BULLET_INTEGRITYLOSS_RICOCHET)
+		return TRUE
+
+	var/list/fragment_angles = GLOB.bulletStandardFragmentAngles["[bulletTipType]"]
+	if(canFragment && margin < 0 && getBIntegrity() >= getBIntegrityMax() * 0.3 && abs(ricochetAngle) > fragment_angles[1] && abs(ricochetAngle) < fragment_angles[2])
+		impacted[target] = TRUE
+		bullet_barrier_damage(target, damage * (1 - MS13_BULLET_FRAGMENT_SHARE))
+		fragmentTowards(target, clamp(bullet_mass, 1, 8), abs(ricochetAngle) > 60 ? (ricochetAngle + orig + abs(ricochetAngle) + 90) : ricochetAngle + orig - sign(reflected_angle) * 3, BULLET_FRAGMENT_MAXANGLEVARIATION, abs(ricochetAngle) > 60)
+		qdel(src)
+		return TRUE
+	return FALSE
 
 /obj/projectile/proc/fragmentTowards(atom/lastHit, fragmentCount, fragmentAngle, maxDeviation, fullLoopPossible)
 	// AI EDIT: was "0 to fragmentCount" (off-by-one, fragmentCount+1 fragments) and fired every fragment
@@ -461,9 +602,11 @@ TYPEINFO_DEF(/obj/projectile)
 	// swarm of 8x-per-hit projectiles doing next to nothing. Skip spawning entirely once that 20% would round
 	// under BULLET_FRAGMENT_MIN_DAMAGE - there's no point creating, moving, and hit-testing a bullet that
 	// can't deal a mark of damage.
-	var/fragment_damage = damage * 0.2
-	if(fragment_damage < BULLET_FRAGMENT_MIN_DAMAGE)
+	// Fragments share what's left of the round between them, so a round never deals more by breaking up.
+	fragmentCount = min(fragmentCount, round(damage / BULLET_FRAGMENT_MIN_DAMAGE))
+	if(fragmentCount < 1)
 		return
+	var/fragment_damage = damage / fragmentCount
 	for(var/i = 1 to fragmentCount)
 		var/obj/projectile/projectile = new /obj/projectile/bullet(get_turf(lastHit))
 		projectile.setBIntegrity(getBIntegrity())

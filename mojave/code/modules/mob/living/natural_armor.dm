@@ -43,6 +43,9 @@ GLOBAL_LIST_INIT(natural_armor_layers, list(new /datum/natural_armor_layer/muscl
 	return damage_amount
 
 /mob/living/carbon/human/apply_natural_armor_layers(damage_amount, damagetype, def_zone)
+	// Bullets already split their damage between tissue and limb (bullet_penetration.dm).
+	if(resolving_bullet_hit)
+		return damage_amount
 	for(var/datum/natural_armor_layer/layer as anything in GLOB.natural_armor_layers)
 		damage_amount = layer.absorb(src, damage_amount, damagetype, def_zone)
 	return damage_amount

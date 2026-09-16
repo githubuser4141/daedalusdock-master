@@ -77,6 +77,8 @@ code/datums/ai/_ai_controller.dm,
 code/modules/mob/living/simple_animal/hostile/hostile.dm,
 code/modules/unit_tests/__unit_tests.dm,
 code/modules/unit_tests/ai_perf_ms13.dm,
+code/modules/unit_tests/bullet_penetration_ms13.dm,
+code/modules/unit_tests/projectiles.dm,
 
 
 */

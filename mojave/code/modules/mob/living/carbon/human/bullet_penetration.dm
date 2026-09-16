@@ -60,7 +60,14 @@
  * transferred_amount - never on top of it), and returns the transfer fraction for the caller to split
  * P.damage with. See human_defense.dm's bullet_act() for how the split/pass-through actually happens.
  */
-/mob/living/carbon/human/proc/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
+/mob/living/carbon/human
+	/// Organ and limb picked by get_bullet_transfer_fraction(), waiting to see whether the hit lands.
+	var/tmp/obj/item/organ/pending_bullet_organ
+	var/tmp/obj/item/bodypart/pending_bullet_part
+
+/mob/living/carbon/human/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
+	pending_bullet_organ = null
+	pending_bullet_part = null
 	var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : get_bodypart(deprecise_zone(def_zone))
 	if(!hit_part)
 		return MS13_BULLET_TRANSFER_CLEAN
@@ -88,11 +95,16 @@
 	// (transfer_fraction goes up). Shared with wall overpenetration (bullet_math.dm's get_own_hardness_ratio()).
 	var/hardness_ratio = P.get_own_hardness_ratio()
 	transfer_fraction /= hardness_ratio
+	// Whatever the split above says, a round without the power to get through the struck organ (its armor) stays in.
+	if(!istext(picked))
+		var/obj/item/organ/struck = picked
+		transfer_fraction = max(transfer_fraction, struck.get_bullet_stopping_power(P) / max(P.get_penetration_power(), 1))
 
 	transfer_fraction = clamp(transfer_fraction, 0, 1)
 	var/transferred_amount = P.damage * transfer_fraction
 
-	log_combat(P.firer, src, "shot [istext(picked) ? "with a clean pass" : "hitting [picked]"] in the [hit_part.plaintext_zone]", P, "transferred [round(transferred_amount, 0.1)]/[P.damage] (fraction [round(transfer_fraction, 0.01)], velocity_spread [round(velocity_spread, 0.01)], hardness [round(hardness_ratio, 0.01)], integrity [round(P.getBIntegrity(), 1)])")
+	if(P.firer)
+		log_combat(P.firer, src, "shot [istext(picked) ? "with a clean pass" : "hitting [picked]"] in the [hit_part.plaintext_zone]", P, "transferred [round(transferred_amount, 0.1)]/[P.damage] (fraction [round(transfer_fraction, 0.01)], velocity_spread [round(velocity_spread, 0.01)], hardness [round(hardness_ratio, 0.01)], integrity [round(P.getBIntegrity(), 1)])")
 
 	// Hitting a structure costs the bullet some of its own integrity too - more for a rigid one (bone) than a
 	// clean pass, same idea as the existing ricochet/fragment integrity costs (bullet_math.dm). This also
@@ -107,9 +119,24 @@
 		P.adjustIntegrity(-integrity_cost)
 
 	if(!istext(picked))
-		apply_bullet_organ_damage(hit_part, picked, transferred_amount, P.firer)
+		pending_bullet_organ = picked
+		pending_bullet_part = hit_part
 
 	return transfer_fraction
+
+/// The struck organ's share comes out of the limb's damage, never on top of it.
+/mob/living/carbon/human/divert_bullet_damage(obj/projectile/P)
+	return pending_bullet_organ ? P.damage * MS13_BULLET_ORGAN_SHARE : 0
+
+/// Armor that blunted the hit on the limb blunts it on the organ too.
+/mob/living/carbon/human/finish_bullet_hit(obj/projectile/P, diverted, landed)
+	var/obj/item/organ/organ = pending_bullet_organ
+	var/obj/item/bodypart/part = pending_bullet_part
+	pending_bullet_organ = null
+	pending_bullet_part = null
+	if(!landed || !organ || !part || diverted <= 0)
+		return
+	apply_bullet_organ_damage(part, organ, diverted * (100 - clamp(P.last_hit_blocked, 0, 100)) / 100, P.firer)
 
 /// Splits transferred_amount between the primary struck organ and any splash to nearby organs sharing the
 /// bodypart - carved out of transferred_amount, never added to it.
