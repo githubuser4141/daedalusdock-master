@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/item/organ/lungs)
+	default_armor = list(BLUNT = 10, PUNCTURE = 5, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
 /obj/item/organ/lungs
 	name = "lungs"
 	icon_state = "lungs"
@@ -11,6 +14,7 @@
 	high_threshold = 0.5
 	low_threshold = 0.35
 	relative_size = 60
+	bullet_damage_ratio = 0.7
 
 	decay_factor = STANDARD_ORGAN_DECAY * 0.9 // fails around 16.5 minutes, lungs are one of the last organs to die (of the ones we have)
 

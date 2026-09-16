@@ -10,6 +10,7 @@
 	slot = ORGAN_SLOT_KIDNEYS
 	zone = BODY_ZONE_CHEST
 	relative_size = 10
+	bullet_damage_ratio = 1.15
 
 /obj/item/organ/kidneys/on_life(delta_time, times_fired)
 	. = ..()

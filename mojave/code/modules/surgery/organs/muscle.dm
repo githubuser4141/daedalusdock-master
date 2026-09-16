@@ -31,6 +31,7 @@ TYPEINFO_DEF(/obj/item/organ/muscle)
 	/// Last get_performance() value pushed through refresh_muscle_effects(), so on_life() can skip the
 	/// resync when nothing has changed. -1 rather than 0 so the first tick always syncs.
 	var/last_synced_performance = -1
+	bullet_damage_ratio = 0.85
 
 /obj/item/organ/muscle/l_arm
 	name = "left arm muscle"

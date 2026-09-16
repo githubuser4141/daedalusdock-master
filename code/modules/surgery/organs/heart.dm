@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/item/organ/heart)
+	default_armor = list(BLUNT = 10, PUNCTURE = 20, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
 /obj/item/organ/heart
 	name = "heart"
 	desc = "I feel bad for the heartless bastard who lost this."
@@ -6,6 +9,7 @@
 	visual = FALSE
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_HEART
+	bullet_damage_ratio = 1
 
 	decay_factor = 2.5 * STANDARD_ORGAN_DECAY //designed to fail around 6 minutes after death
 

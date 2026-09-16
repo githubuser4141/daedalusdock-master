@@ -26,6 +26,7 @@ TYPEINFO_DEF(/obj/item/organ/bone)
 	/// Set while DD's break_bones()/heal_bones() bridge is syncing this organ to the limb's own bone state,
 	/// so that synthetic damage jump isn't mistaken for a real hit. See applyOrganDamage() below.
 	var/bridging_break = FALSE
+	bullet_damage_ratio = 1.5
 
 /obj/item/organ/bone/l_arm
 	name = "left arm bone"
@@ -74,6 +75,7 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 	icon_state = "skull"
 	external_damage_modifier = MS13_BONE_SKULL_EXTERNAL_DAMAGE_MODIFIER
 	relative_size = 100
+	bullet_damage_ratio = 2
 
 /// 0-100, own damage ratio. Always 0 once destroyed (broken).
 /obj/item/organ/bone/proc/get_stability()

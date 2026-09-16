@@ -1,3 +1,6 @@
+TYPEINFO_DEF(/obj/item/organ)
+	default_armor = list(BLUNT = 10, PUNCTURE = 15, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
 /obj/item/organ
 	food_reagents = list(
 		/datum/reagent/consumable/nutriment/organ_tissue = 5,
@@ -5,6 +8,7 @@
 	)
 	/// Type of food we turn into when grilled, should probably keep it as what it is here
 	var/grilled_type = /obj/item/food/meat/steak/plain/ms13/organ
+	bullet_damage_ratio = 1.15
 
 /obj/item/organ/Initialize(mapload)
 	. = ..()
