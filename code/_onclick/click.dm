@@ -216,18 +216,21 @@
  * * depth: How deep nested inside of an atom contents stack an object can be.
  * * direct_access: Do not override. Used for recursion.
  */
-/atom/proc/IsReachableBy(atom/movable/user, reacher_range = 1, depth = INFINITY, direct_access = user.DirectAccess())
+/atom/proc/IsReachableBy(atom/movable/user, reacher_range = 1, depth = INFINITY, direct_access)
 	SHOULD_NOT_OVERRIDE(TRUE)
 
 	if(isnull(user))
 		return FALSE
 
-	if(src in direct_access)
-		return TRUE
-
 	// This is a micro-opt, if any turf ever returns false from IsContainedAtomAccessible, change this.
 	if(isturf(loc) || isturf(src))
-		if(CheckReachableAdjacency(user, reacher_range))
+		// MOJAVE EDIT: DirectAccess() is the user, its loc and its contents, so a turf or something lying on one
+		// can only be in it as the user or the user's loc. Skips building that list (a full inventory walk).
+		if(src == user || src == user.loc || CheckReachableAdjacency(user, reacher_range))
+			return TRUE
+	else
+		direct_access ||= user.DirectAccess()
+		if(src in direct_access)
 			return TRUE
 
 	depth--

@@ -29,7 +29,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine/m113)
 	name = "Detroit 6V53T diesel engine"
 	desc = "The compact two-stroke diesel engine used to propel an M113 armored personnel carrier."
 	density = TRUE
-	max_integrity = 300
+	max_integrity = 350
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 35, ENERGY = 50, BOMB = 15, BIO = 100,  FIRE = 50, ACID = 50)
@@ -37,14 +37,14 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
 	name = "M113 vision port"
 	desc = "A thick vision block set into the carrier's frontal armor."
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
-	max_integrity = 400
+	max_integrity = 800
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/window/ms13_vehicle_wall/solid/m113
 	name = "M113 hull plating"
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
-	max_integrity = 1000
+	max_integrity = 1500
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
@@ -54,7 +54,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/m113)
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	icon_state = "m113_back_frame"
 	open_icon_state = "none"
-	max_integrity = 700
+	max_integrity = 1000
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	default_armor = list(BLUNT = 75, PUNCTURE = 75, SLASH = 75, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
@@ -63,7 +63,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	desc = "A tracked armored personnel carrier with room for a driver and infantry squad."
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	icon_state = "m113_frame_steel_front_left"
-	max_integrity = 450
+	max_integrity = 800
 	vehicle_controller_type = /datum/ms13_ground_vehicle/m113
 	roof_damaged_icon = null
 	roof_damage_color = "#8f7676"

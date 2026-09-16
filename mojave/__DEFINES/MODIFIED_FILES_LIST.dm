@@ -72,6 +72,11 @@ code/modules/unit_tests/vehicles_ms13.dm,
 code/modules/unit_tests/cover_ms13.dm,
 daedalus.dme,
 code/__DEFINES/dcs/signals/signals_atom/signals_atom_main.dm,
+code/_onclick/click.dm,
+code/datums/ai/_ai_controller.dm,
+code/modules/mob/living/simple_animal/hostile/hostile.dm,
+code/modules/unit_tests/__unit_tests.dm,
+code/modules/unit_tests/ai_perf_ms13.dm,
 
 
 */

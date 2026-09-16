@@ -100,6 +100,7 @@
 // Single File Includes
 #include "achievements.dm"
 #include "adenosine.dm"
+#include "ai_perf_ms13.dm"
 #include "anchored_mobs.dm"
 #include "anonymous_themes.dm"
 #include "area_contents.dm"

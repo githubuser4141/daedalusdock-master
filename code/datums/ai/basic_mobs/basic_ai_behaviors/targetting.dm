@@ -1,8 +1,6 @@
 /datum/ai_behavior/find_potential_targets
 	action_cooldown = 2 SECONDS
 	var/vision_range = 9
-	///List of potentially dangerous objs
-	var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha))
 
 /datum/ai_behavior/find_potential_targets/perform(delta_time, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
 	. = ..()
@@ -15,9 +13,7 @@
 
 	potential_targets = hearers(vision_range, controller.pawn) - living_mob //Remove self, so we don't suicide
 
-	for(var/HM in typecache_filter_list(range(vision_range, living_mob), hostile_machines)) //Can we see any hostile machines?
-		if(can_see(living_mob, HM, vision_range))
-			potential_targets += HM
+	potential_targets += visible_hostile_machines(living_mob, vision_range) // MOJAVE EDIT: was a range() scan
 
 	if(!potential_targets.len)
 		finish_action(controller, FALSE)

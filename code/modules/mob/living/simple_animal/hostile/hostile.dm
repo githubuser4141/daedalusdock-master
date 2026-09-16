@@ -136,11 +136,7 @@
 	if(!search_objects)
 		. = hearers(vision_range, target_from) - src //Remove self, so we don't suicide
 
-		var/static/hostile_machines = typecacheof(list(/obj/machinery/porta_turret, /obj/vehicle/sealed/mecha))
-
-		for(var/HM in typecache_filter_list(range(vision_range, target_from), hostile_machines))
-			if(can_see(target_from, HM, vision_range))
-				. += HM
+		. += visible_hostile_machines(target_from, vision_range) // MOJAVE EDIT: was a range() scan
 	else
 		. = oview(vision_range, target_from)
 

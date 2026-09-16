@@ -5150,6 +5150,7 @@
 #include "mojave\code\datums\documents.dm"
 #include "mojave\code\datums\physiology.dm"
 #include "mojave\code\datums\stats.dm"
+#include "mojave\code\datums\ai\hostile_machines.dm"
 #include "mojave\code\datums\ai\ms13_cover_ai.dm"
 #include "mojave\code\datums\ai\basic_mobs\basic_subtrees\speech_subtree.dm"
 #include "mojave\code\datums\ai\movement\ai_movement_bypass_tables.dm"
