@@ -45,7 +45,7 @@
 	switch(dir)
 		if(SOUTH)
 			pixel_x = 0
-			pixel_y = 2
+			pixel_y = -16
 		if(NORTH)
 			pixel_x = 0
 			pixel_y = 35
