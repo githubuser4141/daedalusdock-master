@@ -135,6 +135,7 @@
 	burn_cleanliness_bonus = 0.3 //Lower = better
 	absorption_capacity = 65
 	merge_type = /obj/item/stack/medical/gauze/ms13/military
+	ms13_disinfects = TRUE // sterile, per the desc - plain gauze dresses a wound but doesn't clean it
 
 // Splints //
 
@@ -186,6 +187,7 @@
 	heal_brute = 10
 	heal_burn = 3
 	novariants = TRUE
+	ms13_disinfects = TRUE // broc and xander are the wasteland's antiseptic; keeps infection out of a dressed wound
 	merge_type = /obj/item/stack/medical/ms13/healing_powder
 
 /obj/item/stack/medical/ms13/healing_powder/Initialize()

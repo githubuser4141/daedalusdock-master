@@ -1,15 +1,17 @@
 // One damageable /obj/item/organ/bone per arm/leg, alongside vessel and muscle. Stability (get_stability(),
 // 0-100) multiplies muscle performance (get_muscle_performance(), muscle_movement.dm) rather than adding to
-// it - a limb needs a structural baseline before muscle strength matters at all. icon_state "fixovein" is a
-// placeholder, same as vessel/muscle.
+// it - a limb needs a structural baseline before muscle strength matters at all.
+// Organ sprites are ported from CEV-Eris (icons/obj/surgery.dmi, AGPL-3.0) into
+// mojave/icons/objects/organs/tissue_organs.dmi.
 
 /obj/item/organ/bone
 	name = "bone"
 	desc = "Load-bearing skeletal structure. Best left where it is."
-	icon = 'icons/obj/surgery.dmi'
-	icon_state = "fixovein"
+	icon = 'mojave/icons/objects/organs/tissue_organs.dmi'
+	icon_state = "ribcage"
 	w_class = WEIGHT_CLASS_SMALL
 	organ_flags = NONE
+	ms13_tissue = TRUE
 	maxHealth = MS13_BONE_MAX_HEALTH
 	relative_size = MS13_BONE_RELATIVE_SIZE
 	external_damage_modifier = MS13_BONE_EXTERNAL_DAMAGE_MODIFIER
@@ -18,38 +20,47 @@
 	now_failing = span_userdanger("Something snaps!")
 	now_fixed = span_info("The bone finally stops aching.")
 	high_threshold_cleared = span_info("The bone stops throbbing.")
+	/// Set while DD's break_bones()/heal_bones() bridge is syncing this organ to the limb's own bone state,
+	/// so that synthetic damage jump isn't mistaken for a real hit. See applyOrganDamage() below.
+	var/bridging_break = FALSE
 
 /obj/item/organ/bone/l_arm
 	name = "left arm bone"
 	zone = BODY_ZONE_L_ARM
 	slot = ORGAN_SLOT_BONE_L_ARM
+	icon_state = "left_arm"
 
 /obj/item/organ/bone/r_arm
 	name = "right arm bone"
 	zone = BODY_ZONE_R_ARM
 	slot = ORGAN_SLOT_BONE_R_ARM
+	icon_state = "right_arm"
 
 /obj/item/organ/bone/l_leg
 	name = "left leg bone"
 	zone = BODY_ZONE_L_LEG
 	slot = ORGAN_SLOT_BONE_L_LEG
+	icon_state = "left_leg"
 
 /obj/item/organ/bone/r_leg
 	name = "right leg bone"
 	zone = BODY_ZONE_R_LEG
 	slot = ORGAN_SLOT_BONE_R_LEG
+	icon_state = "right_leg"
 
 /obj/item/organ/bone/chest
 	name = "ribcage"
 	desc = "Ribs and spine. Protects the organs behind them. Best left where it is."
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_BONE_CHEST
+	icon_state = "ribcage"
 
 /obj/item/organ/bone/head
 	name = "skull"
 	desc = "Protects the brain. Best left where it is."
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_BONE_HEAD
+	icon_state = "skull"
 	external_damage_modifier = MS13_BONE_SKULL_EXTERNAL_DAMAGE_MODIFIER
 
 /// 0-100, own damage ratio. Always 0 once destroyed (broken).
@@ -90,9 +101,13 @@
 	return (total / count) / 100
 
 /// Fragmenting is a per-hit event, not a tick effect - hooked on the damage-application proc itself.
+/// bridging_break is set while DD's own break_bones() is driving this organ to full damage (see
+/// apply_bone_break() in code/modules/surgery/bodyparts/injuries.dm): that single synthetic 0 -> maxHealth
+/// jump isn't a real hit, and letting it fragment meant every engine-side break also dumped the maximum
+/// four fragments into the muscle and vessel sharing the limb, on top of the break's own effects.
 /obj/item/organ/bone/applyOrganDamage(damage_amount, maximum = maxHealth, silent, updating_health = TRUE, cause_of_death = "Organ failure")
 	. = ..()
-	if(. > 0)
+	if(. > 0 && !bridging_break)
 		try_fragment(.)
 	if(ownerlimb)
 		ownerlimb.refresh_muscle_effects()

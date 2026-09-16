@@ -76,19 +76,17 @@
 		starve_organs(delta_time)
 
 	if(damage > 0)
-		// AI EDIT: internal (pools in the limb, local_blood_volume) vs external (leaves the body via
-		// bleed(), which already handles floor splatter - see code/modules/mob/living/blood.dm) - the split
-		// isn't fixed, it shifts with what actually caused the damage: an open/sharp wound bleeds out
-		// visibly, blunt trauma mostly pools internally with no path out.
-		var/sharp_wound = ownerlimb.last_damage_sharpness & (SHARP_EDGED|SHARP_POINTY|SHARP_IMPALING)
-		var/internal_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_INTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_INTERNAL_MULT
-		var/external_mult = sharp_wound ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
+		// Internal pooling only. The external half used to be a direct owner.bleed() call from here, which
+		// no bandage, clamp or anticoagulant could reduce; it now goes through the limb's real bleed rate
+		// instead (get_vessel_bleed_rate(), vessel.dm). Blood with an open path out of the body leaves it
+		// rather than pooling, so the internal share shrinks when the limb is visibly bleeding.
+		var/open_wound = ownerlimb.bodypart_flags & BP_BLEEDING
+		var/internal_mult = open_wound ? MS13_BLEED_RATIO_SHARP_INTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_INTERNAL_MULT
 
 		// Scaled by vessel_size (vessel.dm) - a nicked aorta bleeds out faster than a nicked brachial artery.
 		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * internal_mult * vessel_size * delta_time
-		var/global_loss = damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * vessel_size * delta_time
-		ownerlimb.apply_organ_bleed(local_loss, global_loss)
-		ms13_medical_debug(owner, "Vessel [name] bleeding: local -[round(local_loss, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max]), global -[round(global_loss, 0.1)]")
+		ownerlimb.apply_organ_bleed(local_loss)
+		ms13_medical_debug(owner, "Vessel [name] bleeding: local -[round(local_loss, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 		return
 
 	if(ownerlimb.local_blood_volume >= ownerlimb.local_blood_volume_max)
@@ -150,6 +148,12 @@
 	if(ownerlimb && ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT)
 		ms13_medical_debug(owner, "[name] regen blocked: local blood too low ([round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 		return
+	// Tissue heals on its own terms - blood, food, rest and care - rather than DD's flat -0.1 below 10%
+	// damage, which left any real injury permanent until a surgeon got to it. See tissue_care.dm.
+	// This is the only /obj/item/organ/handle_regeneration() override in mojave on purpose: a second one
+	// would silently replace this body rather than chain onto it.
+	if(ms13_tissue)
+		return ms13_tissue_regeneration()
 	return ..()
 
 /**

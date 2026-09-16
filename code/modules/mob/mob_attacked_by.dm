@@ -45,7 +45,11 @@
 		weak_against_armor = attacking_item.weak_against_armor
 	), ARMOR_MAX_BLOCK)
 
-	var/damage = attacking_item.force
+	// AI EDIT: scaled by the attacker's effective strength (mojave/code/modules/stats/stat_condition.dm),
+	// which falls with arm muscle damage, blood loss and pain. Previously only UNARMED damage responded to
+	// how hurt the attacker was, so a character with both arms mangled swung a sledgehammer exactly as hard
+	// as a fresh one. Base returns 1 for any mob without a stats datum, so nothing else changes.
+	var/damage = attacking_item.force * attacker.get_melee_strength_mult()
 
 	if(attacker != src)
 		// This doesn't factor in armor, or most damage modifiers (physiology). Your mileage may vary

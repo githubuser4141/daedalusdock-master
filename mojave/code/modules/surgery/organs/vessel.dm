@@ -1,5 +1,7 @@
 // One damageable /obj/item/organ/vessel per limb. Self-contained per limb, no cross-limb network.
-// Rupture severs the limb's artery via DD's real set_sever_artery(). icon_state "fixovein" is a placeholder.
+// Rupture severs the limb's artery via DD's real set_sever_artery().
+// Organ sprites are ported from CEV-Eris (icons/obj/surgery.dmi, AGPL-3.0) into
+// mojave/icons/objects/organs/tissue_organs.dmi.
 
 /// Debug-only to_chat for the vessel/muscle systems - see MS13_MEDICAL_DEBUG_ENABLED (vessels.dm). Global so
 /// every file in both systems (including code/modules/grab/grab_datum.dm) can call it without a namespace.
@@ -11,10 +13,11 @@
 /obj/item/organ/vessel
 	name = "blood vessel"
 	desc = "A major blood vessel. Best left where it is."
-	icon = 'icons/obj/surgery.dmi'
-	icon_state = "fixovein"
+	icon = 'mojave/icons/objects/organs/tissue_organs.dmi'
+	icon_state = "blood_vessel"
 	w_class = WEIGHT_CLASS_TINY
 	organ_flags = NONE // not edible - this isn't a heart or a liver
+	ms13_tissue = TRUE
 	maxHealth = MS13_VESSEL_MAX_HEALTH
 	relative_size = MS13_VESSEL_RELATIVE_SIZE
 	low_threshold_passed = span_info("You feel a twinge of pain, deep beneath the skin...")
@@ -26,6 +29,32 @@
 	/// below. Scales the one-time rupture burst (set_organ_dead()), the ongoing bleed rate (on_life(),
 	/// vessel_local_blood.dm), and this vessel's weight in get_vessel_circulation_factor() below.
 	var/vessel_size = 1
+
+/**
+ * What a damaged-but-not-ruptured vessel contributes to its limb's bleed rate, called from
+ * refresh_bleed_rate() (code/modules/surgery/bodyparts/_bodyparts.dm). Going through the limb's rate
+ * instead of calling owner.bleed() directly is what makes bandaging, clamping, lying down and
+ * anticoagulants work on vessel bleeding at all.
+ *
+ * A fully ruptured vessel contributes nothing here on purpose - that case is already represented by the
+ * flat +4 the severed-artery term adds just above the call site, and counting both meant a burst aorta
+ * bled at several times the intended rate with no treatment able to touch the larger half of it.
+ */
+/obj/item/bodypart/proc/get_vessel_bleed_rate()
+	. = 0
+	for(var/obj/item/organ/vessel/V in contained_organs)
+		if(!V.damage || (V.organ_flags & ORGAN_DEAD))
+			continue
+		// Blood only leaves the body where there's a path out. An intact surface over a damaged vessel
+		// pools internally instead (that half is handled in vessel_local_blood.dm's on_life()).
+		var/external_mult = (bodypart_flags & BP_BLEEDING) ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
+		. += V.damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * V.vessel_size
+
+/// The limb's bleed rate is cached, so it has to be recomputed whenever this vessel's damage changes.
+/obj/item/organ/vessel/applyOrganDamage(damage_amount, maximum = maxHealth, silent, updating_health = TRUE, cause_of_death = "Organ failure")
+	. = ..()
+	if(.)
+		ownerlimb?.refresh_bleed_rate()
 
 /// Sync the limb's artery to match, plus a one-time blood burst on rupture scaled by vessel_size.
 /obj/item/organ/vessel/set_organ_dead(failing, cause_of_death)

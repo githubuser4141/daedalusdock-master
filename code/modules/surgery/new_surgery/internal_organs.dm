@@ -61,7 +61,12 @@
 			organ_to_replace = -1
 			continue
 		// You need to treat the necrotization, bro
-		if(O.organ_flags & ORGAN_DEAD)
+		// AI EDIT: except for mojave's tissue organs (bone/muscle/vessel), which die BY reaching max damage
+		// and so always tripped this check AND treat_necrosis's "needs to be repaired before it is
+		// regenerated" one at the same time - between them no surgery could touch a destroyed muscle at all,
+		// and nothing else in the game could either. Repairing the damage is exactly what the other step is
+		// asking for, so let it through while the tissue is still salvageable.
+		if((O.organ_flags & ORGAN_DEAD) && !O.ms13_tissue)
 			to_chat(user, span_warning("[O] is decayed, you must replace it or perform <b>Treat Necrosis</b>."))
 			continue
 

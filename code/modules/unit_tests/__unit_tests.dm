@@ -184,6 +184,7 @@
 #include "tape_sanity.dm"
 #include "teleporters.dm"
 #include "tgui_create_message.dm"
+#include "tissue_care_ms13.dm"
 #include "timer_sanity.dm"
 #include "traitor.dm"
 #include "cover_ms13.dm"

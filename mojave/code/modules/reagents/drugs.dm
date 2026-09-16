@@ -207,20 +207,33 @@
 	overdose_threshold = 18
 	metabolization_rate = 1 * REM
 
-/datum/reagent/ms13/hydra/on_mob_metabolize(mob/living/M, amount)
-	. = ..()
+/datum/reagent/ms13/hydra/on_mob_metabolize(mob/living/M)
+	// Was calling ..() twice - once through `. = ..()` and again through `return ..()`.
 	to_chat(M, span_notice("Your insides start tingling slightly. You can feel things shifting."))
 	return ..()
 
-/datum/reagent/ms13/hydra/on_mob_life(mob/living/carbon/M, datum/reagent/chem, delta_time, times_fired) // This needs to be unscuffed before we can use it. It WORKS. Just too well. Instant healing of wounds for as long as it's in your blood. I'm not qualified for this! help!
-	if(!isliving(M))
-		return
-	M.adjustOrganLoss(ORGAN_SLOT_HEART, 0.2)
-	var/obj/item/bodypart/bodypart = pick(M.bodyparts)
-	var/datum/wound/bruise/existing_break = locate(/datum/wound/bruise) in bodypart.wounds
-	if(existing_break)
-		qdel(existing_break)
-	return ..()
+/**
+ * "Restores crippled limbs", which is now a real job rather than flavour text: it mends tissue (bone,
+ * muscle, vessels - tissue_care.dm) faster than a super stimpak and reaches outright destroyed tissue.
+ *
+ * What it did before was delete one bruise wound at random and damage the heart. Its own comment admitted
+ * it was never finished, and it was written against on_mob_life(), which is DD's SHOULD_NOT_OVERRIDE
+ * dispatcher rather than a per-reagent hook - so even that barely ran as intended.
+ *
+ * The anaesthetic half matters mechanically, not just as flavour: limbs wrecked badly enough to need this
+ * now hurt enough to put someone into shock on their own (is_causing_pain(), tissue_care.dm), so the thing
+ * that repairs them has to be able to keep the patient conscious while it works. The heart damage is the
+ * price the description already named.
+ */
+/datum/reagent/ms13/hydra/affect_blood(mob/living/carbon/C, removed)
+	. = ..()
+	APPLY_CHEM_EFFECT(C, CE_PAINKILLER, MS13_HYDRA_PAINKILLER)
+	C.ms13_heal_tissue(MS13_HYDRA_TISSUE_HEAL * removed, 1, TRUE)
+
+	var/obj/item/organ/heart/our_heart = C.getorganslot(ORGAN_SLOT_HEART)
+	our_heart?.applyOrganDamage(MS13_HYDRA_HEART_DAMAGE * removed)
+	C.adjust_disgust(1)
+	return TRUE
 
 /datum/reagent/ms13/hydra/on_mob_delete(mob/living/carbon/human/M)
 	. = ..()
@@ -598,55 +611,69 @@
 	var/passive_bleed_modifier = 0.2
 	/// For tracking when we tell the person we're no longer bleeding
 	var/was_working
+	/// Tissue damage (bone/muscle/vessel) regenerated per tick, spread over whatever is hurt.
+	var/tissue_heal = MS13_STIMPAK_TISSUE_HEAL
+	/// How badly damaged a piece of tissue can be and still respond to this, as a fraction of its maxHealth.
+	var/tissue_max_ratio = MS13_STIMPAK_TISSUE_THRESHOLD
+	/// Whether this can chip away at outright destroyed tissue. Lifting it out of critical still needs
+	/// surgery or a slow natural recovery either way - this only shortens the road.
+	var/tissue_heals_critical = FALSE
 
 /datum/reagent/ms13/medicine/stimpak_fluid/on_mob_metabolize(mob/living/M)
 	ADD_TRAIT(M, TRAIT_COAGULATING, /datum/reagent/ms13/medicine/stimpak_fluid)
 	M.throw_alert_text(/atom/movable/screen/alert/text/brutal, "You feel your body start mending itself rapidly.", override = FALSE)
+	// AI EDIT: this used to live in a SECOND on_mob_metabolize() further down the file, which - per DM's
+	// redeclaration rule - silently replaced this body outright rather than chaining, so the trait and
+	// alert above never ran at all. It also multiplied bleed_mod without ever dividing it back out, so
+	// every stimpak permanently and cumulatively reduced the patient's bleeding for the rest of the round.
+	var/mob/living/carbon/human/H = M
+	if(istype(H))
+		H.physiology?.bleed_mod *= passive_bleed_modifier
 	return ..()
 
 /datum/reagent/ms13/medicine/stimpak_fluid/on_mob_end_metabolize(mob/living/M)
 	REMOVE_TRAIT(M, TRAIT_COAGULATING, /datum/reagent/ms13/medicine/stimpak_fluid)
+	var/mob/living/carbon/human/H = M
+	if(istype(H) && H.physiology && passive_bleed_modifier)
+		H.physiology.bleed_mod /= passive_bleed_modifier
 	return ..()
-/*
-/datum/reagent/ms13/medicine/stimpak_fluid/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	. = ..()
+/**
+ * Restored from the commented-out block this replaced. That version was written against tgstation's wound
+ * system (M.all_wounds, wound.blood_flow) which DaedalusDock simply does not have, so it could never have
+ * been re-enabled as written - the net effect was that stimpaks healed nothing at all and only ever did
+ * something on overdose.
+ *
+ * Stimpaks close injuries rather than just topping off a health bar: alongside brute/burn they regenerate
+ * the tissue underneath (bone, muscle, vessels - mojave/code/modules/surgery/organs/tissue_care.dm). A
+ * normal stimpak only reaches light tissue damage; the super version reaches heavy damage and can chip
+ * away at outright destroyed tissue, though lifting it out of critical still needs surgery or time.
+ */
+/datum/reagent/ms13/medicine/stimpak_fluid/affect_blood(mob/living/carbon/C, removed)
+	// Stacking a stimpak and a super stimpak is what the overdose threshold exists to punish.
+	if(C.reagents.has_reagent(forbidden_double_dose))
+		to_chat(C, span_userdanger("Oh dear god... Shouldn't do that..."))
+		var/obj/item/organ/heart/our_heart = C.getorganslot(ORGAN_SLOT_HEART)
+		our_heart?.applyOrganDamage(9.5 * OD_multiplier * removed)
+		if(prob(14.5))
+			C.losebreath += rand(4, 8)
+			C.adjustOxyLoss(rand(3, 8))
+			if(prob(25 * OD_multiplier))
+				C.vomit(20)
+				C.Stun(35)
+		return TRUE
 
-	var/obj/item/organ/heart/our_heart = M.getorganslot(ORGAN_SLOT_HEART)
+	var/budget = (heal_Rate / MS13_STIMPAK_HEAL_DIVISOR) * removed
+	C.adjustBruteLoss(-budget, updating_health = FALSE)
+	C.adjustFireLoss(-budget, updating_health = FALSE)
+	if(stamina_damage)
+		C.stamina.adjust(stamina_damage * removed)
+	C.ms13_heal_tissue(tissue_heal * removed, tissue_max_ratio, tissue_heals_critical)
 
-	if(!M.reagents.has_reagent((forbidden_double_dose))) // Stacking healing items? Yeah right.
-		M.adjustBruteLoss(-(heal_Rate), 0)
-		M.adjustFireLoss(-(heal_Rate), 0)
-		M.stamina.adjust((stamina_damage), 0)
-		if(!M.blood_volume || !M.all_wounds)
-			return
+	if(!was_working)
+		was_working = TRUE
+		to_chat(C, span_green("You can feel your wounds closing."))
+	return TRUE
 
-		var/datum/wound/bloodiest_wound
-		for(var/i in M.all_wounds)
-			var/datum/wound/iter_wound = i
-			if(iter_wound.blood_flow)
-				if(iter_wound.blood_flow > bloodiest_wound?.blood_flow)
-					bloodiest_wound = iter_wound
-
-		if(bloodiest_wound)
-			if(!was_working)
-				to_chat(M, span_green("I can already feel my wounds closing!"))
-				was_working = TRUE
-			bloodiest_wound.blood_flow = max(0, bloodiest_wound.blood_flow - (clot_rate * REM * delta_time))
-		else if(was_working)
-			was_working = FALSE
-
-	else
-		to_chat(M, span_userdanger("Oh dear god... Shouldn't do that..."))
-		our_heart.applyOrganDamage(9.5 * (OD_multiplier))
-		if(DT_PROB(14.5, delta_time))
-			M.losebreath += rand(4, 8)
-			M.adjustOxyLoss(rand(3, 8))
-			if(prob(25 * (OD_multiplier)))
-				to_chat(M, span_userdanger("Oh this is bad..."))
-				M.vomit(20)
-				M.adjustOxyLoss(rand(4, 7))
-				M.Stun(35)
-*/
 /datum/reagent/ms13/medicine/stimpak_fluid/overdose_process(mob/living/carbon/human/M, delta_time, times_fired)
 	. = ..()
 	if(!M.blood_volume)
@@ -663,13 +690,6 @@
 			M.adjustOxyLoss(rand(3, 4))
 			M.Stun(35)
 
-/datum/reagent/ms13/medicine/stimpak_fluid/on_mob_metabolize(mob/living/M)
-	if(!ishuman(M))
-		return
-
-	var/mob/living/carbon/human/blood_boy = M
-	blood_boy.physiology?.bleed_mod *= passive_bleed_modifier
-
 // Super Stimpak //
 
 /datum/reagent/ms13/medicine/stimpak_fluid/super
@@ -684,10 +704,43 @@
 	stamina_damage = 20
 	clot_rate = 0.6
 	passive_bleed_modifier = 0.4
+	// The reason to carry the expensive one: it mends heavy tissue damage a normal stimpak can't touch, and
+	// will even work on destroyed tissue - though getting that back out of critical is still surgery's job.
+	tissue_heal = MS13_SUPER_STIMPAK_TISSUE_HEAL
+	tissue_max_ratio = 1
+	tissue_heals_critical = TRUE
+
+// Antibiotics //
+
+/**
+ * The "when necessary" tier. Neglected injuries get infected (tissue_care.dm feeds DD's germ_level), and
+ * once that passes INFECTION_LEVEL_TWO nothing heals until it's dealt with - herbal remedies slow it, but
+ * only a real course of antibiotics clears an established infection. Deliberately does nothing else: it
+ * isn't a healing item, it's the thing you take so the healing can start.
+ */
+/datum/reagent/ms13/medicine/antibiotics
+	name = "antibiotics"
+	description = "Broad-spectrum pre-war antibiotics. Won't close a wound, but will stop one from killing you slowly."
+	reagent_state = SOLID
+	color = "#e8e4d0"
+	taste_description = "chalk"
+	metabolization_rate = 0.05
+	overdose_threshold = 30
+
+/datum/reagent/ms13/medicine/antibiotics/affect_blood(mob/living/carbon/C, removed)
+	APPLY_CHEM_EFFECT(C, CE_ANTIBIOTIC, volume * MS13_ANTIBIOTIC_PILL_POTENCY)
+
+/datum/reagent/ms13/medicine/antibiotics/overdose_process(mob/living/carbon/M, delta_time, times_fired)
+	. = ..()
+	// Wrecking your gut with too many of them is the classic downside, and gives the liver something to do.
+	M.adjustToxLoss(1 * REM * delta_time, updating_health = FALSE)
+	var/obj/item/organ/liver/our_liver = M.getorganslot(ORGAN_SLOT_LIVER)
+	our_liver?.applyOrganDamage(0.5 * REM * delta_time)
 
 // Bitter Drink //
 
 /datum/reagent/medicine/bitter_drink
+	ms13_herbal_care = TRUE
 	name = "Bitter drink"
 	description = "A herbal remedy known for its healing properies, brewed from Xander and Broc."
 	reagent_state = LIQUID
@@ -716,6 +769,7 @@
 // Blood Remedy //
 
 /datum/reagent/medicine/blood_remedy
+	ms13_herbal_care = TRUE
 	name = "Blood Remedy"
 	description = "An herbal remedy intended to cleanse one's blood of light toxins and heal minor bruises."
 	reagent_state = LIQUID
@@ -723,6 +777,12 @@
 	taste_description = "sour burning"
 	metabolization_rate = 4.75 * REAGENTS_METABOLISM // 0.95 per second
 	overdose_threshold = 22
+
+/// Herbal-tier antibiotic: holds an early infection back, but nowhere near the magnitude DD needs to
+/// reverse a severe one (germs_bodypart.dm wants 30+ for that). A bad infection still needs real drugs.
+/datum/reagent/medicine/blood_remedy/affect_blood(mob/living/carbon/C, removed)
+	APPLY_CHEM_EFFECT(C, CE_ANTIBIOTIC, MS13_ANTIBIOTIC_HERBAL_POTENCY)
+	return ..()
 
 /datum/reagent/medicine/blood_remedy/on_mob_life(mob/living/carbon/M)
 	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
@@ -766,6 +826,10 @@
 	metabolization_rate = 5.8 * REAGENTS_METABOLISM // 1.16 per second
 	overdose_threshold = 40
 
+/datum/reagent/medicine/herb_antitox/affect_blood(mob/living/carbon/C, removed)
+	APPLY_CHEM_EFFECT(C, CE_ANTIBIOTIC, MS13_ANTIBIOTIC_HERBAL_POTENCY)
+	return ..()
+
 /datum/reagent/medicine/herb_antitox/on_mob_life(mob/living/carbon/M)
 	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
 		M.adjustToxLoss(-5)
@@ -788,6 +852,7 @@
 // Burn Remedy //
 
 /datum/reagent/medicine/burn_remedy
+	ms13_herbal_care = TRUE
 	name = "Burn Remedy"
 	description = "A potent herbal mixture for treating burn damage."
 	reagent_state = LIQUID
@@ -933,6 +998,7 @@
 // Rollie Reagents - Ghetto Smokeable Chems //
 
 /datum/reagent/ms13/medicine/bitter_mix
+	ms13_herbal_care = TRUE
 	name = "Bitter mix"
 	description = "A herbal remedy known for its healing properies upon smoking, created from a mix of dried Xander and Broc."
 	reagent_state = SOLID
@@ -949,10 +1015,15 @@
 		if(M.getBruteLoss() >= 60)
 			M.adjustBruteLoss(-1.35)
 			. = TRUE
+	// AI EDIT (bugfix): on_mob_life() is DD's SHOULD_NOT_OVERRIDE dispatcher, not a per-reagent hook.
+	// Without this the dispatcher's tail never ran, so this reagent was never metabolised away - it sat
+	// in the bloodstream healing forever - and affect_blood() was never dispatched at all.
+	..()
 
 //xanderinos
 
 /datum/reagent/ms13/medicine/concentrated_xander
+	ms13_herbal_care = TRUE
 	name = "Concentrated Xander"
 	description = "A highly dense amount of dried Xander root, compacted and heals upon smoking."
 	reagent_state = SOLID
@@ -967,8 +1038,13 @@
 			M.adjustBruteLoss(-4)
 			M.stamina.adjust(3)
 			. = TRUE
+	// AI EDIT (bugfix): on_mob_life() is DD's SHOULD_NOT_OVERRIDE dispatcher, not a per-reagent hook.
+	// Without this the dispatcher's tail never ran, so this reagent was never metabolised away - it sat
+	// in the bloodstream healing forever - and affect_blood() was never dispatched at all.
+	..()
 
 /datum/reagent/ms13/medicine/dried_xander
+	ms13_herbal_care = TRUE
 	name = "Dried Xander"
 	description = "A small amount of dried and crushed Xander root, heals upon smoking."
 	reagent_state = SOLID
@@ -983,10 +1059,15 @@
 			M.adjustBruteLoss(-2)
 			M.stamina.adjust(1)
 			. = TRUE
+	// AI EDIT (bugfix): on_mob_life() is DD's SHOULD_NOT_OVERRIDE dispatcher, not a per-reagent hook.
+	// Without this the dispatcher's tail never ran, so this reagent was never metabolised away - it sat
+	// in the bloodstream healing forever - and affect_blood() was never dispatched at all.
+	..()
 
 //the brocmeister
 
 /datum/reagent/ms13/medicine/concentrated_broc
+	ms13_herbal_care = TRUE
 	name = "Concentrated Broc"
 	description = "A highly dense amount of dried Broc Flowers, compacted and soothes burns upon smoking."
 	reagent_state = SOLID
@@ -1001,8 +1082,13 @@
 			M.adjustFireLoss(-4)
 			M.stamina.adjust(1)
 			. = TRUE
+	// AI EDIT (bugfix): on_mob_life() is DD's SHOULD_NOT_OVERRIDE dispatcher, not a per-reagent hook.
+	// Without this the dispatcher's tail never ran, so this reagent was never metabolised away - it sat
+	// in the bloodstream healing forever - and affect_blood() was never dispatched at all.
+	..()
 
 /datum/reagent/ms13/medicine/dried_broc
+	ms13_herbal_care = TRUE
 	name = "Dried Broc"
 	description = "A small amount of dried and crushed Broc root, soothes burns upon smoking."
 	reagent_state = SOLID
@@ -1016,6 +1102,10 @@
 		if(M.getFireLoss() >= 60)
 			M.adjustFireLoss(-2)
 			. = TRUE
+	// AI EDIT (bugfix): on_mob_life() is DD's SHOULD_NOT_OVERRIDE dispatcher, not a per-reagent hook.
+	// Without this the dispatcher's tail never ran, so this reagent was never metabolised away - it sat
+	// in the bloodstream healing forever - and affect_blood() was never dispatched at all.
+	..()
 
 /////// Movespeed Modifiers ///////
 

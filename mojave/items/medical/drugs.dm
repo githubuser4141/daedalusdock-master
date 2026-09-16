@@ -195,6 +195,12 @@
 	icon_state = "radx"
 	list_reagents = list(/datum/reagent/ms13/radx = 10)
 
+/obj/item/reagent_containers/pill/ms13/antibiotics
+	name = "antibiotics"
+	desc = "A chalky off-white tablet, stamped with a faded pre-war logo."
+	icon_state = "generic1"
+	list_reagents = list(/datum/reagent/ms13/medicine/antibiotics = 10)
+
 // Pill bottles //
 
 /obj/item/storage/pill_bottle/ms13
@@ -245,6 +251,14 @@
 /obj/item/storage/pill_bottle/ms13/mentat/PopulateContents()
 	for(var/i in 1 to 7)
 		new /obj/item/reagent_containers/pill/ms13/mentat(src)
+
+/obj/item/storage/pill_bottle/ms13/antibiotics
+	name = "bottle of antibiotics"
+	desc = "Contains pills used to fight off infection in wounds that have started to turn."
+
+/obj/item/storage/pill_bottle/ms13/antibiotics/PopulateContents()
+	for(var/i in 1 to 6)
+		new /obj/item/reagent_containers/pill/ms13/antibiotics(src)
 
 /obj/item/storage/pill_bottle/ms13/daytripper
 	name = "bottle of day tripper pills"

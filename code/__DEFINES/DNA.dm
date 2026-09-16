@@ -216,6 +216,31 @@ GLOBAL_LIST_INIT(organ_process_order, list(
 	ORGAN_SLOT_XENO_ACIDGLAND,
 	ORGAN_SLOT_XENO_NEUROTOXINGLAND,
 	ORGAN_SLOT_XENO_EGGSAC,
+	// AI EDIT: mojave's per-limb tissue organs (mojave/code/modules/surgery/organs/). Written as literals
+	// because their #defines live in mojave/, which daedalus.dme loads after all of code/. A slot missing
+	// from this list makes cmp_organ_slot_asc()'s Find() return 0, which silently sorts it ahead of every
+	// real organ in insertion order - see /datum/unit_test/organ_process_order in
+	// code/modules/unit_tests/bodypart_organ_sanity.dm, which fails if any organ type's slot is ever left
+	// out of here again.
+	// Order is vessel -> bone -> muscle: vessels move local blood, bone stability gates muscle performance,
+	// and muscle reads both. All of them before the brain, which checks oxygenation last.
+	"vessel_head",
+	"vessel_chest",
+	"vessel_l_arm",
+	"vessel_r_arm",
+	"vessel_l_leg",
+	"vessel_r_leg",
+	"bone_head",
+	"bone_chest",
+	"bone_l_arm",
+	"bone_r_arm",
+	"bone_l_leg",
+	"bone_r_leg",
+	"muscle_chest",
+	"muscle_l_arm",
+	"muscle_r_arm",
+	"muscle_l_leg",
+	"muscle_r_leg",
 	ORGAN_SLOT_BRAIN))
 
 #define SPECIES_DATA_PERKS 1

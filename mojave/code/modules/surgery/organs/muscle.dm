@@ -5,14 +5,17 @@
 // performance, not damage; local_blood_volume hitting 0 outright already triggers real ischemic damage via
 // the general starve_organs() mechanic, so sustained starvation costs real health too, through the system
 // that already exists for that.
+// Organ sprites are ported from CEV-Eris (icons/obj/surgery.dmi, AGPL-3.0) into
+// mojave/icons/objects/organs/tissue_organs.dmi.
 
 /obj/item/organ/muscle
 	name = "muscle tissue"
 	desc = "A bundle of muscle fibers. Best left where it is."
-	icon = 'icons/obj/surgery.dmi'
-	icon_state = "fixovein" // placeholder - same reused sprite vessel.dm uses, no dedicated muscle art exists yet
+	icon = 'mojave/icons/objects/organs/tissue_organs.dmi'
+	icon_state = "human_muscle"
 	w_class = WEIGHT_CLASS_SMALL
 	organ_flags = ORGAN_EDIBLE
+	ms13_tissue = TRUE
 	maxHealth = MS13_MUSCLE_MAX_HEALTH
 	relative_size = MS13_MUSCLE_RELATIVE_SIZE
 	low_threshold_passed = span_info("A dull ache settles into the muscle...")
@@ -22,6 +25,9 @@
 	high_threshold_cleared = span_info("The muscle stops burning.")
 	/// Legs get movement/buckle effects, arms get melee scaling - see muscle_movement.dm.
 	var/is_leg_muscle = FALSE
+	/// Last get_performance() value pushed through refresh_muscle_effects(), so on_life() can skip the
+	/// resync when nothing has changed. -1 rather than 0 so the first tick always syncs.
+	var/last_synced_performance = -1
 
 /obj/item/organ/muscle/l_arm
 	name = "left arm muscle"
@@ -66,7 +72,13 @@
 	. = ..()
 	if(!ownerlimb || !owner)
 		return
-	ownerlimb.refresh_muscle_effects()
+	// Only re-sync when the number that drives those effects actually moved. This used to run every tick
+	// for every muscle - five per human, each doing an update_disabled() and a whole-body movespeed
+	// recalculation - against a value that changes rarely. on_life is documented as very hot.
+	var/performance = get_performance()
+	if(performance != last_synced_performance)
+		last_synced_performance = performance
+		ownerlimb.refresh_muscle_effects()
 	if(is_leg_muscle)
 		check_buckle(delta_time)
 	if(damage > 0)

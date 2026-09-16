@@ -8,7 +8,7 @@
 /// Master switch for ms13_medical_debug() (vessel.dm) - private to_chat messages exposing otherwise-silent
 /// vessel/muscle mechanics (exact numbers, gate checks, etc) for testing. Not meant as permanent flavor -
 /// flip to FALSE (or delete every call site later) once the systems are verified.
-#define MS13_MEDICAL_DEBUG_ENABLED TRUE
+#define MS13_MEDICAL_DEBUG_ENABLED FALSE
 
 /// New organ slots - one vessel per limb. Not touching DD's own ORGAN_SLOT_* defines (code/__DEFINES/DNA.dm).
 #define ORGAN_SLOT_VESSEL_HEAD "vessel_head"

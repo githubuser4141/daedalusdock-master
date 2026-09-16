@@ -22,7 +22,11 @@
  */
 /obj/item/bodypart/proc/refresh_muscle_effects()
 	if(bodypart_flags & BP_IS_GRABBY_LIMB)
-		var/perf_ratio = get_muscle_performance() / 100
+		// Routed through effective strength (stat_condition.dm) rather than this limb's muscle performance
+		// alone, so unarmed and armed melee are scaled by the same number instead of disagreeing - blood
+		// loss and pain reach a punch too, not just the state of the arm throwing it. Strength already
+		// folds in both arms' muscle performance, so this limb's own condition is still represented.
+		var/perf_ratio = owner ? owner.get_melee_strength_mult() : 1
 		unarmed_damage_low = round(initial(unarmed_damage_low) * perf_ratio, 1)
 		unarmed_damage_high = round(initial(unarmed_damage_high) * perf_ratio, 1)
 		ms13_medical_debug(owner, "[plaintext_zone] unarmed damage now [unarmed_damage_low]-[unarmed_damage_high]")

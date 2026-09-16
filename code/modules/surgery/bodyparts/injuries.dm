@@ -70,7 +70,12 @@
 	// each other.
 	var/obj/item/organ/bone/B = get_bone_organ()
 	if(B && !(B.organ_flags & ORGAN_DEAD))
+		// bridging_break marks this as the engine syncing the organ to the limb, not a fresh hit - without
+		// it the synthetic 0 -> maxHealth jump fragments the maximum four bone chips into everything else
+		// sharing the limb, every single break.
+		B.bridging_break = TRUE
 		B.setOrganDamage(B.maxHealth)
+		B.bridging_break = FALSE
 
 	SEND_SIGNAL(C, COMSIG_CARBON_BREAK_BONE, src)
 	return TRUE

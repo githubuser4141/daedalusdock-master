@@ -981,6 +981,13 @@
 			cached_bleed_rate += WOUND_BLEED_RATE(iter_wound)
 			bodypart_flags |= BP_BLEEDING
 
+	// AI EDIT: mojave's damaged vessels (mojave/code/modules/surgery/organs/vessel.dm) contribute from here
+	// instead of calling owner.bleed() directly on their own organ tick. That direct call bypassed every
+	// modifier get_modified_bleed_rate() applies below - bandages, clamping, lying down, being grabbed,
+	// anticoagulants - making vessel bleeding the one kind of bleeding no treatment in the game could touch.
+	// Placed after the wound loop because it reads BP_BLEEDING, set just above.
+	cached_bleed_rate += get_vessel_bleed_rate()
+
 	// Our bleed overlay is based directly off bleed_rate, so go aheead and update that would you?
 	if(cached_bleed_rate != old_bleed_rate)
 		update_part_wound_overlay()

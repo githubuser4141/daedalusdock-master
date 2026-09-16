@@ -1,3 +1,17 @@
+/**
+ * Every organ a real human spawns with has to appear in GLOB.organ_process_order. cmp_organ_slot_asc()
+ * sorts processing_organs with Find(), which returns 0 for an unlisted slot - so a missing entry doesn't
+ * error, it silently sorts that organ ahead of every registered one in whatever order species.organs
+ * happened to insert it. This caught mojave's 17 tissue organs (bone/muscle/vessel) being absent entirely.
+ */
+/datum/unit_test/organ_process_order/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human/consistent)
+
+	for(var/obj/item/organ/organ as anything in subject.organs)
+		TEST_ASSERT(organ.slot, "Organ '[organ.type]' has no slot set.")
+		TEST_ASSERT(GLOB.organ_process_order.Find(organ.slot), \
+			"Organ '[organ.type]' (slot \"[organ.slot]\") is missing from GLOB.organ_process_order (code/__DEFINES/DNA.dm) - it will silently sort ahead of every registered organ.")
+
 /datum/unit_test/organ_sanity/Run()
 	var/mob/living/carbon/human/hollow_boy = allocate(/mob/living/carbon/human/consistent)
 
