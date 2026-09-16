@@ -71,6 +71,7 @@ code/modules/mob/living/living_defense.dm,
 code/modules/unit_tests/vehicles_ms13.dm,
 code/modules/unit_tests/cover_ms13.dm,
 daedalus.dme,
+code/__DEFINES/dcs/signals/signals_atom/signals_atom_main.dm,
 
 
 */

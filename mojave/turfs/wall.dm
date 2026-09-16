@@ -4,6 +4,9 @@
 	icon_state = "wall-0"
 	base_icon_state = "wall"
 	smoothing_flags = SMOOTH_BITMASK
+	// AI EDIT: the whole tile is clickable, not just opaque icon pixels - walls were falling out of the
+	// right-click menu so they could not be VV'd despite being shootable.
+	mouse_opacity = MOUSE_OPACITY_OPAQUE
 	smoothing_groups = SMOOTH_GROUP_MS13_WALL
 	// low walls and windows already list SMOOTH_GROUP_MS13_WALL in their own canSmoothWith, expecting walls
 	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.

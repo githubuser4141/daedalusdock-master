@@ -8,6 +8,12 @@ GLOBAL_LIST_EMPTY(frill_objects)
 	var/mutable_appearance/mut_appearance = mutable_appearance(icon_path, "frill-[junction]", ABOVE_MOB_LAYER, plane, alpha)
 	mut_appearance.pixel_x = pixel_x
 	mut_appearance.pixel_y = pixel_y
+	// AI EDIT: the cap is decoration and must never take clicks. It is drawn at pixel_y = 32, so with the
+	// default MOUSE_OPACITY_ICON a wall's hit area grew a whole tile upward - the wall one tile south
+	// covered the tile you were pointing at, on a higher plane and layer, so right-click resolved to it
+	// (or to nothing) and the wall under the cursor never appeared in the menu. Same failure the
+	// largetransparency component documents: "the entire icon's dimensions block mouse clicks".
+	mut_appearance.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	return GLOB.frill_objects["[icon_path]-[junction]-[alpha]-[pixel_x]-[pixel_y]-[plane]"] = mut_appearance
 
 /**
@@ -31,25 +37,32 @@ GLOBAL_LIST_EMPTY(frill_objects)
 	var/atom/atom_target = target
 
 	on_junction_change(atom_target, atom_target.smoothing_junction)
-	RegisterSignal(target, COMSIG_ATOM_SMOOTHED_ICON, PROC_REF(on_junction_change))
+	RegisterSignal(target, COMSIG_ATOM_SET_SMOOTHED_ICON_STATE, PROC_REF(on_junction_change))
 
 /datum/element/frill/Detach(turf/target)
 
 	target.cut_overlay(get_frill_object(icon_path, target.smoothing_junction, pixel_y = 32))
 	target.cut_overlay(get_frill_object(icon_path, target.smoothing_junction, plane = WALL_PLANE, pixel_y = 32))
-	UnregisterSignal(target, COMSIG_ATOM_SMOOTHED_ICON)
+	UnregisterSignal(target, COMSIG_ATOM_SET_SMOOTHED_ICON_STATE)
 	return ..()
 
 
+/**
+ * AI EDIT (experiment): every cap now goes on FRILL_PLANE instead of switching to WALL_PLANE when the wall
+ * has a northern neighbour.
+ *
+ * Evidence for doing this: after the missing plane masters were restored, isolated walls - which take the
+ * no-NORTH branch and therefore FRILL_PLANE - began rendering as proper cubes, while walls in a run stayed
+ * flat. Those are the ones that take the WALL_PLANE branch. /turf/closed now also lives on WALL_PLANE, so
+ * a cap placed there shares a plane with every wall body and stops reading as a separate layer above them.
+ *
+ * The original branch exists so a cap that lands on a neighbouring wall's tile is drawn behind it rather
+ * than over it. Putting everything on FRILL_PLANE may therefore make caps overlap the wall to the north.
+ * If that happens, the fix is to keep the split but give WALL_PLANE caps their own plane between the wall
+ * body and FRILL_PLANE, rather than reusing the body's plane.
+ */
 /datum/element/frill/proc/on_junction_change(atom/source, new_junction)
 	SIGNAL_HANDLER
 	var/turf/turf_or_movable = source
-	if(!(source.smoothing_junction & NORTH))
-		turf_or_movable.cut_overlay(get_frill_object(icon_path, source.smoothing_junction, pixel_y = 32))
-	else
-		turf_or_movable.cut_overlay(get_frill_object(icon_path, source.smoothing_junction, plane = WALL_PLANE, pixel_y = 32))
-
-	if(!(new_junction & NORTH))
-		turf_or_movable.add_overlay(get_frill_object(icon_path, new_junction, pixel_y = 32))
-	else
-		turf_or_movable.add_overlay(get_frill_object(icon_path, new_junction, plane = WALL_PLANE, pixel_y = 32))
+	turf_or_movable.cut_overlay(get_frill_object(icon_path, source.smoothing_junction, pixel_y = 32))
+	turf_or_movable.add_overlay(get_frill_object(icon_path, new_junction, pixel_y = 32))

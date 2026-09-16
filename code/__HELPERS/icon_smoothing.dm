@@ -313,7 +313,10 @@
 
 ///Changes the icon state based on the new junction bitmask. Returns the old junction value.
 /atom/proc/set_smoothed_icon_state(new_junction)
-	SEND_SIGNAL(src, COMSIG_ATOM_SMOOTHED_ICON, new_junction) //MOJAVE SUN EDIT - Wallening Testmerge
+	// AI EDIT: upstream Mojave Sun uses a DEDICATED signal here, not DD's COMSIG_ATOM_SMOOTHED_ICON.
+	// The port collapsed the two, which made the frill element fire twice per smooth - once bare from
+	// smooth_icon() with a null junction. Restored to match upstream.
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_SMOOTHED_ICON_STATE, new_junction) //MOJAVE SUN EDIT - Wallening Testmerge
 	. = smoothing_junction
 	smoothing_junction = new_junction
 	icon_state = "[base_icon_state]-[smoothing_junction]"

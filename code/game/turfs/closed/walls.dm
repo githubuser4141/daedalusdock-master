@@ -133,7 +133,9 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 				break
 
 	var/old_cache_key = cache_key
-	cache_key = "[icon]:[smoothing_junction]:[plating_color]:[stripe_icon]:[stripe_color]:[neighbor_stripe]:[rusted]:[hard_decon && d_state]"
+	// AI EDIT: frill_icon is part of the key. This proc assigns `overlays` wholesale from a global
+	// cache, so without it every wall of a given junction shares one cached list that has no cap in it.
+	cache_key = "[icon]:[smoothing_junction]:[plating_color]:[stripe_icon]:[stripe_color]:[neighbor_stripe]:[rusted]:[hard_decon && d_state]:[frill_icon]"
 	if(!(old_cache_key == cache_key))
 
 		var/potential_overlays = global.wall_overlays_cache[cache_key]
@@ -167,6 +169,22 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 				var/image/decon_overlay = image('icons/turf/walls/decon_states.dmi', "[d_state]")
 				decon_overlay.appearance_flags = RESET_COLOR
 				new_overlays += decon_overlay
+
+			// AI EDIT: the Wallening frill - the top half of the wall block, drawn in the 16px band above
+			// this tile. It has to be built here rather than added with add_overlay(), because this proc
+			// replaces `overlays` outright (above and below) and would wipe anything added separately.
+			// That is exactly what was happening: the frill element added the cap and this rebuild then
+			// destroyed it on the very next update_appearance().
+			// -2 is FRILL_PLANE (mojave/code/_DEFINES/layers.dm), written as a literal because that file
+			// loads after all of code/.
+			if(frill_icon)
+				var/image/frill_overlay = image(frill_icon, "frill-[smoothing_junction]")
+				frill_overlay.plane = -2
+				frill_overlay.layer = ABOVE_MOB_LAYER
+				frill_overlay.pixel_y = 32
+				frill_overlay.appearance_flags = RESET_COLOR
+				frill_overlay.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+				new_overlays += frill_overlay
 
 			overlays = new_overlays
 			global.wall_overlays_cache[cache_key] = new_overlays

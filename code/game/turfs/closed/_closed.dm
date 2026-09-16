@@ -1,16 +1,29 @@
 /turf/closed
+	// AI EDIT: restored from upstream Mojave Sun, where the Wallening testmerge puts every closed turf on
+	// WALL_PLANE. The port dropped this line, leaving walls on the default GAME_PLANE - above WALL_PLANE -
+	// so the wall body and its frill cap were layered wrongly relative to each other.
+	// -6 is WALL_PLANE (mojave/code/_DEFINES/layers.dm). Written as a literal because that file loads
+	// after all of code/, so the define is not visible here - same reason the tissue organ slots are
+	// literals in code/__DEFINES/DNA.dm.
+	plane = -6 //MOJAVE SUN EDIT - Wallening Testmerge
 	layer = CLOSED_TURF_LAYER
 	opacity = TRUE
 	density = TRUE
 	blocks_air = AIR_BLOCKED
 	rad_insulation = RAD_MEDIUM_INSULATION
 	pass_flags_self = PASSCLOSEDTURF
+	/// Icon path. Smoothing objects larger than 32x32 require a visual object to represent the excess
+	/// part, in order not to increase its hitbox. We call that a frill.
 	var/frill_icon //MOJAVE SUN EDIT - Wallening Testmerge
 
 //MOJAVE SUN EDIT - Wallening Testmerge
 /turf/closed/Initialize(mapload)
 	. = ..()
-	if(frill_icon)
+	// AI EDIT: the frill element is no longer used for walls - /turf/closed/wall/update_overlays()
+	// replaces `overlays` wholesale from a global cache, which destroyed anything the element added.
+	// The cap is built inside that rebuild instead. Kept for non-wall closed turfs, which have no
+	// such override.
+	if(frill_icon && !iswallturf(src))
 		AddElement(/datum/element/frill, frill_icon) //MOJAVE SUN EDIT - Wallening Testmerge
 
 /turf/closed/indestructible
