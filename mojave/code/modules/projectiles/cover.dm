@@ -77,7 +77,7 @@
  * ponytail: dense border objects (windows, railings) count wherever they sit on the line, ignoring which edge
  * of the tile they actually occupy, so a window can shave quality off a shot that wouldn't really cross it.
  */
-/proc/ms13_shot_quality(atom/source, atom/target, max_range = 14)
+/proc/ms13_shot_quality(atom/source, atom/target, max_range = 14, ignore_braced = FALSE)
 	var/turf/source_turf = get_turf(source)
 	var/turf/target_turf = get_turf(target)
 	if(!source_turf || !target_turf)
@@ -94,14 +94,69 @@
 		var/turf/step_turf = line[index]
 		if(step_turf.density)
 			return 0
+		// Cover the shooter is braced against doesn't obstruct their own outgoing shot - same rule
+		// can_hit_target() applies above. Walls still block regardless; bracing is an object-only rule.
 		for(var/obj/obstacle in step_turf)
 			if(!obstacle.density)
+				continue
+			// Only semi-hard cover can be fired over. The live projectile rule deliberately leaves
+			// passchance-zero objects to the stock collision result, so walls and other hard cover must
+			// remain blocking here too.
+			if(ignore_braced && obstacle.projectile_passchance > 0 && get_dist(source_turf, step_turf) <= 1)
 				continue
 			if(obstacle.projectile_passchance <= 0)
 				return 0
 			. *= obstacle.projectile_passchance / 100
 			if(. <= 0.05)
 				return 0
+
+/**
+ * Overpenetration for structures and machinery.
+ *
+ * The passchance roll above only answers whether the round physically met the object. Once it has, the hit
+ * should behave like every other hit in the game - and it didn't. Walls (wall_integrity.dm) and mobs
+ * (bullet_penetration.dm) both transfer part of a round's damage into what they're made of and let the rest
+ * carry on through, but /obj/bullet_act() just applied the full damage and let process_hit() qdel the
+ * projectile. A crate stopped a .50 BMG as dead as a .22, and cover was harder to shoot through than a
+ * concrete wall.
+ *
+ * These route structures and machinery through the same shared transfer-fraction model, so armor rating and
+ * the round's own construction decide what gets through, exactly as they already do everywhere else.
+ */
+/obj/structure/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
+	var/original_damage = hitting_projectile.damage
+	hitting_projectile.damage *= ms13_bullet_transfer_fraction(returnArmor(), hitting_projectile)
+	. = ..()
+	if(QDELETED(src))
+		hitting_projectile.damage = original_damage
+		return
+	return ms13_finish_overpenetration(hitting_projectile, original_damage, .)
+
+/obj/machinery/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
+	var/original_damage = hitting_projectile.damage
+	hitting_projectile.damage *= ms13_bullet_transfer_fraction(returnArmor(), hitting_projectile)
+	. = ..()
+	if(QDELETED(src))
+		hitting_projectile.damage = original_damage
+		return
+	return ms13_finish_overpenetration(hitting_projectile, original_damage, .)
+
+/**
+ * Shared tail of the two overrides above: hand whatever the target didn't absorb back to the projectile and
+ * tell process_hit() to let it through, or restore the round untouched if too little is left to matter.
+ */
+/proc/ms13_finish_overpenetration(obj/projectile/hitting_projectile, original_damage, bullet_act_result)
+	if(bullet_act_result != BULLET_ACT_HIT)
+		hitting_projectile.damage = original_damage
+		return bullet_act_result
+
+	var/remaining_damage = original_damage - hitting_projectile.damage
+	if(remaining_damage >= MS13_BULLET_OVERPEN_MIN_REMAINING)
+		hitting_projectile.damage = remaining_damage
+		return BULLET_ACT_FORCE_PIERCE
+
+	hitting_projectile.damage = original_damage
+	return bullet_act_result
 
 /// Baseline values for the common cases. Individual structures can override this the same way the
 /// commented-out per-object values in mojave/structures/ were always meant to.

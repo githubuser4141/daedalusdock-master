@@ -107,7 +107,9 @@
 	maxHealth = 160
 	melee_damage_lower = 10
 	melee_damage_upper = 10
-	speed = 0.75
+	// Negative slowdown makes the combat model react at player-like speed instead of shuffling one tile
+	// per decision. This is intentionally much faster than the civilian Handy base type.
+	speed = -0.5
 	attack_verb_continuous = "batters"
 	attack_verb_simple = "batter"
 	attack_sound = 'sound/weapons/punch1.ogg'
@@ -127,6 +129,6 @@
 		/datum/ai_planning_subtree/simple_find_target,
 		/datum/ai_planning_subtree/ms13_combat_awareness,
 		/datum/ai_planning_subtree/ms13_take_cover,
-		/datum/ai_planning_subtree/basic_ranged_attack_subtree,
+		/datum/ai_planning_subtree/basic_ranged_attack_subtree/ms13_gunner,
 		/datum/ai_planning_subtree/ms13_suppressing_fire,
 	)

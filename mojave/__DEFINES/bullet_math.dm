@@ -420,6 +420,19 @@ TYPEINFO_DEF(/obj/projectile)
 	var/integrity_ratio = getBIntegrity() / getBIntegrityMax()
 	return clamp(tip_hardness * rating_hardness * integrity_ratio, MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX)
 
+/**
+ * What fraction of a projectile's damage a struck target absorbs, the remainder carrying on through it as
+ * an overpenetration hit. A tougher target (higher armor rating for the damage type being dealt) absorbs
+ * more; a tougher round (get_own_hardness_ratio()) pushes it back down and keeps going.
+ *
+ * Shared by walls (wall_integrity.dm) and by structures/machinery (cover.dm) so the same round behaves
+ * consistently against all of them, rather than each growing its own copy of the formula.
+ */
+/proc/ms13_bullet_transfer_fraction(datum/armor/target_armor, obj/projectile/hitting_projectile)
+	var/target_toughness = (target_armor && hitting_projectile.armor_flag) ? clamp(sqrt(target_armor.getRating(hitting_projectile.armor_flag) / MS13_BULLET_HARDNESS_BASELINE), MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
+	var/transfer_fraction = MS13_WALL_BULLET_TRANSFER_BASE * target_toughness / hitting_projectile.get_own_hardness_ratio()
+	return clamp(transfer_fraction, MS13_WALL_BULLET_TRANSFER_MIN, 1)
+
 // returns a exponential multiplier for calculations.
 // AI EDIT: param was typed turf/closed/wall - now that /obj/structure and /obj/machinery also carry a
 // hitbox (see /turf/closed/wall/New() above), a non-wall atom passed here would get silently coerced to

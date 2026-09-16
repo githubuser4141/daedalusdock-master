@@ -20,6 +20,8 @@
 	footstep_type = null
 	stat_attack = UNCONSCIOUS
 	shadow_type = "shadow_large"
+	/// Throttles cover searches for the legacy simple-animal gun variants.
+	var/next_cover_attempt = 0
 
 /mob/living/simple_animal/hostile/ms13/robot/handy/New()
 	..()
@@ -31,6 +33,44 @@
 	do_sparks(3, TRUE, src)
 	playsound(src, 'mojave/sound/ms13npc/robot_death.ogg', 60, TRUE)
 	qdel(src)
+
+/**
+ * Armed Handies predate the controller AI and otherwise inherit hostile.dm's ranged kiting: move directly
+ * away from the target one tile at a time, with no pathfinding. Use the same cover picker and JPS movement
+ * as the modern gunner instead. Melee Handies retain their original movement unchanged.
+ */
+/mob/living/simple_animal/hostile/ms13/robot/handy/MoveToTarget(list/possible_targets)
+	if(!ranged || !target || !(target in possible_targets))
+		return ..()
+
+	if(world.time >= next_cover_attempt && can_see(src, target, blind_fire_los_range) && ms13_shot_quality(target, src) >= MS13_AI_EXPOSED_THRESHOLD)
+		next_cover_attempt = world.time + 4 SECONDS
+		var/turf/cover_turf = ms13_find_cover_turf(src, target)
+		if(cover_turf)
+			var/atom/target_from = GET_TARGETS_FROM(src)
+			if(!target.Adjacent(target_from) && ranged_cooldown <= world.time)
+				OpenFire(target)
+			Goto(cover_turf, move_to_delay, 0)
+			return TRUE
+
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/robot/handy/Goto(target, delay, minimum_distance)
+	if(!ranged)
+		return ..()
+	if(prevent_goto_movement)
+		return FALSE
+	approaching_target = target == src.target
+	return !!SSmove_manager.jps_move(
+		src,
+		target,
+		delay,
+		repath_delay = 0.5 SECONDS,
+		max_path_length = AI_MAX_PATH_LENGTH,
+		minimum_distance = minimum_distance,
+		simulated_only = !HAS_TRAIT(src, TRAIT_FREE_FLOAT_MOVEMENT),
+		flags = MOVEMENT_LOOP_IGNORE_GLIDE,
+	)
 
 /mob/living/simple_animal/hostile/ms13/robot/handy/saw
 	desc = "A work model Mr. Handy unit, armed with a horrifyingly sharp saw. It's long lost any rational wires in its circuits."
@@ -50,8 +90,9 @@
 	desc = "An armed model of Mr. Handy unit. It's long lost any rational wires in its circuits. It's equipped with a ballistic firearm!"
 	icon_state = "mrhandy_gun"
 	icon_living = "mrhandy_gun"
-	minimum_distance = 3
-	retreat_distance = 5
+	minimum_distance = MS13_AI_ENGAGE_RANGE
+	retreat_distance = null
+	move_to_delay = 1
 	loot = list(/obj/item/stack/sheet/ms13/scrap/two, /obj/effect/decal/cleanable/robot_debris, /obj/item/stack/sheet/ms13/scrap_electronics/two, /obj/item/stack/sheet/ms13/scrap_parts/two, /obj/item/ms13/component/cell)
 	ranged = TRUE
 	ranged_cooldown = 1.65 SECONDS
@@ -71,8 +112,9 @@
 	sharpness = SHARP_EDGED
 	//wound_bonus = 8
 	//bare_wound_bonus 10
-	minimum_distance = 1
-	retreat_distance = 3
+	minimum_distance = MS13_AI_ENGAGE_RANGE
+	retreat_distance = null
+	move_to_delay = 1
 	loot = list(/obj/item/stack/sheet/ms13/scrap_steel/two, /obj/effect/decal/cleanable/robot_debris, /obj/item/stack/sheet/ms13/scrap_electronics/two, /obj/item/stack/sheet/ms13/scrap_parts/two, /obj/item/ms13/component/plasma_battery, /obj/item/stack/sheet/ms13/circuits)
 	ranged = TRUE
 	ranged_cooldown = 2 SECONDS

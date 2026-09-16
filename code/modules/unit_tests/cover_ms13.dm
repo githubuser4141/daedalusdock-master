@@ -27,16 +27,17 @@
 
 	TEST_ASSERT_EQUAL(ms13_shot_quality(shooter_turf, target_turf), 1, "Removing the cover should restore a clear shot.")
 
-	// Cover seeking. Threat due east along the same strip the assertions above just proved is clear, an
-	// obstacle partway down it, and the seeker one tile north of that obstacle out in the open - so the
-	// sheltered tile on the far side of the obstacle is a real improvement on where it's standing.
+	// Cover seeking. The useful tile is one step south of the seeker and no farther from the threat. This
+	// pins down lateral cover movement: the old search repeatedly selected farther-away tiles and backed
+	// mobs into walls.
 	//
-	//        y+2          . S .            S seeker (exposed)
-	//        y+1      C   O   .   T        O obstacle   C the cover tile we expect to be chosen   T threat
-	//               x+1  x+2 x+3 x+4
-	var/turf/threat_turf = locate(origin.x + 4, origin.y + 1, origin.z)
-	var/turf/obstacle_turf = locate(origin.x + 2, origin.y + 1, origin.z)
-	var/turf/seeker_turf = locate(origin.x + 2, origin.y + 2, origin.z)
+	//        y+3      S . . .              S seeker (exposed)
+	//        y+2      . . . .
+	//        y+1      C O . . T            O obstacle   C cover tile   T threat
+	//               x+2 3 4 5 6
+	var/turf/threat_turf = locate(origin.x + 6, origin.y + 1, origin.z)
+	var/turf/obstacle_turf = locate(origin.x + 3, origin.y + 1, origin.z)
+	var/turf/seeker_turf = locate(origin.x + 2, origin.y + 3, origin.z)
 	TEST_ASSERT(threat_turf && obstacle_turf && seeker_turf, "Test area is too small to lay out the cover-seeking case.")
 	TEST_ASSERT(!threat_turf.density && !obstacle_turf.density && !seeker_turf.density, "Cover-seeking layout runs into a wall - the unit test area is smaller than this test assumes.")
 
@@ -46,7 +47,7 @@
 	// Literal rather than MS13_AI_EXPOSED_THRESHOLD: that define lives in mojave/, which loads after code/,
 	// so mojave-side defines aren't visible from a test file here. Keep the two in step by hand.
 	var/exposed_quality = ms13_shot_quality(threat_turf, seeker_turf)
-	TEST_ASSERT(exposed_quality > 0.5, "Seeker should start out genuinely exposed before any cover is placed, got [exposed_quality].")
+	TEST_ASSERT(exposed_quality > 0.75, "Seeker should start out genuinely exposed before any cover is placed, got [exposed_quality].")
 
 	var/obj/structure/table/obstacle = new(obstacle_turf)
 
@@ -56,5 +57,15 @@
 
 	var/covered_quality = ms13_shot_quality(threat_turf, found)
 	TEST_ASSERT(covered_quality < exposed_quality, "Chosen cover ([covered_quality]) is no better than standing in the open ([exposed_quality]).")
+	TEST_ASSERT(get_dist_manhattan(found, threat_turf) <= get_dist_manhattan(seeker_turf, threat_turf), "Cover search moved away from the threat instead of laterally.")
+	var/forward_progress = ((found.x - seeker_turf.x) * SIGN(threat_turf.x - seeker_turf.x)) + ((found.y - seeker_turf.y) * SIGN(threat_turf.y - seeker_turf.y))
+	TEST_ASSERT(forward_progress >= 0, "Cover search selected a destination behind the seeker.")
+	seeker.forceMove(found)
+	TEST_ASSERT_NULL(ms13_find_cover_turf(seeker, threat_turf), "One useful obstacle should not cause a chain of repeated retreats.")
+
+	// Bracing only works for partial cover. Treating an adjacent hard obstacle as shootable made AI choose
+	// sealed corners it could never return fire through.
+	obstacle.projectile_passchance = 0
+	TEST_ASSERT_EQUAL(ms13_shot_quality(found, threat_turf, ignore_braced = TRUE), 0, "Hard cover must still block an outgoing shot while braced.")
 
 	qdel(obstacle)

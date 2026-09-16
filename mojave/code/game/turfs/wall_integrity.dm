@@ -11,10 +11,7 @@ TYPEINFO_DEF(/turf/closed/wall)
 /// overpenetration hit (mirrors mob overpenetration, bullet_penetration.dm). A tougher wall (higher armor
 /// rating) pushes this up; a tougher/harder-constructed bullet (get_own_hardness_ratio()) divides it back down.
 /turf/closed/wall/proc/get_wall_bullet_transfer_fraction(obj/projectile/P)
-	var/datum/armor/wall_armor = returnArmor()
-	var/wall_toughness = (wall_armor && P.armor_flag) ? clamp(sqrt(wall_armor.getRating(P.armor_flag) / MS13_BULLET_HARDNESS_BASELINE), MS13_BULLET_HARDNESS_MIN, MS13_BULLET_HARDNESS_MAX) : 1
-	var/transfer_fraction = MS13_WALL_BULLET_TRANSFER_BASE * wall_toughness / P.get_own_hardness_ratio()
-	return clamp(transfer_fraction, MS13_WALL_BULLET_TRANSFER_MIN, 1)
+	return ms13_bullet_transfer_fraction(returnArmor(), P)
 
 /turf/closed/wall/bullet_act(obj/projectile/hitting_projectile, def_zone, piercing_hit = FALSE)
 	var/original_damage = hitting_projectile.damage
