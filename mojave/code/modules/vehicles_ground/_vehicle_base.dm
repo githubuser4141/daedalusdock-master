@@ -26,6 +26,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
 	var/list/obj/structure/ms13_vehicle_part/parts = list()
 	var/obj/structure/ms13_vehicle_part/engine/engine
+	var/obj/structure/ms13_vehicle_part/gearbox/gearbox
+	var/obj/structure/ms13_vehicle_part/fuel_tank/fuel_tank
 	var/datum/looping_sound/running_gear_soundloop
 	var/running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_wheels
 	var/mob/living/driver
@@ -35,8 +37,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	/// datum has no dir var of its own.
 	var/dir = NORTH
 	/// Handling values are overridden by each concrete controller subtype; the shared movement code
-	/// never needs to know whether it is driving a jeep, truck, or a future vehicle.
-	var/list/speed_delays = list(6, 4, 2)
+	/// never needs to know whether it is driving a jeep, truck, or a future vehicle. Gears and fuel
+	/// capacity belong to the gearbox and fuel tank parts instead.
 	var/acceleration_delay = 1 SECONDS
 	var/coast_delay = 1.2 SECONDS
 	var/turn_delay = 4
@@ -48,8 +50,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/required_running_gear = 4
 	var/running_gear_integrity = 80
 	var/engine_integrity = 200
-	var/fuel_capacity = 100
 	var/fuel_per_tile = 0.1
+	/// Brightness (0-1) a light-proof cabin tile keeps with every fixture off.
+	var/interior_ambient_light = 0.03
 	var/rev_sound = 'sound/vehicles/carrev.ogg'
 	var/ram_sound = 'sound/effects/bang.ogg'
 	var/crash_sound = 'mojave/sound/ms13effects/impact/metal/metal_crunch_3.wav'
@@ -57,7 +60,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/ram_sound_volume = 45
 	var/crash_sound_volume = 55
 
-	/// Current momentum state. Speed is an index into speed_delays, not tiles per tick.
+	/// Current momentum state. Speed is the current gear (see gear_delay()), not tiles per tick.
 	var/speed = 0
 	var/travel_dir
 	var/moving = FALSE
@@ -66,6 +69,25 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	/// Invalidates a pending movement callback when motion stops and later restarts.
 	var/movement_generation = 0
 	var/next_move_time = 0
+	/// Sideways drift while driving, CDDA-style: -1 left, 1 right, 0 straight. The chassis keeps its facing
+	/// and sidesteps every drift_interval tiles. Steering once drifts; steering the same way again turns.
+	var/drift = 0
+	var/drift_interval = 3
+	var/drift_progress = 0
+	/// A held steering key only counts as a second press after this long.
+	var/steer_delay = 0.8 SECONDS
+	var/next_steer_time = 0
+
+/// Gears the driver can currently select; zero without a working gearbox.
+/datum/ms13_ground_vehicle/proc/gear_count()
+	return gearbox?.available_gears() || 0
+
+/// Move delay for a gear. Coasting with a wrecked gearbox falls back to a crawl.
+/datum/ms13_ground_vehicle/proc/gear_delay(gear)
+	var/list/delays = gearbox?.gear_delays
+	if(!length(delays))
+		return 10
+	return delays[clamp(gear, 1, length(delays))]
 
 /datum/ms13_ground_vehicle/proc/get_all_parts()
 	. = list()
@@ -89,11 +111,61 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			viewer.images |= part.exterior_image
 		else
 			viewer.images -= part.exterior_image
+	// Occupants see the cabin by its own light; outsiders see the roof by daylight.
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		if(!frame.interior_light)
+			continue
+		if(visible)
+			viewer.images -= frame.interior_light
+			viewer.images -= frame.interior_light_block
+		else
+			viewer.images |= frame.interior_light
+			viewer.images |= frame.interior_light_block
+
+/// Can outside light reach frame? False only when every exterior edge of it is closed light-proof hull.
+/datum/ms13_ground_vehicle/proc/is_light_sealed(obj/structure/ms13_vehicle_frame/frame)
+	for(var/edge_dir in GLOB.cardinals)
+		if(get_frame_at(get_step(frame, edge_dir)))
+			continue
+		var/sealed_edge = FALSE
+		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+			if(wall.parent_frame == frame && wall.dir == edge_dir && wall.blocks_light())
+				sealed_edge = TRUE
+				break
+		if(!sealed_edge)
+			return FALSE
+	return TRUE
+
+/**
+ * Lights the cabin for the people inside. A sealed tile ignores the lightmap outside and shows only
+ * ambient plus fixture light; an open tile keeps outside light and gets fixture light added on top.
+ */
+/datum/ms13_ground_vehicle/proc/update_interior_lighting()
+	var/list/lit_fixtures = list()
+	for(var/obj/structure/ms13_vehicle_part/interior_light/fixture in parts)
+		if(fixture.is_lit())
+			lit_fixtures += fixture
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		var/red = 0
+		var/green = 0
+		var/blue = 0
+		for(var/obj/structure/ms13_vehicle_part/interior_light/fixture as anything in lit_fixtures)
+			var/list/added = fixture.light_at(frame)
+			red += added[1]
+			green += added[2]
+			blue += added[3]
+		if(is_light_sealed(frame))
+			red += interior_ambient_light
+			green += interior_ambient_light
+			blue += interior_ambient_light
+			frame.set_interior_light(TRUE, red, green, blue)
+		else
+			frame.set_interior_light(FALSE, red, green, blue)
 
 /// Engines and the configured number of intact wheels/tracks provide motive power. Losing either prevents
 /// new throttle, while the existing momentum loop remains free to coast to a stop.
 /datum/ms13_ground_vehicle/proc/has_motive_power()
-	if(!engine?.is_operational())
+	if(!engine?.is_operational() || !gear_count())
 		return FALSE
 	var/working_running_gear = 0
 	for(var/obj/structure/ms13_vehicle_part/running_gear/running_gear in parts)
@@ -114,10 +186,15 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		if(get_turf(frame) == turf_to_check)
 			return frame
 
-/// Does a sight ray leaving frame in exit_dir cross a closed solid hull panel?
-/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir)
+/// Does a sight ray from viewer_turf, leaving frame in exit_dir, hit a hull panel that won't let this viewer see
+/// out? Solid panels always block; a porthole only lets through viewers within its vision_range.
+/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir, turf/viewer_turf)
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
-		if(wall.parent_frame == frame && wall.blocks_vision && (wall.dir & exit_dir))
+		if(wall.parent_frame != frame || !(wall.dir & exit_dir))
+			continue
+		if(wall.blocks_sight())
+			return TRUE
+		if(!isnull(wall.vision_range) && get_dist(viewer_turf, get_turf(frame)) > wall.vision_range)
 			return TRUE
 	return FALSE
 
@@ -131,7 +208,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	for(var/index in 2 to length(sight_line))
 		var/turf/next_turf = sight_line[index]
 		var/obj/structure/ms13_vehicle_frame/next_frame = get_frame_at(next_turf)
-		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf)))
+		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf), source))
 			return TRUE
 		current_turf = next_turf
 		current_frame = next_frame
@@ -139,6 +216,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Door state changes need to refresh occupants even though nobody moved.
 /datum/ms13_ground_vehicle/proc/update_interior_masks()
+	update_interior_lighting()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		for(var/mob/living/passenger in get_turf(frame))
 			passenger.update_ms13_vehicle_interior_mask()
@@ -269,7 +347,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(!can_move(direction, TRUE) || !ram_living(direction, manifest) || !can_move(direction))
 		return FALSE
 	if(!bypass_cooldown)
-		next_move_time = world.time + speed_delays[max(speed, 1)]
+		next_move_time = world.time + gear_delay(max(speed, 1))
 
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		frame.forceMove(get_step(frame, direction))
@@ -303,15 +381,36 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			stop_motion()
 		return TRUE
 
-	if(world.time >= next_acceleration_time && speed < length(speed_delays))
+	if(world.time >= next_acceleration_time && speed < gear_count())
 		speed++
 		next_acceleration_time = world.time + acceleration_delay
 		playsound(pivot, rev_sound, rev_sound_volume, TRUE)
 	return TRUE
 
-/// Turns in place while stopped. At speed, reversing preserves reversed travel through the turn;
-/// taking a corner also sheds configurable momentum, and an over-speed turn input only brakes.
+/// Stopped, steering pivots in place. Moving, the first press starts a sideways drift and a second press the
+/// same way commits to a full turn; steering the other way straightens out.
 /datum/ms13_ground_vehicle/proc/apply_steering(new_dir)
+	if(!speed)
+		return full_turn(new_dir)
+	if(world.time < next_steer_time)
+		return FALSE
+	next_steer_time = world.time + steer_delay
+	var/side = new_dir == turn(dir, -90) ? 1 : -1
+	if(drift != side)
+		drift = drift ? 0 : side
+		drift_progress = 0
+		if(driver)
+			pivot.balloon_alert(driver, drift ? "drifting [drift > 0 ? "right" : "left"]" : "straight")
+		return TRUE
+	if(!full_turn(new_dir))
+		return FALSE
+	drift = 0
+	drift_progress = 0
+	return TRUE
+
+/// At speed, reversing preserves reversed travel through the turn; taking a corner also sheds configurable
+/// momentum, and an over-speed turn input only brakes.
+/datum/ms13_ground_vehicle/proc/full_turn(new_dir)
 	if(speed > max_turn_speed)
 		speed = max(1, speed - turn_speed_loss)
 		last_throttle_time = world.time
@@ -347,6 +446,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	moving = FALSE
 	speed = 0
 	travel_dir = null
+	drift = 0
+	drift_progress = 0
 	movement_generation++
 	set_parts_moving(FALSE)
 	running_gear_soundloop?.stop()
@@ -356,7 +457,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/movement_tick(generation)
 	if(generation != movement_generation || !moving || !speed)
 		return
-	if(world.time >= last_throttle_time + coast_delay)
+	if(world.time >= last_throttle_time + coast_delay || speed > max(gear_count(), 1))
 		speed--
 		last_throttle_time = world.time
 		if(!speed)
@@ -366,7 +467,12 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		playsound(pivot, crash_sound, crash_sound_volume, TRUE)
 		stop_motion()
 		return
-	addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), speed_delays[speed])
+	if(drift && ++drift_progress >= drift_interval)
+		drift_progress = 0
+		// Scraping along something just straightens the vehicle out.
+		if(!do_move(turn(dir, drift > 0 ? -90 : 90), TRUE))
+			drift = 0
+	addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), gear_delay(speed))
 
 /// Turns the whole vehicle in place to face new_dir, rotating every frame/wall's position around the
 /// pivot and every wall's own facing to match, and carrying passengers to their frame's new tile.
@@ -378,6 +484,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	next_move_time = world.time + turn_delay
 
 	var/list/manifest = get_manifest()
+	// dir2angle() increases clockwise, while turn() increases counter-clockwise.
+	var/seat_turn = dir2angle(dir) - dir2angle(new_dir)
 
 	// Compute every destination before moving anything, so later lookups aren't thrown off by a
 	// frame that's already relocated.
@@ -409,6 +517,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	for(var/atom/movable/passenger as anything in manifest)
 		var/obj/structure/ms13_vehicle_frame/old_frame = manifest[passenger]
 		passenger.forceMove(frame_dest[old_frame])
+		if(istype(passenger, /obj/structure/chair/ms13_vehicle_seat))
+			passenger.setDir(turn(passenger.dir, seat_turn))
 	return TRUE
 
 /// One cell of a vehicle's footprint - just a floor. Walls (vehicle_walls.dm) mounted on it, plus
@@ -431,6 +541,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	/// Used by roofs such as the M113 which have no matching damaged sheet in Civ13.
 	var/roof_damage_color
 	var/roof_hull_breached = FALSE
+	/// Lighting-plane cover shown only to occupants: replaces or adds to outside light on this tile.
+	var/image/interior_light
+	/// Blanks the additive lighting plane here while the tile is sealed, so bright lamps outside can't bleed in.
+	var/image/interior_light_block
 	/// Position relative to the vehicle's pivot, in vehicle-local (forward, right) tiles - see
 	/// get_relative_turf(). Zero for the pivot itself.
 	var/forward_offset = 0
@@ -444,13 +558,42 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	GLOB.ms13_vehicle_roofs |= roof
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images |= roof
+	// Above area base lighting (LIGHTING_PRIMARY_LAYER), which is what lights Mojave's outdoors.
+	interior_light = image('icons/effects/alphacolors.dmi', src, layer = LIGHTING_PRIMARY_LAYER + 5)
+	interior_light.plane = LIGHTING_PLANE
+	interior_light.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+	interior_light.invisibility = INVISIBILITY_LIGHTING
+	interior_light.alpha = 0
+	interior_light_block = image('icons/effects/alphacolors.dmi', src, layer = LIGHTING_PRIMARY_LAYER + 5)
+	interior_light_block.plane = LIGHTING_PLANE_ADDITIVE
+	interior_light_block.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+	interior_light_block.invisibility = INVISIBILITY_LIGHTING
+	interior_light_block.color = "#000000"
+	interior_light_block.alpha = 0
+
+/// sealed: the tile shows exactly this light. Otherwise the light is added to whatever reaches it from outside.
+/obj/structure/ms13_vehicle_frame/proc/set_interior_light(sealed, red, green, blue)
+	var/light_color = rgb(min(red, 1) * 255, min(green, 1) * 255, min(blue, 1) * 255)
+	if(sealed)
+		interior_light.blend_mode = BLEND_OVERLAY
+		interior_light.color = light_color
+		interior_light.alpha = 255
+		interior_light_block.alpha = 255
+		return
+	interior_light_block.alpha = 0
+	if(red + green + blue <= 0)
+		interior_light.alpha = 0
+		return
+	interior_light.blend_mode = BLEND_ADD
+	interior_light.color = light_color
+	interior_light.alpha = 255
 
 /obj/structure/ms13_vehicle_frame/proc/update_roof_damage()
 	if(!roof)
 		return
 	var/is_damaged = roof_hull_breached
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle?.walls)
-		if(wall.parent_frame == src && wall.get_integrity() < wall.max_integrity)
+		if(wall.parent_frame == src && wall.exterior && wall.get_integrity() < wall.max_integrity)
 			is_damaged = TRUE
 			break
 	roof.icon = is_damaged && roof_damaged_icon ? roof_damaged_icon : roof_undamaged_icon
@@ -460,7 +603,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	GLOB.ms13_vehicle_roofs -= roof
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images -= roof
+		viewer.images -= interior_light
+		viewer.images -= interior_light_block
 	roof = null
+	interior_light = null
+	interior_light_block = null
 	if(vehicle?.pivot == src)
 		vehicle.destroy_soundloops()
 	vehicle?.stop_motion()
@@ -487,6 +634,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		wall.icon_state = icon_state_override
 	wall.finish_mount()
 	vehicle.walls += wall
+	vehicle.update_interior_lighting()
 	return wall
 
 /// Roofs are client images: outsiders see them, while somebody on a vehicle frame sees its cabin.

@@ -9,7 +9,6 @@
  * truck's facing, same as the jeep.
  */
 /datum/ms13_ground_vehicle/armored_truck
-	speed_delays = list(8, 6, 4)
 	acceleration_delay = 1.2 SECONDS
 	coast_delay = 1.6 SECONDS
 	turn_delay = 5
@@ -20,7 +19,6 @@
 	ram_knockdown_per_speed = 5
 	running_gear_integrity = 110
 	engine_integrity = 280
-	fuel_capacity = 140
 	fuel_per_tile = 0.12
 
 /obj/structure/ms13_vehicle_frame/armored_truck_front_left
@@ -95,7 +93,11 @@
 	passenger_seat.icon_state = "commanders_seat"
 	passenger_seat.setDir(dir)
 
-	spawn_part(/obj/structure/ms13_vehicle_part/engine)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/engine)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/gearbox/three_speed)
+	back_right.spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/large)
+	// The cargo box is sealed hull, so it needs its own light.
+	back_right.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 	back_left.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)

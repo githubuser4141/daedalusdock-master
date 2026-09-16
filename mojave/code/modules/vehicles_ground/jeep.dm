@@ -7,7 +7,6 @@
  * freely afterward.
  */
 /datum/ms13_ground_vehicle/jeep
-	speed_delays = list(6, 4, 3, 2)
 	acceleration_delay = 0.8 SECONDS
 	coast_delay = 1 SECONDS
 	turn_delay = 3
@@ -18,7 +17,6 @@
 	ram_knockdown_per_speed = 4
 	running_gear_integrity = 65
 	engine_integrity = 160
-	fuel_capacity = 70
 	fuel_per_tile = 0.08
 
 /obj/structure/ms13_vehicle_frame/jeep_front
@@ -67,6 +65,8 @@
 	passenger_seat.setDir(dir)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/engine)
+	spawn_part(/obj/structure/ms13_vehicle_part/gearbox)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank)
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)
 	back.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)

@@ -1,12 +1,18 @@
 /**
  * Civ13's 3x4 M113 footprint and sprites, assembled on the shared Mojave vehicle controller. Place
- * the front-left frame in the map editor; the remaining hull, rear ramp, seats, engine, and four
- * independently damageable track units are created around it.
+ * the front-left frame in the map editor; the remaining hull, rear ramp, seats, powerpack, fuel cell,
+ * lights, and four independently damageable track units are created around it.
+ *
+ * Cabin layout, front row first (L/C/R = left/centre/right, facing forward):
+ *   driver       | transmission | engine        <- powerpack sealed off behind access panels
+ *   commander    | aisle        | troop seat
+ *   troop seat   | aisle        | troop seat    <- dome light over the aisle
+ *   fuel cell    | aisle        | troop seat
+ *                  rear ramp
  */
 
 
 /datum/ms13_ground_vehicle/m113
-	speed_delays = list(12, 9, 7)
 	acceleration_delay = 1.8 SECONDS
 	coast_delay = 2 SECONDS
 	turn_delay = 7
@@ -18,7 +24,6 @@
 	required_running_gear = 4
 	running_gear_integrity = 180
 	engine_integrity = 400
-	fuel_capacity = 240
 	fuel_per_tile = 0.2
 	running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_tracks
 
@@ -30,6 +35,25 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine/m113)
 	desc = "The compact two-stroke diesel engine used to propel an M113 armored personnel carrier."
 	density = TRUE
 	max_integrity = 350
+	icon_state = "engine_static"
+	static_icon_state = "engine_static"
+	running_icon_state = "engine_on"
+	broken_icon_state = "engine_broken"
+
+/obj/structure/ms13_vehicle_part/gearbox/m113
+	name = "TX100 transmission"
+	desc = "The M113's three-speed automatic transmission and steering differential."
+	density = TRUE
+	max_integrity = 200
+	gear_delays = list(12, 9, 7)
+
+/obj/structure/ms13_vehicle_part/fuel_tank/m113
+	name = "M113 fuel cell"
+	desc = "A boxy armored fuel cell bolted into the rear corner of the troop compartment."
+	icon_state = "fueltank_incar"
+	density = TRUE
+	max_integrity = 180
+	capacity = 240
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 35, ENERGY = 50, BOMB = 15, BIO = 100,  FIRE = 50, ACID = 50)
@@ -38,6 +62,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
 	desc = "A thick vision block set into the carrier's frontal armor."
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	max_integrity = 800
+	// Periscope glass: you can see out only with your face to it, and it lets almost no light in.
+	light_proof = TRUE
+	vision_range = 1
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
@@ -53,8 +80,29 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/m113)
 	desc = "The carrier's heavy rear access ramp. Click to open or close it."
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	icon_state = "m113_back_frame"
-	open_icon_state = "none"
+	open_icon_state = "m113_back_frame"
 	max_integrity = 1000
+	/// How far the lowered ramp lies out past the hull, in pixels. Keeps it visible and clickable.
+	var/lowered_offset = 20
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/m113/open(mob/user)
+	. = ..()
+	update_ramp_position()
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/m113/close(mob/user)
+	. = ..()
+	update_ramp_position()
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/m113/setDir(new_dir)
+	. = ..()
+	update_ramp_position()
+
+/// A lowered ramp lies on the ground behind the carrier, under whoever walks across it.
+/obj/structure/window/ms13_vehicle_wall/solid/door/m113/proc/update_ramp_position()
+	var/offset = opened ? lowered_offset : 0
+	pixel_x = dir == EAST ? offset : dir == WEST ? -offset : 0
+	pixel_y = dir == NORTH ? offset : dir == SOUTH ? -offset : 0
+	layer = opened ? LOW_OBJ_LAYER : initial(layer)
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	default_armor = list(BLUNT = 75, PUNCTURE = 75, SLASH = 75, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
@@ -79,6 +127,21 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	segment.setDir(dir)
 	vehicle.frames += segment
 	return segment
+
+/// Mounts a named interior partition; relative_dir is the edge it closes, relative to the vehicle's facing.
+/obj/structure/ms13_vehicle_frame/m113/proc/add_bulkhead(relative_dir, wall_name, wall_type = /obj/structure/window/ms13_vehicle_wall/solid/interior)
+	var/obj/structure/window/ms13_vehicle_wall/bulkhead = spawn_wall(turn(dir, relative_dir), null, wall_type)
+	bulkhead.name = wall_name
+	return bulkhead
+
+/// Adds a seat on this frame facing relative_dir (0 = forward).
+/obj/structure/ms13_vehicle_frame/m113/proc/add_seat(relative_dir, seat_name, seat_icon_state = "commanders_seat")
+	var/obj/structure/chair/ms13_vehicle_seat/seat = new(get_turf(src))
+	seat.parent_frame = src
+	seat.name = seat_name
+	seat.icon_state = seat_icon_state
+	seat.setDir(turn(dir, relative_dir))
+	return seat
 
 /// The only map-placeable M113 object; children use the parent segment type to avoid reassembly.
 /obj/structure/ms13_vehicle_frame/m113/front_left
@@ -106,13 +169,13 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	add_segment(-1, 1, "m113_frame_steel_middle_front", "m113_roof_steel_middle_front")
 	var/obj/structure/ms13_vehicle_frame/m113/middle_front_right = add_segment(-1, 2, "m113_frame_steel_middle_front_right", "m113_roof_steel_middle_front_right")
 	var/obj/structure/ms13_vehicle_frame/m113/middle_back_left = add_segment(-2, 0, "m113_frame_steel_middle_back_left", "m113_roof_steel_middle_back_left")
-	add_segment(-2, 1, "m113_frame_steel_middle_back", "m113_roof_steel_middle_back")
+	var/obj/structure/ms13_vehicle_frame/m113/middle_back = add_segment(-2, 1, "m113_frame_steel_middle_back", "m113_roof_steel_middle_back")
 	var/obj/structure/ms13_vehicle_frame/m113/middle_back_right = add_segment(-2, 2, "m113_frame_steel_middle_back_right", "m113_roof_steel_middle_back_right")
 	var/obj/structure/ms13_vehicle_frame/m113/back_left = add_segment(-3, 0, "m113_frame_steel_back_left", "m113_roof_steel_back_left")
 	var/obj/structure/ms13_vehicle_frame/m113/back = add_segment(-3, 1, "m113_frame_steel_back", "m113_roof_steel_back")
 	var/obj/structure/ms13_vehicle_frame/m113/back_right = add_segment(-3, 2, "m113_frame_steel_back_right", "m113_roof_steel_back_right")
 
-	// Three frontal vision blocks; the rest of the hull is opaque, with one working rear ramp.
+	// Outer hull: three frontal vision blocks, solid sides and rear, one working rear ramp.
 	spawn_wall(dir, "m113_front_left_frame", /obj/structure/window/ms13_vehicle_wall/m113)
 	front_middle.spawn_wall(dir, "m113_front_middle_frame", /obj/structure/window/ms13_vehicle_wall/m113)
 	front_right.spawn_wall(dir, "m113_front_right_frame", /obj/structure/window/ms13_vehicle_wall/m113)
@@ -131,19 +194,32 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	back.spawn_wall(turn(dir, 180), , /obj/structure/window/ms13_vehicle_wall/solid/door/m113)
 	back_right.spawn_wall(turn(dir, 180), "m113_back_right_frame", /obj/structure/window/ms13_vehicle_wall/solid/m113)
 
-	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = new(get_turf(src))
-	driver_seat.parent_frame = src
-	driver_seat.is_driver_seat = TRUE
-	driver_seat.icon_state = "driver_car"
-	driver_seat.setDir(dir)
-
-	for(var/obj/structure/ms13_vehicle_frame/seat_frame in list(middle_front_left, middle_front_right, middle_back_left, middle_back_right, back_left, back_right))
-		var/obj/structure/chair/ms13_vehicle_seat/passenger_seat = new(get_turf(seat_frame))
-		passenger_seat.parent_frame = seat_frame
-		passenger_seat.icon_state = "commanders_seat"
-		passenger_seat.setDir(dir)
-
+	// Powerpack: the driver sits beside the transmission, and both it and the engine are closed off
+	// from the troop compartment behind bolted access panels.
+	add_bulkhead(-90, "driver's bulkhead")
+	front_middle.add_bulkhead(180, "transmission access panel", /obj/structure/window/ms13_vehicle_wall/solid/door/interior)
+	front_right.add_bulkhead(180, "engine access panel", /obj/structure/window/ms13_vehicle_wall/solid/door/interior)
+	front_middle.spawn_part(/obj/structure/ms13_vehicle_part/gearbox/m113)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/engine/m113)
+
+	// Commander sits behind the driver, backed by a partition; troops face each other across the aisle.
+	middle_front_left.add_bulkhead(180, "seat partition")
+	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = add_seat(0, "driver's seat", "driver_tank")
+	driver_seat.is_driver_seat = TRUE
+	middle_front_left.add_seat(0, "commander's seat")
+	middle_back_left.add_seat(-90, "troop seat")
+	middle_front_right.add_seat(90, "troop seat")
+	middle_back_right.add_seat(90, "troop seat")
+	back_right.add_seat(90, "troop seat")
+
+	// Fuel cell in the rear left corner, boxed in and filled from the aisle side.
+	back_left.add_bulkhead(0, "fuel cell bulkhead")
+	back_left.add_bulkhead(-90, "fuel cell access panel", /obj/structure/window/ms13_vehicle_wall/solid/door/interior)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/m113)
+
+	middle_back.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
+	spawn_part(/obj/structure/ms13_vehicle_part/interior_light/instrument)
+
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right)
 	back_left.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right, 180)

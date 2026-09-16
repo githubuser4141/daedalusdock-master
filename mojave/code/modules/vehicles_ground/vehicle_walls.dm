@@ -19,6 +19,8 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	// Keep the exterior hull visible over the opaque roof shown to bystanders.
 	layer = ABOVE_ALL_MOB_LAYER + 0.01
 	max_integrity = 150
+	/// Below this share of integrity the wall is holed (see atom_break()); it is only destroyed at 0.
+	integrity_failure = 0.35
 	fulltile = FALSE
 	wtype = "metal"
 	var/obj/structure/ms13_vehicle_frame/parent_frame
@@ -32,17 +34,101 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	var/relative_turn = 0
 	/// Solid panels and closed shutters use this logical boundary instead of tile-wide opacity.
 	var/blocks_vision = FALSE
+	/// Keeps outside light out even while see-through, like a narrow periscope block.
+	var/light_proof = FALSE
+	/// A see-through wall only lets you see out from within this many tiles of it. Null: from anywhere aboard.
+	var/vision_range
+	/// Part of the outer hull. Interior bulkheads don't mark the roof as damaged.
+	var/exterior = TRUE
+	/// Holed by damage but still standing: most of its armor is gone and it no longer blocks sight or light.
+	var/hull_broken = FALSE
+	/// Share of its armor a holed wall keeps. Bullet stopping power follows armor, so rounds get through.
+	var/broken_armor_mult = 0.15
+	/// Damaged art, used when it has a match for this wall's icon_state.
+	var/broken_icon = 'mojave/icons/objects/vehicles_ground/vehicleparts_damaged.dmi'
+	/// Drawn over walls with no damaged art of their own.
+	var/broken_fallback_state = "c_window"
+	var/datum/armor/intact_armor
+
+/obj/structure/window/ms13_vehicle_wall/proc/blocks_sight()
+	return blocks_vision && !hull_broken
+
+/obj/structure/window/ms13_vehicle_wall/proc/blocks_light()
+	return (blocks_vision || light_proof) && !hull_broken
+
+/obj/structure/window/ms13_vehicle_wall/atom_break(damage_flag)
+	. = ..()
+	if(hull_broken)
+		return
+	hull_broken = TRUE
+	intact_armor = returnArmor()
+	setArmor(getArmor(
+		intact_armor.blunt * broken_armor_mult,
+		intact_armor.puncture * broken_armor_mult,
+		intact_armor.slash * broken_armor_mult,
+		intact_armor.laser * broken_armor_mult,
+		intact_armor.energy * broken_armor_mult,
+		intact_armor.bomb * broken_armor_mult,
+		intact_armor.bio,
+		intact_armor.fire * broken_armor_mult,
+		intact_armor.acid * broken_armor_mult,
+	))
+	visible_message(span_warning("[src] buckles and tears open!"))
+	update_appearance()
+	parent_frame?.vehicle?.update_interior_masks()
+
+/obj/structure/window/ms13_vehicle_wall/atom_fix()
+	. = ..()
+	if(!hull_broken)
+		return
+	hull_broken = FALSE
+	setArmor(intact_armor)
+	intact_armor = null
+	update_appearance()
+	parent_frame?.vehicle?.update_interior_masks()
+
+/// Window welding sets integrity directly, which never un-breaks anything.
+/obj/structure/window/ms13_vehicle_wall/welder_act(mob/living/user, obj/item/tool)
+	. = ..()
+	if(hull_broken && !is_broken())
+		atom_fix()
+
+/obj/structure/window/ms13_vehicle_wall/update_icon_state()
+	. = ..()
+	icon = has_broken_art() ? broken_icon : initial(icon)
+
+/obj/structure/window/ms13_vehicle_wall/update_overlays()
+	. = ..()
+	if(hull_broken && !has_broken_art())
+		var/mutable_appearance/damage = mutable_appearance(broken_icon, broken_fallback_state, layer)
+		damage.dir = dir
+		. += damage
+
+/obj/structure/window/ms13_vehicle_wall/setDir(new_dir)
+	. = ..()
+	if(hull_broken)
+		update_appearance()
+
+/obj/structure/window/ms13_vehicle_wall/proc/has_broken_art()
+	if(!hull_broken || !broken_icon)
+		return FALSE
+	var/static/list/states_by_icon = list()
+	var/list/states = states_by_icon["[broken_icon]"]
+	if(!states)
+		states = states_by_icon["[broken_icon]"] = icon_states(broken_icon)
+	return icon_state in states
 
 /obj/structure/window/ms13_vehicle_wall/proc/finish_mount()
 	return
 
 /obj/structure/window/ms13_vehicle_wall/update_integrity(new_value, damage_flag = NONE, allow_break = TRUE)
 	. = ..()
-	parent_frame?.update_roof_damage()
+	if(exterior)
+		parent_frame?.update_roof_damage()
 
 /obj/structure/window/ms13_vehicle_wall/Destroy()
 	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
-	if(parent_frame)
+	if(parent_frame && exterior)
 		parent_frame.roof_hull_breached = TRUE
 		parent_frame.update_roof_damage()
 	vehicle?.walls -= src
@@ -60,6 +146,30 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	desc = "A solid section of vehicle armor plating."
 	icon_state = "c_armoredwall"
 	blocks_vision = TRUE
+	bullet_damage_ratio = 0.3
+	broken_fallback_state = "c_armoredwall"
+
+/**
+ * A bulkhead between two cabin tiles. Sits under the roof so outsiders never see it, and doesn't count
+ * toward hull damage on the roof art.
+ */
+/obj/structure/window/ms13_vehicle_wall/solid/interior
+	name = "bulkhead"
+	desc = "A thin steel partition inside the vehicle."
+	icon_state = "c_thin"
+	layer = ABOVE_MOB_LAYER
+	max_integrity = 120
+	exterior = FALSE
+
+/** A cabin access panel, e.g. into the engine bay. */
+/obj/structure/window/ms13_vehicle_wall/solid/door/interior
+	name = "access panel"
+	desc = "A bolted panel between compartments. Click to open or close it."
+	icon_state = "c_door"
+	open_icon_state = "c_thin"
+	layer = ABOVE_MOB_LAYER
+	max_integrity = 120
+	exterior = FALSE
 
 /** A window with manually-operated armored shutters. It remains a normal window while open. */
 /obj/structure/window/ms13_vehicle_wall/shuttered
@@ -78,6 +188,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	shutters_closed = !shutters_closed
 	blocks_vision = shutters_closed
 	icon_state = shutters_closed ? closed_icon_state : open_icon_state
+	update_appearance()
 	parent_frame?.vehicle?.update_interior_masks()
 	var/third_person_action = shutters_closed ? "closes" : "opens"
 	var/second_person_action = shutters_closed ? "close" : "open"
@@ -118,6 +229,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	set_density(FALSE)
 	blocks_vision = FALSE
 	icon_state = open_icon_state
+	update_appearance()
 	parent_frame?.vehicle?.update_interior_masks()
 	if(user)
 		user.visible_message(span_notice("[user] opens [src]."), span_notice("You open [src]."))
@@ -130,6 +242,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	set_density(TRUE)
 	blocks_vision = TRUE
 	icon_state = initial(icon_state)
+	update_appearance()
 	parent_frame?.vehicle?.update_interior_masks()
 	if(user)
 		user.visible_message(span_notice("[user] closes [src]."), span_notice("You close [src]."))
