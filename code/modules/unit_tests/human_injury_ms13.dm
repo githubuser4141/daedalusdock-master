@@ -1,0 +1,10 @@
+/// A nearby blast injures the eyes and brain; only a close one reaches the lungs.
+/datum/unit_test/ms13_blast_injury/Run()
+	var/mob/living/carbon/human/consistent/far = ALLOCATE_BOTTOM_LEFT()
+	var/mob/living/carbon/human/consistent/near = ALLOCATE_BOTTOM_LEFT()
+	far.ex_act(EXPLODE_LIGHT)
+	TEST_ASSERT_EQUAL(far.getorganslot(ORGAN_SLOT_LUNGS)?.damage, 0, "A distant blast hurt the lungs.")
+	near.ex_act(EXPLODE_HEAVY)
+	TEST_ASSERT(near.getorganslot(ORGAN_SLOT_LUNGS)?.damage > 0, "A close blast left the lungs untouched.")
+	TEST_ASSERT(near.getorganslot(ORGAN_SLOT_BRAIN)?.damage > 0, "A close blast left the brain untouched.")
+	TEST_ASSERT(near.getorganslot(ORGAN_SLOT_EYES)?.damage > 0, "A close blast left the eyes untouched.")

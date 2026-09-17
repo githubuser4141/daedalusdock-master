@@ -5323,6 +5323,7 @@
 #include "mojave\code\modules\mob\living\carbon\carbon_defines.dm"
 #include "mojave\code\modules\mob\living\carbon\carbon_examine.dm"
 #include "mojave\code\modules\mob\living\carbon\pain_debilitation.dm"
+#include "mojave\code\modules\mob\living\carbon\human\blast_injury.dm"
 #include "mojave\code\modules\mob\living\carbon\human\bullet_penetration.dm"
 #include "mojave\code\modules\mob\living\carbon\human\dummy.dm"
 #include "mojave\code\modules\mob\living\carbon\human\human.dm"
