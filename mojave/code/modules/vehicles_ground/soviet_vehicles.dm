@@ -20,6 +20,7 @@
 	roof_damaged_icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96_damaged.dmi'
 	segment_type = /obj/structure/ms13_vehicle_frame/civ96
 	hull_color = "#4a5243"
+	explosion_block = 2
 	/// Art prefix in civ_hulls96.dmi.
 	var/art_prefix
 	/// Tile names, front row first and left to right. Floor and roof art are "[art_prefix]_frame_steel_[tile]"
@@ -457,6 +458,7 @@
 	hull_color = "#3d5931"
 	art_prefix = "t34"
 	plating_type = /obj/structure/window/ms13_vehicle_wall/solid/civ96/tank
+	explosion_block = 4
 	tile_rows = list(
 		list("front_left", "front_middle", "front_right"),
 		list("middle_front_left", "middle_front", "middle_front_right"),
@@ -549,6 +551,7 @@
 	vehicle_controller_type = /datum/ms13_ground_vehicle/is3
 	art_prefix = "is3"
 	plating_type = /obj/structure/window/ms13_vehicle_wall/solid/civ96/tank
+	explosion_block = 4
 	tile_rows = list(
 		list("front_left", "front_middle", "front_right"),
 		list("middle_front_left", "middle_front", "middle_front_right"),

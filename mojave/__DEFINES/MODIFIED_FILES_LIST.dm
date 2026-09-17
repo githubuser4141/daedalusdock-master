@@ -86,6 +86,7 @@ code/modules/unit_tests/human_injury_ms13.dm,
 code/datums/elements/item_scaling.dm,
 code/__HELPERS/icons.dm,
 code/modules/admin/verbs/selectequipment.dm,
+code/controllers/subsystem/explosions.dm,
 
 
 */

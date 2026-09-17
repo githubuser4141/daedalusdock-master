@@ -232,6 +232,8 @@ SUBSYSTEM_DEF(explosions)
 	if(try_cancel_explosion(epicenter, arguments) & COMSIG_CANCEL_EXPLOSION)
 		return COMSIG_CANCEL_EXPLOSION
 
+	// MOJAVE EDIT: a blast inside a vehicle's cabin skips that vehicle's hull (vehicle_underside.dm).
+	var/datum/ms13_ground_vehicle/exploding_cabin = ms13_exploding_cabin(epicenter)
 
 	epicenter = get_turf(epicenter)
 	if(!epicenter)
@@ -317,7 +319,7 @@ SUBSYSTEM_DEF(explosions)
 
 	var/turf_tally = 0
 	var/movable_tally = 0
-	perform_explosion(epicenter, act_turfs, heavy_power, dev_power, flame_power, &turf_tally, &movable_tally)
+	perform_explosion(epicenter, act_turfs, heavy_power, dev_power, flame_power, &turf_tally, &movable_tally, exploding_cabin)
 
 	var/took = (REALTIMEOFDAY - time) / 10
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_EXPLOSION, \
@@ -521,7 +523,7 @@ SUBSYSTEM_DEF(explosions)
 		else
 			L.flicker(pick(1, 3))
 
-/datum/controller/subsystem/explosions/proc/perform_explosion(epicenter, list/act_turfs, heavy_power, dev_power, flame_power, turf_tally_ptr, movable_tally_ptr)
+/datum/controller/subsystem/explosions/proc/perform_explosion(epicenter, list/act_turfs, heavy_power, dev_power, flame_power, turf_tally_ptr, movable_tally_ptr, datum/ms13_ground_vehicle/exploding_cabin)
 	var/turf_tally = 0
 	var/movable_tally = 0
 	for (var/turf/T as anything in act_turfs)
@@ -544,10 +546,22 @@ SUBSYSTEM_DEF(explosions)
 		if (T.simulated)
 			T.ex_act(severity)
 
+		// MOJAVE EDIT START: a vehicle's floor and hull take their share before a blast reaches its cabin.
+		var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(T)
+		var/cabin_power = turf_power
+		if(vehicle && vehicle != exploding_cabin)
+			cabin_power -= vehicle.blast_shielding(T, epicenter)
+		var/cabin_severity = cabin_power >= dev_power ? EXPLODE_DEVASTATE : cabin_power >= heavy_power ? EXPLODE_HEAVY : EXPLODE_LIGHT
+		// MOJAVE EDIT END
+
 		if (length(T.contents))
 			for (var/atom/movable/AM as anything in T)
 				if (AM.simulated)
-					EX_ACT(AM, severity)
+					if (cabin_power != turf_power && vehicle.is_sheltered(AM)) // MOJAVE EDIT
+						if (cabin_power > 0)
+							EX_ACT(AM, cabin_severity)
+					else
+						EX_ACT(AM, severity)
 					movable_tally++
 				CHECK_TICK
 
@@ -574,7 +588,7 @@ SUBSYSTEM_DEF(explosions)
 			continue
 
 		for(var/atom/movable/AM as anything in T)
-			if(QDELETED(AM) || AM.anchored || !AM.simulated)
+			if(QDELETED(AM) || AM.anchored || !AM.simulated || ms13_sheltered_in_vehicle(AM)) // MOJAVE EDIT: vehicles hold their crew in
 				CHECK_TICK
 				continue
 

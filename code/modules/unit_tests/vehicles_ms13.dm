@@ -501,3 +501,49 @@
 	TEST_ASSERT_EQUAL(vehicle.dir, right, "Steering the same way twice did not turn the vehicle.")
 	TEST_ASSERT_EQUAL(vehicle.drift, 0, "The drift was not cleared by a full turn.")
 	vehicle.stop_motion()
+
+/// What a vehicle drives over stays on the ground under it, and a blast from below has to get through the floor.
+/datum/unit_test/ms13_vehicle_underside
+	name = "VEHICLES: The Floor Separates The Cabin From The Ground"
+
+/datum/unit_test/ms13_vehicle_underside/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	var/obj/structure/ms13_vehicle_frame/back
+	for(var/obj/structure/ms13_vehicle_frame/candidate as anything in vehicle.frames)
+		if(candidate != front)
+			back = candidate
+
+	var/turf/ahead = get_step(front, EAST)
+	var/obj/item/wrench/debris = allocate(/obj/item/wrench)
+	debris.forceMove(ahead)
+	var/obj/item/crowbar/cargo = allocate(/obj/item/crowbar)
+	cargo.forceMove(get_turf(front))
+	TEST_ASSERT(vehicle.do_move(EAST, TRUE), "The jeep couldn't drive over a dropped wrench.")
+	TEST_ASSERT_EQUAL(debris.invisibility, INVISIBILITY_ABSTRACT, "A wrench the jeep drove onto showed up in the cabin.")
+	TEST_ASSERT_EQUAL(get_turf(cargo), get_turf(front), "Cargo in the cabin was left behind.")
+	TEST_ASSERT(vehicle.do_move(EAST, TRUE), "The jeep couldn't drive on.")
+	TEST_ASSERT_EQUAL(get_turf(debris), ahead, "The jeep carried off a wrench it drove over.")
+	TEST_ASSERT_EQUAL(debris.invisibility, 0, "A wrench stayed hidden after the jeep drove off it.")
+
+	// A mine the floor is far too thick for: it goes off under the jeep, but nobody inside is hurt.
+	var/mob/living/carbon/human/consistent/rider = allocate(/mob/living/carbon/human/consistent)
+	rider.forceMove(get_turf(front))
+	front.explosion_block = 10
+	var/obj/effect/mine/ms13/explosive/mine = new(get_step(front, WEST))
+	mine.armed = TRUE
+	TEST_ASSERT(vehicle.do_move(WEST, TRUE), "The jeep couldn't drive back.")
+	UNTIL(!SSexplosions.is_exploding())
+	TEST_ASSERT(QDELETED(mine), "Driving over an armed mine didn't set it off.")
+	TEST_ASSERT_EQUAL(rider.getorganslot(ORGAN_SLOT_LUNGS)?.damage, 0, "A mine hurt a rider through a floor far thicker than its blast.")
+
+	// A grenade going off in the cabin has no floor in the way.
+	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent)
+	passenger.forceMove(get_turf(back))
+	var/obj/item/crowbar/bomb = allocate(/obj/item/crowbar)
+	bomb.forceMove(get_turf(back))
+	TEST_ASSERT_EQUAL(ms13_exploding_cabin(bomb), vehicle, "Something lying in the cabin didn't count as inside it.")
+	explosion(bomb, 0, 1, 2)
+	UNTIL(!SSexplosions.is_exploding())
+	TEST_ASSERT(passenger.getorganslot(ORGAN_SLOT_LUNGS)?.damage > 0, "A blast inside the cabin was blocked by the floor.")

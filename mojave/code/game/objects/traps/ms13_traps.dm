@@ -67,7 +67,8 @@
 	var/datum/effect_system/spark_spread/s = new /datum/effect_system/spark_spread
 	s.set_up(3, 1, src)
 	s.start()
-	if(ismob(triggerer))
+	// A vehicle rolling over it sets it off too (vehicle_underside.dm).
+	if(ismob(triggerer) || istype(triggerer, /obj/structure/ms13_vehicle_frame))
 		mineEffect(triggerer)
 	triggered = TRUE
 	SEND_SIGNAL(src, COMSIG_MINE_TRIGGERED, triggerer)

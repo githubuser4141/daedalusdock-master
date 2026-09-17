@@ -348,13 +348,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// vehicle itself, tagged with which frame it was on - shared by do_move() and do_rotate() so both
 /// carry passengers along the same way.
 /datum/ms13_ground_vehicle/proc/get_manifest()
-	var/list/parts = get_all_parts()
 	. = list()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		for(var/atom/movable/passenger in frame.loc)
-			if(passenger in parts)
-				continue
-			.[passenger] = frame
+			if(is_aboard(passenger))
+				.[passenger] = frame
 
 /// Moves every frame, every wall, and everyone/everything currently aboard one tile in direction.
 /datum/ms13_ground_vehicle/proc/do_move(direction, bypass_cooldown = FALSE)
@@ -375,8 +373,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		part.forceMove(get_step(part, direction))
 	for(var/atom/movable/passenger as anything in manifest)
 		passenger.forceMove(get_step(passenger, direction))
+	update_underneath(manifest)
 	engine?.consume_fuel(fuel_per_tile)
 	alert_watchers()
+	crush_mines()
 	return TRUE
 
 /// Starts at low speed, accelerates while the driver holds the travel direction, and uses the
@@ -538,7 +538,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		passenger.forceMove(frame_dest[old_frame])
 		if(istype(passenger, /obj/structure/chair/ms13_vehicle_seat))
 			passenger.setDir(turn(passenger.dir, seat_turn))
+	update_underneath(manifest)
 	alert_watchers()
+	crush_mines()
 	return TRUE
 
 /// One cell of a vehicle's footprint - just a floor. Walls (vehicle_walls.dm) mounted on it, plus
@@ -551,6 +553,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	density = FALSE
 	anchored = TRUE
 	max_integrity = 200
+	/// The floor: blast power it strips before a blast from underneath reaches the cabin (vehicle_underside.dm).
+	explosion_block = 1
 	var/datum/ms13_ground_vehicle/vehicle
 	/// Concrete frames select a controller subtype containing their handling/impact configuration.
 	var/vehicle_controller_type = /datum/ms13_ground_vehicle
@@ -638,6 +642,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		vehicle.destroy_soundloops()
 	vehicle?.stop_motion()
 	vehicle?.frames -= src
+	vehicle?.uncover_exposed()
 	vehicle = null
 	return ..()
 
@@ -656,6 +661,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	segment.icon_state = floor_state
 	segment.roof.icon_state = roof_state
 	segment.hull_color = hull_color
+	segment.explosion_block = explosion_block
 	segment.color = hull_color
 	segment.roof.color = hull_color
 	segment.setDir(dir)

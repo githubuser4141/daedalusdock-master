@@ -112,6 +112,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	icon_state = "m113_frame_steel_front_left"
 	max_integrity = 800
+	explosion_block = 2
 	vehicle_controller_type = /datum/ms13_ground_vehicle/m113
 	roof_damaged_icon = null
 	roof_damage_color = "#8f7676"
