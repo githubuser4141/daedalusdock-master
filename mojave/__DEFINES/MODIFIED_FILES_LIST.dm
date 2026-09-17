@@ -87,6 +87,7 @@ code/datums/elements/item_scaling.dm,
 code/__HELPERS/icons.dm,
 code/modules/admin/verbs/selectequipment.dm,
 code/controllers/subsystem/explosions.dm,
+code/modules/unit_tests/house_power_ms13.dm,
 
 
 */

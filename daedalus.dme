@@ -5342,6 +5342,7 @@
 #include "mojave\code\modules\mob\robots\trader.dm"
 #include "mojave\code\modules\mob\robots\vendortrons.dm"
 #include "mojave\code\modules\power\apc_ms13.dm"
+#include "mojave\code\modules\power\house_power.dm"
 #include "mojave\code\modules\power_armor_remote\control_computer.dm"
 #include "mojave\code\modules\power_armor_remote\pa_antenna.dm"
 #include "mojave\code\modules\power_armor_remote\pa_module_remote.dm"

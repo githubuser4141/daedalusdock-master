@@ -12,6 +12,8 @@
 	req_access = null
 	ms13_flags_1 = LOCKABLE_1
 	can_have_lock = TRUE
+	/// Runs off pre-war grid power that somehow still works: powered with nothing wired to it.
+	var/always_powered = FALSE
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 
@@ -65,10 +67,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 /// Is real current currently reaching this box? Real wiring by default - fed by whatever's
 /// add_avail()-ing onto the powernet its terminal is connected to (a fusion_generator, normally).
 /obj/machinery/power/apc/ms13/proc/has_incoming_power()
-	return !!avail(0)
+	return always_powered || !!avail(0)
 
-/// A fusebox with nothing wired to it at all - always has power, for a house that should just work
-/// with no generator or cabling to place. Mirrors treating "no generator" as "plugged into pre-war
-/// grid power that still happens to work."
-/obj/machinery/power/apc/ms13/always_on/has_incoming_power()
-	return TRUE
+/// A fusebox that just works, with no generator or cabling.
+/obj/machinery/power/apc/ms13/always_on
+	always_powered = TRUE

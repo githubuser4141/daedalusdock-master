@@ -129,6 +129,7 @@
 #include "drag_dismember_ms13.dm"
 #include "human_injury_ms13.dm"
 #include "hollow_storage_ms13.dm"
+#include "house_power_ms13.dm"
 #include "dummy_spawn.dm"
 #include "dynamic_ruleset_sanity.dm"
 #include "egg_glands.dm"

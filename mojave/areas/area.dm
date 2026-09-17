@@ -15,8 +15,11 @@
 	ambientsounds = GENERIC_AMBIENCE // To Do, Make actual Ambience and Seperate Music Component - Scar 2022
 	flags_1 = NONE
 	var/dissipation_rate = 1 // higher numbers = quicker dissipation, 0.05 is neutral //default indoor rate 2 is outdoors//generic
+	/// Whether buildings here get a random power setup at round start (house_power.dm).
+	var/house_power = TRUE
 
 /area/ms13/admeme
+	house_power = FALSE
 	icon_state = "secret"
 	requires_power = FALSE
 
@@ -39,6 +42,7 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/powerplant
+	house_power = FALSE
 	name = "Power Plant"
 	icon_state = "powerplant"
 	atmosphere_sound = INDUSTRIAL_ATMOSPHERE
@@ -53,6 +57,7 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/army_base
+	house_power = FALSE
 	name = "Army Base"
 	icon_state = "army_base"
 
@@ -129,6 +134,7 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/snowcrest/republic
+	house_power = FALSE
 	name = "Snowcrest NCR building"
 	icon_state = "snowcrest_ncr"
 	atmosphere_sound = INDUSTRIAL_ATMOSPHERE
@@ -138,6 +144,7 @@
 // Generic Underground Areas //
 
 /area/ms13/underground
+	house_power = FALSE
 	requires_power = FALSE
 	outdoors = FALSE
 	atmosphere_sound = CAVE_ATMOSPHERE
@@ -223,6 +230,7 @@
 // Mammoth Areas //
 
 /area/ms13/ncr
+	house_power = FALSE
 	name = "NCR Mainbase"
 	icon_state = "NCR"
 	requires_power = FALSE
@@ -240,6 +248,7 @@
 	icon_state = "brotherhood"
 
 /area/ms13/raiders
+	house_power = FALSE
 	name = "Raider stronghold"
 	icon_state = "raiders"
 	requires_power = FALSE
@@ -252,6 +261,7 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/tribal_abandoned
+	house_power = FALSE
 	name = "abandoned Tribal building"
 	icon_state = "town"
 	atmosphere_sound = BUILDING_ATMOSPHERE
@@ -276,6 +286,7 @@
 	flags_1 = NONE
 
 /area/ms13/legioncamp
+	house_power = FALSE
 	name = "Legion Camp"
 	icon_state = "legioncamp"
 
@@ -289,6 +300,7 @@
 
 
 /area/ms13/drylanders
+	house_power = FALSE
 	name = "Drylander Camp"
 	icon_state = "drylanders"
 
@@ -301,6 +313,7 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/goldman
+	house_power = FALSE
 	name = "Goldman Outpost"
 	icon_state = "goldman_outpost"
 	requires_power = FALSE
@@ -318,6 +331,7 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /area/ms13/water_baron
+	house_power = FALSE
 	name = "The Barony"
 	icon_state = "barony"
 	ambientsounds = GENERIC_AMBIENCE
@@ -414,3 +428,19 @@
 	outdoors = FALSE
 	atmosphere_sound = CAVE_ATMOSPHERE
 	area_lighting = AREA_LIGHTING_DYNAMIC
+
+/**
+ * Which power setup a building here gets at round start: "working", "off", "broken", "box_only", "none", or null
+ * to leave it alone entirely. Faction bases and dungeons can override this with their own logic.
+ */
+/area/ms13/proc/house_power_outcome(list/building)
+	if(!house_power)
+		return null
+	return pick_weight(list("working" = 30, "off" = 20, "broken" = 15, "box_only" = 20, "none" = 15))
+
+// Paint these over buildings that should keep whatever power they're mapped with.
+/area/ms13/no_house_power
+	house_power = FALSE
+
+/area/ms13/town/no_house_power
+	house_power = FALSE
