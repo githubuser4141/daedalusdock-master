@@ -162,5 +162,7 @@
 	for(var/item_type in stash)
 		for(var/i in 1 to stash[item_type])
 			if(prob(effectiveness))
-				new item_type(parent)
+				var/atom/movable/unpacked_item = new item_type(parent)
+				var/datum/component/ms13_livestock/livestock = parent.GetComponent(/datum/component/ms13_livestock)
+				livestock?.apply_to_product(unpacked_item)
 	stash = null

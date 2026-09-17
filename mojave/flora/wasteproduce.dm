@@ -8,30 +8,30 @@
 	// equivalent starting value.
 	base_potency = 40
 	growthstages = 5
+	force_single_harvest = TRUE
 	var/growing_color = ""
 	var/harvest_icon = 1
 	var/wholeiconcolor = TRUE
 	// The type of nutrient the plant consumes: 'N', 'P', or 'K'
 	var/nutrient_type
 
+/datum/plant/ms13/New(empty)
+	// The imported MS crop data used "harvest amount" as yield. DD split that old stat into yield and repeat harvests.
+	base_harvest_yield = base_harvest_amt
+	base_harvest_amt = 1
+	return ..()
+
 /obj/item/seeds/ms13
 	icon = 'mojave/icons/hydroponics/seeds.dmi'
 	icon_state = "seed"
 	w_class = WEIGHT_CLASS_TINY
-	var/growing_color = ""
-	var/harvest_icon = 1
-	var/wholeiconcolor = TRUE
-	var/nutrient_type
 	var/lifespan = INFINITY
 
 /obj/item/seeds/ms13/examine(mob/user)
 	. = ..()
-	if(nutrient_type == "N")
-		. += span_info("Required Nutrient: N")
-	if(nutrient_type == "P")
-		. += span_info("Required Nutrient: P")
-	if(nutrient_type == "K")
-		. += span_info("Required Nutrient: K")
+	var/datum/plant/ms13/ms_plant = plant_datum
+	if(istype(ms_plant) && ms_plant.nutrient_type)
+		. += span_info("Required Nutrient: [ms_plant.nutrient_type]")
 
 /obj/item/food/grown/ms13
 	icon = 'mojave/icons/hydroponics/harvest/harvest_world.dmi'

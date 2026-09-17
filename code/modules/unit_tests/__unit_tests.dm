@@ -134,6 +134,7 @@
 #include "dynamic_ruleset_sanity.dm"
 #include "egg_glands.dm"
 #include "emoting.dm"
+#include "farming_ms13.dm"
 #include "food_edibility_check.dm"
 #include "get_turf_pixel.dm"
 #include "grabbing.dm"

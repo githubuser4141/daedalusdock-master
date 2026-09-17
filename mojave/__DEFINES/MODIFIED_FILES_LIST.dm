@@ -88,6 +88,7 @@ code/__HELPERS/icons.dm,
 code/modules/admin/verbs/selectequipment.dm,
 code/controllers/subsystem/explosions.dm,
 code/modules/unit_tests/house_power_ms13.dm,
+code/modules/unit_tests/farming_ms13.dm,
 
 
 */

@@ -173,6 +173,8 @@
 
 /mob/living/simple_animal/ms13/attackby(obj/item/O, mob/user, params)
 	. = ..()
+	if(.)
+		return
 	if(O == /obj/item/melee/baton)
 		Stun(70 -  melee_damage_upper)
 	if(is_type_in_list(O, food_type))
@@ -576,6 +578,8 @@
 
 /mob/living/simple_animal/hostile/retaliate/ms13/attackby(obj/item/O, mob/user, params)
 	. = ..()
+	if(.)
+		return
 	if(O == /obj/item/melee/baton)
 		Stun(70 -  melee_damage_upper)
 	if(is_type_in_list(O, food_type))

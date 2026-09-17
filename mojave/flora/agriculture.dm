@@ -26,10 +26,6 @@
 	var/nutridrain = 50
 	///The maximum nutrient reagent container size of the tray.
 	var/maxnutri = 5000
-	///Nutriment's effect on base_harvest_amt
-	var/base_harvest_amtmod = 1
-	///Nutriment's effect on mutations
-	var/mutmod = 1
 	///Toxicity in the tray?
 	var/toxic = 0
 	///Current age
@@ -72,12 +68,7 @@
 	potlevel = maxnutri
 	. = ..()
 
-// Need to either remove or edit this screentip below eventually, perhaps when agri is more fleshed out.
 	var/static/list/hovering_item_typechecks = list(
-		/obj/item/plant_analyzer = list(
-			SCREENTIP_CONTEXT_LMB = "Scan tray stats",
-			SCREENTIP_CONTEXT_RMB = "Scan tray chemicals"
-		),
 		/obj/item/shovel/ms13/spade = list(
 			SCREENTIP_CONTEXT_LMB = "Clear tray",
 		),
@@ -97,7 +88,7 @@
 
 	// The only option is to plant a new seed.
 	if(!myseed)
-		if(istype(held_item, /obj/item/seeds))
+		if(istype(held_item, /obj/item/seeds/ms13))
 			context[SCREENTIP_CONTEXT_LMB] = "Plant seed"
 			return CONTEXTUAL_SCREENTIP_SET
 		return NONE
@@ -131,7 +122,7 @@
 	// Aand if a reagent container has water or plant fertilizer in it, we can use it on the plant.
 	if(is_reagent_container(held_item) && length(held_item.reagents.reagent_list))
 		var/datum/reagent/most_common_reagent = held_item.reagents.get_master_reagent()
-		context[SCREENTIP_CONTEXT_LMB] = "[istype(most_common_reagent, /datum/reagent/water) ? "Water" : "Feed"] plant"
+		context[SCREENTIP_CONTEXT_LMB] = "[is_water_reagent(most_common_reagent) ? "Water" : "Feed"] plant"
 		return CONTEXTUAL_SCREENTIP_SET
 
 	return NONE
@@ -165,6 +156,7 @@
 		adjust_potlevel(rand(8, 18))
 
 		if(myseed && plant_status != HYDROTRAY_PLANT_DEAD)
+			var/datum/plant/ms13/ms_plant = myseed.plant_datum
 			// Advance age
 			age++
 			// AI EDIT: myseed's stats live on its plant_datum (a /datum/plant), not on the /obj/item/seeds itself -
@@ -180,13 +172,13 @@
 			var/drained_nutrient
 			// Looks ugly but it serves its purpose for now. Might expand upon later.
 			if(plant_status != HYDROTRAY_PLANT_HARVESTABLE)
-				if(myseed.nutrient_type == "N")
+				if(ms_plant.nutrient_type == "N")
 					adjust_nitrolevel(-nutridrain)
 					drained_nutrient = nitrolevel
-				if(myseed.nutrient_type == "P")
+				if(ms_plant.nutrient_type == "P")
 					adjust_phoslevel(-nutridrain)
 					drained_nutrient = phoslevel
-				if(myseed.nutrient_type == "K")
+				if(ms_plant.nutrient_type == "K")
 					adjust_potlevel(-nutridrain)
 					drained_nutrient = potlevel
 
@@ -251,7 +243,7 @@
 
 			// Harvest code
 			if(age > myseed.plant_datum.base_production && (age - lastproduce) > myseed.plant_datum.base_production && plant_status == HYDROTRAY_PLANT_GROWING)
-				if(myseed && myseed.plant_datum.base_harvest_amt != -1) // Unharvestable shouldn't be harvested
+				if(myseed && myseed.plant_datum.base_harvest_yield != -1) // Unharvestable shouldn't be harvested
 					set_plant_status(HYDROTRAY_PLANT_HARVESTABLE)
 				else
 					lastproduce = age
@@ -300,7 +292,7 @@
 	return plant_overlay
 
 ///Sets a new value for the myseed variable, which is the seed of the plant that's growing inside the tray.
-/obj/machinery/ms13/agriculture/proc/set_seed(obj/item/seeds/new_seed, delete_old_seed = TRUE)
+/obj/machinery/ms13/agriculture/proc/set_seed(obj/item/seeds/ms13/new_seed, delete_old_seed = TRUE)
 	var/old_seed = myseed
 	myseed = new_seed
 	if(old_seed && delete_old_seed)
@@ -349,14 +341,44 @@
 /obj/machinery/ms13/agriculture/proc/set_waterlevel(new_waterlevel, update_icon = TRUE)
 	if(waterlevel == new_waterlevel)
 		return
+	var/difference = new_waterlevel - waterlevel
 	SEND_SIGNAL(src, COMSIG_HYDROTRAY_SET_WATERLEVEL, new_waterlevel)
 	waterlevel = new_waterlevel
 	if(update_icon)
 		update_appearance()
 
-	var/difference = new_waterlevel - waterlevel
 	if(difference > 0)
 		adjust_toxic(-round(difference/4))//Toxicity dilutation code. The more water you put in, the lesser the toxin concentration.
+
+/obj/machinery/ms13/agriculture/proc/is_water_reagent(datum/reagent/reagent)
+	return istype(reagent, /datum/reagent/water) || istype(reagent, /datum/reagent/consumable/ms13/water)
+
+/// Transfers one pour without counting water twice. Water fills the tray meter; everything else enters its reagent holder.
+/obj/machinery/ms13/agriculture/proc/receive_reagents(datum/reagents/source, amount)
+	if(!source?.total_volume || amount <= 0)
+		return FALSE
+
+	var/transfer_fraction = min(amount, source.total_volume) / source.total_volume
+	var/water_to_add = 0
+	var/transferred_any = FALSE
+	var/list/source_reagents = source.reagent_list.Copy()
+	for(var/datum/reagent/reagent as anything in source_reagents)
+		var/reagent_amount = reagent.volume * transfer_fraction
+		if(is_water_reagent(reagent))
+			reagent_amount = min(reagent_amount, maxwater - waterlevel - water_to_add)
+			if(reagent_amount > 0)
+				source.remove_reagent(reagent.type, reagent_amount)
+				water_to_add += reagent_amount
+				transferred_any = TRUE
+		else
+			reagent_amount = min(reagent_amount, reagents.maximum_volume - reagents.total_volume)
+			if(reagent_amount > 0)
+				source.trans_id_to(reagents, reagent, reagent_amount)
+				transferred_any = TRUE
+
+	if(water_to_add)
+		adjust_waterlevel(water_to_add)
+	return transferred_any
 
 /obj/machinery/ms13/agriculture/proc/set_plant_health(new_plant_health, update_icon = TRUE, forced = FALSE)
 	if(plant_health == new_plant_health || ((!myseed || plant_status == HYDROTRAY_PLANT_DEAD) && !forced))
@@ -472,51 +494,26 @@
 			to_chat(user, span_warning("[reagent_source] is empty!"))
 			return 1
 
-		if(reagents.total_volume >= reagents.maximum_volume && (!reagent_source.reagents.has_reagent(/datum/reagent/consumable/ms13/water) || !reagent_source.reagents.has_reagent(/datum/reagent/consumable/ms13/water/unfiltered) || !reagent_source.reagents.has_reagent(/datum/reagent/consumable/ms13/water/dirty)))
-			to_chat(user, span_notice("[src] is full."))
-			return
-
-		var/list/trays = list(src)//makes the list just this in cases of syringes and compost etc
 		var/target = myseed ? myseed.plant_datum.name : src
-		var/transfer_amount
 
 		if(IS_EDIBLE(reagent_source) || istype(reagent_source, /obj/item/reagent_containers/pill))
 			return
-		else
-			transfer_amount = reagent_source.amount_per_transfer_from_this
-			if(istype(reagent_source, /obj/item/reagent_containers/syringe/))
-				var/obj/item/reagent_containers/syringe/syr = reagent_source
-				visible_message(span_notice("[user] injects [target] with [syr]."))
-			// Beakers, bottles, buckets, etc.
-			if(reagent_source.is_drainable())
-				playsound(loc, 'sound/effects/slosh.ogg', 25, TRUE)
 
-		for(var/obj/machinery/ms13/agriculture/H in trays)
-			//This looks awful, a result of having 3 water types, all are applicable for watering crops
-			if(reagent_source.reagents.has_reagent(/datum/reagent/consumable/ms13/water, 1))
-				var/water_amt = reagent_source.reagents.get_reagent_amount(/datum/reagent/consumable/ms13/water) * transfer_amount / reagent_source.reagents.total_volume
-				H.adjust_waterlevel(round(water_amt))
-				reagent_source.reagents.remove_reagent(/datum/reagent/consumable/ms13/water, water_amt)
-			if(reagent_source.reagents.has_reagent(/datum/reagent/consumable/ms13/water/unfiltered, 1))
-				var/water_amt = reagent_source.reagents.get_reagent_amount(/datum/reagent/consumable/ms13/water/unfiltered) * transfer_amount / reagent_source.reagents.total_volume
-				H.adjust_waterlevel(round(water_amt))
-				reagent_source.reagents.remove_reagent(/datum/reagent/consumable/ms13/water/unfiltered, water_amt)
-			if(reagent_source.reagents.has_reagent(/datum/reagent/consumable/ms13/water/dirty, 1))
-				var/water_amt = reagent_source.reagents.get_reagent_amount(/datum/reagent/consumable/ms13/water/dirty) * transfer_amount / reagent_source.reagents.total_volume
-				H.adjust_waterlevel(round(water_amt))
-				reagent_source.reagents.remove_reagent(/datum/reagent/consumable/ms13/water/dirty, water_amt)
-			reagent_source.reagents.trans_to(H.reagents, transfer_amount, transfered_by = user)
-			lastuser = WEAKREF(user)
-			if(IS_EDIBLE(reagent_source) || istype(reagent_source, /obj/item/reagent_containers/pill))
-				qdel(reagent_source)
-				H.update_appearance()
-				return 1
-			H.update_appearance()
-		if(reagent_source) // If the source wasn't composted and destroyed
-			reagent_source.update_appearance()
+		if(istype(reagent_source, /obj/item/reagent_containers/syringe/))
+			var/obj/item/reagent_containers/syringe/syr = reagent_source
+			visible_message(span_notice("[user] injects [target] with [syr]."))
+		else if(reagent_source.is_drainable())
+			playsound(loc, 'sound/effects/slosh.ogg', 25, TRUE)
+
+		if(!receive_reagents(reagent_source.reagents, reagent_source.amount_per_transfer_from_this))
+			to_chat(user, span_notice("[src] is full."))
+			return
+		lastuser = WEAKREF(user)
+		update_appearance()
+		reagent_source.update_appearance()
 		return 1
 
-	else if(istype(O, /obj/item/seeds) && !istype(O, /obj/item/seeds/sample))
+	else if(istype(O, /obj/item/seeds/ms13))
 		if(!myseed)
 //			if(istype(O, /obj/item/seeds/kudzu))
 //				investigate_log("had Kudzu planted in it by [key_name(user)] at [AREACOORD(src)].", INVESTIGATE_BOTANY)
@@ -675,10 +672,6 @@
 		bonus_yield_prob += 20
 		if(prob(bonus_yield_prob))
 			to_chat(user, span_notice("The [growing.name] glistens."))
-		else
-			growing.base_harvest_amt--
-	else
-		growing.base_harvest_amt--
 
 	update_tray(user, harvest_yield)
 	return TRUE
@@ -832,4 +825,3 @@
 /obj/item/ms13/fertilizer/Initialize(mapload)
 	. = ..()
 	AddElement(/datum/element/item_scaling, 0.7, 1)
-

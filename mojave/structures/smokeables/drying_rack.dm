@@ -101,42 +101,46 @@ TYPEINFO_DEF(/obj/structure/ms13/drying_rack)
 	if(!has_rope)
 		to_chat(user, "<span class='warning'>You need to attach some rope to hang things here!</span>")
 		return
-	if(contents.len == 9)
+	if(contents.len >= 9)
 		to_chat(user, "<span class='warning'>The [name] is at maximum space!</span>")
 		return
-	if(istype(I, /obj/item/food/grown/ms13) || istype(I, /obj/item/ms13/dried))
+	if(istype(I, /obj/item/food/grown/ms13))
 		var/obj/item/food/grown/ms13/place_dry = I
 		if(place_dry.can_dry)
-			to_chat(user, "<span class='notice'>You hang [place_dry.name] to dry on the [name].</span>")
-			place_check(I)
-			drying_check(I)
-			playsound(user, 'mojave/sound/ms13effects/smokeables/rackattach.ogg', 100)
 			if(!user.transferItemToLoc(I, src))
 				return
+			to_chat(user, "<span class='notice'>You hang [place_dry.name] to dry on the [name].</span>")
+			place_check(I)
+			drying_check()
+			playsound(user, 'mojave/sound/ms13effects/smokeables/rackattach.ogg', 100)
+			return
 		else
 			to_chat(user, "<span class='warning'>You cant think of a reason to hang [place_dry.name] to dry.</span>")
-	. = ..()
+			return
+	return ..()
 
-/obj/structure/ms13/drying_rack/proc/drying_check(obj/item/I)
-	var/obj/item/food/grown/ms13/place_dry = I
+/obj/structure/ms13/drying_rack/proc/drying_check()
 	if(indoors)
 		return
-	if(contents.len && place_dry.can_dry)
+	if(locate(/obj/item/food/grown/ms13) in contents)
 		if(!is_processing)
 			is_processing = TRUE
-			START_PROCESSING(SSobj,src)
+			START_PROCESSING(SSobj, src)
 		return
 
 /obj/structure/ms13/drying_rack/proc/drying_check_after()
-	if(contents == list(/obj/item/restraints/handcuffs/ms13/rope))
+	if(!(locate(/obj/item/food/grown/ms13) in contents))
 		is_processing = FALSE
-		STOP_PROCESSING(SSobj,src)
+		STOP_PROCESSING(SSobj, src)
 		return
 
 /obj/structure/ms13/drying_rack/process()
 	var/turf/dry_turf = get_turf(src)
 	if(indoors)
-		STOP_PROCESSING(SSobj,src)
+		is_processing = FALSE
+		STOP_PROCESSING(SSobj, src)
+		return
+	if(!dry_turf?.outdoor_effect)
 		return
 	if(dry_turf.outdoor_effect.state == SKY_BLOCKED) //so it has to be outside
 		return
@@ -145,9 +149,9 @@ TYPEINFO_DEF(/obj/structure/ms13/drying_rack)
 	if(weather) //weather stops the drying process (gotta see the clear sun), could make it so snow and rain ruins the process, but then id have to add like a fucking tarp or something you throw over it and that is just TOO much soul for this kind of pr
 		return
 	for(var/obj/item/food/grown/ms13/A in contents)
+		A.time_drying++
 		if(A.time_drying >= A.dry_time)
 			A.dry(src)
-		A.time_drying ++
 
 /obj/structure/ms13/drying_rack/attack_hand(mob/user, list/modifiers)
 	. = ..()
