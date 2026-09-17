@@ -33,19 +33,16 @@
 	if(!isatom(target))
 		return ELEMENT_INCOMPATIBLE
 
-	// Initial scaling set to overworld_scaling when item is spawned.
-	scale(target, overworld_scaling)
-
 	src.overworld_scaling = overworld_scaling
 	src.storage_scaling = storage_scaling
+	scale(target, isturf(target.loc) ? overworld_scaling : storage_scaling)
 
 	// Make sure overlays also inherit the scaling.
 	ADD_KEEP_TOGETHER(target, ITEM_SCALING_TRAIT)
 
-	// Object scaled when dropped/thrown OR when exiting a storage object.
-	RegisterSignal(target, list(COMSIG_ITEM_UNEQUIPPED, COMSIG_ATOM_EXITED), PROC_REF(scale_overworld))
-	// Object scaled when placed in an inventory slot OR when entering a storage component.
-	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_ATOM_ENTERED), PROC_REF(scale_storage))
+	// MOJAVE EDIT: ATOM_ENTERED/EXITED go to the container, not the item, so moving between the floor and a bag
+	// or body never rescaled it. Rescale whenever the item moves on or off a turf instead.
+	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(on_moved))
 
 /**
  * Detach proc for the item_scaling element.
@@ -55,12 +52,7 @@
  * * target - Datum which the element is attached to.
  */
 /datum/element/item_scaling/Detach(atom/target)
-	UnregisterSignal(target, list(
-		COMSIG_ITEM_PICKUP,
-		COMSIG_ITEM_UNEQUIPPED,
-		COMSIG_ATOM_ENTERED,
-		COMSIG_ATOM_EXITED,
-	))
+	UnregisterSignal(target, COMSIG_MOVABLE_MOVED)
 
 	REMOVE_KEEP_TOGETHER(target, ITEM_SCALING_TRAIT)
 
@@ -81,28 +73,9 @@
 	var/matrix/M = matrix()
 	scalable_object.transform = M.Scale(scaling)
 
-/**
- * Signal handler for COMSIG_ITEM_UNEQUIPPED or COMSIG_ATOM_EXITED
- *
- * Longer detailed paragraph about the proc
- * including any relevant detail
- * Arguments:
- * * source - Source datum which sent the signal.
- */
-/datum/element/item_scaling/proc/scale_overworld(datum/source)
+/// Overworld size on a turf, storage size anywhere else (hands, bags, bodies).
+/datum/element/item_scaling/proc/on_moved(atom/movable/source, atom/old_loc)
 	SIGNAL_HANDLER
 
-	scale(source, overworld_scaling)
-
-/**
- * Signal handler for COMSIG_ITEM_EQUIPPED or COMSIG_ATOM_ENTERED.
- *
- * Longer detailed paragraph about the proc
- * including any relevant detail
- * Arguments:
- * * source - Source datum which sent the signal.
- */
-/datum/element/item_scaling/proc/scale_storage(datum/source)
-	SIGNAL_HANDLER
-
-	scale(source, storage_scaling)
+	if(isturf(source.loc) != isturf(old_loc))
+		scale(source, isturf(source.loc) ? overworld_scaling : storage_scaling)

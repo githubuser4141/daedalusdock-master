@@ -32,6 +32,9 @@
 	var/datum/outfit/selected_outfit = /datum/outfit
 	//serializable string for the UI to keep track of which outfit is selected
 	var/selected_identifier = "/datum/outfit"
+	// MOJAVE EDIT: flattening the preview is slow, so only redo it when the outfit changes.
+	var/preview_outfit
+	var/preview_icon64
 
 /datum/select_equipment/New(_user, mob/target)
 	user = CLIENT_FROM_VAR(_user)
@@ -109,10 +112,13 @@
 	if(!dummy_key)
 		init_dummy()
 
-	var/icon/dummysprite = get_flat_human_icon(null,
-		dummy_key = dummy_key,
-		outfit_override = selected_outfit)
-	data["icon64"] = icon2base64(dummysprite)
+	if(!preview_icon64 || preview_outfit != selected_outfit)
+		var/icon/dummysprite = get_flat_human_icon(null,
+			dummy_key = dummy_key,
+			outfit_override = selected_outfit)
+		preview_icon64 = icon2base64(dummysprite)
+		preview_outfit = selected_outfit
+	data["icon64"] = preview_icon64
 	data["name"] = target_mob
 
 	var/datum/preferences/prefs = user?.client?.prefs

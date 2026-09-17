@@ -12,6 +12,8 @@ TYPEINFO_DEF(/obj/item/organ)
 
 /obj/item/organ/Initialize(mapload)
 	. = ..()
+	// Organ sprites are drawn at inventory size, far too big for something lying on the floor.
+	AddElement(/datum/element/item_scaling, 0.5, 1)
 	if((organ_flags & ORGAN_EDIBLE) && grilled_type)
 		AddComponent(/datum/component/grillable, grilled_type, rand(30 SECONDS, 90 SECONDS), TRUE, TRUE)
 		RegisterSignal(src, COMSIG_GRILL_COMPLETED, PROC_REF(on_grill_completed))

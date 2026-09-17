@@ -398,6 +398,17 @@ world
 
 ///
 /// Only the first argument is required.
+/// MOJAVE EDIT: icon_states() reads the whole file every call. Icon files never change at runtime, so cache them;
+/// generated /icon objects can change and are read fresh.
+/proc/icon_states_cached(icon_file)
+	var/static/list/states_by_file = list()
+	var/key = isfile(icon_file) ? "[icon_file]" : null
+	if(!key)
+		return icon_states(icon_file)
+	. = states_by_file[key]
+	if(!.)
+		. = states_by_file[key] = icon_states(icon_file)
+
 /proc/getFlatIcon(image/appearance, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE)
 	// Loop through the underlays, then overlays, sorting them into the layers list
 	#define PROCESS_OVERLAYS_OR_UNDERLAYS(flat, process, base_layer) \
@@ -448,7 +459,7 @@ world
 	var/render_icon = curicon
 
 	if (render_icon)
-		var/curstates = icon_states(curicon)
+		var/curstates = icon_states_cached(curicon) // MOJAVE EDIT
 		if(!(curstate in curstates))
 			if ("" in curstates)
 				curstate = ""
@@ -460,11 +471,17 @@ world
 	//Try to remove/optimize this section ASAP, CPU hog.
 	//Determines if there's directionals.
 	if(render_icon && curdir != SOUTH)
-		if (
-			!length(icon_states(icon(curicon, curstate, NORTH))) \
-			&& !length(icon_states(icon(curicon, curstate, EAST))) \
-			&& !length(icon_states(icon(curicon, curstate, WEST))) \
-		)
+		// MOJAVE EDIT: remember the answer per file and state.
+		var/static/list/south_only_states = list()
+		var/south_only_key = isfile(curicon) ? "[curicon]|[curstate]" : null
+		var/south_only = south_only_key ? south_only_states[south_only_key] : null
+		if(isnull(south_only))
+			south_only = !length(icon_states(icon(curicon, curstate, NORTH))) \
+				&& !length(icon_states(icon(curicon, curstate, EAST))) \
+				&& !length(icon_states(icon(curicon, curstate, WEST)))
+			if(south_only_key)
+				south_only_states[south_only_key] = south_only
+		if(south_only)
 			base_icon_dir = SOUTH
 
 	if(!base_icon_dir)

@@ -114,13 +114,8 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 		return FALSE
 	return ms13_icon_has_state(broken_icon, icon_state)
 
-/// Cached icon_states() lookup.
 /proc/ms13_icon_has_state(icon_file, state)
-	var/static/list/states_by_icon = list()
-	var/list/states = states_by_icon["[icon_file]"]
-	if(!states)
-		states = states_by_icon["[icon_file]"] = icon_states(icon_file)
-	return state in states
+	return state in icon_states_cached(icon_file)
 
 /obj/structure/window/ms13_vehicle_wall/proc/finish_mount()
 	return

@@ -83,6 +83,9 @@ code/modules/unit_tests/vehicles_civ96_ms13.dm,
 code/modules/unit_tests/drag_dismember_ms13.dm,
 code/modules/unit_tests/hollow_storage_ms13.dm,
 code/modules/unit_tests/human_injury_ms13.dm,
+code/datums/elements/item_scaling.dm,
+code/__HELPERS/icons.dm,
+code/modules/admin/verbs/selectequipment.dm,
 
 
 */

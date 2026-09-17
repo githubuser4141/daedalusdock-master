@@ -28,3 +28,20 @@
 		if(overlay.icon_state == state)
 			return TRUE
 	return FALSE
+
+/// A loose organ is drawn at half size on the floor and full size in hand or in a bag.
+/datum/unit_test/ms13_organ_world_scale/Run()
+	var/mob/living/carbon/human/consistent/surgeon = ALLOCATE_BOTTOM_LEFT()
+	var/obj/item/organ/heart/heart = ALLOCATE_BOTTOM_LEFT()
+	TEST_ASSERT_EQUAL(scale_of(heart), 0.5, "A heart on the floor wasn't drawn at half size.")
+	surgeon.put_in_hands(heart)
+	TEST_ASSERT_EQUAL(scale_of(heart), 1, "A held heart stayed shrunk.")
+	surgeon.dropItemToGround(heart)
+	TEST_ASSERT_EQUAL(scale_of(heart), 0.5, "A dropped heart wasn't shrunk again.")
+	var/obj/item/storage/box/box = ALLOCATE_BOTTOM_LEFT()
+	heart.forceMove(box)
+	TEST_ASSERT_EQUAL(scale_of(heart), 1, "A boxed heart stayed shrunk.")
+
+/datum/unit_test/ms13_organ_world_scale/proc/scale_of(atom/thing)
+	var/matrix/scale = thing.transform
+	return scale.a
