@@ -126,6 +126,7 @@
 #include "canreach.dm"
 #include "dcs_get_id_from_elements.dm"
 #include "designs.dm"
+#include "drag_dismember_ms13.dm"
 #include "dummy_spawn.dm"
 #include "dynamic_ruleset_sanity.dm"
 #include "egg_glands.dm"

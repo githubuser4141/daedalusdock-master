@@ -200,3 +200,22 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 	if(damagetype != BRUTE)
 		return null
 	return hit_part.get_bone_organ()
+
+/// Dragging someone over the ground (drag_damage() only runs for a grabbed, unbuckled body lying on a turf) can
+/// tear off an arm or leg that is already broken and mangled almost to nothing.
+/mob/living/carbon/human/drag_damage(turf/new_loc, turf/old_loc, direction)
+	. = ..()
+	for(var/obj/item/bodypart/limb as anything in bodyparts)
+		if(!(limb.body_zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)))
+			continue
+		if(!(limb.bodypart_flags & BP_BROKEN_BONES) || limb.get_damage() < limb.max_damage * MS13_DRAG_DISMEMBER_DAMAGE)
+			continue
+		if(!prob(MS13_DRAG_DISMEMBER_CHANCE))
+			continue
+		var/limb_name = limb.plaintext_zone
+		if(limb.dismember(DROPLIMB_BLUNT, silent = TRUE))
+			visible_message(
+				span_danger("[src]'s mangled [limb_name] tears away as [p_theyre()] dragged across the ground!"),
+				span_userdanger("Your mangled [limb_name] tears away as you're dragged across the ground!"),
+			)
+			return
