@@ -5,20 +5,23 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/c45)
 	name = ".45 bullet"
 	icon_state = "merehandgun_bullet"
 	damage = MAGNUM_DAMAGE
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_PISTOL
+	// A big round-nosed slug moving slowly: it hits flesh hard but does little to armor.
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SUBSONIC
+	bulletTipType = BULLET_ROUNDED
 	bullet_mass = 2
 
 /obj/projectile/bullet/ms13/c45/junk
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SLOWER
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SUBSONIC - BULLET_SPEED_SLOWER
 
 /obj/projectile/bullet/ms13/c45/fmj
 
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/c45/ap)
 	default_armor = AP_PISTOL
 /obj/projectile/bullet/ms13/c45/ap
+	bulletTipType = BULLET_SHARP
 
 /obj/projectile/bullet/ms13/c45/hv
-	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_SUBSONIC + BULLET_SPEED_PISTOL
 
 //.22
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/c22)

@@ -392,6 +392,9 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 #define BULLET_SPEED_INSANE -0.6
 #define BULLET_SPEED_RAILGUN -0.8
 
+/// Heavy, slow pistol rounds such as the .45 ACP.
+#define BULLET_SPEED_SUBSONIC 0.1
+
 #define BULLET_SPEED_SLOWED 0.1
 #define BULLET_SPEED_SNAIL 0.4
 
