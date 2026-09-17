@@ -124,9 +124,12 @@
 
 	return transfer_fraction
 
-/// The struck organ's share comes out of the limb's damage, never on top of it.
+/// The struck organ's share comes out of the limb's damage, never on top of it. An organ's bullet_damage_ratio
+/// scales that share: above 1 it eats more of the hit, below 1 more of it lands on the limb instead.
 /mob/living/carbon/human/divert_bullet_damage(obj/projectile/P)
-	return pending_bullet_organ ? P.damage * MS13_BULLET_ORGAN_SHARE : 0
+	if(!pending_bullet_organ)
+		return 0
+	return P.damage * clamp(MS13_BULLET_ORGAN_SHARE * pending_bullet_organ.bullet_damage_ratio, 0, 1)
 
 /// Armor that blunted the hit on the limb blunts it on the organ too.
 /mob/living/carbon/human/finish_bullet_hit(obj/projectile/P, diverted, landed)
