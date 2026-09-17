@@ -363,7 +363,12 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 /// strips this much penetration power (see get_penetration_power()) from a round crossing it. A round only
 /// gets through with what it has left over, so small slow rounds stop in a wall and big fast ones keep going.
 /// Rough guide: 5 armor stops nothing, 15 stops a .22, 40 (brick) stops pistol rounds up to a .45.
+/// Ratings over 100 are fine: armor never cuts the damage a barrier takes, bullet_damage_ratio does.
 #define MS13_BULLET_STOPPING_PER_ARMOR 1.75
+/// How fast a stopped round's damage to a barrier falls off as its power falls short of the barrier's
+/// stopping power: damage scales by (power / stopping) to this power. 2 = a round with half the power needed
+/// does a quarter of the damage.
+#define MS13_BULLET_FLATTEN_FALLOFF 2
 /// A barrier always takes at least this share of a round that passes through it.
 #define MS13_WALL_BULLET_TRANSFER_MIN 0.1
 /// Share of the damage a body keeps that goes into the struck organ rather than the limb as a whole.
@@ -431,15 +436,18 @@ TYPEINFO_DEF(/obj/projectile)
  * arrives; the round's own armor only says whether it holds together doing so (get_own_hardness_ratio()).
  */
 /obj/projectile/proc/get_penetration_power()
-	var/velocity = clamp(BULLET_SPEED_BASELINE / max(speed, 0.1), MS13_BULLET_VELOCITY_MIN, MS13_BULLET_VELOCITY_MAX)
-	return damage * velocity * get_own_hardness_ratio()
+	return damage * get_velocity() * get_own_hardness_ratio()
+
+/// How fast this round is going relative to BULLET_SPEED_BASELINE.
+/obj/projectile/proc/get_velocity()
+	return clamp(BULLET_SPEED_BASELINE / max(speed, 0.1), MS13_BULLET_VELOCITY_MIN, MS13_BULLET_VELOCITY_MAX)
 
 /*
  * Penetration, for everything a bullet can hit.
  *
  * Every hit goes through penetrating_hit() (called from process_hit() in projectile.dm). The target says what
- * share of the round it stops (get_bullet_transfer_fraction()); it takes that share times its
- * bullet_damage_ratio, and the round carries the rest on to whatever is behind it. Nothing here ever adds
+ * share of the round it stops (get_bullet_transfer_fraction()); it takes part of that share as damage
+ * (get_bullet_damage_share()), and the round carries the rest on to whatever is behind it. Nothing here ever adds
  * damage: across every target a round touches, it never deals more than it started with.
  */
 
@@ -450,12 +458,17 @@ TYPEINFO_DEF(/obj/projectile)
 	/// lost as noise, heat and vibration. Higher takes more damage: a skull or a log soaks it all up (1); a
 	/// reinforced wall or armor plate mostly shrugs it off (0.2).
 	var/bullet_damage_ratio = 1
+	/// Set while penetrating_hit() applies a bullet's damage. Armor already decided that amount, so neither
+	/// run_atom_armor() nor natural armor layers (natural_armor.dm) reduce it again.
+	var/tmp/resolving_bullet_hit = FALSE
 
 /mob/living
 	bullet_min_absorb = MS13_BULLET_TRANSFER_CONVERGENCE
-	/// Set while a bullet's damage is being applied. That damage was already split between tissue and limb, so
-	/// natural armor layers (natural_armor.dm) must not split it again.
-	var/tmp/resolving_bullet_hit = FALSE
+
+/atom/run_atom_armor(damage_amount, damage_type, damage_flag = NONE, attack_dir, armor_penetration = 0)
+	if(resolving_bullet_hit)
+		return damage_amount
+	return ..()
 
 /// Nothing gets through something that can't be broken.
 /turf/closed/indestructible
@@ -477,10 +490,23 @@ TYPEINFO_DEF(/obj/projectile)
 /// Penetration power this atom strips from P, from its armor against P's damage type.
 /atom/proc/get_bullet_stopping_power(obj/projectile/P)
 	var/datum/armor/armor = returnArmor()
-	return ms13_armor_stopping_power(armor ? armor.getRating(P.armor_flag) : 0)
+	return ms13_armor_stopping_power(armor ? armor.getRating(P.armor_flag) : 0, P)
 
-/proc/ms13_armor_stopping_power(rating)
-	return max(rating, 0) * MS13_BULLET_STOPPING_PER_ARMOR
+/**
+ * Penetration power an armor rating strips from P. Harder armor needs a faster round to dig in at all: the
+ * velocity needed climbs toward MS13_BULLET_VELOCITY_MAX, reaching half of it at the baseline rating (about 0.3
+ * at 5, 1.5 at 50, 2 at 100, 2.8 at 900; pistols move at ~1, rifles ~2). A slower round is resisted by the
+ * square of how far short it falls.
+ */
+/proc/ms13_armor_stopping_power(rating, obj/projectile/P)
+	rating = max(rating, 0)
+	. = rating * MS13_BULLET_STOPPING_PER_ARMOR
+	if(!P || !rating)
+		return
+	var/needed_velocity = MS13_BULLET_VELOCITY_MAX * rating / (rating + MS13_BULLET_HARDNESS_BASELINE)
+	var/velocity = P.get_velocity()
+	if(velocity < needed_velocity)
+		. *= (needed_velocity / velocity) ** 2
 
 /// Share (0-1) of P's damage this atom stops. The rest may carry on through it.
 /atom/proc/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
@@ -488,6 +514,19 @@ TYPEINFO_DEF(/obj/projectile)
 
 /proc/ms13_bullet_stop_fraction(stopping_power, min_absorb, obj/projectile/P)
 	return clamp(max(min_absorb, stopping_power / max(P.get_penetration_power(), 1)), 0, 1)
+
+/**
+ * Share (0-1) of what this atom stopped of P that it takes as damage. A round that fell short of getting
+ * through flattened against it, and did less the further short it fell.
+ */
+/atom/proc/get_bullet_damage_share(obj/projectile/P, stop_fraction)
+	. = clamp(bullet_damage_ratio, 0, 1)
+	if(stop_fraction >= 1)
+		. *= min(P.get_penetration_power() / max(get_bullet_stopping_power(P), 1), 1) ** MS13_BULLET_FLATTEN_FALLOFF
+
+/// A body takes whatever stops in it.
+/mob/living/get_bullet_damage_share(obj/projectile/P, stop_fraction)
+	return clamp(bullet_damage_ratio, 0, 1)
 
 /// Damage about to be applied to this atom by a bullet that should land somewhere else instead (an organ).
 /// Returns how much to take out of the hit; finish_bullet_hit() is told whether it landed.
@@ -508,17 +547,14 @@ TYPEINFO_DEF(/obj/projectile)
 	var/stop_fraction = target.get_bullet_transfer_fraction(src, def_zone)
 	if(original_damage * (1 - stop_fraction) < MS13_BULLET_OVERPEN_MIN_REMAINING)
 		stop_fraction = 1
-	damage = original_damage * stop_fraction * clamp(target.bullet_damage_ratio, 0, 1)
+	damage = original_damage * stop_fraction * target.get_bullet_damage_share(src, stop_fraction)
 	var/diverted = min(target.divert_bullet_damage(src), damage)
 	damage -= diverted
 	last_hit_blocked = 0
 
-	var/mob/living/living_target = isliving(target) ? target : null
-	if(living_target)
-		living_target.resolving_bullet_hit = TRUE
+	target.resolving_bullet_hit = TRUE
 	. = target.bullet_act(src, def_zone, piercing_hit)
-	if(living_target)
-		living_target.resolving_bullet_hit = FALSE
+	target.resolving_bullet_hit = FALSE
 	if(QDELETED(src))
 		return
 

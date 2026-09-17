@@ -18,6 +18,12 @@
 	TEST_ASSERT(ms13_bullet_stop_fraction(log_stop, 0.1, rifle) < ms13_bullet_stop_fraction(brick_stop, 0.1, rifle), "Logs stopped as much of a rifle round as brick did.")
 	TEST_ASSERT(ms13_bullet_stop_fraction(brick_stop, 0.1, heavy) < ms13_bullet_stop_fraction(brick_stop, 0.1, rifle), "A .50 BMG lost as much to brick as a 7.62.")
 
+	// Hard armor needs a fast round to dig into it; soft barriers don't care.
+	var/obj/projectile/bullet/ms13/c45/slow = allocate(/obj/projectile/bullet/ms13/c45)
+	TEST_ASSERT_EQUAL(ms13_armor_stopping_power(5, slow), sheet_stop, "Sheet metal resisted a slow .45 harder than its armor says.")
+	TEST_ASSERT(ms13_armor_stopping_power(65, slow) > ms13_armor_stopping_power(65), "Armor plate resisted a slow .45 no harder than a fast round.")
+	TEST_ASSERT_EQUAL(ms13_armor_stopping_power(65, rifle), ms13_armor_stopping_power(65), "Armor plate resisted a fast rifle round harder than its armor says.")
+
 	var/fast_fraction = ms13_bullet_stop_fraction(log_stop, 0.1, rifle)
 	rifle.speed *= 3
 	TEST_ASSERT(ms13_bullet_stop_fraction(log_stop, 0.1, rifle) > fast_fraction, "A slowed round penetrated as well as a fast one.")
@@ -51,3 +57,17 @@
 	var/leftover = result == BULLET_ACT_FORCE_PIERCE ? bullet.damage : 0
 	TEST_ASSERT(body_taken > 0, "The body took no damage.")
 	TEST_ASSERT(body_taken + leftover <= reaching_body + 0.01, "Body damage ([body_taken]) plus the round's leftover ([leftover]) exceeded the [reaching_body] that reached the body.")
+
+/// A round that bounces off armor does less to it than one that punches through.
+/datum/unit_test/bullet_barrier_damage_falloff/Run()
+	var/obj/structure/window/ms13_vehicle_wall/solid/plate = ALLOCATE_BOTTOM_LEFT()
+	plate.setArmor(getArmor(puncture = 65))
+	var/obj/projectile/bullet/ms13/c45/pistol = ALLOCATE_BOTTOM_LEFT()
+	var/obj/projectile/bullet/ms13/a50MG/heavy = ALLOCATE_BOTTOM_LEFT()
+
+	var/before = plate.get_integrity()
+	TEST_ASSERT_NOTEQUAL(pistol.penetrating_hit(plate, null, FALSE), BULLET_ACT_FORCE_PIERCE, "A .45 got through light armor.")
+	var/pistol_taken = before - plate.get_integrity()
+	before = plate.get_integrity()
+	TEST_ASSERT_EQUAL(heavy.penetrating_hit(plate, null, FALSE), BULLET_ACT_FORCE_PIERCE, "A .50 BMG did not get through light armor.")
+	TEST_ASSERT(before - plate.get_integrity() > pistol_taken, "A .45 that bounced off light armor hurt it as much as a .50 BMG that went through.")
