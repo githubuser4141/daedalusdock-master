@@ -1,5 +1,6 @@
 /mob/living/carbon/human
-	var/rotting = FALSE //dead body stink
+	/// Dead body stink: 0 fresh, 1 starting to turn, 2 far gone.
+	var/rotting = 0
 	var/pre_spawn = FALSE
 
 /mob/living/carbon/human/Initialize(mapload)
@@ -28,10 +29,15 @@
 // AI EDIT: added cause_of_death - see atmosphere.dm's /mob/living/death() for why.
 /mob/living/carbon/human/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
-	if(stat == DEAD && !pre_spawn)
-		addtimer(CALLBACK(src, PROC_REF(rot)), rand(30 MINUTES, 45 MINUTES))
-	if(stat == DEAD && pre_spawn)
-		addtimer(CALLBACK(src, PROC_REF(rot)), rand(75 MINUTES, 90 MINUTES))
+	if(stat == DEAD)
+		var/wait = pre_spawn ? rand(75 MINUTES, 90 MINUTES) : rand(30 MINUTES, 45 MINUTES)
+		addtimer(CALLBACK(src, PROC_REF(rot), wait), wait)
 
-/mob/living/carbon/human/proc/rot()
-	rotting = TRUE
+/// Each stage of rot takes about as long as the first.
+/mob/living/carbon/human/proc/rot(wait)
+	if(stat != DEAD || rotting >= 2)
+		return
+	rotting++
+	update_damage_overlays()
+	if(rotting < 2)
+		addtimer(CALLBACK(src, PROC_REF(rot), wait), wait)
