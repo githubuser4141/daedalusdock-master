@@ -22,6 +22,7 @@
 		TEST_ASSERT_EQUAL(wheel.exterior_image.pixel_y, wheel.dir == NORTH ? 12 : wheel.dir == SOUTH ? -12 : 0, "A wheel was not offset vertically toward its outside edge.")
 	TEST_ASSERT_EQUAL(wheel_count, 4, "Jeep did not assemble four independently damageable wheels.")
 	TEST_ASSERT(front.vehicle.fuel_tank?.has_fuel(), "Jeep fuel tank did not start with reagent fuel.")
+	TEST_ASSERT(!front.vehicle.is_weather_sealed(front), "The open-top jeep kept the weather out.")
 	TEST_ASSERT(!front.vehicle.engine.reagents, "The engine still carries its own fuel instead of drawing from the tank.")
 
 	var/obj/structure/ms13_vehicle_frame/back
@@ -255,8 +256,29 @@
 			TEST_ASSERT_EQUAL(frame.interior_light_block.alpha, 255, "A sealed truck tile let additive outside light through.")
 	door.open()
 	TEST_ASSERT(!front_left.vehicle.is_light_sealed(door.parent_frame), "An open door still sealed its tile against outside light.")
+	TEST_ASSERT(!front_left.vehicle.is_weather_sealed(door.parent_frame), "An open door still kept the weather out.")
 	door.close()
 	TEST_ASSERT(front_left.vehicle.is_light_sealed(door.parent_frame), "Closing the door did not seal its tile again.")
+
+	// Everyone in the closed-up truck is out of the weather, windshield or not.
+	var/datum/particle_weather/dust_storm/storm = new
+	var/mob/living/carbon/human/consistent/rider = allocate(/mob/living/carbon/human/consistent)
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
+		TEST_ASSERT(front_left.vehicle.is_weather_sealed(frame), "A closed truck tile at [frame.forward_offset],[frame.right_offset] let the weather in.")
+	rider.forceMove(get_turf(door.parent_frame))
+	TEST_ASSERT(!storm.can_weather_effect(rider), "Weather reached a rider inside a closed truck.")
+	// Someone standing behind the truck can't see the rider until the rear door opens.
+	var/mob/living/carbon/human/consistent/onlooker = allocate(/mob/living/carbon/human/consistent)
+	onlooker.forceMove(get_step(door, door.dir))
+	TEST_ASSERT(ms13_hidden_in_vehicle(rider, onlooker), "A rider in a closed truck was visible from outside.")
+	TEST_ASSERT(!ms13_hidden_in_vehicle(onlooker, rider), "The hull hid someone outside the truck from a rider.")
+	door.open()
+	TEST_ASSERT(storm.can_weather_effect(rider), "Weather did not reach a rider through an open door.")
+	TEST_ASSERT(!ms13_hidden_in_vehicle(rider, onlooker), "A rider stayed hidden behind an open door.")
+	door.close()
+	onlooker.forceMove(run_loc_floor_bottom_left)
+	rider.forceMove(run_loc_floor_top_right)
+	qdel(storm)
 
 	var/original_dir = front_left.vehicle.dir
 	var/new_facing = turn(original_dir, 90)

@@ -189,6 +189,10 @@
  */
 /datum/particle_weather/proc/can_weather_effect(mob/living/mob_to_check)
 
+	// Riders in a closed-up vehicle still hear the storm, but it can't reach them.
+	if(ms13_in_weather_sealed_vehicle(mob_to_check))
+		return
+
 	//If mob is not in a turf
 	var/turf/mob_turf = get_turf(mob_to_check)
 	var/atom/loc_to_check = mob_to_check.loc
@@ -260,7 +264,7 @@
 /datum/particle_weather/proc/can_weather_act_obj(obj/obj_to_check)
 	var/turf/obj_turf = get_turf(obj_to_check)
 
-	if(!obj_turf)
+	if(!obj_turf || ms13_in_weather_sealed_vehicle(obj_to_check))
 		return
 
 	return TRUE

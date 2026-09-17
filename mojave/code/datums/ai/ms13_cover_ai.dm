@@ -133,7 +133,7 @@
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	if(QDELETED(target) || !isliving(pawn))
 		return
-	if(!can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+	if(!ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
 		return
 
 	controller.set_blackboard_key(BB_MS13_LAST_KNOWN_TURF, get_turf(target))
@@ -185,7 +185,7 @@
 	. = ..()
 	var/mob/living/basic/pawn = controller.pawn
 	var/atom/target = target_key && controller.blackboard[target_key]
-	if(target && can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+	if(target && ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
 		pawn.RangedAttack(target)
 	if(get_dist(pawn, controller.current_movement_target) <= required_distance)
 		return BEHAVIOR_PERFORM_COOLDOWN | BEHAVIOR_PERFORM_SUCCESS
@@ -208,7 +208,7 @@
 	if(!isliving(pawn))
 		return
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(!QDELETED(target) && can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+	if(!QDELETED(target) && ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
 		return
 
 	// The blackboard target is usually already empty by the time we get here - the ranged attack subtree
@@ -271,7 +271,7 @@
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	// Do not let the stock attack subtree consume planning while the target is out of sight. That leaves
 	// the remembered-position subtree below it free to suppress, investigate, and eventually forget them.
-	if(!isliving(pawn) || QDELETED(target) || !can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+	if(!isliving(pawn) || QDELETED(target) || !ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
 		return
 	return ..()
 

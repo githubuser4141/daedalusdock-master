@@ -16,6 +16,7 @@
 	ram_damage_per_speed = 3
 	ram_knockdown_per_speed = 4
 	running_gear_integrity = 65
+	open_top = TRUE
 	engine_integrity = 160
 	fuel_per_tile = 0.08
 

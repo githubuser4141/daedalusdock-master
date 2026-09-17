@@ -32,7 +32,7 @@
  * must bail out on null rather than firing at it.
  */
 /mob/living/simple_animal/hostile/ms13/robot/proc/get_blind_fire_target(atom/A)
-	if(can_see(src, target, length = blind_fire_los_range))
+	if(ms13_can_see(src, target, blind_fire_los_range))
 		blind_fire_until = 0
 		blind_fire_turf = null
 		blind_fire_target_was_prone = FALSE

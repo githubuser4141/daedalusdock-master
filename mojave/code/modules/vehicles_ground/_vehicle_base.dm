@@ -53,6 +53,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/fuel_per_tile = 0.1
 	/// Brightness (0-1) a light-proof cabin tile keeps with every fixture off.
 	var/interior_ambient_light = 0.03
+	/// No roof to speak of: the weather gets in however closed up the sides are.
+	var/open_top = FALSE
 	var/rev_sound = 'sound/vehicles/carrev.ogg'
 	var/ram_sound = 'sound/effects/bang.ogg'
 	var/crash_sound = 'mojave/sound/ms13effects/impact/metal/metal_crunch_3.wav'
@@ -124,17 +126,33 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Can outside light reach frame? False only when every exterior edge of it is closed light-proof hull.
 /datum/ms13_ground_vehicle/proc/is_light_sealed(obj/structure/ms13_vehicle_frame/frame)
+	return outer_edges_closed(frame, TRUE)
+
+/// Is frame out of the weather - roofed, with every exterior edge covered by an intact, closed panel?
+/datum/ms13_ground_vehicle/proc/is_weather_sealed(obj/structure/ms13_vehicle_frame/frame)
+	return !open_top && outer_edges_closed(frame, FALSE)
+
+/// Does every edge of frame that faces outside the vehicle have a panel closing it? light: whether that
+/// panel has to be light-proof too, rather than just shut and intact.
+/datum/ms13_ground_vehicle/proc/outer_edges_closed(obj/structure/ms13_vehicle_frame/frame, light)
 	for(var/edge_dir in GLOB.cardinals)
 		if(get_frame_at(get_step(frame, edge_dir)))
 			continue
 		var/sealed_edge = FALSE
 		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
-			if(wall.parent_frame == frame && wall.dir == edge_dir && wall.blocks_light())
+			if(wall.parent_frame != frame || wall.dir != edge_dir)
+				continue
+			if(light ? wall.blocks_light() : (wall.density && !wall.hull_broken))
 				sealed_edge = TRUE
 				break
 		if(!sealed_edge)
 			return FALSE
 	return TRUE
+
+/// Is thing inside a closed-up vehicle, out of the weather? Used by particle weather (weather_datum.dm).
+/proc/ms13_in_weather_sealed_vehicle(atom/thing)
+	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(thing)
+	return vehicle?.is_weather_sealed(vehicle.get_frame_at(get_turf(thing)))
 
 /**
  * Lights the cabin for the people inside. A sealed tile ignores the lightmap outside and shows only
@@ -358,6 +376,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	for(var/atom/movable/passenger as anything in manifest)
 		passenger.forceMove(get_step(passenger, direction))
 	engine?.consume_fuel(fuel_per_tile)
+	alert_watchers()
 	return TRUE
 
 /// Starts at low speed, accelerates while the driver holds the travel direction, and uses the
@@ -519,6 +538,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		passenger.forceMove(frame_dest[old_frame])
 		if(istype(passenger, /obj/structure/chair/ms13_vehicle_seat))
 			passenger.setDir(turn(passenger.dir, seat_turn))
+	alert_watchers()
 	return TRUE
 
 /// One cell of a vehicle's footprint - just a floor. Walls (vehicle_walls.dm) mounted on it, plus
