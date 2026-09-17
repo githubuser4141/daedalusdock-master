@@ -5409,6 +5409,7 @@
 #include "mojave\code\modules\vehicles_ground\armored_truck.dm"
 #include "mojave\code\modules\vehicles_ground\jeep.dm"
 #include "mojave\code\modules\vehicles_ground\m113.dm"
+#include "mojave\code\modules\vehicles_ground\soviet_vehicles.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_ai_awareness.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_parts.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_seats.dm"

@@ -102,6 +102,8 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	var/stationary_icon_state
 	var/moving_icon_state
 	var/broken_icon_state
+	/// Sheet broken_icon_state lives in, when it isn't this part's own.
+	var/broken_icon
 	/// Pushes centered sprites such as wheels outside the frame edge; Civ13's tracks are pre-aligned.
 	var/exterior_offset = 0
 
@@ -129,11 +131,13 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/running_gear/atom_break(damage_flag)
 	. = ..()
 	broken = TRUE
+	exterior_image.icon = broken_icon || icon
 	exterior_image.icon_state = broken_icon_state
 
 /obj/structure/ms13_vehicle_part/running_gear/atom_fix()
 	. = ..()
 	broken = FALSE
+	exterior_image.icon = icon
 	set_moving(vehicle?.moving)
 
 /obj/structure/ms13_vehicle_part/running_gear/wheel
@@ -259,12 +263,16 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	gear_delays = list(8, 6, 4)
 
 /// Fuel lives here, not in the engine. Pour fuel in to refill it; once broken it leaks as the vehicle moves.
+
+TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
+	default_armor = list(BLUNT = 25, PUNCTURE = 75, SLASH = 50, LASER = 80, ENERGY = 50, BOMB = 0, BIO = 100,  FIRE = 25, ACID = 25)
+
 /obj/structure/ms13_vehicle_part/fuel_tank
 	name = "fuel tank"
 	desc = "A vehicle fuel tank."
 	icon_state = "fueltank_small_tank"
 	layer = OBJ_LAYER
-	max_integrity = 120
+	max_integrity = 200
 	var/capacity = 70
 	/// Extra fuel lost per tile travelled while broken.
 	var/leak_per_tile = 0.5
@@ -382,3 +390,101 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	power = 0.35
 	range = 1
 	color_on = "#ff4030"
+
+/// Civ13 96x96 tracks and wheels, drawn centered on their tile. Art is set per vehicle by set_art().
+/obj/structure/ms13_vehicle_part/running_gear/civ96
+	name = "track assembly"
+	desc = "An exposed track run. Damaging enough of these will prevent acceleration."
+	icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96.dmi'
+	broken_icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96_damaged.dmi'
+	pixel_x = -32
+	pixel_y = -32
+
+/// art: normal state; moving art is "[art]_m". broken_art is looked up in broken_icon and falls back to a tint.
+/obj/structure/ms13_vehicle_part/running_gear/civ96/proc/set_art(art, broken_art, paint)
+	stationary_icon_state = art
+	moving_icon_state = "[art]_m"
+	if(ms13_icon_has_state(broken_icon, broken_art))
+		broken_icon_state = broken_art
+	else
+		broken_icon = null
+		broken_icon_state = art
+	exterior_image.icon_state = art
+	exterior_image.color = paint
+
+/obj/structure/ms13_vehicle_part/running_gear/civ96/wheels
+	name = "wheel set"
+	desc = "A run of big armored-car wheels. Damaging enough of these will prevent acceleration."
+
+/**
+ * A turret seen from above. The ring shows to everyone, so riders see it from inside; the turret top is
+ * exterior-only, like the roof. It has no weapon yet.
+ */
+/obj/structure/ms13_vehicle_part/turret
+	name = "turret"
+	desc = "The vehicle's turret."
+	icon_state = "none"
+	layer = ABOVE_ALL_MOB_LAYER + 0.02
+	max_integrity = 1000
+	var/turret_icon = 'mojave/icons/objects/vehicles_ground/civ_turrets.dmi'
+	var/turret_art
+	var/paint
+	/// Where the turret art sits relative to this tile, in the vehicle's own right/forward pixels.
+	var/shift_right = 0
+	var/shift_forward = 0
+
+/obj/structure/ms13_vehicle_part/turret/proc/set_art(art, right, forward, new_paint)
+	turret_art = art
+	shift_right = right
+	shift_forward = forward
+	paint = new_paint
+	exterior_image = image(turret_icon, src, "[art]_turret_roof0", ABOVE_ALL_MOB_LAYER + 0.03, dir)
+	exterior_image.color = paint
+	exterior_image.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
+	for(var/client/viewer as anything in GLOB.clients)
+		viewer.images |= exterior_image
+	setDir(dir)
+
+/obj/structure/ms13_vehicle_part/turret/setDir(new_dir)
+	. = ..()
+	var/list/offset = get_art_offset()
+	if(exterior_image)
+		exterior_image.pixel_x = offset[1]
+		exterior_image.pixel_y = offset[2]
+	update_appearance()
+
+/// Pixel offset of the 256x256 turret art for the current facing.
+/obj/structure/ms13_vehicle_part/turret/proc/get_art_offset()
+	var/right_dir = turn(dir, -90)
+	var/px = -112 + shift_right * ((right_dir & EAST) ? 1 : (right_dir & WEST) ? -1 : 0) + shift_forward * ((dir & EAST) ? 1 : (dir & WEST) ? -1 : 0)
+	var/py = -112 + shift_right * ((right_dir & NORTH) ? 1 : (right_dir & SOUTH) ? -1 : 0) + shift_forward * ((dir & NORTH) ? 1 : (dir & SOUTH) ? -1 : 0)
+	return list(px, py)
+
+/obj/structure/ms13_vehicle_part/turret/update_overlays()
+	. = ..()
+	if(!turret_art)
+		return
+	var/list/offset = get_art_offset()
+	var/mutable_appearance/ring = mutable_appearance(turret_icon, "[turret_art]_turret0", layer)
+	ring.dir = dir
+	ring.pixel_x = offset[1]
+	ring.pixel_y = offset[2]
+	ring.color = paint
+	ring.appearance_flags = RESET_COLOR
+	ring.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	. += ring
+
+/// Ammunition and kit stowage along the hull. Click to open.
+/obj/structure/ms13_vehicle_part/stowage
+	name = "ammunition rack"
+	desc = "A bolted-down rack for ammunition and kit."
+	icon = 'mojave/icons/structure/crates.dmi'
+	icon_state = "army"
+	layer = OBJ_LAYER
+	max_integrity = 150
+	var/slots = 8
+
+/obj/structure/ms13_vehicle_part/stowage/Initialize(mapload)
+	. = ..()
+	create_storage(max_slots = slots, max_specific_storage = WEIGHT_CLASS_BULKY, max_total_storage = slots * WEIGHT_CLASS_BULKY)

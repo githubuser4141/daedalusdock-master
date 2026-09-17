@@ -115,33 +115,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	vehicle_controller_type = /datum/ms13_ground_vehicle/m113
 	roof_damaged_icon = null
 	roof_damage_color = "#8f7676"
-
-/obj/structure/ms13_vehicle_frame/m113/proc/add_segment(forward, right, floor_state, roof_state)
-	var/turf/destination = vehicle.get_relative_turf(forward, right, dir)
-	var/obj/structure/ms13_vehicle_frame/m113/segment = new(destination)
-	segment.vehicle = vehicle
-	segment.forward_offset = forward
-	segment.right_offset = right
-	segment.icon_state = floor_state
-	segment.roof.icon_state = roof_state
-	segment.setDir(dir)
-	vehicle.frames += segment
-	return segment
-
-/// Mounts a named interior partition; relative_dir is the edge it closes, relative to the vehicle's facing.
-/obj/structure/ms13_vehicle_frame/m113/proc/add_bulkhead(relative_dir, wall_name, wall_type = /obj/structure/window/ms13_vehicle_wall/solid/interior)
-	var/obj/structure/window/ms13_vehicle_wall/bulkhead = spawn_wall(turn(dir, relative_dir), null, wall_type)
-	bulkhead.name = wall_name
-	return bulkhead
-
-/// Adds a seat on this frame facing relative_dir (0 = forward).
-/obj/structure/ms13_vehicle_frame/m113/proc/add_seat(relative_dir, seat_name, seat_icon_state = "commanders_seat")
-	var/obj/structure/chair/ms13_vehicle_seat/seat = new(get_turf(src))
-	seat.parent_frame = src
-	seat.name = seat_name
-	seat.icon_state = seat_icon_state
-	seat.setDir(turn(dir, relative_dir))
-	return seat
+	segment_type = /obj/structure/ms13_vehicle_frame/m113
 
 /// The only map-placeable M113 object; children use the parent segment type to avoid reassembly.
 /obj/structure/ms13_vehicle_frame/m113/front_left
@@ -163,17 +137,17 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 			if(!destination || destination.density)
 				return
 
-	var/obj/structure/ms13_vehicle_frame/m113/front_middle = add_segment(0, 1, "m113_frame_steel_front_middle", "m113_roof_steel_front_middle")
-	var/obj/structure/ms13_vehicle_frame/m113/front_right = add_segment(0, 2, "m113_frame_steel_front_right", "m113_roof_steel_front_right")
-	var/obj/structure/ms13_vehicle_frame/m113/middle_front_left = add_segment(-1, 0, "m113_frame_steel_middle_front_left", "m113_roof_steel_middle_front_left")
+	var/obj/structure/ms13_vehicle_frame/front_middle = add_segment(0, 1, "m113_frame_steel_front_middle", "m113_roof_steel_front_middle")
+	var/obj/structure/ms13_vehicle_frame/front_right = add_segment(0, 2, "m113_frame_steel_front_right", "m113_roof_steel_front_right")
+	var/obj/structure/ms13_vehicle_frame/middle_front_left = add_segment(-1, 0, "m113_frame_steel_middle_front_left", "m113_roof_steel_middle_front_left")
 	add_segment(-1, 1, "m113_frame_steel_middle_front", "m113_roof_steel_middle_front")
-	var/obj/structure/ms13_vehicle_frame/m113/middle_front_right = add_segment(-1, 2, "m113_frame_steel_middle_front_right", "m113_roof_steel_middle_front_right")
-	var/obj/structure/ms13_vehicle_frame/m113/middle_back_left = add_segment(-2, 0, "m113_frame_steel_middle_back_left", "m113_roof_steel_middle_back_left")
-	var/obj/structure/ms13_vehicle_frame/m113/middle_back = add_segment(-2, 1, "m113_frame_steel_middle_back", "m113_roof_steel_middle_back")
-	var/obj/structure/ms13_vehicle_frame/m113/middle_back_right = add_segment(-2, 2, "m113_frame_steel_middle_back_right", "m113_roof_steel_middle_back_right")
-	var/obj/structure/ms13_vehicle_frame/m113/back_left = add_segment(-3, 0, "m113_frame_steel_back_left", "m113_roof_steel_back_left")
-	var/obj/structure/ms13_vehicle_frame/m113/back = add_segment(-3, 1, "m113_frame_steel_back", "m113_roof_steel_back")
-	var/obj/structure/ms13_vehicle_frame/m113/back_right = add_segment(-3, 2, "m113_frame_steel_back_right", "m113_roof_steel_back_right")
+	var/obj/structure/ms13_vehicle_frame/middle_front_right = add_segment(-1, 2, "m113_frame_steel_middle_front_right", "m113_roof_steel_middle_front_right")
+	var/obj/structure/ms13_vehicle_frame/middle_back_left = add_segment(-2, 0, "m113_frame_steel_middle_back_left", "m113_roof_steel_middle_back_left")
+	var/obj/structure/ms13_vehicle_frame/middle_back = add_segment(-2, 1, "m113_frame_steel_middle_back", "m113_roof_steel_middle_back")
+	var/obj/structure/ms13_vehicle_frame/middle_back_right = add_segment(-2, 2, "m113_frame_steel_middle_back_right", "m113_roof_steel_middle_back_right")
+	var/obj/structure/ms13_vehicle_frame/back_left = add_segment(-3, 0, "m113_frame_steel_back_left", "m113_roof_steel_back_left")
+	var/obj/structure/ms13_vehicle_frame/back = add_segment(-3, 1, "m113_frame_steel_back", "m113_roof_steel_back")
+	var/obj/structure/ms13_vehicle_frame/back_right = add_segment(-3, 2, "m113_frame_steel_back_right", "m113_roof_steel_back_right")
 
 	// Outer hull: three frontal vision blocks, solid sides and rear, one working rear ramp.
 	spawn_wall(dir, "m113_front_left_frame", /obj/structure/window/ms13_vehicle_wall/m113)

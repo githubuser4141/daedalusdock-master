@@ -112,11 +112,15 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 /obj/structure/window/ms13_vehicle_wall/proc/has_broken_art()
 	if(!hull_broken || !broken_icon)
 		return FALSE
+	return ms13_icon_has_state(broken_icon, icon_state)
+
+/// Cached icon_states() lookup.
+/proc/ms13_icon_has_state(icon_file, state)
 	var/static/list/states_by_icon = list()
-	var/list/states = states_by_icon["[broken_icon]"]
+	var/list/states = states_by_icon["[icon_file]"]
 	if(!states)
-		states = states_by_icon["[broken_icon]"] = icon_states(broken_icon)
-	return icon_state in states
+		states = states_by_icon["[icon_file]"] = icon_states(icon_file)
+	return state in states
 
 /obj/structure/window/ms13_vehicle_wall/proc/finish_mount()
 	return
@@ -158,7 +162,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	desc = "A thin steel partition inside the vehicle."
 	icon_state = "c_thin"
 	layer = ABOVE_MOB_LAYER
-	max_integrity = 120
+	max_integrity = 200
 	exterior = FALSE
 
 /** A cabin access panel, e.g. into the engine bay. */
@@ -168,7 +172,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	icon_state = "c_door"
 	open_icon_state = "c_thin"
 	layer = ABOVE_MOB_LAYER
-	max_integrity = 120
+	max_integrity = 200
 	exterior = FALSE
 
 /** A window with manually-operated armored shutters. It remains a normal window while open. */
@@ -207,7 +211,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	desc = "A hinged section of the vehicle's hull. Click to open or close it."
 	icon_state = "c_door"
 	/// Icon state to show while open - c_thin is the closest thing this sheet has to an empty doorway.
+	/// Null keeps the closed art.
 	var/open_icon_state = "c_thin"
+	var/closed_icon_state
 	var/opened = FALSE
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/attack_hand(mob/living/user, list/modifiers)
@@ -222,13 +228,16 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	else
 		open(user)
 
+/obj/structure/window/ms13_vehicle_wall/solid/door/finish_mount()
+	closed_icon_state = icon_state
+
 /obj/structure/window/ms13_vehicle_wall/solid/door/proc/open(mob/user)
 	if(opened)
 		return
 	opened = TRUE
 	set_density(FALSE)
 	blocks_vision = FALSE
-	icon_state = open_icon_state
+	icon_state = open_icon_state || closed_icon_state
 	update_appearance()
 	parent_frame?.vehicle?.update_interior_masks()
 	if(user)
@@ -241,9 +250,80 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	opened = FALSE
 	set_density(TRUE)
 	blocks_vision = TRUE
-	icon_state = initial(icon_state)
+	icon_state = closed_icon_state
 	update_appearance()
 	parent_frame?.vehicle?.update_interior_masks()
 	if(user)
 		user.visible_message(span_notice("[user] closes [src]."), span_notice("You close [src]."))
 	playsound(src, 'sound/machines/door_close.ogg', 50, TRUE)
+
+// Civ13 96x96 hull plating (soviet_vehicles.dm). The art is drawn centered on its tile and has damaged
+// counterparts under the same names.
+
+TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/civ96) // mt lb armor
+	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 50, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 60, ACID = 50)
+
+/// A vision block or firing port: you only see out with your face to it, and it lets almost no light in.
+/obj/structure/window/ms13_vehicle_wall/civ96
+	name = "vision port"
+	desc = "A thick armored vision block."
+	icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96.dmi'
+	broken_icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96_damaged.dmi'
+	pixel_x = -32
+	pixel_y = -32
+	max_integrity = 500
+	light_proof = TRUE
+	vision_range = 1
+	bullet_damage_ratio = 0.3
+
+TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96) // mt lb armor
+	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
+
+/// Light armor: stops rifle rounds, not heavy machine guns.
+/obj/structure/window/ms13_vehicle_wall/solid/civ96
+	name = "armor plating"
+	icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96.dmi'
+	broken_icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96_damaged.dmi'
+	pixel_x = -32
+	pixel_y = -32
+	max_integrity = 1000
+	bullet_damage_ratio = 0.25
+
+TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank)
+	default_armor = list(BLUNT = 95, PUNCTURE = 900, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
+
+/// Tank armor: PUNCTURE 900 stops every round in the game, up to a gauss slug, but hits still wear it down.
+/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank
+	name = "tank armor"
+	max_integrity = 3000
+	bullet_damage_ratio = 0.05
+
+TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/civ96) // mt lb armor
+	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
+
+/// A hull hatch. Keeps its art while open, drawn faint so it's still there to click shut.
+/obj/structure/window/ms13_vehicle_wall/solid/door/civ96
+	name = "hatch"
+	desc = "A heavy armored hatch. Click to open or close it."
+	icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96.dmi'
+	broken_icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96_damaged.dmi'
+	pixel_x = -32
+	pixel_y = -32
+	open_icon_state = null
+	max_integrity = 900
+	bullet_damage_ratio = 0.25
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/civ96/open(mob/user)
+	. = ..()
+	alpha = opened ? 90 : 255
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/civ96/close(mob/user)
+	. = ..()
+	alpha = opened ? 90 : 255
+
+TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/civ96/tank)
+	default_armor = list(BLUNT = 95, PUNCTURE = 900, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/civ96/tank
+	max_integrity = 2000
+	bullet_damage_ratio = 0.05

@@ -79,6 +79,7 @@ code/modules/unit_tests/__unit_tests.dm,
 code/modules/unit_tests/ai_perf_ms13.dm,
 code/modules/unit_tests/bullet_penetration_ms13.dm,
 code/modules/unit_tests/projectiles.dm,
+code/modules/unit_tests/vehicles_civ96_ms13.dm,
 
 
 */

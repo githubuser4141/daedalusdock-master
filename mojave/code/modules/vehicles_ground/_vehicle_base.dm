@@ -560,6 +560,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/roof_damaged_icon = 'mojave/icons/objects/vehicles_ground/vehicleparts_damaged.dmi'
 	/// Used by roofs such as the M113 which have no matching damaged sheet in Civ13.
 	var/roof_damage_color
+	/// Paint over Civ13's grey hull art, applied to floor, roof, plating and turret.
+	var/hull_color
+	/// What add_segment() builds the rest of the footprint out of - a type that doesn't assemble itself again.
+	var/segment_type = /obj/structure/ms13_vehicle_frame
 	var/roof_hull_breached = FALSE
 	/// Lighting-plane cover shown only to occupants: replaces or adds to outside light on this tile.
 	var/image/interior_light
@@ -575,6 +579,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	roof_undamaged_icon = icon
 	roof = image(icon = icon, loc = src, icon_state = "roof_steel", layer = ABOVE_ALL_MOB_LAYER, dir = dir)
 	roof.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	roof.color = hull_color
+	color = hull_color
 	GLOB.ms13_vehicle_roofs |= roof
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images |= roof
@@ -617,7 +623,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			is_damaged = TRUE
 			break
 	roof.icon = is_damaged && roof_damaged_icon ? roof_damaged_icon : roof_undamaged_icon
-	roof.color = is_damaged && !roof_damaged_icon ? roof_damage_color : null
+	roof.color = is_damaged && !roof_damaged_icon ? roof_damage_color : hull_color
 
 /obj/structure/ms13_vehicle_frame/Destroy()
 	GLOB.ms13_vehicle_roofs -= roof
@@ -639,6 +645,37 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	. = ..()
 	if(roof)
 		roof.dir = dir
+
+/// Adds a frame tile at (forward, right) from this one, facing the same way (see get_relative_turf()).
+/obj/structure/ms13_vehicle_frame/proc/add_segment(forward, right, floor_state, roof_state)
+	var/turf/destination = vehicle.get_relative_turf(forward, right, dir)
+	var/obj/structure/ms13_vehicle_frame/segment = new segment_type(destination)
+	segment.vehicle = vehicle
+	segment.forward_offset = forward
+	segment.right_offset = right
+	segment.icon_state = floor_state
+	segment.roof.icon_state = roof_state
+	segment.hull_color = hull_color
+	segment.color = hull_color
+	segment.roof.color = hull_color
+	segment.setDir(dir)
+	vehicle.frames += segment
+	return segment
+
+/// Mounts a named interior partition; relative_dir is the edge it closes, relative to the vehicle's facing.
+/obj/structure/ms13_vehicle_frame/proc/add_bulkhead(relative_dir, wall_name, wall_type = /obj/structure/window/ms13_vehicle_wall/solid/interior)
+	var/obj/structure/window/ms13_vehicle_wall/bulkhead = spawn_wall(turn(vehicle.dir, relative_dir), null, wall_type)
+	bulkhead.name = wall_name
+	return bulkhead
+
+/// Adds a seat on this frame facing relative_dir (0 = forward).
+/obj/structure/ms13_vehicle_frame/proc/add_seat(relative_dir, seat_name, seat_icon_state = "commanders_seat")
+	var/obj/structure/chair/ms13_vehicle_seat/seat = new(get_turf(src))
+	seat.parent_frame = src
+	seat.name = seat_name
+	seat.icon_state = seat_icon_state
+	seat.setDir(turn(vehicle.dir, relative_dir))
+	return seat
 
 /// Shared assembly helper: mount one directional wall on frame, facing wall_dir (an absolute
 /// direction - convert with turn(vehicle.dir, relative_turn) if building from a relative angle).
