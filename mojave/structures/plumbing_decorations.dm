@@ -8,6 +8,11 @@
 	var/buildstacktype = /obj/item/stack/sheet/ms13/ceramic
 	var/buildstackamount = 1
 
+/// The cistern: a classic hiding spot.
+/obj/structure/ms13/toilet/Initialize()
+	. = ..()
+	AddComponent(/datum/component/ms13_searchable, slots = 1, max_item_size = WEIGHT_CLASS_SMALL, max_total = 2, search_message = "You lift the cistern lid.")
+
 /obj/structure/ms13/toilet/deconstruct()
 	if(!(flags_1 & NODECONSTRUCT_1))
 		for(var/obj/toilet_item in contents)

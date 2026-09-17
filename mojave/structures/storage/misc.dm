@@ -37,6 +37,7 @@
 
 /obj/structure/ms13/storage/vent/Initialize()
 	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/lowrandom, slots = 2, max_item_size = WEIGHT_CLASS_SMALL, max_total = 4, open_tool = TOOL_SCREWDRIVER, search_message = "You unscrew the vent cover.")
 	if(prob(50))
 		icon_state = "[initial(icon_state)]-damaged"
 

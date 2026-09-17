@@ -221,6 +221,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barrel)
 
 /obj/structure/ms13/barrel/Initialize()
 	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/lowrandom, slots = 4, max_item_size = WEIGHT_CLASS_NORMAL, max_total = 10, open_tool = TOOL_CROWBAR, search_message = "You pry the lid off.")
 	if(!unique)
 		icon_state = "[icon_type]_[rand(1, amount)]"
 
@@ -1007,6 +1008,10 @@ TYPEINFO_DEF(/obj/structure/ms13/cave_decor)
 	max_integrity = 160
 	anchored = TRUE
 	density = TRUE
+
+/obj/structure/ms13/cave_decor/minecart/Initialize()
+	. = ..()
+	AddComponent(/datum/component/ms13_searchable, loot_table = /obj/effect/spawner/random/ms13/crafting/lowrandom, slots = 6, max_item_size = WEIGHT_CLASS_BULKY, max_total = 20, search_message = "You dig through what's left in the cart.")
 
 /obj/structure/ms13/cave_decor/sign_left
 	name = "sign"

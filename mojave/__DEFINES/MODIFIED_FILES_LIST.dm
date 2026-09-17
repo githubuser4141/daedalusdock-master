@@ -81,6 +81,7 @@ code/modules/unit_tests/bullet_penetration_ms13.dm,
 code/modules/unit_tests/projectiles.dm,
 code/modules/unit_tests/vehicles_civ96_ms13.dm,
 code/modules/unit_tests/drag_dismember_ms13.dm,
+code/modules/unit_tests/hollow_storage_ms13.dm,
 
 
 */
