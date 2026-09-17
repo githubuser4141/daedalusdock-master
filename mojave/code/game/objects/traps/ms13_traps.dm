@@ -71,7 +71,7 @@
 		mineEffect(triggerer)
 	triggered = TRUE
 	SEND_SIGNAL(src, COMSIG_MINE_TRIGGERED, triggerer)
-	new /obj/effect/turf_decal/ms13/boommark (src, 1)
+	new /obj/effect/turf_decal/ms13/boommark(get_turf(src), 1)
 	qdel(src)
 
 /obj/effect/spawner/random/ms13/minefield

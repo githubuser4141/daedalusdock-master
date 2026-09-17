@@ -77,10 +77,11 @@
 	icon = 'mojave/icons/decals/ground_decals.dmi'
 	icon_state = "boom"
 
+/// Pick the variant first: the parent stamps the current icon_state onto the turf and deletes this.
 /obj/effect/turf_decal/ms13/boommark/Initialize(mapload)
-	. = ..()
 	if(prob(90))
 		icon_state = "[initial(icon_state)]-[rand(1,8)]"
+	return ..()
 
 // Graffiti
 
