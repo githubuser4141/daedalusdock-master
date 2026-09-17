@@ -6,6 +6,8 @@
 
 /turf/open/floor/wood/ms13
 	icon = 'mojave/icons/turf/floors.dmi'
+	// Cables can be run across the floor.
+	underfloor_accessibility = UNDERFLOOR_INTERACTABLE
 	icon_state = "wood tiles"
 	desc = "Wooden flooring."
 	smoothing_groups = SMOOTH_GROUP_MS13_TILE
@@ -219,6 +221,8 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 
 /turf/open/floor/ms13
 	desc = "Tiled flooring."
+	// Cables can be run across the floor.
+	underfloor_accessibility = UNDERFLOOR_INTERACTABLE
 	icon = 'mojave/icons/turf/floors.dmi'
 	icon_state = "floor"
 	floor_tile = /obj/item/stack/tile/ms13

@@ -7,3 +7,5 @@
 // code/modules/mob/living/carbon/life.dm (a base file) to see it
 #define TRAIT_DUSTSTORM_IMMUNE "duststorm_immune" //MOJAVE MODULE OUTDOOR_EFFECTS
 #define TRAIT_RAINSTORM_IMMUNE "rainstorm_immune" //MOJAVE MODULE OUTDOOR_EFFECTS
+/// Draws cable out to adjacent power cables (/datum/element/ms13_wired_look).
+#define TRAIT_MS13_WIRED_LOOK "ms13_wired_look"
