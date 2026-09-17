@@ -696,6 +696,11 @@ TYPEINFO_DEF(/obj/projectile/bullet/bmg50)
 TYPEINFO_DEF(/obj/projectile/bullet/shrapnel)
 	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
 
+/// A bullet lodged in someone looks like the shrapnel frag grenades leave, not a spent casing.
+/obj/item/shrapnel/bullet
+	icon = 'icons/obj/shards.dmi'
+	icon_state = "large"
+
 /obj/projectile/bullet/bmg50
 	name = ".50 BMG"
 	damage = 60
