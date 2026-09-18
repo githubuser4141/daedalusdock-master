@@ -4,6 +4,10 @@
 
 //Most decals are automatically added by the code to save mapping hassle but additonal customisation code is found here.
 
+// Compatibility path retained by Mammoth's underground map.
+/obj/effect/decal/cleanable/blood/gibs/bubblegum
+	parent_type = /obj/effect/decal/cleanable/blood/gibs
+
 //Road Decals
 
 /obj/effect/turf_decal/ms13/road

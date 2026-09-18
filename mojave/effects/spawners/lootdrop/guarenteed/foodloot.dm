@@ -234,12 +234,28 @@
 
 #warn Commented
 
+// Keep the guaranteed variants tied to the maintained non-guaranteed pools instead of duplicating their lists.
+/obj/effect/spawner/random/ms13/guaranteed/food/produce_random
+	parent_type = /obj/effect/spawner/random/ms13/food/produce_random
+	icon_state = "ms13_produce-static"
+	spawn_loot_chance = 100
+
+/obj/effect/spawner/random/ms13/guaranteed/food/produce_safe
+	parent_type = /obj/effect/spawner/random/ms13/food/produce_safe
+	icon_state = "ms13_produce-static"
+	spawn_loot_chance = 100
+
+/obj/effect/spawner/random/ms13/guaranteed/seeds/random
+	parent_type = /obj/effect/spawner/random/ms13/seeds/random
+	icon_state = "ms13_seeds-static"
+	spawn_loot_chance = 100
+
 /obj/effect/spawner/random/ms13/guaranteed/food/random
 	name = "random food spawner"
 	spawn_loot_count = 1
 	loot = list(
 			/obj/effect/spawner/random/ms13/guaranteed/food/junkfood_boxed = 10,
-			/obj/effect/spawner/random/ms13/food/produce_random = 60, // AI EDIT: this pool's own produce_random is deliberately commented out above (#warn Commented) - pointing at the working non-guaranteed sibling instead of reviving disabled content
+			/obj/effect/spawner/random/ms13/guaranteed/food/produce_random = 60,
 			/obj/effect/spawner/random/ms13/guaranteed/food/junkfood_canned = 30,
 			)
 

@@ -101,6 +101,10 @@
 			context[SCREENTIP_CONTEXT_RMB] = "Disassemble"
 			return CONTEXTUAL_SCREENTIP_SET
 
+// Compatibility path for older maps; this is the same tabletop Mojave microscope.
+/obj/structure/microscope
+	parent_type = /obj/item/ms13/fluff/microscope
+
 /obj/item/ms13/fluff/chems
 	name = "chemistry glassware"
 	desc = "Some old chemistry equipment. Not very useful anymore."

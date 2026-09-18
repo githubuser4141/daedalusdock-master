@@ -342,3 +342,40 @@
 	w_class = WEIGHT_CLASS_SMALL
 	//grid_height = 64
 	//grid_width = 32
+
+// Compatibility paths for maps made before reagent containers moved from /food/drinks to /cup.
+/obj/item/reagent_containers/food/drinks/bottle/beer
+	parent_type = /obj/item/reagent_containers/cup/glass/bottle/beer
+
+/obj/item/reagent_containers/food/drinks/bottle/ms13/moonshine
+	parent_type = /obj/item/reagent_containers/cup/bottle/ms13/moonshine
+
+/obj/item/reagent_containers/food/drinks/bottle/ms13/plain
+	parent_type = /obj/item/reagent_containers/cup/bottle/ms13/plain
+
+/obj/item/reagent_containers/food/drinks/bottle/ms13/trooper_beer
+	parent_type = /obj/item/reagent_containers/cup/bottle/ms13/trooper_beer
+
+/obj/item/reagent_containers/food/drinks/bottle/ms13/vodka
+	parent_type = /obj/item/reagent_containers/cup/bottle/ms13/vodka
+
+/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey
+	parent_type = /obj/item/reagent_containers/cup/bottle/ms13/whiskey
+
+/obj/item/reagent_containers/food/drinks/bottle/ms13/wine
+	parent_type = /obj/item/reagent_containers/cup/bottle/ms13/wine
+
+/obj/item/reagent_containers/food/drinks/drinkingglass/ms13
+	parent_type = /obj/item/reagent_containers/cup/drinkingglass/ms13
+
+/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass
+	parent_type = /obj/item/reagent_containers/cup/glass/drinkingglass/shotglass
+
+/obj/item/reagent_containers/food/drinks/mug/ms13
+	parent_type = /obj/item/reagent_containers/cup/mug/ms13
+
+/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cola
+	parent_type = /obj/item/reagent_containers/cup/soda_cans/ms13/nuka_cola
+
+/obj/item/reagent_containers/food/drinks/soda_cans/ms13/sarsaparilla
+	parent_type = /obj/item/reagent_containers/cup/soda_cans/ms13/sarsaparilla
