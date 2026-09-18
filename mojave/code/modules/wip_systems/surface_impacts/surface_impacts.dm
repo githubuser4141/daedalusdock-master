@@ -6,7 +6,7 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	duration = 8 SECONDS
 
 /**
- * Surface-only prototype for destructive, procedurally populated encounters.
+ * First-map-level prototype for destructive, procedurally populated encounters.
  *
  * An admin chooses a theme at their current tile. The system reserves and marks a circular patch,
  * gives nearby players eight seconds to react, evacuates and wounds humans, gibs other living
@@ -20,11 +20,11 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	var/warning_time = 8 SECONDS
 	var/human_damage_min = 20
 	var/human_damage_max = 35
-	var/wall_chance = 65
-	var/interior_wall_chance = 10
-	var/mob_count = 4
-	var/feature_count = 4
-	var/loot_count = 3
+	var/wall_chance = 75
+	var/interior_wall_chance = 18
+	var/mob_count = 6
+	var/feature_count = 7
+	var/loot_count = 5
 	var/floor_type = /turf/open/floor/plating/ms13/ground/mountain
 	var/list/wall_types = list(/turf/closed/mineral/random/ms13)
 	var/list/mob_types = list()
@@ -39,9 +39,9 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	. = ..()
 	if(elite)
 		radius++
-		mob_count += 3
-		feature_count += 2
-		loot_count += 2
+		mob_count += 5
+		feature_count += 4
+		loot_count += 3
 		human_damage_min += 10
 		human_damage_max += 15
 
@@ -66,12 +66,12 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 			if(affected)
 				. += affected
 
-/datum/ms13_surface_impact/proc/is_surface_level(z_level)
-	return SSmapping.level_trait(z_level, ZTRAIT_UP) && SSmapping.level_trait(z_level, ZTRAIT_DOWN)
+/datum/ms13_surface_impact/proc/is_impact_level(z_level)
+	return z_level == SSmapping.station_start
 
 /datum/ms13_surface_impact/proc/get_validation_error(turf/target, check_reservations = TRUE)
-	if(!target || !is_surface_level(target.z))
-		return "The impact must be placed on the middle, surface z-level."
+	if(!target || !is_impact_level(target.z))
+		return "The impact must be placed on the first playable z-level."
 	if(target.x <= radius + 3 || target.x > world.maxx - radius - 3 || target.y <= radius + 3 || target.y > world.maxy - radius - 3)
 		return "The impact is too close to the map edge to evacuate its occupants safely."
 
@@ -79,18 +79,13 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	for(var/turf/affected as anything in footprint)
 		if(check_reservations && (affected in GLOB.ms13_surface_impact_reserved_turfs))
 			return "Another surface impact already reserves part of this footprint."
-		if(!istype(affected, /turf/open/floor/plating/ms13/ground))
-			return "The entire footprint must be open Mojave ground; buildings and caves are protected."
 		if(affected.resistance_flags & INDESTRUCTIBLE)
 			return "The footprint contains protected terrain."
-		var/area/affected_area = get_area(affected)
-		if(!affected_area?.outdoors)
-			return "The entire footprint must be outdoors."
 		if(locate(/obj/effect/landmark) in affected || locate(/obj/docking_port) in affected)
 			return "The footprint contains mapping infrastructure and cannot be replaced."
 
 	if(!length(get_evacuation_turfs(target)))
-		return "No safe outdoor tile exists near the impact for evacuating players."
+		return "No safe open tile exists near the impact for evacuating players."
 
 /datum/ms13_surface_impact/proc/get_evacuation_turfs(turf/target)
 	. = list()
@@ -103,10 +98,9 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 			if(distance_squared <= radius * radius || distance_squared > outer_radius * outer_radius)
 				continue
 			var/turf/candidate = locate(target.x + x_offset, target.y + y_offset, target.z)
-			if(!candidate || !istype(candidate, /turf/open/floor/plating/ms13/ground))
+			if(!candidate || !isopenturf(candidate))
 				continue
-			var/area/candidate_area = get_area(candidate)
-			if(candidate_area?.outdoors && is_safe_turf(candidate, extended_safety_checks = TRUE))
+			if(is_safe_turf(candidate, extended_safety_checks = TRUE))
 				. += candidate
 
 /datum/ms13_surface_impact/proc/begin(turf/target)
@@ -207,10 +201,14 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	name = "CDDA asteroid"
 	abstract = FALSE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/netherworld/migo,
-		/mob/living/simple_animal/hostile/zombie,
-		/mob/living/simple_animal/hostile/zombie,
+		/mob/living/simple_animal/hostile/netherworld/migo/ms13_impact,
+		/mob/living/simple_animal/hostile/zombie/ms13_impact,
+		/mob/living/simple_animal/hostile/zombie/ms13_impact,
 		/mob/living/basic/ms13/ghoul,
+	)
+	feature_types = list(
+		/obj/structure/flora/rock,
+		/obj/structure/ms13/ore_deposit/uranium,
 	)
 	loot_types = list(
 		/obj/item/ms13/component/cell,
@@ -225,9 +223,9 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	name = "CDDA asteroid (elite)"
 	elite = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/netherworld/migo,
-		/mob/living/simple_animal/hostile/netherworld/migo,
-		/mob/living/simple_animal/hostile/zombie,
+		/mob/living/simple_animal/hostile/netherworld/migo/ms13_impact,
+		/mob/living/simple_animal/hostile/netherworld/migo/ms13_impact,
+		/mob/living/simple_animal/hostile/zombie/ms13_impact,
 		/mob/living/basic/ms13/ghoul/radioactive,
 	)
 	loot_types = list(
@@ -242,9 +240,9 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 /datum/ms13_surface_impact/natural
 	name = "natural asteroid"
 	abstract = FALSE
-	mob_count = 3
-	feature_count = 7
-	loot_count = 1
+	mob_count = 5
+	feature_count = 10
+	loot_count = 3
 	mob_types = list(
 		/mob/living/basic/ms13/hostile_animal/radroach,
 		/mob/living/basic/ms13/hostile_animal/molerat/young,

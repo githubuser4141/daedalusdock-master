@@ -7,11 +7,14 @@ standard/elite strength, footprint size, warning time, and whether to target you
 datum marked through View Variables. No map template is involved: the encounter is assembled from
 existing turf, mob, structure, and item type paths at runtime.
 
+Generated sites deliberately pack their terrain with walls, structures, mobs, and salvage. CDDA
+impacts use tougher Mojave-only mi-go and shambling-zombie variants which share a faction.
+
 Current safety limits:
 
-- Impacts only run on the map's middle surface z-level (a level with both `Up` and `Down` traits).
-- The whole footprint must be outdoor `/turf/open/floor/plating/ms13/ground`; buildings, caves,
-  protected terrain, landmarks, docking ports, map edges, and overlapping impacts are rejected.
+- Impacts only run on the first loaded playable map z-level, but may replace outdoor ground,
+  buildings, or caves there.
+- Indestructible terrain, landmarks, docking ports, map edges, and overlapping impacts are rejected.
 - Humans receive the selected marked warning, are moved just beyond the footprint, and take impact
   damage. Other living mobs inside are gibbed. Existing objects in the footprint are lost.
 - Generation is immediate and procedural. It does not yet schedule random impacts, save/restorable

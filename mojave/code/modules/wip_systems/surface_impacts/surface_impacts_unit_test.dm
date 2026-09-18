@@ -28,3 +28,12 @@
 
 	TEST_ASSERT_EQUAL(concrete_variants, 10, "The prototype should expose five base themes and five elite variants.")
 	TEST_ASSERT_EQUAL(elite_variants, 5, "Every base surface-impact theme should have an elite variant.")
+	var/datum/ms13_surface_impact/natural/level_check = new
+	TEST_ASSERT(level_check.is_impact_level(SSmapping.station_start), "Impacts reject the first playable z-level.")
+	TEST_ASSERT(!level_check.is_impact_level(SSmapping.station_start + 1), "Impacts accept z-levels above the first playable level.")
+	qdel(level_check)
+
+	var/turf/indicator_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/obj/effect/temp_visual/ms13/target_indicator/indicator = new(indicator_turf)
+	TEST_ASSERT(islist(indicator.smoothing_groups) && islist(indicator.canSmoothWith), "Impact indicators leave raw smoothing strings that make adjacent walls runtime.")
+	qdel(indicator)
