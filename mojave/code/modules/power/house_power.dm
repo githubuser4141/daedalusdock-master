@@ -1,8 +1,7 @@
 /**
  * Round-start house power. Every enclosed building in an area that allows it (/area/ms13/var/house_power) gets
  * its own powered area and a random setup from the area's house_power_outcome(): a generator that's running,
- * switched off or broken, wired to a utility box; a utility box that works on its own; or nothing, leaving the
- * house dark.
+ * switched off or broken, wired to a utility box; an unpowered utility box; or nothing, leaving the house dark.
  *
  * The generator and box are joined by real cable, which may be snipped or frayed along the way.
  *
@@ -150,7 +149,6 @@ SUBSYSTEM_DEF(ms13_house_power)
 		created += generator
 	var/box_type = text2path("/obj/machinery/power/apc/ms13/directional/[dir2text(box_spot[2])]")
 	var/obj/machinery/power/apc/ms13/box = new box_type(box_spot[1])
-	box.always_powered = outcome == "box_only"
 	created += box
 	SSatoms.map_loader_stop(REF(src))
 	SSatoms.InitializeAtoms(created)
@@ -169,6 +167,7 @@ SUBSYSTEM_DEF(ms13_house_power)
 		GLOB.areas_by_type[old_area.type] = old_area
 	house.area_flags &= ~UNIQUE_AREA
 	house.name = old_area.name
+	house.area_lighting = AREA_LIGHTING_DYNAMIC
 	house.requires_power = TRUE
 	house.always_unpowered = FALSE
 	house.power_light = FALSE
@@ -176,7 +175,33 @@ SUBSYSTEM_DEF(ms13_house_power)
 	house.power_environ = FALSE
 	SSatoms.InitializeAtoms(list(house))
 	for(var/turf/tile as anything in building)
+		var/list/powered_machines = list()
+		for(var/obj/machinery/machine in tile)
+			if(machine.use_power == NO_POWER_USE)
+				continue
+			machine.unset_static_power()
+			machine.UnregisterSignal(old_area, COMSIG_AREA_POWER_CHANGE)
+			powered_machines += machine
 		tile.change_area(old_area, house)
+		// Re-areaing a turf does not move its contents, so existing machines otherwise keep listening
+		// to the old area's power signal and ignore this utility box.
+		for(var/obj/machinery/machine as anything in powered_machines)
+			machine.UnregisterSignal(house, COMSIG_AREA_POWER_CHANGE)
+			machine.RegisterSignal(house, COMSIG_AREA_POWER_CHANGE, TYPE_PROC_REF(/obj/machinery, power_change))
+			machine.update_current_power_usage()
+			machine.power_change()
+			if(istype(machine, /obj/machinery/light))
+				var/obj/machinery/light/fixture = machine
+				if(fixture.my_area)
+					LAZYREMOVE(fixture.my_area.lights, fixture)
+				fixture.my_area = house
+				LAZYADD(house.lights, fixture)
+			else if(istype(machine, /obj/machinery/light_switch))
+				var/obj/machinery/light_switch/light_switch = machine
+				if(light_switch.area)
+					LAZYREMOVE(light_switch.area.light_switches, light_switch)
+				light_switch.area = house
+				LAZYADD(house.light_switches, light_switch)
 	house.reg_in_areas_in_z()
 	return house
 

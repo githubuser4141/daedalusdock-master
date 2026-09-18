@@ -1,7 +1,8 @@
 // MOJAVE SUN HOUSE POWER MARKER //
 // Buildings get a random power setup at round start (mojave/code/modules/power/house_power.dm). Place one of
-// these anywhere inside a building to force its outcome instead: "working", "off", "broken", "box_only", or
-// "none" for a house that stays dark. It works even in areas that normally skip house power.
+// these anywhere inside a building to force its outcome instead: "working", "off", "broken", "box_only" for
+// an unpowered utility box, or "none" for a house that stays dark. It works even in areas that normally skip
+// house power.
 
 /obj/effect/spawner/ms13_house_power
 	name = "house power outcome (mapping helper)"

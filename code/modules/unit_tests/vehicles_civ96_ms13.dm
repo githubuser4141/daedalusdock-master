@@ -30,10 +30,12 @@
 	TEST_ASSERT_EQUAL(gear_count, 4, "[vehicle_type] did not get four running gear units.")
 	TEST_ASSERT(turret, "[vehicle_type] has no turret.")
 	TEST_ASSERT(ms13_icon_has_state(turret.turret_icon, "[turret.turret_art]_turret0"), "[vehicle_type] turret ring art does not exist.")
-	TEST_ASSERT(ms13_icon_has_state(turret.turret_icon, turret.exterior_image.icon_state), "[vehicle_type] turret top art does not exist.")
+	TEST_ASSERT_EQUAL(turret.exterior_image.icon_state, "[turret.turret_art]_turret0", "[vehicle_type] turret ring is not exterior-only.")
+	TEST_ASSERT(ms13_icon_has_state(turret.turret_icon, "[turret.turret_art]_turret_roof0"), "[vehicle_type] turret top art does not exist.")
 
 	var/seats = 0
 	var/drivers = 0
+	var/obj/structure/chair/ms13_vehicle_seat/gunner_seat
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
 		TEST_ASSERT(ms13_icon_has_state(frame.icon, frame.icon_state), "[vehicle_type] floor art [frame.icon_state] does not exist.")
 		TEST_ASSERT(ms13_icon_has_state(frame.icon, frame.roof.icon_state), "[vehicle_type] roof art [frame.roof.icon_state] does not exist.")
@@ -43,8 +45,34 @@
 			seats++
 			if(seat.is_driver_seat)
 				drivers++
+			if(seat.operated_turret == turret)
+				gunner_seat = seat
 	TEST_ASSERT_EQUAL(seats, expected_seats, "[vehicle_type] has the wrong number of seats.")
 	TEST_ASSERT_EQUAL(drivers, 1, "[vehicle_type] needs exactly one driver's seat.")
+	TEST_ASSERT(gunner_seat, "[vehicle_type] turret is not linked to a gunner's seat.")
+	TEST_ASSERT_EQUAL(turret.gunner_seat, gunner_seat, "[vehicle_type] gunner seat link is only one-way.")
+	TEST_ASSERT(turret.projectile_type && turret.ammo_type && turret.fire_sound, "[vehicle_type] turret is missing part of its weapon configuration.")
+	TEST_ASSERT(turret.ammo > 0 && turret.ammo <= turret.max_ammo, "[vehicle_type] turret did not start with a valid ammunition load.")
+
+	// One representative live shot covers the shared controls and fire path used by every profile.
+	if(istype(pivot, /obj/structure/ms13_vehicle_frame/civ96/btr80))
+		var/mob/living/carbon/human/consistent/gunner = allocate(/mob/living/carbon/human/consistent)
+		gunner.forceMove(get_turf(gunner_seat))
+		gunner_seat.user_buckle_mob(gunner, gunner)
+		TEST_ASSERT(gunner_seat.turret_control && gunner.is_holding(gunner_seat.turret_control), "Buckling into the gunner seat did not provide turret controls.")
+
+		var/turf/target = get_turf(turret)
+		for(var/i in 1 to 4)
+			target = get_step(target, EAST)
+		TEST_ASSERT(target && !vehicle.get_frame_at(target), "No exterior target turf was available for the turret test.")
+		var/ammo_before = turret.ammo
+		var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent)
+		TEST_ASSERT(!turret.fire_at(target, bystander, null), "A mob outside the gunner seat could fire the turret.")
+		TEST_ASSERT_EQUAL(turret.ammo, ammo_before, "An unauthorized turret attempt consumed ammunition.")
+		TEST_ASSERT(turret.fire_at(target, gunner, null), "The buckled gunner could not fire the turret.")
+		TEST_ASSERT_EQUAL(turret.ammo, ammo_before - 1, "Firing the turret did not consume one round.")
+		gunner_seat.unbuckle_mob(gunner, TRUE)
+		TEST_ASSERT(!gunner_seat.turret_control, "The turret controls remained after the gunner unbuckled.")
 
 	var/obj/projectile/bullet/ms13/a50MG/heavy = allocate(/obj/projectile/bullet/ms13/a50MG)
 	var/list/every_round = list()
@@ -56,7 +84,10 @@
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls)
 		if(!wall.exterior)
 			continue
-		TEST_ASSERT(ms13_icon_has_state(wall.icon, wall.icon_state), "[vehicle_type] hull art [wall.icon_state] does not exist.")
+		TEST_ASSERT(wall.exterior_image, "[vehicle_type] hull wall was not split into exterior and cabin art.")
+		TEST_ASSERT(ms13_icon_has_state(wall.exterior_image.icon, wall.exterior_image.icon_state), "[vehicle_type] hull art [wall.exterior_image.icon_state] does not exist.")
+		if(!isnull(wall.vision_range))
+			TEST_ASSERT_EQUAL(wall.vision_range, 0, "[vehicle_type] vision port works from an adjacent tile instead of its own tile only.")
 		if(tank_armor)
 			for(var/round_type in every_round)
 				var/obj/projectile/bullet/round = every_round[round_type]

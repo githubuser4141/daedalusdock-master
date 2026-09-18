@@ -12,7 +12,8 @@
  * generator can break down. Fusion cores refuel it and a welder patches it up.
  *
  * fusion_generator is /obj/machinery/ms13, not /obj/machinery/power (renaming it would orphan every existing
- * map placement), so the few powernet procs it needs are copied from code/modules/power/power.dm.
+ * map placement), so it keeps only a reference to the cable network it feeds rather than joining the network's
+ * type-restricted machinery-node list.
  */
 /obj/machinery/ms13/fusion_generator
 	name = "fusion generator"
@@ -101,15 +102,12 @@
 	if(powernet == wanted && !QDELETED(powernet))
 		return
 	disconnect_from_network()
-	wanted?.add_machine(src)
+	powernet = wanted
 
 /obj/machinery/ms13/fusion_generator/proc/disconnect_from_network()
 	if(!powernet)
 		return FALSE
-	if(QDELETED(powernet))
-		powernet = null
-	else
-		powernet.remove_machine(src)
+	powernet = null
 	return TRUE
 
 /obj/machinery/ms13/fusion_generator/proc/add_avail(amount)

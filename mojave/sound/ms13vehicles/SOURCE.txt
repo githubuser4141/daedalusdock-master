@@ -1,0 +1,9 @@
+Vehicle weapon sounds imported from https://github.com/Civ13/Civ13 at commit
+0d38999d5f9f987a944493f11c456537f39ac2f6 (GNU AGPL v3, matching this project).
+
+Original paths:
+- sound/weapons/guns/fire/2a72.ogg
+- sound/weapons/guns/fire/30mm.ogg
+- sound/weapons/guns/fire/DP28.ogg
+- sound/weapons/WW2/artillery_outgoing.ogg
+- sound/weapons/guns/interact/MGReloadGeneric.ogg

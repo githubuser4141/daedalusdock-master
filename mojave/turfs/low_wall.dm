@@ -1,6 +1,8 @@
 /obj/structure/table/ms13/low_wall
 	name = "base class low wall"
 	plane = WALL_PLANE
+	// Below north-facing windows, which sit just below full walls on this plane.
+	layer = CLOSED_TURF_LAYER - 0.02
 	desc = "Abandon hope"
 	icon = 'icons/obj/smooth_structures/table.dmi'
 	icon_state = "low-0"

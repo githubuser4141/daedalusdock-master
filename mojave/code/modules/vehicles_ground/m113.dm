@@ -64,7 +64,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/m113)
 	max_integrity = 800
 	// Periscope glass: you can see out only with your face to it, and it lets almost no light in.
 	light_proof = TRUE
-	vision_range = 1
+	vision_range = 0
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)

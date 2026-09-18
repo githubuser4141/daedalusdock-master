@@ -11,8 +11,9 @@ import { Window } from '../layouts';
 import { InterfaceLockNoticeBox } from './common/InterfaceLockNoticeBox';
 
 export const Apc = (props) => {
+  const { data } = useBackend();
   return (
-    <Window width={450} height={432}>
+    <Window width={450} height={data.utilityBox ? 350 : 432}>
       <Window.Content>
         <ApcContent />
       </Window.Content>
@@ -90,9 +91,9 @@ const ApcContent = (props) => {
   }
   return (
     <>
-      <InterfaceLockNoticeBox />
+      {!data.utilityBox && <InterfaceLockNoticeBox />}
       <Section
-        title="Power Status"
+        title={data.utilityBox ? 'Utility Feed' : 'Power Status'}
         buttons={
           <Button
             icon={data.mainLights ? 'lightbulb' : 'lightbulb-o'}
@@ -104,7 +105,7 @@ const ApcContent = (props) => {
       >
         <LabeledList>
           <LabeledList.Item
-            label="Main Breaker"
+            label={data.utilityBox ? 'Incoming Feed' : 'Main Breaker'}
             color={externalPowerStatus.color}
             buttons={
               <Button
@@ -118,23 +119,32 @@ const ApcContent = (props) => {
           >
             [ {externalPowerStatus.externalPowerText} ]
           </LabeledList.Item>
-          <LabeledList.Item label="Power Cell">
-            <ProgressBar color="good" value={adjustedCellChange} />
-          </LabeledList.Item>
-          <LabeledList.Item
-            label="Charge Mode"
-            color={chargingStatus.color}
-            buttons={
-              <Button
-                icon={data.chargeMode ? 'sync' : 'times'}
-                content={data.chargeMode ? 'Auto' : 'Off'}
-                disabled={locked}
-                onClick={() => act('charge')}
-              />
-            }
-          >
-            [ {chargingStatus.chargingText} ]
-          </LabeledList.Item>
+          {!!data.utilityBox && (
+            <LabeledList.Item label="Backup Power">
+              None — circuits drop immediately with the feed or breaker
+            </LabeledList.Item>
+          )}
+          {!data.utilityBox && (
+            <LabeledList.Item label="Power Cell">
+              <ProgressBar color="good" value={adjustedCellChange} />
+            </LabeledList.Item>
+          )}
+          {!data.utilityBox && (
+            <LabeledList.Item
+              label="Charge Mode"
+              color={chargingStatus.color}
+              buttons={
+                <Button
+                  icon={data.chargeMode ? 'sync' : 'times'}
+                  content={data.chargeMode ? 'Auto' : 'Off'}
+                  disabled={locked}
+                  onClick={() => act('charge')}
+                />
+              }
+            >
+              [ {chargingStatus.chargingText} ]
+            </LabeledList.Item>
+          )}
         </LabeledList>
       </Section>
       <Section title="Power Channels">
@@ -190,56 +200,58 @@ const ApcContent = (props) => {
           </LabeledList.Item>
         </LabeledList>
       </Section>
-      <Section
-        title="Misc"
-        buttons={
-          !!data.siliconUser && (
-            <>
-              {!!data.malfStatus && (
+      {!data.utilityBox && (
+        <Section
+          title="Misc"
+          buttons={
+            !!data.siliconUser && (
+              <>
+                {!!data.malfStatus && (
+                  <Button
+                    icon={malfStatus.icon}
+                    content={malfStatus.content}
+                    color="bad"
+                    onClick={() => act(malfStatus.action)}
+                  />
+                )}
                 <Button
-                  icon={malfStatus.icon}
-                  content={malfStatus.content}
-                  color="bad"
-                  onClick={() => act(malfStatus.action)}
+                  icon="lightbulb-o"
+                  content="Overload"
+                  onClick={() => act('overload')}
                 />
-              )}
-              <Button
-                icon="lightbulb-o"
-                content="Overload"
-                onClick={() => act('overload')}
-              />
-            </>
-          )
-        }
-      >
-        <LabeledList>
-          <LabeledList.Item
-            label="Cover Lock"
-            buttons={
-              <Button
-                icon={data.coverLocked ? 'lock' : 'unlock'}
-                content={data.coverLocked ? 'Engaged' : 'Disengaged'}
-                disabled={locked}
-                onClick={() => act('cover')}
-              />
-            }
-          />
-          <LabeledList.Item
-            label="Emergency Lighting"
-            buttons={
-              <Button
-                icon={data.emergencyLights ? 'lightbulb' : 'lightbulb-o'}
-                content={data.emergencyLights ? 'Enabled' : 'Disabled'}
-                width={6.6}
-                textAlign="left"
-                selected={data.emergencyLights}
-                disabled={locked}
-                onClick={() => act('emergency_lighting')}
-              />
-            }
-          />
-        </LabeledList>
-      </Section>
+              </>
+            )
+          }
+        >
+          <LabeledList>
+            <LabeledList.Item
+              label="Cover Lock"
+              buttons={
+                <Button
+                  icon={data.coverLocked ? 'lock' : 'unlock'}
+                  content={data.coverLocked ? 'Engaged' : 'Disengaged'}
+                  disabled={locked}
+                  onClick={() => act('cover')}
+                />
+              }
+            />
+            <LabeledList.Item
+              label="Emergency Lighting"
+              buttons={
+                <Button
+                  icon={data.emergencyLights ? 'lightbulb' : 'lightbulb-o'}
+                  content={data.emergencyLights ? 'Enabled' : 'Disabled'}
+                  width={6.6}
+                  textAlign="left"
+                  selected={data.emergencyLights}
+                  disabled={locked}
+                  onClick={() => act('emergency_lighting')}
+                />
+              }
+            />
+          </LabeledList>
+        </Section>
+      )}
     </>
   );
 };

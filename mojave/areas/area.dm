@@ -430,8 +430,8 @@
 	area_lighting = AREA_LIGHTING_DYNAMIC
 
 /**
- * Which power setup a building here gets at round start: "working", "off", "broken", "box_only", "none", or null
- * to leave it alone entirely. Faction bases and dungeons can override this with their own logic.
+ * Which power setup a building here gets at round start: "working", "off", "broken", "box_only" (an unpowered
+ * utility box), "none", or null to leave it alone entirely. Faction bases and dungeons can override this.
  */
 /area/ms13/proc/house_power_outcome(list/building)
 	if(!house_power)

@@ -416,9 +416,80 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	name = "wheel set"
 	desc = "A run of big armored-car wheels. Damaging enough of these will prevent acceleration."
 
+/// Vehicle-scale rounds use existing projectile behavior and MS13's placeholder ammunition art.
+TYPEINFO_DEF(/obj/projectile/bullet/ms13/vehicle_autocannon)
+	default_armor = list(BLUNT = 0, PUNCTURE = GIANT_CAL_RIFLE, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+/obj/projectile/bullet/ms13/vehicle_autocannon
+	parent_type = /obj/projectile/bullet/ms13/a50MG/ap
+	name = "30mm autocannon shell"
+	damage = 180
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
+	bulletTipType = BULLET_SHARP
+
+TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/medium)
+	default_armor = list(BLUNT = 0, PUNCTURE = GIANT_CAL_RIFLE, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+/obj/projectile/bullet/cannonball/ms13_vehicle/medium
+	name = "76mm tank shell"
+	damage = 220
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
+	bulletTipType = BULLET_SHARP
+
+TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
+	default_armor = list(BLUNT = 0, PUNCTURE = GIANT_CAL_RIFLE, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+/obj/projectile/bullet/cannonball/ms13_vehicle/heavy
+	name = "122mm tank shell"
+	damage = 300
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
+	bulletTipType = BULLET_SHARP
+
+/obj/item/ammo_casing/ms13/vehicle_autocannon
+	name = "30mm autocannon shell casing"
+	desc = "A vehicle autocannon shell."
+	caliber = "30mm"
+	icon_state = "50bmg_casing"
+	projectile_type = /obj/projectile/bullet/ms13/vehicle_autocannon
+
+/obj/item/ammo_casing/ms13/vehicle_shell
+	name = "76mm tank shell casing"
+	desc = "A complete 76mm tank shell."
+	caliber = "76mm"
+	icon_state = "50bmg_casing"
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium
+
+/obj/item/ammo_casing/ms13/vehicle_shell/heavy
+	name = "122mm tank shell casing"
+	desc = "A complete 122mm tank shell."
+	caliber = "122mm"
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
+
+/obj/item/ammo_box/ms13/vehicle_autocannon
+	name = "30mm ammunition box"
+	desc = "A heavy box of linked 30mm autocannon ammunition."
+	icon_state = "box50"
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_autocannon
+	caliber = "30mm"
+	max_ammo = 20
+	w_class = WEIGHT_CLASS_BULKY
+
+/obj/item/ammo_box/ms13/vehicle_shell
+	name = "76mm shell crate"
+	desc = "A reinforced crate containing 76mm tank shells."
+	icon_state = "box50"
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell
+	caliber = "76mm"
+	max_ammo = 4
+	w_class = WEIGHT_CLASS_BULKY
+
+/obj/item/ammo_box/ms13/vehicle_shell/heavy
+	name = "122mm shell crate"
+	desc = "A reinforced crate containing 122mm tank shells."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy
+	caliber = "122mm"
+	max_ammo = 2
+
 /**
- * A turret seen from above. The ring shows to everyone, so riders see it from inside; the turret top is
- * exterior-only, like the roof. It has no weapon yet.
+ * A turret seen from above. Both ring and turret top are exterior-only, like the roof, so the art does not
+ * cover its gunner inside the cabin. A linked gunner seat supplies the abstract controls used to aim and fire.
  */
 /obj/structure/ms13_vehicle_part/turret
 	name = "turret"
@@ -432,15 +503,157 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	/// Where the turret art sits relative to this tile, in the vehicle's own right/forward pixels.
 	var/shift_right = 0
 	var/shift_forward = 0
+	var/obj/structure/chair/ms13_vehicle_seat/gunner_seat
+	var/projectile_type
+	var/ammo_type
+	var/weapon_name = "unarmed mount"
+	var/fire_sound
+	var/fire_sound_volume = 75
+	var/fire_delay = 1 SECONDS
+	var/max_ammo = 0
+	var/ammo = 0
+	var/next_fire_time = 0
+
+/obj/structure/ms13_vehicle_part/turret/Destroy()
+	if(gunner_seat)
+		gunner_seat.operated_turret = null
+		QDEL_NULL(gunner_seat.turret_control)
+	gunner_seat = null
+	return ..()
+
+/obj/structure/ms13_vehicle_part/turret/examine(mob/user)
+	. = ..()
+	. += span_notice("Its [weapon_name] has [ammo]/[max_ammo] rounds loaded.")
+
+/obj/structure/ms13_vehicle_part/turret/attackby(obj/item/used_item, mob/user, params)
+	if(!istype(used_item, /obj/item/ammo_box))
+		return ..()
+	if(!ammo_type)
+		balloon_alert(user, "no weapon fitted!")
+		return
+	if(ammo >= max_ammo)
+		balloon_alert(user, "already full!")
+		return
+
+	var/obj/item/ammo_box/ammo_box = used_item
+	var/loaded = 0
+	while(ammo < max_ammo && ammo_box.ammo_count(FALSE))
+		var/obj/item/ammo_casing/round = ammo_box.get_round(FALSE)
+		if(!istype(round, ammo_type))
+			ammo_box.give_round(round)
+			break
+		qdel(round)
+		ammo++
+		loaded++
+	ammo_box.update_ammo_count()
+	if(!loaded)
+		balloon_alert(user, "wrong ammunition!")
+		return
+	playsound(src, 'mojave/sound/ms13vehicles/MGReloadGeneric.ogg', 50, TRUE)
+	balloon_alert(user, "loaded [loaded] round[loaded == 1 ? "" : "s"]")
+
+/// Point the turret without changing its relationship to the hull on the next vehicle turn.
+/obj/structure/ms13_vehicle_part/turret/proc/aim_at(atom/target)
+	var/aim_dir = get_cardinal_dir(src, target)
+	if(!aim_dir)
+		return FALSE
+	setDir(aim_dir)
+	if(vehicle)
+		// dir2angle() increases clockwise, while turn() increases counter-clockwise.
+		relative_turn = (dir2angle(vehicle.dir) - dir2angle(aim_dir) + 360) % 360
+	return TRUE
+
+/// The barrel is above the roof: begin outside the vehicle so rounds do not hit their own hull.
+/obj/structure/ms13_vehicle_part/turret/proc/get_muzzle_turf(aim_dir)
+	var/turf/muzzle = get_turf(src)
+	while(muzzle && vehicle?.get_frame_at(muzzle))
+		muzzle = get_step(muzzle, aim_dir)
+	return muzzle
+
+/obj/structure/ms13_vehicle_part/turret/proc/fire_at(atom/target, mob/living/user, list/modifiers)
+	if(!projectile_type || !is_operational() || !gunner_seat || user.buckled != gunner_seat || !(user in gunner_seat.buckled_mobs) || user.incapacitated())
+		return FALSE
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf || vehicle?.get_frame_at(target_turf) || !aim_at(target))
+		return FALSE
+	if(world.time < next_fire_time)
+		return FALSE
+	if(ammo <= 0)
+		balloon_alert(user, "[weapon_name] is empty!")
+		playsound(src, 'sound/weapons/gun/general/dry_fire.ogg', 30, TRUE)
+		next_fire_time = world.time + 5
+		return FALSE
+
+	var/turf/muzzle = get_muzzle_turf(dir)
+	if(!muzzle)
+		return FALSE
+	var/obj/projectile/shot = new projectile_type
+	shot.firer = user
+	shot.fired_from = src
+	if(!shot.preparePixelProjectile(target, muzzle, modifiers))
+		qdel(shot)
+		return FALSE
+	ammo--
+	next_fire_time = world.time + fire_delay
+	playsound(src, fire_sound, fire_sound_volume, TRUE)
+	shot.fire()
+	return TRUE
+
+/obj/structure/ms13_vehicle_part/turret/machine_gun
+	weapon_name = "7.62mm machine gun"
+	projectile_type = /obj/projectile/bullet/ms13/a762/fmj
+	ammo_type = /obj/item/ammo_casing/ms13/a762
+	fire_sound = 'mojave/sound/ms13vehicles/DP28.ogg'
+	fire_delay = 2
+	max_ammo = 100
+	ammo = 100
+
+/obj/structure/ms13_vehicle_part/turret/autocannon/btr80
+	weapon_name = "Shipunov 2A72 30mm autocannon"
+	projectile_type = /obj/projectile/bullet/ms13/vehicle_autocannon
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_autocannon
+	fire_sound = 'mojave/sound/ms13vehicles/2a72.ogg'
+	fire_delay = 4
+	max_ammo = 40
+	ammo = 40
+
+/obj/structure/ms13_vehicle_part/turret/autocannon/bmd2
+	weapon_name = "Shipunov 2A42 30mm autocannon"
+	projectile_type = /obj/projectile/bullet/ms13/vehicle_autocannon
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_autocannon
+	fire_sound = 'mojave/sound/ms13vehicles/30mm.ogg'
+	fire_delay = 3
+	max_ammo = 60
+	ammo = 60
+
+/obj/structure/ms13_vehicle_part/turret/tank/medium
+	weapon_name = "76mm tank cannon"
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell
+	fire_sound = 'mojave/sound/ms13vehicles/artillery_outgoing.ogg'
+	fire_sound_volume = 100
+	fire_delay = 5 SECONDS
+	max_ammo = 12
+	ammo = 12
+
+/obj/structure/ms13_vehicle_part/turret/tank/heavy
+	weapon_name = "122mm tank cannon"
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy
+	fire_sound = 'mojave/sound/ms13vehicles/artillery_outgoing.ogg'
+	fire_sound_volume = 100
+	fire_delay = 8 SECONDS
+	max_ammo = 8
+	ammo = 8
 
 /obj/structure/ms13_vehicle_part/turret/proc/set_art(art, right, forward, new_paint)
 	turret_art = art
 	shift_right = right
 	shift_forward = forward
 	paint = new_paint
-	exterior_image = image(turret_icon, src, "[art]_turret_roof0", ABOVE_ALL_MOB_LAYER + 0.03, dir)
+	exterior_image = image(turret_icon, src, "[art]_turret0", ABOVE_ALL_MOB_LAYER + 0.02, dir)
 	exterior_image.color = paint
-	exterior_image.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
 	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images |= exterior_image
@@ -452,7 +665,14 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	if(exterior_image)
 		exterior_image.pixel_x = offset[1]
 		exterior_image.pixel_y = offset[2]
+		var/mutable_appearance/turret_top = mutable_appearance(turret_icon, "[turret_art]_turret_roof0", ABOVE_ALL_MOB_LAYER + 0.03)
+		turret_top.dir = dir
+		turret_top.color = paint
+		turret_top.appearance_flags = RESET_COLOR
+		turret_top.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		exterior_image.overlays = list(turret_top)
 	update_appearance()
+	gunner_seat?.turret_control?.update_sight()
 
 /// Pixel offset of the 256x256 turret art for the current facing.
 /obj/structure/ms13_vehicle_part/turret/proc/get_art_offset()
@@ -462,18 +682,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	return list(px, py)
 
 /obj/structure/ms13_vehicle_part/turret/update_overlays()
-	. = ..()
-	if(!turret_art)
-		return
-	var/list/offset = get_art_offset()
-	var/mutable_appearance/ring = mutable_appearance(turret_icon, "[turret_art]_turret0", layer)
-	ring.dir = dir
-	ring.pixel_x = offset[1]
-	ring.pixel_y = offset[2]
-	ring.color = paint
-	ring.appearance_flags = RESET_COLOR
-	ring.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	. += ring
+	return ..()
 
 /// Ammunition and kit stowage along the hull. Click to open.
 /obj/structure/ms13_vehicle_part/stowage

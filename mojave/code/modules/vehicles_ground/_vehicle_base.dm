@@ -113,6 +113,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			viewer.images |= part.exterior_image
 		else
 			viewer.images -= part.exterior_image
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+		if(!wall.exterior_image)
+			continue
+		if(visible)
+			viewer.images |= wall.exterior_image
+		else
+			viewer.images -= wall.exterior_image
 	// Occupants see the cabin by its own light; outsiders see the roof by daylight.
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		if(!frame.interior_light)
@@ -703,6 +710,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Roofs are client images: outsiders see them, while somebody on a vehicle frame sees its cabin.
 /mob
 	var/list/ms13_vehicle_interior_masks
+	/// The held turret control currently replacing this mob's cabin view with an exterior gunsight.
+	var/obj/item/ms13_vehicle_turret_control/ms13_active_gunner_sight
 
 /mob/proc/clear_ms13_vehicle_interior_mask()
 	if(client && length(ms13_vehicle_interior_masks))
@@ -712,7 +721,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Black out only exterior turfs whose ray from this occupant crosses closed solid hull.
 /mob/proc/update_ms13_vehicle_interior_mask()
 	clear_ms13_vehicle_interior_mask()
-	if(!client)
+	if(!client || ms13_active_gunner_sight)
 		return
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
 	if(!vehicle)
@@ -744,6 +753,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	update_ms13_vehicle_interior_mask()
 
 /mob/Logout()
+	ms13_active_gunner_sight?.set_sight(src, FALSE)
 	clear_ms13_vehicle_interior_mask()
 	return ..()
 
@@ -753,6 +763,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		return
 	var/datum/ms13_ground_vehicle/old_vehicle = get_ms13_ground_vehicle_at(old_loc)
 	var/datum/ms13_ground_vehicle/new_vehicle = get_ms13_ground_vehicle_at(src)
+	if(ms13_active_gunner_sight && old_vehicle != new_vehicle)
+		ms13_active_gunner_sight.set_sight(src, FALSE)
 	if(old_vehicle != new_vehicle)
 		old_vehicle?.set_roof_visible(client, TRUE)
 		new_vehicle?.set_roof_visible(client, FALSE)

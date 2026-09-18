@@ -32,6 +32,14 @@ TYPEINFO_DEF(/obj/machinery/door/poddoor/shutters/ms13)
 		density = FALSE
 		opacity = FALSE
 
+// The north/south art overlaps its neighbouring wall tiles; keep those walls in front of it.
+/obj/machinery/door/poddoor/shutters/ms13/setDir(new_dir)
+	. = ..()
+	var/under_walls = dir == NORTH || dir == SOUTH
+	plane = under_walls ? WALL_PLANE : initial(plane)
+	closingLayer = under_walls ? CLOSED_TURF_LAYER - 0.01 : initial(closingLayer)
+	layer = under_walls ? closingLayer : (density ? closingLayer : initial(layer))
+
 /obj/machinery/door/poddoor/shutters/ms13/crush()
 	for(var/mob/living/L in get_turf(src))
 		L.visible_message(span_warning("[src] closes on [L], crushing [L.p_them()]!"), span_userdanger("[src] closes on you and crushes you!"))

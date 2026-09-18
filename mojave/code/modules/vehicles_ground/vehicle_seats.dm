@@ -17,8 +17,14 @@
 	icon_state = "driver_car"
 	var/obj/structure/ms13_vehicle_frame/parent_frame
 	var/is_driver_seat = FALSE
+	var/obj/structure/ms13_vehicle_part/turret/operated_turret
+	var/obj/item/ms13_vehicle_turret_control/turret_control
 
 /obj/structure/chair/ms13_vehicle_seat/Destroy()
+	if(operated_turret?.gunner_seat == src)
+		operated_turret.gunner_seat = null
+	operated_turret = null
+	QDEL_NULL(turret_control)
 	if(is_driver_seat && parent_frame?.vehicle?.driver)
 		parent_frame.vehicle.driver = null
 	parent_frame = null
@@ -33,12 +39,23 @@
 	ADD_TRAIT(M, TRAIT_CANNOT_BE_UNBUCKLED, BUCKLED_TRAIT)
 	if(is_driver_seat && parent_frame?.vehicle)
 		parent_frame.vehicle.driver = M
+	if(operated_turret)
+		turret_control = new(operated_turret)
+		if(!M.put_in_hands(turret_control, del_on_fail = TRUE))
+			turret_control = null
+			balloon_alert(M, "free a hand to use the turret!")
 
 /obj/structure/chair/ms13_vehicle_seat/post_unbuckle_mob(mob/living/M)
 	. = ..()
 	REMOVE_TRAIT(M, TRAIT_CANNOT_BE_UNBUCKLED, BUCKLED_TRAIT)
 	if(is_driver_seat && parent_frame?.vehicle?.driver == M)
 		parent_frame.vehicle.driver = null
+	QDEL_NULL(turret_control)
+
+/obj/structure/chair/ms13_vehicle_seat/attackby(obj/item/used_item, mob/user, params)
+	if(operated_turret && istype(used_item, /obj/item/ammo_box))
+		return operated_turret.attackby(used_item, user, params)
+	return ..()
 
 /obj/structure/chair/ms13_vehicle_seat/relaymove(mob/living/user, direction)
 	if(!is_driver_seat || !parent_frame?.vehicle || !(user in buckled_mobs))
@@ -49,3 +66,77 @@
 		return
 
 	parent_frame.vehicle.handle_drive_input(direction)
+
+/// An abstract held trigger, following the existing deployable-turret control pattern.
+/obj/item/ms13_vehicle_turret_control
+	name = "vehicle turret controls"
+	desc = "Aim at a target and fire. Use the controls in hand to toggle the directional exterior gunsight."
+	icon = 'icons/obj/items_and_weapons.dmi'
+	icon_state = "offhand"
+	w_class = WEIGHT_CLASS_HUGE
+	item_flags = ABSTRACT | NOBLUDGEON | DROPDEL
+	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	var/obj/structure/ms13_vehicle_part/turret/turret
+	var/sight_active = FALSE
+
+/obj/item/ms13_vehicle_turret_control/Initialize(mapload)
+	. = ..()
+	ADD_TRAIT(src, TRAIT_NODROP, ABSTRACT_ITEM_TRAIT)
+	turret = loc
+	if(!istype(turret))
+		return INITIALIZE_HINT_QDEL
+	name = "[turret.weapon_name] controls"
+
+/obj/item/ms13_vehicle_turret_control/Destroy()
+	var/mob/living/holder = loc
+	if(sight_active && istype(holder))
+		set_sight(holder, FALSE)
+	if(turret?.gunner_seat?.turret_control == src)
+		turret.gunner_seat.turret_control = null
+	turret = null
+	return ..()
+
+/obj/item/ms13_vehicle_turret_control/CanItemAutoclick()
+	return TRUE
+
+/obj/item/ms13_vehicle_turret_control/attack_self(mob/living/user)
+	if(!turret || user.buckled != turret.gunner_seat || !user.is_holding(src))
+		balloon_alert(user, "sit at the gunner station!")
+		return
+	set_sight(user, !sight_active)
+	balloon_alert(user, sight_active ? "gunsight engaged" : "gunsight disengaged")
+	return TRUE
+
+/obj/item/ms13_vehicle_turret_control/proc/set_sight(mob/living/user, enabled)
+	if(sight_active == enabled || !user)
+		return FALSE
+	if(enabled && !user.client)
+		return FALSE
+	var/datum/ms13_ground_vehicle/vehicle = turret?.vehicle
+	sight_active = enabled
+	if(enabled)
+		user.ms13_active_gunner_sight?.set_sight(user, FALSE)
+		user.ms13_active_gunner_sight = src
+		vehicle?.set_roof_visible(user.client, TRUE)
+		user.clear_ms13_vehicle_interior_mask()
+		update_sight()
+		return TRUE
+	if(user.ms13_active_gunner_sight == src)
+		user.ms13_active_gunner_sight = null
+	user.client?.view_size.zoomIn()
+	if(user.client && vehicle && get_ms13_ground_vehicle_at(user) == vehicle)
+		vehicle.set_roof_visible(user.client, FALSE)
+	user.update_ms13_vehicle_interior_mask()
+	return TRUE
+
+/obj/item/ms13_vehicle_turret_control/proc/update_sight()
+	if(!sight_active || !turret)
+		return
+	var/mob/living/user = loc
+	if(!istype(user) || !user.client)
+		return
+	user.client.view_size.zoomOut(2, 3, turret.dir)
+
+/obj/item/ms13_vehicle_turret_control/ranged_interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	turret?.fire_at(interacting_with, user, modifiers)
+	return ITEM_INTERACT_SUCCESS

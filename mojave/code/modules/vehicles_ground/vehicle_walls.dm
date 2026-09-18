@@ -49,6 +49,15 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	/// Drawn over walls with no damaged art of their own.
 	var/broken_fallback_state = "c_window"
 	var/datum/armor/intact_armor
+	/// Oversized hull art is an outside-only client image; occupants retain this small interactive edge.
+	var/full_hull_art = FALSE
+	var/interior_icon_state = "c_window"
+	var/icon/exterior_icon
+	var/icon/exterior_broken_icon
+	var/exterior_icon_state
+	var/exterior_pixel_x = 0
+	var/exterior_pixel_y = 0
+	var/image/exterior_image
 
 /obj/structure/window/ms13_vehicle_wall/proc/blocks_sight()
 	return blocks_vision && !hull_broken
@@ -95,6 +104,11 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 
 /obj/structure/window/ms13_vehicle_wall/update_icon_state()
 	. = ..()
+	if(exterior_image)
+		icon = 'mojave/icons/objects/vehicles_ground/vehicleparts.dmi'
+		icon_state = get_interior_icon_state()
+		sync_exterior_image()
+		return
 	icon = has_broken_art() ? broken_icon : initial(icon)
 
 /obj/structure/window/ms13_vehicle_wall/update_overlays()
@@ -106,13 +120,48 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 
 /obj/structure/window/ms13_vehicle_wall/setDir(new_dir)
 	. = ..()
+	sync_exterior_image()
 	if(hull_broken)
 		update_appearance()
 
 /obj/structure/window/ms13_vehicle_wall/proc/has_broken_art()
 	if(!hull_broken || !broken_icon)
 		return FALSE
-	return ms13_icon_has_state(broken_icon, icon_state)
+	return ms13_icon_has_state(exterior_broken_icon || broken_icon, exterior_icon_state || icon_state)
+
+/obj/structure/window/ms13_vehicle_wall/proc/get_interior_icon_state()
+	return interior_icon_state
+
+/// Keeps Civ13's 96x96 hull art outside while leaving a compact, clickable cabin edge inside.
+/obj/structure/window/ms13_vehicle_wall/proc/make_full_hull_exterior()
+	if(!full_hull_art || exterior_image)
+		return
+	exterior_icon = icon
+	exterior_broken_icon = broken_icon
+	exterior_icon_state = icon_state
+	exterior_pixel_x = pixel_x
+	exterior_pixel_y = pixel_y
+	exterior_image = image(icon = exterior_icon, loc = src, icon_state = exterior_icon_state, layer = layer, dir = dir)
+	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
+	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
+	for(var/client/viewer as anything in GLOB.clients)
+		viewer.images |= exterior_image
+	icon = 'mojave/icons/objects/vehicles_ground/vehicleparts.dmi'
+	icon_state = get_interior_icon_state()
+	pixel_x = 0
+	pixel_y = 0
+	sync_exterior_image()
+
+/obj/structure/window/ms13_vehicle_wall/proc/sync_exterior_image()
+	if(!exterior_image)
+		return
+	exterior_image.icon = has_broken_art() ? exterior_broken_icon : exterior_icon
+	exterior_image.icon_state = exterior_icon_state
+	exterior_image.dir = dir
+	exterior_image.pixel_x = exterior_pixel_x
+	exterior_image.pixel_y = exterior_pixel_y
+	exterior_image.color = color
+	exterior_image.alpha = alpha
 
 /proc/ms13_icon_has_state(icon_file, state)
 	return state in icon_states_cached(icon_file)
@@ -127,6 +176,11 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 
 /obj/structure/window/ms13_vehicle_wall/Destroy()
 	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
+	if(exterior_image)
+		GLOB.ms13_vehicle_exterior_part_images -= exterior_image
+		for(var/client/viewer as anything in GLOB.clients)
+			viewer.images -= exterior_image
+		exterior_image = null
 	if(parent_frame && exterior)
 		parent_frame.roof_hull_breached = TRUE
 		parent_frame.update_roof_damage()
@@ -147,6 +201,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	blocks_vision = TRUE
 	bullet_damage_ratio = 0.3
 	broken_fallback_state = "c_armoredwall"
+	interior_icon_state = "c_armoredwall"
 
 /**
  * A bulkhead between two cabin tiles. Sits under the roof so outsiders never see it, and doesn't count
@@ -252,6 +307,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 		user.visible_message(span_notice("[user] closes [src]."), span_notice("You close [src]."))
 	playsound(src, 'sound/machines/door_close.ogg', 50, TRUE)
 
+/obj/structure/window/ms13_vehicle_wall/solid/door/get_interior_icon_state()
+	return opened ? "c_thin" : interior_icon_state
+
 // Civ13 96x96 hull plating (soviet_vehicles.dm). The art is drawn centered on its tile and has damaged
 // counterparts under the same names.
 
@@ -268,8 +326,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/civ96) // mt lb armor
 	pixel_y = -32
 	max_integrity = 500
 	light_proof = TRUE
-	vision_range = 1
+	vision_range = 0
 	bullet_damage_ratio = 0.3
+	full_hull_art = TRUE
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96) // mt lb armor
 	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
@@ -283,6 +342,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96) // mt lb armor
 	pixel_y = -32
 	max_integrity = 1000
 	bullet_damage_ratio = 0.25
+	full_hull_art = TRUE
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank)
 	default_armor = list(BLUNT = 95, PUNCTURE = 900, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
@@ -307,14 +367,18 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/civ96) // mt lb 
 	open_icon_state = null
 	max_integrity = 900
 	bullet_damage_ratio = 0.25
+	full_hull_art = TRUE
+	interior_icon_state = "c_door"
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/civ96/open(mob/user)
 	. = ..()
 	alpha = opened ? 90 : 255
+	update_appearance()
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/civ96/close(mob/user)
 	. = ..()
 	alpha = opened ? 90 : 255
+	update_appearance()
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/civ96/tank)
 	default_armor = list(BLUNT = 95, PUNCTURE = 900, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)

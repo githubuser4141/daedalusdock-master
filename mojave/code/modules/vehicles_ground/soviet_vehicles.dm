@@ -94,6 +94,7 @@
 				var/obj/structure/window/ms13_vehicle_wall/wall = frame.spawn_wall(edge_to_dir(edge), edge == main_edge ? hull_art : "none", wall_type)
 				if(ispath(wall_type, /obj/structure/window/ms13_vehicle_wall/solid))
 					wall.add_atom_colour(hull_color, FIXED_COLOUR_PRIORITY)
+				wall.make_full_hull_exterior()
 	return TRUE
 
 /obj/structure/ms13_vehicle_frame/civ96/proc/edge_to_dir(edge)
@@ -120,10 +121,17 @@
 	return gear
 
 /// right/forward: Civ13's turret_x/turret_y, negated.
-/obj/structure/ms13_vehicle_frame/civ96/proc/add_turret(tile, art, right, forward, turret_name)
-	var/obj/structure/ms13_vehicle_part/turret/turret = add_part(tile, /obj/structure/ms13_vehicle_part/turret)
+/obj/structure/ms13_vehicle_frame/civ96/proc/add_turret(tile, art, right, forward, turret_name, turret_type)
+	var/obj/structure/ms13_vehicle_part/turret/turret = add_part(tile, turret_type)
 	turret.name = turret_name
 	turret.set_art(art, right, forward, hull_color)
+	return turret
+
+/obj/structure/ms13_vehicle_frame/civ96/proc/add_gunner_station(tile, art, right, forward, turret_name, turret_type)
+	var/obj/structure/ms13_vehicle_part/turret/turret = add_turret(tile, art, right, forward, turret_name, turret_type)
+	var/obj/structure/chair/ms13_vehicle_seat/seat = add_seat_at(tile, 0, "gunner's seat")
+	seat.operated_turret = turret
+	turret.gunner_seat = seat
 	return turret
 
 /obj/structure/ms13_vehicle_frame/civ96/proc/add_seat_at(tile, relative_dir, seat_name, seat_icon_state = "commanders_seat")
@@ -218,8 +226,7 @@
 	add_driver_seat("front_left")
 	add_seat_at("front_right", SEAT_FORWARD, "commander's seat")
 	add_part("front_right", /obj/structure/ms13_vehicle_part/stowage)
-	add_turret("middle_front_right", "btr80", -16, 0, "BTR-80 turret")
-	add_seat_at("middle_front_right", SEAT_FORWARD, "gunner's seat")
+	add_gunner_station("middle_front_right", "btr80", -16, 0, "BTR-80 turret", /obj/structure/ms13_vehicle_part/turret/autocannon/btr80)
 	add_seat_at("middle_front_left", SEAT_FACING_RIGHT, "troop seat")
 	add_seat_at("middle_back_left", SEAT_FACING_RIGHT, "troop seat")
 	add_seat_at("middle_back_right", SEAT_FACING_LEFT, "troop seat")
@@ -300,8 +307,7 @@
 
 /obj/structure/ms13_vehicle_frame/civ96/mtlb/furnish()
 	add_driver_seat("front_left")
-	add_seat_at("front_right", SEAT_FORWARD, "gunner's seat")
-	add_turret("front_right", "mtlb", -3, -12, "MT-LB machine gun turret")
+	add_gunner_station("front_right", "mtlb", -3, -12, "MT-LB machine gun turret", /obj/structure/ms13_vehicle_part/turret/machine_gun)
 
 	add_panel("middle_front_right", EDGE_FRONT, "engine bulkhead", /obj/structure/window/ms13_vehicle_wall/solid/interior)
 	add_panel("middle_front_right", EDGE_LEFT, "engine access panel")
@@ -387,8 +393,7 @@
 	add_driver_seat("front_right")
 	add_seat_at("front_left", SEAT_FORWARD, "bow gunner's seat")
 	add_part("front_left", /obj/structure/ms13_vehicle_part/stowage)
-	add_turret("middle_right", "bmd2", -16, 16, "BMD-2 turret")
-	add_seat_at("middle_right", SEAT_FORWARD, "gunner's seat")
+	add_gunner_station("middle_right", "bmd2", -16, 16, "BMD-2 turret", /obj/structure/ms13_vehicle_part/turret/autocannon/bmd2)
 	add_seat_at("middle_left", SEAT_FORWARD, "commander's seat")
 	add_part("middle_left", /obj/structure/ms13_vehicle_part/interior_light)
 	add_seat_at("back_left", SEAT_FACING_RIGHT, "troop seat")
@@ -477,8 +482,7 @@
 	add_driver_seat("front_left")
 	add_part("front_middle", /obj/structure/ms13_vehicle_part/stowage)
 	add_seat_at("front_right", SEAT_FORWARD, "bow gunner's seat")
-	add_turret("middle_front", "t34", 0, 0, "T-34 turret")
-	add_seat_at("middle_front", SEAT_FORWARD, "gunner's seat")
+	add_gunner_station("middle_front", "t34", 0, 0, "T-34 turret", /obj/structure/ms13_vehicle_part/turret/tank/medium)
 	add_part("middle_front_left", /obj/structure/ms13_vehicle_part/stowage)
 	add_part("middle_front_right", /obj/structure/ms13_vehicle_part/stowage)
 	add_seat_at("middle_back", SEAT_FORWARD, "loader's seat")
@@ -570,8 +574,7 @@
 	add_driver_seat("front_middle")
 	add_part("front_left", /obj/structure/ms13_vehicle_part/stowage)
 	add_part("front_right", /obj/structure/ms13_vehicle_part/stowage)
-	add_turret("middle_front", "is3", 0, -16, "IS-3 turret")
-	add_seat_at("middle_front", SEAT_FORWARD, "gunner's seat")
+	add_gunner_station("middle_front", "is3", 0, -16, "IS-3 turret", /obj/structure/ms13_vehicle_part/turret/tank/heavy)
 	add_part("middle_front_left", /obj/structure/ms13_vehicle_part/stowage)
 	add_part("middle_front_right", /obj/structure/ms13_vehicle_part/stowage)
 	add_seat_at("middle", SEAT_FORWARD, "commander's seat")
