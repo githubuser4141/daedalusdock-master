@@ -174,6 +174,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/debug_huds,
 	/client/proc/map_template_load,
 	/client/proc/map_template_upload,
+	/client/proc/ms13_spawn_surface_impact,
+	/client/proc/ms13_spawn_terrain_hivemind,
 	/client/proc/jump_to_ruin,
 	/client/proc/clear_dynamic_transit,
 	/client/proc/run_empty_query,
