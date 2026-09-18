@@ -185,6 +185,7 @@
 #include "stack_singular_name.dm"
 #include "stomach.dm"
 #include "storage.dm"
+#include "../../../mojave/items/explosives/explosives_unit_test.dm"
 #include "../../../mojave/code/modules/wip_systems/surface_impacts/surface_impacts_unit_test.dm"
 #include "../../../mojave/code/modules/wip_systems/terrain_hiveminds/terrain_hiveminds_unit_test.dm"
 #include "strippable.dm"

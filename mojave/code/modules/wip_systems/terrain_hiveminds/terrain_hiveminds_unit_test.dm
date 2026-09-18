@@ -1,4 +1,5 @@
 // One small test covers the four skins plus the shared controller's spawn and expansion path.
+
 /datum/unit_test/ms13_terrain_hiveminds
 	name = "MOJAVE SUN: Terrain Hivemind Framework"
 
@@ -17,7 +18,7 @@
 		TEST_ASSERT(network.turret_icon && network.turret_icon_state, "[network.name] has no turret appearance.")
 		TEST_ASSERT(network.spawner_icon && network.spawner_icon_state, "[network.name] has no generator appearance.")
 		TEST_ASSERT(network.converter_icon && network.converter_icon_state, "[network.name] has no corpse-converter appearance.")
-		TEST_ASSERT_EQUAL(length(network.unit_appearances), 5, "[network.name] must define scout, footsoldier, ranged, heavy, and infector appearances.")
+		TEST_ASSERT(length(network.unit_appearances) >= 5, "[network.name] must define scout, footsoldier, ranged, heavy, and infector appearances.")
 		var/list/unique_appearances = list()
 		for(var/role in network.unit_appearances)
 			var/list/unit_appearance = network.unit_appearances[role]
@@ -26,7 +27,7 @@
 			var/unit_icon_state = unit_appearance["state"]
 			TEST_ASSERT(unit_icon_state in icon_states(unit_icon), "[network.name] has an invalid [role] icon state.")
 			unique_appearances["[unit_icon]|[unit_icon_state]"] = TRUE
-		TEST_ASSERT_EQUAL(length(unique_appearances), 5, "[network.name] reuses a sprite between two unit roles.")
+		TEST_ASSERT_EQUAL(length(unique_appearances), length(network.unit_appearances), "[network.name] reuses a sprite between two unit roles.")
 		TEST_ASSERT(ispath(network.core_type, /obj/structure/ms13_hivemind/core), "[network.name] has an invalid core type.")
 		TEST_ASSERT(ispath(network.terrain_type, /obj/structure/ms13_hivemind/terrain), "[network.name] has an invalid terrain type.")
 		TEST_ASSERT(ispath(network.converter_mob_type, /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter), "[network.name] has an invalid converter unit type.")
@@ -38,6 +39,8 @@
 			TEST_ASSERT("[network.terrain_smoothing_prefix]-255" in terrain_states, "[network.name] lacks its fully connected smoothing state.")
 		if(istype(network, /datum/ms13_terrain_hivemind/eris))
 			TEST_ASSERT_EQUAL(network.terrain_icon_state, "wires", "Machine-hive terrain is using a disconnected quarter-tile wire state.")
+			TEST_ASSERT(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide in network.evolved_mob_types, "The machine hive does not evolve its bomber unit.")
+			TEST_ASSERT_EQUAL(network.unit_appearances["suicide"]["state"], "bomber", "The machine-hive bomber lacks its distinct sprite.")
 		TEST_ASSERT(network.resource_per_tile > 0 && network.expansion_cost > 0 && network.special_cost > 0 && network.unit_cost > 0, "[network.name] has a broken resource economy.")
 		TEST_ASSERT(network.structure_regeneration_rate > 0, "[network.name] does not regenerate damaged structures.")
 		TEST_ASSERT(length(network.special_types) == 5, "[network.name] must expose walls, traps, turrets, unit generators, and corpse converters.")
@@ -85,11 +88,14 @@
 	TEST_ASSERT_EQUAL(test_heavy.off_terrain_damage_multiplier, 0, "Heavy units still decay while ranging beyond hive terrain.")
 	TEST_ASSERT(test_worker.off_terrain_damage_multiplier > 0 && test_worker.off_terrain_damage_multiplier < 1, "Corpse workers do not have reduced off-terrain decay.")
 	TEST_ASSERT(test_worker.corpse_converter, "The dedicated converter unit did not initialize as a corpse worker.")
+	TEST_ASSERT(!test_worker.force_opens_doors && test_unit.force_opens_doors, "Door forcing is not limited to combat-capable hive units.")
 	var/mob/living/simple_animal/chicken/test_corpse = new(claimed_turf)
 	test_corpse.set_stat(DEAD)
 	test_unit.find_local_corpses()
 	TEST_ASSERT_EQUAL(live_network.find_reported_corpse(test_worker), test_corpse, "A worker could not retrieve a corpse reported by another network member.")
 	TEST_ASSERT(live_network.claim_corpse(test_corpse, test_worker), "A reported corpse could not be reserved by a worker.")
+	test_worker.corpse_target_ref = WEAKREF(test_corpse)
+	TEST_ASSERT(test_worker.has_adjacent_conversion_target(), "An infector does not recognize an adjacent claimed corpse as active work.")
 	var/old_unit_count = length(live_network.units)
 	TEST_ASSERT(live_network.advance_corpse_conversion(test_corpse, test_worker, 1, 1), "A fully progressed corpse was not converted.")
 	TEST_ASSERT_EQUAL(length(live_network.units), old_unit_count + 1, "Corpse conversion did not create exactly one network unit.")
@@ -155,8 +161,10 @@
 	TEST_ASSERT_EQUAL(hauling_network.get_corpse_claim(hauled_corpse), hauling_network.core, "The hauler did not deliver its corpse claim to the nearest nest.")
 	TEST_ASSERT(!hauler.is_grabbing(hauled_corpse), "The hauler did not release the corpse at its nest.")
 	var/old_hauling_unit_count = length(hauling_network.units)
+	var/old_hauling_capacity = hauling_network.max_resources
 	hauling_network.process_structure_corpse(hauling_network.core, hauling_network.structure_conversion_time)
 	TEST_ASSERT_EQUAL(length(hauling_network.units), old_hauling_unit_count + 1, "The nest did not convert its delivered corpse into a unit.")
+	TEST_ASSERT_EQUAL(hauling_network.max_resources, old_hauling_capacity + hauling_network.corpse_capacity_value, "A delivered corpse did not expand the hive's resource capacity.")
 	var/list/hauling_units_to_clean = hauling_network.units.Copy()
 	var/list/hauling_growths_to_clean = hauling_network.territory.Copy()
 	qdel(hauling_network)
