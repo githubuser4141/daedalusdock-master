@@ -63,7 +63,7 @@
 	category = CAT_MEDICAL
 	crafting_interface = CRAFTING_BENCH_GENERAL
 
-/datum/crafting_recipe/splint
+/datum/crafting_recipe/splint/metal
 	name = "metal splint"
 	result = /obj/item/stack/medical/splint/ms13
 	time = 12 SECONDS

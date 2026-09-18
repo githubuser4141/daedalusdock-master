@@ -432,7 +432,7 @@
 		if((R.category != cur_category) || (R.subcategory != cur_subcategory))
 			continue
 
-		craftability["[REF(R)]"] = check_contents(user, R, surroundings)
+		craftability["[REF(R)]"] = check_contents(user, R, surroundings) && check_tools(user, R, surroundings)
 
 	data["craftability"] = craftability
 	return data

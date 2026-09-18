@@ -111,6 +111,9 @@ GLOBAL_LIST_INIT(scrap_steel_recipes, list ( \
 
 GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	new/datum/stack_recipe("crude metal table", /obj/structure/table/ms13/metal/constructed, 2, time = 20 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("workbench", /obj/structure/table/ms13/crafting/workbench, 4, time = 30 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("support rods", /obj/item/stack/rods, req_amount = 1, res_amount = 2, max_res_amount = 10, time = 5 SECONDS), \
+	new/datum/stack_recipe("metal floor panels", /obj/item/stack/tile/ms13, req_amount = 1, res_amount = 2, max_res_amount = 10, time = 5 SECONDS), \
 	new/datum/stack_recipe("green metal chair", /obj/structure/chair/ms13/metal, 1, time = 15 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("blue metal chair", /obj/structure/chair/ms13/metal/blue, 1, time = 15 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("red metal chair", /obj/structure/chair/ms13/metal/red, 1, time = 15 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \

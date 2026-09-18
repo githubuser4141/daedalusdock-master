@@ -240,7 +240,29 @@
 	pixel_y = -16
 	pixel_x = -16
 	anchored = TRUE
+	max_integrity = 500
 	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/obj_connected = null
+
+/obj/structure/ms13/pa_jack/Destroy()
+	if(obj_connected)
+		obj_connected.link_to = null
+	obj_connected = null
+	return ..()
+
+/obj/structure/ms13/pa_jack/deconstruct(disassembled = TRUE)
+	if(!(flags_1 & NODECONSTRUCT_1))
+		new /obj/item/stack/sheet/ms13/scrap_steel/four(loc)
+		new /obj/item/stack/sheet/ms13/scrap_parts/two(loc)
+	qdel(src)
+
+/obj/structure/ms13/pa_jack/wrench_act_secondary(mob/living/user, obj/item/tool)
+	if(obj_connected)
+		to_chat(user, span_warning("Disconnect the power armor before taking [src] apart."))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_notice("You start taking [src] apart..."))
+	if(tool.use_tool(src, user, 5 SECONDS, volume = 50))
+		deconstruct(TRUE)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/structure/ms13/pa_jack/examine(mob/user)
 	. = ..()

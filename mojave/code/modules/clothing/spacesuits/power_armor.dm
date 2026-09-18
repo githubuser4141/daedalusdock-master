@@ -416,6 +416,10 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 		if(!(atom_integrity <= max_integrity - 10))
 			to_chat(user, span_warning("The [src] doesn't need repairs."))
 			return
+		var/obj/item/stack/sheet/ms13/scrap_steel/repair_metal = user.is_holding_item_of_type(/obj/item/stack/sheet/ms13/scrap_steel)
+		if(!repair_metal)
+			to_chat(user, span_warning("You need scrap steel in your other hand to repair [src]."))
+			return
 		if(!I.tool_start_check(user, amount=1))
 			return
 		user.visible_message(
@@ -424,13 +428,21 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 		playsound(src, 'mojave/sound/ms13effects/crafting/welding-2.ogg', 45, TRUE)
 		if(!I.use_tool(src, user, 1.5 SECONDS, volume=0, amount=1))
 			return
+		if(!repair_metal.use(1))
+			return
+		var/was_destroyed = atom_integrity <= 0
 		user.visible_message(
 			span_notice("[user] fixes up the [src]!"),
 			span_notice("You mend the damage of the [src]."))
-		atom_integrity += 25
+		repair_damage(25)
+		if(was_destroyed)
+			var/list/base_subarmor = initial(subarmor)
+			subarmor = getSubarmor(arglist(base_subarmor))
+			listeningTo?.remove_movespeed_modifier(/datum/movespeed_modifier/ms13/pa_broken)
 		playsound(src, 'mojave/sound/ms13effects/crafting/welding-3.ogg', 45, TRUE)
 		update_appearance()
 		update_overlays()
+		listeningTo?.update_worn_oversuit()
 		return ..()
 
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, subtractible_armour_penetration, def_zone = BODY_ZONE_CHEST)

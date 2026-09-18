@@ -21,6 +21,10 @@
 	name = "fission battery"
 	desc = "A small fission battery. Used both before and after the war for all kinds of power needs."
 	icon_state = "fusion_cell"
+	ms13_breakdown_result = list(
+		/obj/item/stack/sheet/ms13/scrap_lead = 2,
+		/obj/item/stack/sheet/ms13/scrap_copper = 2,
+	)
 	//grid_width = 32
 	//grid_height = 32
 
@@ -28,11 +32,13 @@
 	name = "fusion core"
 	desc = "A fusion core. Careful not to drop it!"
 	icon_state = "fusion_core"
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap_electronics = 2)
 
 /obj/item/ms13/component/vacuum_tube
 	name = "vacuum tube"
 	desc = "A vacuum tube. An important component in many electrical gadgets."
 	icon_state = "vacuumtube"
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap_electronics = 1)
 	//grid_width = 64
 	//grid_height = 32
 
@@ -40,6 +46,7 @@
 	name = "plasma battery"
 	desc = "A dangerous looking battery containing superheated plasma. Practically just waiting to be used for something lethal."
 	icon_state = "plasma_battery"
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap_copper = 2)
 	//grid_width = 32
 	//grid_height = 64
 

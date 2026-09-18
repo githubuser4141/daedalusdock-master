@@ -65,6 +65,193 @@
 	category = CAT_UTILITY
 	crafting_interface = CRAFTING_BENCH_GENERAL | CRAFTING_BENCH_ARMTAILOR
 
+// BASIC TOOL CRAFTING
+
+/datum/crafting_recipe/ms13_hammer
+	name = "claw hammer"
+	result = /obj/item/ms13/hammer
+	time = 8 SECONDS
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 2,
+				/obj/item/stack/sheet/ms13/wood/plank = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_handsaw
+	name = "hand saw"
+	result = /obj/item/ms13/handsaw
+	time = 10 SECONDS
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 2,
+				/obj/item/stack/sheet/ms13/wood/plank = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_handdrill
+	name = "hand drill"
+	result = /obj/item/ms13/handdrill
+	time = 12 SECONDS
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2,
+				/obj/item/stack/sheet/ms13/wood/plank = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_crowbar
+	name = "crowbar"
+	result = /obj/item/crowbar/ms13
+	time = 8 SECONDS
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 3)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_wrench
+	name = "wrench"
+	result = /obj/item/wrench/ms13
+	time = 8 SECONDS
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_pliers
+	name = "pliers"
+	result = /obj/item/wirecutters/ms13
+	time = 6 SECONDS
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 1,
+				/obj/item/stack/sheet/ms13/scrap_parts = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_screwdriver
+	name = "screwdriver"
+	result = /obj/item/screwdriver/ms13
+	time = 6 SECONDS
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 1,
+				/obj/item/stack/sheet/ms13/wood/scrap_wood = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_shovel
+	name = "shovel"
+	result = /obj/item/shovel/ms13
+	time = 10 SECONDS
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 2,
+				/obj/item/stack/sheet/ms13/wood/plank = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_pickaxe
+	name = "pickaxe"
+	result = /obj/item/pickaxe/ms13
+	time = 12 SECONDS
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 3,
+				/obj/item/stack/sheet/ms13/wood/plank = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_scissors
+	name = "scissors"
+	result = /obj/item/knife/ms13/scissors
+	time = 8 SECONDS
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 1,
+				/obj/item/stack/sheet/ms13/scrap_parts = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_welding_tool
+	name = "welding tool"
+	result = /obj/item/weldingtool/ms13
+	time = 12 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2,
+				/obj/item/stack/sheet/ms13/rubber = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+// SPECIALIZED WORKSTATIONS
+
+/datum/crafting_recipe/ms13_loading_bench
+	name = "loading bench"
+	result = /obj/structure/table/ms13/crafting/ammobench
+	time = 30 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 4,
+				/obj/item/stack/sheet/ms13/scrap_parts = 4,
+				/obj/item/stack/sheet/ms13/wood/plank = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
+/datum/crafting_recipe/ms13_armor_bench
+	name = "armor and tailoring bench"
+	result = /obj/structure/table/ms13/crafting/armorbench
+	time = 30 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 3,
+				/obj/item/stack/sheet/ms13/scrap_parts = 3,
+				/obj/item/stack/sheet/ms13/wood/plank = 3,
+				/obj/item/stack/sheet/ms13/cloth = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
+/datum/crafting_recipe/ms13_weapon_bench
+	name = "weapon bench"
+	result = /obj/structure/table/ms13/crafting/weaponbench
+	time = 30 SECONDS
+	tool_behaviors = list(TOOL_WRENCH, TOOL_DRILL)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 5,
+				/obj/item/stack/sheet/ms13/scrap_parts = 5,
+				/obj/item/stack/sheet/ms13/wood/plank = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
+/datum/crafting_recipe/ms13_electronics_bench
+	name = "electronics bench"
+	result = /obj/structure/table/ms13/crafting/tinkerbench
+	time = 30 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER, TOOL_WRENCH)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 3,
+				/obj/item/stack/sheet/ms13/scrap_electronics = 5,
+				/obj/item/stack/sheet/ms13/circuits = 2,
+				/obj/item/stack/sheet/ms13/rubber = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
+/datum/crafting_recipe/ms13_chemistry_set
+	name = "chemistry set"
+	result = /obj/structure/ms13/chem_set
+	time = 25 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/glass = 5,
+				/obj/item/stack/sheet/ms13/ceramic = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
+/datum/crafting_recipe/ms13_power_armor_hoist
+	name = "power armor hoist"
+	result = /obj/structure/ms13/pa_jack
+	time = 40 SECONDS
+	tool_behaviors = list(TOOL_WELDER, TOOL_WRENCH)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 6,
+				/obj/item/stack/sheet/ms13/scrap_parts = 6,
+				/obj/item/stack/sheet/ms13/scrap_copper = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
 
 //SMELTER CRAFTING
 
@@ -248,15 +435,15 @@
 	category = CAT_MELT
 	crafting_interface = CRAFTING_BENCH_SMELTER
 
-/*/datum/crafting_recipe/melt_scrap_parts //Commented out for the same reason as smashing circuits and fission batteries are. Crafting recipes don't support lists - Hekzder 2022
+/datum/crafting_recipe/melt_scrap_parts
 	name = "melt down scrap parts"
-	result = list(/obj/item/stack/sheet/ms13/scrap_steel = 1, /obj/item/stack/sheet/ms13/scrap_alu = 1, /obj/item/stack/sheet/ms13/scrap = 2)
+	result = /obj/item/stack/sheet/ms13/scrap/two
 	time = 6 SECONDS
 	tool_paths = list()
 	reqs = list(/obj/item/stack/sheet/ms13/scrap_parts = 5,
-				/obj/item/stack/sheet/ms13/plank = 1)
-	category = CAT_SMELTER
-	crafting_interface = CRAFTING_BENCH_SMELTER*/
+				/obj/item/stack/sheet/ms13/wood = 1)
+	category = CAT_MELT
+	crafting_interface = CRAFTING_BENCH_SMELTER
 
 /datum/crafting_recipe/smelt_copper
 	name = "refined copper from ore"

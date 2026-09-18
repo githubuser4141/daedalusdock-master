@@ -62,7 +62,7 @@
 		if(GENERATOR_OFF)
 			. += span_notice("It's switched off.")
 		if(GENERATOR_BROKEN)
-			. += span_warning("It's broken down. A welder might get it going again.")
+			. += span_warning("It's broken down. A welder and spare parts might get it going again.")
 	. += span_notice("The fuel gauge reads [round(100 * fuel / max_fuel)]%.")
 	switch(condition)
 		if(75 to INFINITY)
@@ -174,7 +174,13 @@
 	if(condition >= 100 && generator_state != GENERATOR_BROKEN)
 		to_chat(user, span_notice("[src] doesn't need repairs."))
 		return TRUE
+	var/obj/item/stack/sheet/ms13/scrap_parts/repair_parts = user.is_holding_item_of_type(/obj/item/stack/sheet/ms13/scrap_parts)
+	if(!repair_parts)
+		to_chat(user, span_warning("You need scrap parts in your other hand to repair [src]."))
+		return TRUE
 	if(!tool.use_tool(src, user, 5 SECONDS, volume = 50))
+		return TRUE
+	if(!repair_parts.use(1))
 		return TRUE
 	condition = min(condition + repair_amount, 100)
 	user.visible_message(span_notice("[user] patches up [src]."), span_notice("You patch up [src]."))

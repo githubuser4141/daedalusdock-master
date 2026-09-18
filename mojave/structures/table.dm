@@ -296,7 +296,10 @@
 	smoothing_flags = NONE
 	canSmoothWith = null
 	var/crafting_interface = CRAFTING_BENCH_GENERAL
-	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
+	max_integrity = 300
+	buildstack = /obj/item/stack/sheet/ms13/scrap_steel
+	buildstackamount = 3
+	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/structure/table/ms13/crafting/examine(mob/user)
 	. = ..()
@@ -309,15 +312,6 @@
 		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Start crafting"
 		return CONTEXTUAL_SCREENTIP_SET
 
-/obj/structure/table/ms13/crafting/wrench_act_secondary(mob/living/user, obj/item/weapon)
-	return
-
-/obj/structure/table/ms13/crafting/screwdriver_act_secondary(mob/living/user, obj/item/weapon)
-	return
-
-/obj/structure/table/ms13/crafting/deconstruction_hints(mob/user)
-	return
-
 /obj/structure/table/ms13/crafting/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/personal_crafting, crafting_interface)
@@ -329,6 +323,23 @@
 	desc = "A basic workbench. Solid metal surface and a few tools to help you make basic tools and items you require."
 	icon_state = "workbench"
 	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/obj/structure/table/ms13/crafting/workbench/base_item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	if(!tool.ms13_breakdown_result)
+		return ..()
+	if(!user.combat_mode)
+		tool.ms13_break_down(user, src)
+		return ITEM_INTERACT_SUCCESS
+	var/list/breakdown_batch = list(tool)
+	for(var/turf/nearby_turf as anything in RANGE_TURFS(1, src))
+		for(var/obj/item/nearby_item in nearby_turf)
+			if(nearby_item.ms13_breakdown_result)
+				breakdown_batch |= nearby_item
+	to_chat(user, span_notice("Combat intent: breaking down [length(breakdown_batch)] nearby item[ length(breakdown_batch) == 1 ? "" : "s"]."))
+	for(var/obj/item/breakdown_item as anything in breakdown_batch)
+		if(!breakdown_item.ms13_break_down(user, src))
+			break
+	return ITEM_INTERACT_SUCCESS
 
 // TODO FIX
 /obj/structure/table/ms13/crafting/ammobench

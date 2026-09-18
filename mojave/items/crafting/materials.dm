@@ -34,6 +34,58 @@
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/crafting/materials_inventory.dmi')
 	update_icon_state()
 
+/obj/item
+	/// Optional associative list of result type paths to amounts for item-driven MS salvage.
+	var/list/ms13_breakdown_result
+	var/ms13_breakdown_cost = 1
+	var/ms13_breakdown_time = 3 SECONDS
+
+/obj/item/proc/ms13_break_down(mob/living/user, obj/structure/table/ms13/crafting/workbench)
+	if(!ms13_breakdown_result || QDELETED(src))
+		return FALSE
+	if(isstack(src))
+		var/obj/item/stack/input_stack = src
+		if(input_stack.amount < ms13_breakdown_cost)
+			to_chat(user, span_warning("You need at least [ms13_breakdown_cost] [input_stack.singular_name][ms13_breakdown_cost == 1 ? "" : "s"] to break that down."))
+			return FALSE
+	user.visible_message(span_notice("[user] starts breaking down [src] at [workbench]."), span_notice("You start breaking down [src] at [workbench]."))
+	if(!do_after(user, ms13_breakdown_time, target = workbench, display = src) || QDELETED(src))
+		return FALSE
+	var/turf/drop_turf = get_turf(workbench)
+	var/list/breakdown_results = ms13_breakdown_result
+	if(isstack(src))
+		var/obj/item/stack/input_stack = src
+		if(!input_stack.use(ms13_breakdown_cost))
+			return FALSE
+	else
+		qdel(src)
+	for(var/result_type as anything in breakdown_results)
+		var/result_amount = max(1, breakdown_results[result_type])
+		if(ispath(result_type, /obj/item/stack))
+			new result_type(drop_turf, result_amount)
+			continue
+		for(var/i in 1 to result_amount)
+			new result_type(drop_turf)
+	playsound(workbench, 'sound/items/deconstruct.ogg', 50, TRUE)
+	return TRUE
+
+/// Destroyed manufactured items leave a small, deliberately lossy amount of reusable debris.
+/obj/item/deconstruct(disassembled = TRUE, mob/user)
+	if(!disassembled && !isstack(src) && !istype(src, /obj/item/food) && !istype(src, /obj/item/organ) && !istype(src, /obj/item/bodypart) && !istype(src, /obj/item/seeds))
+		var/turf/drop_turf = get_turf(src)
+		if(drop_turf)
+			var/salvage_type = /obj/item/stack/sheet/ms13/scrap_parts
+			if(istype(src, /obj/item/clothing))
+				salvage_type = /obj/item/stack/sheet/ms13/cloth
+			else if(istype(src, /obj/item/stock_parts) || istype(src, /obj/item/ms13/component))
+				salvage_type = /obj/item/stack/sheet/ms13/scrap_electronics
+			else if(istype(src, /obj/item/reagent_containers/cup/glass))
+				salvage_type = /obj/item/stack/sheet/ms13/glass
+			else if(istype(src, /obj/item/ammo_casing))
+				salvage_type = /obj/item/stack/sheet/ms13/scrap_brass
+			new salvage_type(drop_turf)
+	return ..()
+
 //MISC. MATERIALS//
 
 /obj/item/stack/sheet/ms13/scrap_parts
@@ -226,6 +278,11 @@ GLOBAL_LIST_INIT(ceramic_recipes, list ( \
 	//grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 	novariants = FALSE
+	ms13_breakdown_result = list(
+		/obj/item/stack/sheet/ms13/scrap_electronics = 6,
+		/obj/item/stack/sheet/ms13/scrap_copper = 4,
+	)
+	ms13_breakdown_cost = 2
 
 /obj/item/stack/sheet/ms13/circuits/two
 	amount = 2
@@ -320,6 +377,7 @@ GLOBAL_LIST_INIT(scrap_wood_recipes, list ( \
 
 GLOBAL_LIST_INIT(plank_recipes, list ( \
 	new/datum/stack_recipe("crude wood table", /obj/structure/table/ms13/wood/constructed, 4, time = 20 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("wood floor boards", /obj/item/stack/tile/ms13/wood, req_amount = 1, res_amount = 2, max_res_amount = 10, time = 5 SECONDS), \
 	new/datum/stack_recipe("wood barricade", /obj/structure/ms13/barricade, 4, time = 15 SECONDS, one_per_turf = FALSE, on_floor = TRUE), \
 	new/datum/stack_recipe("wood bed", /obj/structure/bed/ms13/bedframe/wood, 3, time = 15 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("campfire", /obj/structure/bonfire/ms13/campfire, 3, time = 15 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \

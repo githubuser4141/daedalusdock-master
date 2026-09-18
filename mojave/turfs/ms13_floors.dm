@@ -12,6 +12,7 @@
 	desc = "Wooden flooring."
 	smoothing_groups = SMOOTH_GROUP_MS13_TILE
 	baseturfs = /turf/baseturf_bottom //No lattices please
+	floor_tile = /obj/item/stack/tile/ms13/wood
 	var/has_alternate_states = TRUE //for damage, alts etc.
 	var/alternate_states = 1
 	var/has_base_states = TRUE //for starting variety (mainly wood)
@@ -37,7 +38,7 @@
 	return FALSE
 
 /turf/open/floor/wood/ms13/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
-	return
+	return ..()
 
 /turf/open/floor/wood/screwdriver_act(mob/living/user, obj/item/I)
 	return
@@ -216,8 +217,28 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 ////Tiled Floors////
 
 /obj/item/stack/tile/ms13 //We need this because upstream turf code is not great.
+	parent_type = /obj/item/stack/tile/iron
+	name = "metal floor panels"
+	singular_name = "metal floor panel"
 	turf_type = /turf/open/floor/ms13
 	merge_type = /obj/item/stack/tile/ms13
+	tile_reskin_types = null
+
+/obj/item/stack/tile/ms13/wood
+	name = "wood floor boards"
+	singular_name = "wood floor board"
+	icon_state = "tile-wood"
+	inhand_icon_state = "tile-wood"
+	turf_type = /turf/open/floor/wood/ms13/common
+	merge_type = /obj/item/stack/tile/ms13/wood
+	mats_per_unit = null
+	flags_1 = NONE
+	resistance_flags = FLAMMABLE
+
+/obj/item/stack/tile/ms13/wood/attackby(obj/item/used_item, mob/user, params)
+	if(used_item.tool_behaviour == TOOL_WELDER)
+		return FALSE
+	return ..()
 
 /turf/open/floor/ms13
 	desc = "Tiled flooring."
@@ -243,7 +264,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	return FALSE
 
 /turf/open/floor/ms13/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
-	return
+	return ..()
 /*
 /turf/open/floor/ms13/Initialize()
 	. = ..()
@@ -462,3 +483,74 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 
 /turf/open/floor/ms13/metal/pipe/intersection
 	icon_state = "pipe_intersection"
+
+// MS floors are structural objects: damaging an upper floor can open a route to the level below.
+// The last mapped z-level and explicitly protected floors can never be breached this way.
+/turf/open/floor
+	uses_integrity = TRUE
+	max_integrity = 300
+	integrity_failure = 0.5
+	var/ms13_breachable = TRUE
+
+/turf/open/floor/Initialize(mapload)
+	. = ..()
+	// Turf initialization skips /atom/Initialize(), so seed structural integrity here.
+	atom_integrity = max_integrity
+
+/turf/open/floor/proc/can_ms13_breach()
+	return ms13_breachable && !(resistance_flags & INDESTRUCTIBLE) && !isnull(GetBelow(src))
+
+/turf/open/floor/attackby(obj/item/used_item, mob/living/user, params)
+	. = ..()
+	if(. || !user?.combat_mode || !used_item?.force || !can_ms13_breach())
+		return .
+	user.changeNext_move(CLICK_CD_MELEE)
+	used_item.leave_evidence(user, src)
+	user.do_attack_animation(src)
+	take_damage(used_item.force, used_item.damtype, used_item.get_attack_flag(), TRUE, get_dir(src, user), used_item.armor_penetration)
+	return TRUE
+
+/turf/open/floor/atom_break(damage_flag)
+	. = ..()
+	break_tile()
+
+/turf/open/floor/atom_fix()
+	. = ..()
+	broken = FALSE
+	burnt = FALSE
+	update_appearance(UPDATE_OVERLAYS)
+
+/turf/open/floor/atom_destruction(damage_flag)
+	. = ..()
+	if(!can_ms13_breach())
+		update_integrity(max_integrity)
+		return
+	if(floor_tile)
+		spawn_tile()
+	else
+		new /obj/item/stack/sheet/ms13/ceramic(src)
+	ChangeTurf(/turf/open/openspace, flags = CHANGETURF_INHERIT_AIR)
+
+/turf/open/floor/try_replace_tile(obj/item/stack/tile/used_tile, mob/user, params)
+	if(atom_integrity < max_integrity && floor_tile && istype(used_tile, floor_tile))
+		if(used_tile.use(1))
+			update_integrity(max_integrity)
+			broken = FALSE
+			burnt = FALSE
+			update_appearance(UPDATE_OVERLAYS)
+			to_chat(user, span_notice("You repair [src] with [used_tile.singular_name]."))
+		return TRUE
+	return ..()
+
+/turf/open/floor/plating/reinforced
+	ms13_breachable = FALSE
+
+/turf/open/floor/plating/ms13/ground
+	max_integrity = 1500
+
+/// Mapper-facing floor for locations that must never be breached.
+/turf/open/floor/ms13/indestructible
+	name = "reinforced floor"
+	desc = "A heavily reinforced floor that cannot be breached."
+	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF
+	ms13_breachable = FALSE

@@ -72,6 +72,11 @@
 
 	examine_list += span_notice("You think it can be crafted into \a [initial(result_atom_type.name)] with [initial(crafting_object.name)].")
 
+/obj/item/attackby(obj/item/item, mob/living/user, params)
+	if(craft(user, item))
+		return TRUE
+	return ..()
+
 /atom/proc/craft(mob/living/user, obj/item/I)
 	var/list/crafting_recipes = list() //List of recipes that can be mutated by sending the signal
 	var/signal_craft = SEND_SIGNAL(src, COMSIG_CRAFTING_ATTACKBY, user, I, crafting_recipes)
@@ -109,11 +114,9 @@
 	StartCraftingAtom(user, I, choices_to_options[pick])
 
 /atom/proc/StartCraftingAtom(mob/living/user, obj/item/I, list/current_crafting_option)
-	var/list/choices_to_options = list()
 	var/atom/crafting_option_surface = current_crafting_option[CRAFTING_SURFACE]
 	var/atom/thing = current_crafting_option[CRAFTING_ITEM]
 	var/datum/looping_sound/crafting/soundloop = current_crafting_option[CRAFTING_SOUND]
-	choices_to_options[initial(crafting_option_surface.name)] = current_crafting_option
 	if(crafting_option_surface != null)
 		StartSurfaceCraftingAtom(user, I, current_crafting_option)
 		return
@@ -141,11 +144,9 @@
 		return
 
 /atom/proc/StartSurfaceCraftingAtom(mob/living/user, obj/item/I, list/current_crafting_option)
-	var/list/choices_to_options = list()
 	var/atom/crafting_option_surface = current_crafting_option[CRAFTING_SURFACE]
 	var/atom/thing_on_surface = current_crafting_option[CRAFTING_ITEM]
 	var/datum/looping_sound/crafting/soundloop = current_crafting_option[CRAFTING_SOUND]
-	choices_to_options[initial(crafting_option_surface.name)] = current_crafting_option
 	if((locate(current_crafting_option[CRAFTING_SURFACE]) in thing_on_surface.loc))
 		to_chat(user, "<span class='notice'>You start working on [src].</span>")
 		soundloop.start()

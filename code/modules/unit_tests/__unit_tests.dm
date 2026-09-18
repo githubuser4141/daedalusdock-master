@@ -119,6 +119,7 @@
 #include "closets.dm"
 #include "codex.dm"
 #include "component_tests.dm"
+#include "../../../mojave/modules/crafting/crafting_economy_unit_test.dm"
 #include "confusion.dm"
 #include "connect_loc.dm"
 #include "crayons.dm"
