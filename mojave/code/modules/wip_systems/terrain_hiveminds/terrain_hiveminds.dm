@@ -484,6 +484,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	structure_conversion_time = 8
 	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_GOO
 	corpse_conversion_message = "swells and ruptures into glowing protoplasm"
+	mob_health = 130
 	terrain_name = "pulsating blob"
 	terrain_icon = 'icons/mob/blob.dmi'
 	terrain_icon_state = "blob"
@@ -518,6 +519,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	structure_conversion_time = 10
 	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_SPARKS
 	corpse_conversion_message = "flickers, fractures, and resolves into fresh gnesis"
+	mob_health = 90
+	mob_damage_lower = 12
+	mob_damage_upper = 24
 	terrain_name = "gnesis floor"
 	terrain_icon = 'goon/icons/turf/flock.dmi'
 	terrain_icon_state = "flock-0"
@@ -557,9 +561,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	structure_conversion_time = 7
 	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_BLOOD
 	corpse_conversion_message = "convulses violently before bursting into blood and reshaped flesh"
-	mob_health = 65
-	mob_damage_lower = 10
-	mob_damage_upper = 16
+	mob_health = 100
+	mob_damage_lower = 20
+	mob_damage_upper = 40
 	terrain_name = "necromorph corruption"
 	terrain_icon = 'mojave/icons/wip/terrain_hivemind/ds13_corruption.dmi'
 	terrain_icon_state = "corruption-0"
@@ -591,9 +595,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	abstract = FALSE
 	faction_id = "ms13_eris_hive"
 	resource_per_tile = 0.25
-	mob_health = 60
-	mob_damage_lower = 9
-	mob_damage_upper = 14
+	mob_health = 120
+	mob_damage_lower = 15
+	mob_damage_upper = 30
 	units_haul_corpses = TRUE
 	terrain_conversion_time = 180
 	structure_conversion_time = 9
@@ -635,24 +639,25 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /obj/projectile/ms13_hivemind/blob
 	name = "caustic glob"
 	icon_state = "glob_projectile"
-	damage = 8
+	damage = 22
 
 /obj/projectile/ms13_hivemind/flock
 	name = "gnesis bolt"
 	icon = 'goon/icons/mob/featherzone.dmi'
 	icon_state = "stunbolt"
+	damage = 22
 
 /obj/projectile/ms13_hivemind/necromorph
 	name = "bone spine"
 	icon = 'mojave/icons/wip/terrain_hivemind/ds13_lurker.dmi'
 	icon_state = "spine_projectile"
-	damage = 12
+	damage = 22
 
 /obj/projectile/ms13_hivemind/eris
 	name = "machine-hive glob"
 	icon = 'mojave/icons/wip/terrain_hivemind/eris_hivemind.dmi'
 	icon_state = "goo_proj"
-	damage = 11
+	damage = 22
 
 /obj/structure/ms13_hivemind
 	anchored = TRUE
@@ -762,7 +767,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /obj/structure/ms13_hivemind/special
 	name = "hivemind structure"
 	desc = "A specialized growth fed by the surrounding hostile terrain."
-	max_integrity = 90
+	max_integrity = 120
 
 /obj/structure/ms13_hivemind/special/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
 	. = ..()
@@ -781,7 +786,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	name = "hivemind wall"
 	density = TRUE
 	layer = BELOW_MOB_LAYER
-	max_integrity = 140
+	max_integrity = 180
 
 /obj/structure/ms13_hivemind/special/wall/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
 	. = ..()
@@ -794,7 +799,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	name = "hivemind trap"
 	density = FALSE
 	layer = ABOVE_OPEN_TURF_LAYER
-	var/damage = 15
+	var/damage = 30
 	COOLDOWN_DECLARE(trigger_cooldown)
 
 /obj/structure/ms13_hivemind/special/trap/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
@@ -945,10 +950,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	icon_state = "blobpod"
 	icon_living = "blobpod"
 	icon_dead = "blobpod"
-	health = 50
-	maxHealth = 50
-	melee_damage_lower = 8
-	melee_damage_upper = 12
+	health = 100
+	maxHealth = 100
+	melee_damage_lower = 15
+	melee_damage_upper = 30
 	obj_damage = 25
 	environment_smash = ENVIRONMENT_SMASH_STRUCTURES
 	attack_verb_continuous = "tears into"
@@ -1051,7 +1056,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	unit_role = MS13_HIVE_ROLE_HEAVY
 	evolution_rank = 3
 	health_multiplier = 2.5
-	damage_multiplier = 1.8
+	damage_multiplier = 2
 	off_terrain_damage_multiplier = 0
 	corpse_hauler = FALSE
 	move_to_delay = 6
