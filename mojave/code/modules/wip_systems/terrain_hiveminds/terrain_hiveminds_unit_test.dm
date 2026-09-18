@@ -39,6 +39,7 @@
 		if(istype(network, /datum/ms13_terrain_hivemind/eris))
 			TEST_ASSERT_EQUAL(network.terrain_icon_state, "wires", "Machine-hive terrain is using a disconnected quarter-tile wire state.")
 		TEST_ASSERT(network.resource_per_tile > 0 && network.expansion_cost > 0 && network.special_cost > 0 && network.unit_cost > 0, "[network.name] has a broken resource economy.")
+		TEST_ASSERT(network.structure_regeneration_rate > 0, "[network.name] does not regenerate damaged structures.")
 		TEST_ASSERT(length(network.special_types) == 5, "[network.name] must expose walls, traps, turrets, unit generators, and corpse converters.")
 		qdel(network)
 
@@ -48,6 +49,13 @@
 	TEST_ASSERT(isopenturf(origin) && !origin.density, "The unit-test area has no open turf for a live hivemind check.")
 	var/datum/ms13_terrain_hivemind/blob/live_network = new(origin, 20)
 	TEST_ASSERT(live_network.core && !QDELETED(live_network.core), "Starting a concrete network did not create its core.")
+	var/obj/projectile/ms13_hivemind/friendly_shot = new
+	friendly_shot.source_network = live_network
+	TEST_ASSERT(live_network.core.CanAllowThrough(friendly_shot, NORTH), "A hive projectile cannot pass through its own core.")
+	var/obj/projectile/ms13_hivemind/unaffiliated_shot = new
+	TEST_ASSERT(!live_network.core.CanAllowThrough(unaffiliated_shot, NORTH), "A foreign projectile incorrectly passes through a hive core.")
+	qdel(friendly_shot)
+	qdel(unaffiliated_shot)
 	TEST_ASSERT(length(live_network.territory), "Starting a concrete network did not claim any nearby terrain.")
 	var/old_territory_size = length(live_network.territory)
 	live_network.resources = live_network.expansion_cost
@@ -74,6 +82,8 @@
 	TEST_ASSERT(test_unit.environment_smash & ENVIRONMENT_SMASH_STRUCTURES, "Standard hive units cannot break structures which contain their patrols.")
 	TEST_ASSERT(test_ranged.ranged && test_ranged.projectiletype == live_network.ranged_projectile_type && test_ranged.minimum_distance > 1, "Ranged units are not configured to keep distance and use their theme projectile.")
 	TEST_ASSERT((test_heavy.environment_smash & ENVIRONMENT_SMASH_WALLS) && test_heavy.obj_damage > test_unit.obj_damage, "Heavy units cannot breach walls more effectively than footsoldiers.")
+	TEST_ASSERT_EQUAL(test_heavy.off_terrain_damage_multiplier, 0, "Heavy units still decay while ranging beyond hive terrain.")
+	TEST_ASSERT(test_worker.off_terrain_damage_multiplier > 0 && test_worker.off_terrain_damage_multiplier < 1, "Corpse workers do not have reduced off-terrain decay.")
 	TEST_ASSERT(test_worker.corpse_converter, "The dedicated converter unit did not initialize as a corpse worker.")
 	var/mob/living/simple_animal/chicken/test_corpse = new(claimed_turf)
 	test_corpse.set_stat(DEAD)
@@ -83,6 +93,40 @@
 	var/old_unit_count = length(live_network.units)
 	TEST_ASSERT(live_network.advance_corpse_conversion(test_corpse, test_worker, 1, 1), "A fully progressed corpse was not converted.")
 	TEST_ASSERT_EQUAL(length(live_network.units), old_unit_count + 1, "Corpse conversion did not create exactly one network unit.")
+	var/mob/living/simple_animal/chicken/recycled_corpse = new(claimed_turf)
+	recycled_corpse.set_stat(DEAD)
+	live_network.max_units = length(live_network.units)
+	live_network.resources = 0
+	TEST_ASSERT(live_network.advance_corpse_conversion(recycled_corpse, test_worker, 1, 1), "A completed corpse stalled at the unit cap instead of being recycled.")
+	TEST_ASSERT_EQUAL(live_network.resources, live_network.corpse_recycling_value, "A corpse recycled at the unit cap did not return resources.")
+	var/turf/vehicle_turf
+	for(var/obj/structure/ms13_hivemind/terrain/growth as anything in live_network.territory)
+		if(get_turf(growth) != claimed_turf)
+			vehicle_turf = get_turf(growth)
+			break
+	TEST_ASSERT(vehicle_turf, "The live network has no second turf for vehicle-aware spawning and targeting checks.")
+	var/datum/ms13_ground_vehicle/test_vehicle = new
+	var/obj/structure/ms13_vehicle_frame/test_frame = new(vehicle_turf)
+	test_frame.vehicle = test_vehicle
+	test_vehicle.frames += test_frame
+	TEST_ASSERT(!live_network.can_spawn_unit_at(vehicle_turf), "Hive units can spawn inside a ground vehicle footprint.")
+	var/obj/structure/window/ms13_vehicle_wall/solid/light_wall = new(vehicle_turf)
+	light_wall.parent_frame = test_frame
+	test_vehicle.walls += light_wall
+	TEST_ASSERT(test_unit.is_vehicle_hull_target(light_wall), "A light vehicle hull is not a valid hive target.")
+	var/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank/tank_wall = new(vehicle_turf)
+	tank_wall.parent_frame = test_frame
+	test_vehicle.walls += tank_wall
+	var/obj/structure/window/ms13_vehicle_wall/solid/door/civ96/tank/tank_door = new(vehicle_turf)
+	tank_door.parent_frame = test_frame
+	test_vehicle.walls += tank_door
+	TEST_ASSERT(!test_unit.is_vehicle_hull_target(light_wall), "A hive unit still targets arbitrary plating on a tank-grade vehicle.")
+	TEST_ASSERT(test_unit.is_vehicle_hull_target(tank_door), "A hive unit does not prioritize the hatch on a tank-grade vehicle.")
+	qdel(tank_door)
+	qdel(tank_wall)
+	qdel(light_wall)
+	qdel(test_frame)
+	qdel(test_vehicle)
 	qdel(test_wall)
 	var/list/units_to_clean = live_network.units.Copy()
 	var/list/growths_to_clean = live_network.territory.Copy()
@@ -105,6 +149,9 @@
 	var/mob/living/simple_animal/chicken/hauled_corpse = new(hauling_turf)
 	hauled_corpse.set_stat(DEAD)
 	TEST_ASSERT(hauler.handle_corpse_work(), "A necromorph hauler did not accept a nearby corpse task.")
+	TEST_ASSERT(hauler.is_grabbing(hauled_corpse), "The hauler did not physically grab its corpse.")
+	TEST_ASSERT_EQUAL(hauling_network.get_corpse_claim(hauled_corpse), hauler, "The hauling unit lost its corpse claim before delivery.")
+	TEST_ASSERT(hauler.handle_corpse_work(), "A necromorph hauler did not deliver its grabbed corpse.")
 	TEST_ASSERT_EQUAL(hauling_network.get_corpse_claim(hauled_corpse), hauling_network.core, "The hauler did not deliver its corpse claim to the nearest nest.")
 	TEST_ASSERT(!hauler.is_grabbing(hauled_corpse), "The hauler did not release the corpse at its nest.")
 	var/old_hauling_unit_count = length(hauling_network.units)

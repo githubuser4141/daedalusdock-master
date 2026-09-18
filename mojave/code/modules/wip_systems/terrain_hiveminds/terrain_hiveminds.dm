@@ -6,6 +6,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 #define MS13_HIVE_ROLE_HEAVY "heavy"
 #define MS13_HIVE_ROLE_INFECTOR "infector"
 
+#define MS13_HIVE_CORPSE_EFFECT_BLOOD "blood"
+#define MS13_HIVE_CORPSE_EFFECT_GOO "goo"
+#define MS13_HIVE_CORPSE_EFFECT_SPARKS "sparks"
+
 /**
  * Shared controller for terrain-based enemies. A network owns one core, a resource pool, frontier
  * tiles, defensive structures, and units. Concrete themes only supply tuning and icon states.
@@ -32,6 +36,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/mob_damage_upper = 12
 	var/mob_regeneration = 2
 	var/mob_off_terrain_damage = 3
+	/// Fraction of maximum integrity restored per SSobj tick after a hive structure takes damage.
+	var/structure_regeneration_rate = 0.003
 	var/mobs_require_terrain = FALSE
 	/// Seconds for an unattended corpse on owned terrain to be recycled into a unit.
 	var/terrain_conversion_time = 120
@@ -50,6 +56,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/converter_unit_cost = 60
 	var/converter_unit_threshold = 24
 	var/max_converter_units = 1
+	/// Resources recovered when a completed corpse cannot become a unit because the population cap is full.
+	var/corpse_recycling_value = 10
+	var/corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_BLOOD
+	var/corpse_conversion_message = "convulses, then bursts apart into fresh biomass"
 	var/terrain_name = "hivemind growth"
 	var/icon/terrain_icon
 	var/terrain_icon_state
@@ -270,6 +280,28 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		available_types += elite_mob_types
 	return available_types
 
+/datum/ms13_terrain_hivemind/proc/can_spawn_unit_at(turf/target)
+	return isopenturf(target) && !target.density && !get_ms13_ground_vehicle_at(target)
+
+/datum/ms13_terrain_hivemind/proc/get_unit_spawn_turf(turf/origin)
+	if(can_spawn_unit_at(origin))
+		return origin
+	var/turf/closest
+	var/closest_distance = INFINITY
+	for(var/obj/structure/ms13_hivemind/terrain/growth as anything in territory)
+		var/turf/candidate = get_turf(growth)
+		var/distance = get_dist(origin, candidate)
+		if(distance <= 4 && distance < closest_distance && can_spawn_unit_at(candidate))
+			closest = candidate
+			closest_distance = distance
+	return closest
+
+/datum/ms13_terrain_hivemind/proc/spawn_unit(unit_type, turf/origin)
+	var/turf/spawn_turf = get_unit_spawn_turf(origin)
+	if(!spawn_turf)
+		return
+	return new unit_type(spawn_turf, src)
+
 /datum/ms13_terrain_hivemind/proc/is_convertible_corpse(mob/living/corpse)
 	return corpse && !QDELETED(corpse) && corpse.stat == DEAD && isturf(corpse.loc) && !is_allied(corpse)
 
@@ -353,21 +385,39 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(claim && !claim_corpse(corpse, converter))
 		return FALSE
 	var/datum/weakref/corpse_ref = WEAKREF(corpse)
-	corpse_conversion_progress[corpse_ref] += delta_time / conversion_time
-	if(corpse_conversion_progress[corpse_ref] < 1 || length(units) >= max_units)
-		return FALSE
-	var/list/available_types = get_available_unit_types()
-	if(!length(available_types))
+	var/old_progress = corpse_conversion_progress[corpse_ref] || 0
+	corpse_conversion_progress[corpse_ref] = min(1, old_progress + delta_time / conversion_time)
+	if(!old_progress)
+		corpse.visible_message(span_warning("[corpse] begins to twitch unnaturally."))
+	corpse.shake_animation(2 + round(corpse_conversion_progress[corpse_ref] * 6))
+	if(corpse_conversion_progress[corpse_ref] < 1)
 		return FALSE
 	var/turf/spawn_turf = get_turf(corpse)
-	corpse.visible_message(span_warning("[corpse] is consumed and remade by [name]."))
+	corpse.visible_message(span_warning("[corpse] [corpse_conversion_message]."))
+	play_corpse_conversion_effect(corpse, spawn_turf)
 	corpse_reports -= corpse_ref
 	corpse_claims -= corpse_ref
 	corpse_conversion_progress -= corpse_ref
 	qdel(corpse)
-	var/unit_type = pick(available_types)
-	new unit_type(spawn_turf, src)
+	if(length(units) < max_units)
+		var/list/available_types = get_available_unit_types()
+		if(length(available_types))
+			var/unit_type = pick(available_types)
+			if(spawn_unit(unit_type, spawn_turf))
+				return TRUE
+	resources = min(max_resources, resources + corpse_recycling_value)
 	return TRUE
+
+/datum/ms13_terrain_hivemind/proc/play_corpse_conversion_effect(mob/living/corpse, turf/where)
+	switch(corpse_conversion_effect)
+		if(MS13_HIVE_CORPSE_EFFECT_BLOOD)
+			corpse.add_splatter_floor(where)
+			new /obj/effect/decal/cleanable/blood/gibs(where, corpse.get_static_viruses())
+		if(MS13_HIVE_CORPSE_EFFECT_GOO)
+			new /obj/effect/decal/cleanable/greenglow(where)
+			playsound(where, 'sound/effects/splat.ogg', 50, TRUE)
+		if(MS13_HIVE_CORPSE_EFFECT_SPARKS)
+			do_sparks(4, FALSE, where)
 
 /datum/ms13_terrain_hivemind/proc/process_terrain_corpses(delta_time)
 	var/territory_count = length(territory)
@@ -432,6 +482,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	terrain_conversion_time = 75
 	field_conversion_time = 36
 	structure_conversion_time = 8
+	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_GOO
+	corpse_conversion_message = "swells and ruptures into glowing protoplasm"
 	terrain_name = "pulsating blob"
 	terrain_icon = 'icons/mob/blob.dmi'
 	terrain_icon_state = "blob"
@@ -464,6 +516,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	mob_regeneration = 3
 	terrain_conversion_time = 150
 	structure_conversion_time = 10
+	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_SPARKS
+	corpse_conversion_message = "flickers, fractures, and resolves into fresh gnesis"
 	terrain_name = "gnesis floor"
 	terrain_icon = 'goon/icons/turf/flock.dmi'
 	terrain_icon_state = "flock-0"
@@ -501,6 +555,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	terrain_conversion_time = 135
 	field_conversion_time = 28
 	structure_conversion_time = 7
+	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_BLOOD
+	corpse_conversion_message = "convulses violently before bursting into blood and reshaped flesh"
 	mob_health = 65
 	mob_damage_lower = 10
 	mob_damage_upper = 16
@@ -541,6 +597,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	units_haul_corpses = TRUE
 	terrain_conversion_time = 180
 	structure_conversion_time = 9
+	corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_SPARKS
+	corpse_conversion_message = "jerks upright, then collapses into sparking machine matter"
 	terrain_name = "hivemind wireweed"
 	terrain_icon = 'mojave/icons/wip/terrain_hivemind/eris_hivemind.dmi'
 	terrain_icon_state = "wires"
@@ -572,6 +630,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	icon_state = "pulse0"
 	damage = 10
 	range = 8
+	var/datum/ms13_terrain_hivemind/source_network
 
 /obj/projectile/ms13_hivemind/blob
 	name = "caustic glob"
@@ -600,6 +659,11 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	obj_flags = CAN_BE_HIT
 	var/datum/ms13_terrain_hivemind/network
 
+/obj/structure/ms13_hivemind/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
+	. = ..()
+	if(join_network)
+		AddElement(/datum/element/obj_regen, join_network.structure_regeneration_rate)
+
 /obj/structure/ms13_hivemind/core
 	name = "hivemind core"
 	desc = "The coordinating heart of an expanding hostile terrain network."
@@ -623,6 +687,12 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		network = null
 		old_network.core = null
 		qdel(old_network)
+	return ..()
+
+/obj/structure/ms13_hivemind/core/CanAllowThrough(atom/movable/mover, border_dir)
+	var/obj/projectile/ms13_hivemind/shot = mover
+	if(istype(shot) && shot.source_network == network)
+		return TRUE
 	return ..()
 
 /obj/structure/ms13_hivemind/core/process(delta_time)
@@ -790,6 +860,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	shot.preparePixelProjectile(target, get_turf(src))
 	shot.firer = src
 	shot.fired_from = src
+	var/obj/projectile/ms13_hivemind/hive_shot = shot
+	if(istype(hive_shot))
+		hive_shot.source_network = network
 	shot.ignored_factions = list(network.faction_id)
 	shot.fire()
 	COOLDOWN_START(src, fire_cooldown, 2 SECONDS)
@@ -822,17 +895,20 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return
 	if(length(network.units) >= network.max_units || !COOLDOWN_FINISHED(src, spawn_cooldown))
 		return
+	var/turf/spawn_turf = network.get_unit_spawn_turf(get_turf(src))
+	if(!spawn_turf)
+		return
 	if(network.should_spawn_converter())
 		if(network.spend(network.converter_unit_cost))
 			var/converter_type = network.converter_mob_type
-			new converter_type(get_turf(src), network)
+			new converter_type(spawn_turf, network)
 			COOLDOWN_START(src, spawn_cooldown, network.unit_spawn_delay)
 		return
 	var/list/available_types = network.get_available_unit_types()
 	if(!length(available_types) || !network.spend(network.unit_cost))
 		return
 	var/unit_type = pick(available_types)
-	new unit_type(get_turf(src), network)
+	new unit_type(spawn_turf, network)
 	COOLDOWN_START(src, spawn_cooldown, network.unit_spawn_delay)
 
 /obj/structure/ms13_hivemind/special/converter
@@ -890,6 +966,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/evolution_rank = 1
 	var/health_multiplier = 1
 	var/damage_multiplier = 1
+	var/off_terrain_damage_multiplier = 1
+	/// Hurt, idle units only retreat when friendly terrain is close enough to be an obvious safe step.
+	var/terrain_recovery_health = 0.45
+	var/terrain_recovery_range = 6
 	var/corpse_converter = FALSE
 	var/corpse_hauler = TRUE
 	var/roam_range = 14
@@ -972,6 +1052,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	evolution_rank = 3
 	health_multiplier = 2.5
 	damage_multiplier = 1.8
+	off_terrain_damage_multiplier = 0
 	corpse_hauler = FALSE
 	move_to_delay = 6
 	vision_range = 8
@@ -988,6 +1069,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	corpse_hauler = FALSE
 	health_multiplier = 1.25
 	damage_multiplier = 0.75
+	off_terrain_damage_multiplier = 0.5
 	roam_range = 10
 	roam_min_distance = 5
 
@@ -1005,9 +1087,12 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return PROCESS_KILL
 	if(network?.active && network.is_territory(get_turf(src)))
 		adjustHealth(-network.mob_regeneration * delta_time)
-	else if(!network || terrain_dependent)
-		var/decay_damage = network ? network.mob_off_terrain_damage : 3
-		adjustHealth(decay_damage * delta_time)
+	else if(!network)
+		adjustHealth(3 * delta_time)
+	else if(terrain_dependent)
+		var/decay_damage = network.mob_off_terrain_damage * off_terrain_damage_multiplier
+		if(decay_damage)
+			adjustHealth(decay_damage * delta_time)
 	if(QDELETED(src) || stat == DEAD)
 		return PROCESS_KILL
 	if(network?.active && can_field_convert_corpses())
@@ -1021,7 +1106,13 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	set waitfor = FALSE
 	if(AIStatus == AI_OFF || !network?.active)
 		return FALSE
-	if(target || FindTarget(ListTargets(), TRUE))
+	if(target)
+		clear_corpse_task()
+		clear_roam_target()
+		return ..()
+	if(handle_terrain_recovery())
+		return TRUE
+	if(FindTarget(ListTargets(), TRUE))
 		clear_corpse_task()
 		clear_roam_target()
 		return ..()
@@ -1037,11 +1128,45 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(AIStatus == AI_IDLE && network?.active && (network.find_reported_corpse(src) || roam_range))
 		toggle_ai(AI_ON)
 
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/ListTargets()
+	. = ..()
+	for(var/obj/structure/window/ms13_vehicle_wall/wall in oview(vision_range, src))
+		if(is_vehicle_hull_target(wall))
+			. |= wall
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/CanAttack(atom/the_target)
+	if(istype(the_target, /obj/structure/window/ms13_vehicle_wall))
+		return is_vehicle_hull_target(the_target)
+	return ..()
+
+/// Tank-grade hull is futile prey except at its hatches; lighter hull can be torn open anywhere.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/is_vehicle_hull_target(obj/structure/window/ms13_vehicle_wall/wall)
+	var/datum/ms13_ground_vehicle/vehicle = wall?.parent_frame?.vehicle
+	if(!vehicle || !wall.exterior || !wall.density)
+		return FALSE
+	var/heavy_armor = FALSE
+	for(var/obj/structure/window/ms13_vehicle_wall/candidate as anything in vehicle.walls)
+		if(istype(candidate, /obj/structure/window/ms13_vehicle_wall/solid/civ96/tank) || istype(candidate, /obj/structure/window/ms13_vehicle_wall/solid/door/civ96/tank))
+			heavy_armor = TRUE
+			break
+	return !heavy_armor || istype(wall, /obj/structure/window/ms13_vehicle_wall/solid/door/civ96/tank)
+
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_field_convert_corpses()
 	return corpse_converter || network?.base_units_convert_corpses || (unit_role == MS13_HIVE_ROLE_HEAVY && network?.elite_units_convert_corpses)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_work_corpses()
 	return can_field_convert_corpses() || (corpse_hauler && network?.units_haul_corpses)
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_terrain_recovery()
+	if(!terrain_dependent || network.is_territory(get_turf(src)) || health > maxHealth * terrain_recovery_health)
+		return FALSE
+	var/obj/structure/ms13_hivemind/terrain/growth = get_closest_atom(/obj/structure/ms13_hivemind/terrain, network.territory, src)
+	if(!growth || get_dist(src, growth) > terrain_recovery_range)
+		return FALSE
+	clear_corpse_task()
+	clear_roam_target()
+	Goto(growth, move_to_delay, 0)
+	return TRUE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/clear_corpse_task(release_body = TRUE)
 	var/mob/living/corpse = corpse_target_ref?.resolve()
@@ -1084,6 +1209,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		if(!try_make_grab(corpse))
 			clear_corpse_task(FALSE)
 			return FALSE
+		// Let the grab exist for at least one AI tick so hauling remains readable to nearby players.
+		return TRUE
 	var/obj/structure/ms13_hivemind/destination = network.get_corpse_delivery_target(src)
 	if(!destination)
 		clear_corpse_task()
@@ -1189,3 +1316,6 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 #undef MS13_HIVE_ROLE_RANGED
 #undef MS13_HIVE_ROLE_HEAVY
 #undef MS13_HIVE_ROLE_INFECTOR
+#undef MS13_HIVE_CORPSE_EFFECT_BLOOD
+#undef MS13_HIVE_CORPSE_EFFECT_GOO
+#undef MS13_HIVE_CORPSE_EFFECT_SPARKS

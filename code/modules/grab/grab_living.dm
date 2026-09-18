@@ -46,7 +46,7 @@
 		return FALSE
 
 /// Attempt to create a grab, returns TRUE on success
-/mob/living/proc/try_make_grab(atom/movable/target, grab_type, use_offhand)
+/mob/living/proc/try_make_grab(atom/movable/target, grab_type = /datum/grab/simple, use_offhand)
 	return canUseTopic(src, USE_IGNORE_TK|USE_CLOSE) && make_grab(target, grab_type, use_offhand)
 
 /// DO NOT CALL DIRECTLY. USE THE ABOVE.
@@ -176,5 +176,4 @@
 			if(!direction)
 				continue
 			setDir(global.reverse_dir[direction])
-
 

@@ -5,10 +5,13 @@ Use the admin debug verb **MS13 - Spawn Terrain Hivemind** to choose a theme, a 
 
 Each network has one destructible core and a shared resource pool. Claimed floor growth produces
 resources; expansion, walls, traps, turrets, and unit generators spend them. Units regenerate on
-their own terrain. Blob and necromorph units also decay away from it, while every unit decays after
-its core is destroyed. Generators begin with scouts and footsoldiers, then unlock ranged units at 24
+their own terrain. Blob and necromorph units also decay away from it, although heavies are independent
+and corpse specialists decay at half speed; wounded idle units will step back onto nearby growth to
+recover without abandoning an active fight. Every unit decays after its core is destroyed. Generators
+begin with scouts and footsoldiers, then unlock ranged units at 24
 claimed tiles and wall-smashing heavies at 55. Destroyed cores stop expansion and make their terrain
-and structures wither.
+and structures wither. Damaged hive structures slowly regenerate. Turret projectiles pass through
+their own network's core, but other friendly structures remain vulnerable and enemy-hive shots still hit.
 
 The five shared unit roles carry behavior rather than a theme: scouts move quickly, dodge, see
 farther, and take long patrols; footsoldiers fight and haul bodies; ranged units fire three-shot
@@ -16,7 +19,10 @@ volleys while keeping their distance; heavies are slow, durable linebreakers whi
 infectors are costly corpse specialists. Themes provide a distinct name, sprite, and projectile for
 each role. Idle units deliberately pick distant destinations beyond hive terrain, destroy obstructing
 doors or structures on the way, and periodically retarget, so a mature hive disperses instead of
-remaining piled around its generator.
+remaining piled around its generator. They recognize ground-vehicle hulls as obstacles: any exterior
+panel on a light vehicle is fair game, while tank-grade vehicles draw attacks to their closed hatches.
+Generators and corpse conversion relocate new units to nearby growth rather than creating them inside
+a vehicle footprint.
 
 Corpses are shared work targets rather than private AI targets. Any unit which sees a body reports it
 to the network; one worker claims it, so the other units do not all chase the same corpse. Owned
@@ -24,6 +30,8 @@ terrain slowly converts unattended bodies, dedicated converter structures proces
 within one tile very quickly, and generators may spend extra resources on one dedicated converter
 unit once the network is mature and has a reported body. Corpse reports, claims, and progress use
 weak references, and terrain checks a rotating fixed-size slice instead of scanning the whole map.
+Conversion starts with increasingly violent twitching and ends in theme-specific blood, slime, or
+sparks. At the population cap, completed bodies become resources instead of stalling forever.
 
 The themes deliberately use that shared machinery differently:
 
