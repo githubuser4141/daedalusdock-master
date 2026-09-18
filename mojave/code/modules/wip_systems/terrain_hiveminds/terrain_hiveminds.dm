@@ -36,6 +36,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/mob_damage_upper = 12
 	var/mob_regeneration = 2
 	var/mob_off_terrain_damage = 3
+	var/mob_orphan_damage = 3
 	/// Fraction of maximum integrity restored per SSobj tick after a hive structure takes damage.
 	var/structure_regeneration_rate = 0.003
 	var/mobs_require_terrain = FALSE
@@ -56,15 +57,27 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/converter_unit_cost = 60
 	var/converter_unit_threshold = 24
 	var/max_converter_units = 1
+	/// Dead bodies are the default feedstock; themes may instead reserve disabled living hosts.
+	var/converts_dead_hosts = TRUE
+	var/converts_living_hosts = FALSE
+	var/living_hosts_must_be_incapacitated = TRUE
 	/// Resources recovered when a completed corpse cannot become a unit because the population cap is full.
 	var/corpse_recycling_value = 10
 	var/corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_BLOOD
+	var/corpse_conversion_start_message = "begins to twitch unnaturally"
 	var/corpse_conversion_message = "convulses, then bursts apart into fresh biomass"
+	var/living_conversion_start_message = "goes rigid as something begins moving beneath the skin"
+	var/living_conversion_message = "convulses as a new creature tears free"
+	var/living_conversion_damage = 200
+	var/converter_name = "corpse converter"
+	var/converter_desc = "A specialized structure which rapidly remakes corpses dragged within reach."
 	var/terrain_name = "hivemind growth"
 	var/icon/terrain_icon
 	var/terrain_icon_state
 	/// Optional bitmask-state prefix, e.g. `corruption` produces `corruption-0` through `corruption-255`.
 	var/terrain_smoothing_prefix
+	var/terrain_smoothing_separator = "-"
+	var/terrain_smoothing_diagonals = TRUE
 	var/icon/core_icon
 	var/core_icon_state
 	var/icon/wall_icon
@@ -303,7 +316,13 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return new unit_type(spawn_turf, src)
 
 /datum/ms13_terrain_hivemind/proc/is_convertible_corpse(mob/living/corpse)
-	return corpse && !QDELETED(corpse) && corpse.stat == DEAD && isturf(corpse.loc) && !is_allied(corpse)
+	if(!corpse || QDELETED(corpse) || !isturf(corpse.loc) || is_allied(corpse))
+		return FALSE
+	if(corpse.stat == DEAD)
+		return converts_dead_hosts
+	if(!converts_living_hosts)
+		return FALSE
+	return !living_hosts_must_be_incapacitated || corpse.stat == UNCONSCIOUS || corpse.IsParalyzed()
 
 /datum/ms13_terrain_hivemind/proc/report_corpse(mob/living/corpse)
 	if(!is_convertible_corpse(corpse))
@@ -387,18 +406,28 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/datum/weakref/corpse_ref = WEAKREF(corpse)
 	var/old_progress = corpse_conversion_progress[corpse_ref] || 0
 	corpse_conversion_progress[corpse_ref] = min(1, old_progress + delta_time / conversion_time)
+	var/living_host = corpse.stat != DEAD
+	if(living_host)
+		corpse.Paralyze(3 SECONDS)
 	if(!old_progress)
-		corpse.visible_message(span_warning("[corpse] begins to twitch unnaturally."))
+		var/start_message = living_host ? living_conversion_start_message : corpse_conversion_start_message
+		corpse.visible_message(span_warning("[corpse] [start_message]."))
 	corpse.shake_animation(2 + round(corpse_conversion_progress[corpse_ref] * 6))
 	if(corpse_conversion_progress[corpse_ref] < 1)
 		return FALSE
 	var/turf/spawn_turf = get_turf(corpse)
-	corpse.visible_message(span_warning("[corpse] [corpse_conversion_message]."))
+	var/completion_message = living_host ? living_conversion_message : corpse_conversion_message
+	corpse.visible_message(span_warning("[corpse] [completion_message]."))
 	play_corpse_conversion_effect(corpse, spawn_turf)
 	corpse_reports -= corpse_ref
 	corpse_claims -= corpse_ref
 	corpse_conversion_progress -= corpse_ref
-	qdel(corpse)
+	if(living_host)
+		corpse.apply_damage(living_conversion_damage, BRUTE, BODY_ZONE_CHEST, forced = TRUE, sharpness = SHARP_POINTY)
+		if(corpse.stat != DEAD)
+			corpse.death()
+	else
+		qdel(corpse)
 	if(length(units) < max_units)
 		var/list/available_types = get_available_unit_types()
 		if(length(available_types))
@@ -628,6 +657,64 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	ranged_projectile_type = /obj/projectile/ms13_hivemind/eris
 	ranged_projectile_sound = 'sound/weapons/laser.ogg'
 
+/datum/ms13_terrain_hivemind/xenomorph
+	name = "TGMC xenomorph hive"
+	abstract = FALSE
+	faction_id = "ms13_xenomorph"
+	resource_per_tile = 0.2
+	mob_health = 105
+	mob_damage_lower = 18
+	mob_damage_upper = 30
+	mob_regeneration = 3
+	mob_off_terrain_damage = 0
+	mob_orphan_damage = 0
+	units_haul_corpses = TRUE
+	converter_unit_enabled = FALSE
+	converts_dead_hosts = FALSE
+	converts_living_hosts = TRUE
+	terrain_conversion_time = 0
+	structure_conversion_time = 25
+	living_conversion_start_message = "seizes as resin tightens and something begins growing inside"
+	living_conversion_message = "erupts in a shower of blood as a newborn xenomorph emerges"
+	converter_name = "incubation nest"
+	converter_desc = "A resin hollow which keeps disabled living hosts immobile while the hive incubates them."
+	terrain_name = "alien resin weeds"
+	terrain_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/weeds.dmi'
+	terrain_icon_state = "weed0"
+	terrain_smoothing_prefix = "weed"
+	terrain_smoothing_separator = ""
+	terrain_smoothing_diagonals = FALSE
+	core_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/weeds.dmi'
+	core_icon_state = "weednode5"
+	wall_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/structures.dmi'
+	wall_icon_state = "thickresin15"
+	trap_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/structures.dmi'
+	trap_icon_state = "membrane15"
+	turret_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/acid_turret.dmi'
+	turret_icon_state = "acid_turret"
+	spawner_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/structures.dmi'
+	spawner_icon_state = "resin15"
+	converter_icon = 'mojave/icons/by_nc/tgmc_xenomorphs/structures.dmi'
+	converter_icon_state = "thickmembrane15"
+	unit_appearances = list(
+		MS13_HIVE_ROLE_SCOUT = list("name" = "xenomorph runner", "icon" = 'mojave/icons/by_nc/tgmc_xenomorphs/castes/runner.dmi', "state" = "Runner Walking", "pixel_x" = -16),
+		MS13_HIVE_ROLE_SOLDIER = list("name" = "xenomorph warrior", "icon" = 'mojave/icons/by_nc/tgmc_xenomorphs/castes/warrior.dmi', "state" = "Warrior Walking", "pixel_x" = -16),
+		MS13_HIVE_ROLE_RANGED = list("name" = "xenomorph spitter", "icon" = 'mojave/icons/by_nc/tgmc_xenomorphs/castes/spitter.dmi', "state" = "Spitter Walking", "pixel_x" = -16),
+		MS13_HIVE_ROLE_HEAVY = list("name" = "xenomorph crusher", "icon" = 'mojave/icons/by_nc/tgmc_xenomorphs/castes/crusher.dmi', "state" = "Crusher Walking", "pixel_x" = -16),
+		MS13_HIVE_ROLE_INFECTOR = list("name" = "xenomorph carrier", "icon" = 'mojave/icons/by_nc/tgmc_xenomorphs/castes/carrier.dmi', "state" = "Carrier Walking", "pixel_x" = -16),
+	)
+	mob_types = list(
+		/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout,
+		/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier,
+	)
+	evolved_mob_types = list(
+		/mob/living/simple_animal/hostile/ms13/terrain_hivemind/ranged,
+		/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler,
+	)
+	elite_mob_types = list(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy)
+	ranged_projectile_type = /obj/projectile/ms13_hivemind/xenomorph
+	ranged_projectile_sound = 'sound/effects/splat.ogg'
+
 /obj/projectile/ms13_hivemind
 	name = "hivemind bolt"
 	icon = 'icons/obj/guns/projectiles.dmi'
@@ -658,6 +745,12 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	icon = 'mojave/icons/wip/terrain_hivemind/eris_hivemind.dmi'
 	icon_state = "goo_proj"
 	damage = 22
+
+/obj/projectile/ms13_hivemind/xenomorph
+	name = "acid spit"
+	icon_state = "glob_projectile"
+	damage = 20
+	damage_type = BURN
 
 /obj/structure/ms13_hivemind
 	anchored = TRUE
@@ -745,15 +838,16 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	for(var/direction in GLOB.cardinals)
 		if(has_network_neighbor(direction))
 			junction |= direction
-	if((junction & NORTH) && (junction & WEST) && has_network_neighbor(NORTHWEST))
-		junction |= NORTHWEST_JUNCTION
-	if((junction & NORTH) && (junction & EAST) && has_network_neighbor(NORTHEAST))
-		junction |= NORTHEAST_JUNCTION
-	if((junction & SOUTH) && (junction & WEST) && has_network_neighbor(SOUTHWEST))
-		junction |= SOUTHWEST_JUNCTION
-	if((junction & SOUTH) && (junction & EAST) && has_network_neighbor(SOUTHEAST))
-		junction |= SOUTHEAST_JUNCTION
-	icon_state = "[network.terrain_smoothing_prefix]-[junction]"
+	if(network.terrain_smoothing_diagonals)
+		if((junction & NORTH) && (junction & WEST) && has_network_neighbor(NORTHWEST))
+			junction |= NORTHWEST_JUNCTION
+		if((junction & NORTH) && (junction & EAST) && has_network_neighbor(NORTHEAST))
+			junction |= NORTHEAST_JUNCTION
+		if((junction & SOUTH) && (junction & WEST) && has_network_neighbor(SOUTHWEST))
+			junction |= SOUTHWEST_JUNCTION
+		if((junction & SOUTH) && (junction & EAST) && has_network_neighbor(SOUTHEAST))
+			junction |= SOUTHEAST_JUNCTION
+	icon_state = "[network.terrain_smoothing_prefix][network.terrain_smoothing_separator][junction]"
 
 /obj/structure/ms13_hivemind/terrain/proc/has_network_neighbor(direction)
 	var/turf/neighbor_turf = get_step(src, direction)
@@ -853,7 +947,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/mob/living/target
 	var/target_distance = INFINITY
 	for(var/mob/living/candidate in viewers(range, src))
-		if(candidate.stat == DEAD || network.is_allied(candidate))
+		if(candidate.stat == DEAD || network.is_allied(candidate) || network.is_convertible_corpse(candidate))
 			continue
 		var/distance = get_dist(src, candidate)
 		if(distance < target_distance)
@@ -926,7 +1020,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	. = ..()
 	if(!network)
 		return
-	name = "[network.name] corpse converter"
+	name = "[network.name] [network.converter_name]"
+	desc = network.converter_desc
 	icon = network.converter_icon
 	icon_state = network.converter_icon_state
 	START_PROCESSING(SSobj, src)
@@ -971,7 +1066,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/evolution_rank = 1
 	var/health_multiplier = 1
 	var/damage_multiplier = 1
+	var/regeneration_multiplier = 1
 	var/off_terrain_damage_multiplier = 1
+	var/orphan_damage = 3
 	/// Hurt, idle units only retreat when friendly terrain is close enough to be an obvious safe step.
 	var/terrain_recovery_health = 0.45
 	var/terrain_recovery_range = 6
@@ -1004,6 +1101,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	melee_damage_lower = round(network.mob_damage_lower * damage_multiplier)
 	melee_damage_upper = round(network.mob_damage_upper * damage_multiplier)
 	terrain_dependent = network.mobs_require_terrain
+	orphan_damage = network.mob_orphan_damage
 	faction = list(network.faction_id)
 	network.units |= src
 	START_PROCESSING(SSobj, src)
@@ -1078,6 +1176,17 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	roam_range = 10
 	roam_min_distance = 5
 
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler
+	unit_role = MS13_HIVE_ROLE_INFECTOR
+	evolution_rank = 2
+	health_multiplier = 1.35
+	damage_multiplier = 0.7
+	off_terrain_damage_multiplier = 0.5
+	corpse_hauler = TRUE
+	move_to_delay = 3
+	roam_range = 14
+	roam_min_distance = 7
+
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	clear_corpse_task()
@@ -1091,9 +1200,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(stat == DEAD)
 		return PROCESS_KILL
 	if(network?.active && network.is_territory(get_turf(src)))
-		adjustHealth(-network.mob_regeneration * delta_time)
+		adjustHealth(-network.mob_regeneration * regeneration_multiplier * delta_time)
 	else if(!network)
-		adjustHealth(3 * delta_time)
+		if(orphan_damage)
+			adjustHealth(orphan_damage * delta_time)
 	else if(terrain_dependent)
 		var/decay_damage = network.mob_off_terrain_damage * off_terrain_damage_multiplier
 		if(decay_damage)
@@ -1142,6 +1252,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/CanAttack(atom/the_target)
 	if(istype(the_target, /obj/structure/window/ms13_vehicle_wall))
 		return is_vehicle_hull_target(the_target)
+	var/mob/living/living_target = the_target
+	if(istype(living_target) && network?.is_convertible_corpse(living_target))
+		network.report_corpse(living_target)
+		return FALSE
 	return ..()
 
 /// Tank-grade hull is futile prey except at its hatches; lighter hull can be torn open anywhere.
@@ -1287,6 +1401,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		"Daedalus flock" = /datum/ms13_terrain_hivemind/flock,
 		"DS13 necromorph corruption" = /datum/ms13_terrain_hivemind/necromorph,
 		"SS13 blob" = /datum/ms13_terrain_hivemind/blob,
+		"TGMC xenomorph hive" = /datum/ms13_terrain_hivemind/xenomorph,
 	)
 	var/variant = tgui_input_list(src, "Choose the terrain-enemy theme.", "Terrain Hivemind", variants)
 	if(!variant)

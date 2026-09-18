@@ -7,28 +7,31 @@ Each network has one destructible core and a shared resource pool. Claimed floor
 resources; expansion, walls, traps, turrets, and unit generators spend them. Units regenerate on
 their own terrain. Blob and necromorph units also decay away from it, although heavies are independent
 and corpse specialists decay at half speed; wounded idle units will step back onto nearby growth to
-recover without abandoning an active fight. Every unit decays after its core is destroyed. Generators
+recover without abandoning an active fight. Most units decay after their core is destroyed, while
+xenomorphs are deliberately independent of both weeds and their core. Generators
 begin with scouts and footsoldiers, then unlock ranged units at 24
 claimed tiles and wall-smashing heavies at 55. Destroyed cores stop expansion and make their terrain
 and structures wither. Damaged hive structures slowly regenerate. Turret projectiles pass through
 their own network's core, but other friendly structures remain vulnerable and enemy-hive shots still hit.
 
-The five shared unit roles carry behavior rather than a theme: scouts move quickly, dodge, see
+The five foundational unit roles carry behavior rather than a theme: scouts move quickly, dodge, see
 farther, and take long patrols; footsoldiers fight and haul bodies; ranged units fire three-shot
 volleys while keeping their distance; heavies are slow, durable linebreakers which smash walls; and
-infectors are costly corpse specialists. Themes provide a distinct name, sprite, and projectile for
-each role. Idle units deliberately pick distant destinations beyond hive terrain, destroy obstructing
+infectors are costly conversion specialists. Optional hauler, suicide, siege, and regenerator
+subtypes let a theme add behavior without growing a parallel AI tree. Themes provide a distinct name,
+sprite, and projectile for each role. Idle units deliberately pick distant destinations beyond hive terrain, destroy obstructing
 doors or structures on the way, and periodically retarget, so a mature hive disperses instead of
 remaining piled around its generator. They recognize ground-vehicle hulls as obstacles: any exterior
 panel on a light vehicle is fair game, while tank-grade vehicles draw attacks to their closed hatches.
 Generators and corpse conversion relocate new units to nearby growth rather than creating them inside
 a vehicle footprint.
 
-Corpses are shared work targets rather than private AI targets. Any unit which sees a body reports it
-to the network; one worker claims it, so the other units do not all chase the same corpse. Owned
-terrain slowly converts unattended bodies, dedicated converter structures process bodies dragged
-within one tile very quickly, and generators may spend extra resources on one dedicated converter
-unit once the network is mature and has a reported body. Corpse reports, claims, and progress use
+Conversion subjects are shared work targets rather than private AI targets. A theme independently
+chooses whether dead bodies, disabled living hosts, or both are eligible. Any unit which sees an
+eligible body reports it to the network; one worker claims it, so the other units do not all chase the
+same target. Owned terrain can slowly convert unattended bodies, dedicated converter structures
+process subjects dragged within one tile very quickly, and generators may spend extra resources on
+one dedicated converter unit once the network is mature and has a reported body. Reports, claims, and progress use
 weak references, and terrain checks a rotating fixed-size slice instead of scanning the whole map.
 Conversion starts with increasingly violent twitching and ends in theme-specific blood, slime, or
 sparks. At the population cap, completed bodies become resources instead of stalling forever.
@@ -41,9 +44,14 @@ The themes deliberately use that shared machinery differently:
   conversion;
 - blob units and terrain digest bodies in place, with harvesters and resource blobs accelerating it;
 - Eris units recover bodies to machine recyclers, while a costly mobile recycler handles remote
-  finds.
+  finds;
+- xenomorph warriors and evolved carriers reserve incapacitated living enemies instead of corpses,
+  haul them to incubation nests, and keep them paralyzed during incubation. Birth causes catastrophic
+  chest damage and leaves the body behind. Xenomorphs do not lose health away from weeds or after the
+  core dies.
 
-Flock and necromorph terrain use their native connected bitmask icon states. Connections are scoped
+Flock and necromorph terrain use their native eight-neighbor connected bitmask icon states, while
+xenomorph weeds use their native cardinal-only states. Connections are scoped
 to one network, so two rival hives touching each other do not visually join. Blob retains its native
 full-tile appearance; Eris wireweed uses the source sheet's complete wire-bed state rather than one
 of the quarter-tile component states, so adjacent machine-hive growth no longer leaves checkerboard
@@ -60,12 +68,19 @@ choose strategic targets, or persist between rounds.
   `5f7847f26585d80505500be5a62e621022a56bf7`, under that project's AGPLv3 terms.
 - Necromorph corruption and swarmer icons are from `DS-13-Dev-Team/DS13-2.0` `master`, whose README
   identifies its assets as CC BY-SA 3.0 unless otherwise indicated. The slasher, lurker, infector,
-  and combined 64px brute sheets are imported from the same source.
+  combined 64px brute sheet, tripod, exploder, and hunter are imported from the same source. The new
+  elite files are pinned and itemized in `DS13_ATTRIBUTION.md`.
+- TGMC xenomorph sprites are from `tgstation/TerraGov-Marine-Corps` revision
+  `d3131c745b25e69303d6e73b6a00eb2201259d3b` under CC BY-NC 4.0. They are isolated beneath
+  `mojave/icons/by_nc/tgmc_xenomorphs/` with per-file provenance in its `ATTRIBUTION.md`; no TGMC
+  source code was copied.
 - Blob and flock appearances reuse assets already present in DaedalusDock.
 
 New themes normally only subtype `/datum/ms13_terrain_hivemind` and replace its appearance, economy,
 `core_type`, `terrain_type`, role-keyed `unit_appearances`, tiered `mob_types` lists, projectile, and
-`special_types`. The shared role paths provide the AI behavior, so themes do not need parallel mob
+`special_types`. `converts_dead_hosts`, `converts_living_hosts`, terrain conversion time, orphan
+damage, and conversion messages select corpse recycling or nest incubation without replacing the
+shared work AI. The shared role paths provide the AI behavior, so themes do not need parallel mob
 trees just to reskin scouts, soldiers, ranged units, heavies, and infectors.
 
 The shared code is intentionally independent of the original Eris and DS13 subsystems: their object

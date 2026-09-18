@@ -5,4 +5,4 @@ their permanent Mojave modules.
 
 - `surface_impacts/` procedurally creates warned, destructive surface encounters.
 - `terrain_hiveminds/` provides a generic resource-funded spreading-terrain enemy framework with
-  blob, flock, necromorph, and machine-hive configurations.
+  blob, flock, necromorph, machine-hive, and xenomorph configurations.

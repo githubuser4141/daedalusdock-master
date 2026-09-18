@@ -7,14 +7,16 @@
 /datum/ms13_terrain_hivemind/advance_corpse_conversion(mob/living/corpse, datum/converter, delta_time, conversion_time, claim = TRUE)
 	var/atom/delivery_structure = istype(converter, /obj/structure/ms13_hivemind) ? converter : null
 	var/old_unit_count = length(units)
+	var/conversion_subject = corpse?.stat == DEAD ? "remains" : "living host"
+	var/conversion_verb = corpse?.stat == DEAD ? "consumes" : "incubates"
 	. = ..()
 	if(!. || !delivery_structure)
 		return
 	max_resources += corpse_capacity_value
 	if(length(units) > old_unit_count)
-		delivery_structure.visible_message(span_notice("[delivery_structure] consumes the remains, expands the hive's biomass reserve, and births a new unit."))
+		delivery_structure.visible_message(span_notice("[delivery_structure] [conversion_verb] the [conversion_subject], expands the hive's biomass reserve, and births a new unit."))
 	else
-		delivery_structure.visible_message(span_notice("[delivery_structure] consumes the remains, increasing the hive's biomass capacity and stored resources."))
+		delivery_structure.visible_message(span_notice("[delivery_structure] [conversion_verb] the [conversion_subject], increasing the hive's biomass capacity and stored resources."))
 
 /datum/ms13_terrain_hivemind/find_reported_corpse(atom/seeker)
 	. = ..()
@@ -29,6 +31,32 @@
 		"state" = "bomber",
 	)
 	evolved_mob_types |= /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide
+
+/datum/ms13_terrain_hivemind/necromorph/New(turf/start, new_territory_limit)
+	. = ..()
+	unit_appearances["siege"] = list(
+		"name" = "necromorph tripod",
+		"icon" = 'mojave/icons/wip/terrain_hivemind/ds13_tripod.dmi',
+		"state" = "preview",
+		"pixel_x" = -54,
+	)
+	unit_appearances["suicide"] = list(
+		"name" = "necromorph exploder",
+		"icon" = 'mojave/icons/wip/terrain_hivemind/ds13_exploder.dmi',
+		"state" = "preview",
+		"pixel_x" = -8,
+		"pixel_y" = -8,
+	)
+	unit_appearances["regenerator"] = list(
+		"name" = "necromorph hunter",
+		"icon" = 'mojave/icons/wip/terrain_hivemind/ds13_hunter.dmi',
+		"state" = "preview",
+		"pixel_x" = -8,
+		"pixel_y" = -16,
+	)
+	elite_mob_types |= /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/siege
+	elite_mob_types |= /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph
+	elite_mob_types |= /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/regenerator
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	var/force_opens_doors = TRUE
@@ -102,6 +130,10 @@
 	move_to_delay = 2
 	roam_range = 18
 	roam_min_distance = 8
+	var/fires_shaped_charge_jet = TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph
+	fires_shaped_charge_jet = FALSE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/AttackingTarget(atom/attacked_target)
 	var/atom/victim = attacked_target
@@ -114,11 +146,31 @@
 	if(!attack_direction)
 		attack_direction = dir
 	var/jet_angle = dir2angle(attack_direction)
-	visible_message(span_danger("[src] ruptures in a focused blast!"))
+	var/blast_shape = fires_shaped_charge_jet ? "focused" : "violent"
+	visible_message(span_danger("[src] ruptures in a [blast_shape] blast!"))
 	explosion(origin, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 1, adminlog = FALSE, explosion_cause = src)
-	ms13_fire_shaped_charge_jet(origin, jet_angle, 48, 150, 5, 4, src)
+	if(fires_shaped_charge_jet)
+		ms13_fire_shaped_charge_jet(origin, jet_angle, 48, 150, 5, 4, src)
 	qdel(src)
 	return TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/siege
+	unit_role = "siege"
+	health_multiplier = 4
+	damage_multiplier = 2.25
+	obj_damage = 130
+	move_to_delay = 7
+	vision_range = 10
+	aggro_vision_range = 12
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/regenerator
+	unit_role = "regenerator"
+	health_multiplier = 2.75
+	damage_multiplier = 1.75
+	regeneration_multiplier = 4
+	move_to_delay = 4
+	vision_range = 10
+	aggro_vision_range = 12
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/DestroyObjectsInDirection(direction)
 	if(force_opens_doors)
