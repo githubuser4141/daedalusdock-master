@@ -32,7 +32,11 @@
 	name = "fusion core"
 	desc = "A fusion core. Careful not to drop it!"
 	icon_state = "fusion_core"
-	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap_electronics = 2)
+	ms13_breakdown_result = list(
+	/obj/item/stack/sheet/ms13/scrap_electronics = 2,
+	/obj/item/stack/sheet/ms13/scrap_lead,
+	/obj/item/stack/sheet/ms13/scrap_copper,
+	)
 
 /obj/item/ms13/component/vacuum_tube
 	name = "vacuum tube"
@@ -46,7 +50,11 @@
 	name = "plasma battery"
 	desc = "A dangerous looking battery containing superheated plasma. Practically just waiting to be used for something lethal."
 	icon_state = "plasma_battery"
-	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap_copper = 2)
+	ms13_breakdown_result = list(
+	/obj/item/stack/sheet/ms13/scrap_copper = 3,
+	/obj/item/stack/sheet/ms13/scrap_silver = 2,
+	/obj/item/stack/sheet/ms13/scrap_alu = 2,
+	)
 	//grid_width = 32
 	//grid_height = 64
 

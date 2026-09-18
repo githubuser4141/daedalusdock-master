@@ -326,7 +326,7 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 
 /datum/material/ms13/scrap_alu
 	name = "scrap aluminum"
-	desc = "Steel scrap metal."
+	desc = "Aluminium scrap metal."
 	color = "#5e5b59"
 	sheet_type = /obj/item/stack/sheet/ms13/scrap_alu
 	beauty_modifier = 0
