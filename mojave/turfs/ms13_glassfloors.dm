@@ -21,7 +21,7 @@ TYPEINFO_DEF(/obj/structure/ms13/glassfloor)
 	obj_flags =  BLOCK_Z_OUT_DOWN | BLOCK_Z_IN_UP
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_MS13_GLASS
-	canSmoothWith = SMOOTH_GROUP_MS13_GLASS + SMOOTH_GROUP_OPEN_FLOOR + SMOOTH_GROUP_WALLS
+	canSmoothWith = SMOOTH_GROUP_MS13_GLASS + SMOOTH_GROUP_WALLS + SMOOTH_GROUP_OPEN_FLOOR
 	weatherproof = TRUE
 
 /obj/structure/ms13/glassfloor/reinforced //unbreakable variant

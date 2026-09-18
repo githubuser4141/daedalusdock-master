@@ -99,7 +99,8 @@ DEFINE_BITFIELD(smoothing_flags, list(
 #define SMOOTH_GROUP_MINERAL_WALLS S_TURF(56) ///turf/closed/mineral, /turf/closed/indestructible
 #define SMOOTH_GROUP_BOSS_WALLS S_TURF(57) ///turf/closed/indestructible/riveted/boss
 
-#define MAX_S_TURF 56 //Always match this value with the one above it.
+// MOJAVE SUN EDIT: MS turf groups continue through 77; every S_OBJ group must be offset past them.
+#define MAX_S_TURF 77
 
 #define S_OBJ(num) ("-" + #num + ",")
 /* /obj included */

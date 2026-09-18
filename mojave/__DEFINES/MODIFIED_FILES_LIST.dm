@@ -91,6 +91,7 @@ code/modules/unit_tests/house_power_ms13.dm,
 tgui/packages/tgui/interfaces/Apc.jsx,
 code/modules/unit_tests/farming_ms13.dm,
 code/modules/admin/admin_verbs.dm,
+code/__DEFINES/icon_smoothing.dm,
 
 
 */

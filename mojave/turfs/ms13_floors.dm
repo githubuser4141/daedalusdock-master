@@ -429,7 +429,7 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 	desc = "Hard concrete sewer flooring, built to last."
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_MS13_TILE
-	canSmoothWith = SMOOTH_GROUP_CATWALK + SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_TILE
+	canSmoothWith = SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_CATWALK + SMOOTH_GROUP_MS13_TILE
 
 ////Ceramic Floors////
 

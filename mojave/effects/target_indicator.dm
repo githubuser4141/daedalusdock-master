@@ -15,6 +15,8 @@
 
 /obj/effect/temp_visual/ms13/target_indicator/Initialize(mapload)
 	. = ..()
+	// /obj/effect does not run the smoothing setup used by turfs, structures, and machinery.
+	SETUP_SMOOTHING()
 	if(smoothing_flags & (SMOOTH_BITMASK))
 		QUEUE_SMOOTH_NEIGHBORS(src)
 		QUEUE_SMOOTH(src)

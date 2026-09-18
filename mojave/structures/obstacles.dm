@@ -1075,7 +1075,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bonepile)
 	anchored = TRUE
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_MS13_BONEPILE
-	canSmoothWith = SMOOTH_GROUP_MS13_BONEPILE + SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_MS13_LOW_WALL
+	canSmoothWith = SMOOTH_GROUP_MS13_BONEPILE + SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WALL
 
 /obj/structure/ms13/bonepile/Initialize(mapload)
 	. = ..()
