@@ -1331,10 +1331,6 @@
 /obj/machinery/ms13/coffee{
 	pixel_y = 8
 	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
-	},
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
 "aeQ" = (
@@ -2539,10 +2535,6 @@
 	},
 /turf/open/floor/ms13/tile/brown,
 /area/ms13/town)
-"ajq" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/mountain,
-/turf/open/floor/ms13/metal,
-/area/ms13/underground/tunnel/maintenance)
 "ajt" = (
 /obj/machinery/light/ms13/bulb,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
@@ -3084,13 +3076,6 @@
 /obj/item/radio/ms13/ham,
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
-"alw" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/machinery/light/ms13/bulb{
-	dir = 4
-	},
-/turf/open/floor/ms13/tile/large/white,
-/area/ms13/town)
 "alx" = (
 /obj/structure/toilet{
 	dir = 4
@@ -3396,9 +3381,6 @@
 /turf/open/floor/ms13/metal,
 /area/ms13/town)
 "amH" = (
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_y = 8
-	},
 /obj/item/ms13/fluff/ashtray{
 	pixel_y = -6
 	},
@@ -3456,15 +3438,6 @@
 	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/common,
-/area/ms13/town)
-"amR" = (
-/obj/structure/table/ms13/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
 "amT" = (
 /obj/structure/ms13/foundation/mosaic/variantthree{
@@ -4223,13 +4196,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"apV" = (
-/obj/structure/sink{
-	pixel_y = 18
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
-/area/ms13/town)
 "apW" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/wide,
@@ -4607,10 +4573,6 @@
 	dir = 4
 	},
 /obj/machinery/light/ms13,
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 9;
-	pixel_y = 9
-	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
@@ -4855,10 +4817,9 @@
 /turf/open/floor/ms13/tile,
 /area/ms13/town)
 "asy" = (
-/obj/structure/ms13/foundation/common/variantone,
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/openspace/ms13,
-/area/ms13/town)
+/obj/effect/spawner/random/ms13/power_armor/t45_parts,
+/turf/closed/indestructible/rock/ms13/mammoth,
+/area/ms13/underground/mountain)
 "asz" = (
 /obj/structure/chair/sofa/corp/left{
 	dir = 8
@@ -6673,10 +6634,6 @@
 /area/ms13)
 "azN" = (
 /obj/structure/table/ms13/no_smooth/wood,
-/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey{
-	pixel_x = 4;
-	pixel_y = 10
-	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet/green,
 /area/ms13/town)
@@ -6870,10 +6827,6 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/mountain,
 /turf/open/floor/ms13/concrete/industrial,
-/area/ms13/underground/tunnel/maintenance)
-"aAB" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/mountain,
-/turf/open/floor/ms13/metal,
 /area/ms13/underground/tunnel/maintenance)
 "aAC" = (
 /obj/effect/decal/cleanable/blood/tracks{
@@ -7490,7 +7443,6 @@
 "aCU" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/structure/table/ms13/metal,
-/obj/item/reagent_containers/food/drinks/drinkingglass/ms13,
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/town)
 "aCW" = (
@@ -9207,13 +9159,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
-"aJS" = (
-/obj/structure/toilet{
-	dir = 8
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/brown,
-/area/ms13/town)
 "aJT" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/structure/closet/crate/ms13/aluminum,
@@ -9508,18 +9453,6 @@
 	},
 /turf/open/floor/wood/ms13/carpet/shaggy/green,
 /area/ms13/town)
-"aKW" = (
-/obj/structure/table/ms13/no_smooth/counter/wood,
-/obj/machinery/ms13/coffee{
-	pixel_y = 7
-	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/town)
 "aKY" = (
 /obj/effect/decal/cleanable/blood/gibs/old,
 /obj/effect/decal/cleanable/blood/gibs/core,
@@ -9795,12 +9728,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/ms13/tile/long,
 /area/ms13/town)
-"aMd" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/mountain,
-/turf/open/floor/ms13/metal{
-	dir = 1
-	},
-/area/ms13/underground/tunnel/maintenance)
 "aMf" = (
 /obj/structure/sink/kitchen{
 	dir = 8;
@@ -10454,12 +10381,6 @@
 	pixel_x = 13
 	},
 /turf/open/floor/wood/ms13/wide,
-/area/ms13/town)
-"aOO" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/mountain,
-/obj/structure/table/ms13/metal,
-/obj/item/reagent_containers/food/drinks/soda_cans/ms13/nuka_cola,
-/turf/open/floor/ms13/metal,
 /area/ms13/town)
 "aOP" = (
 /obj/machinery/light/ms13/broken,
@@ -11427,13 +11348,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/closed/wall/ms13/scrap,
 /area/ms13/town)
-"aSC" = (
-/obj/structure/sink/kitchen{
-	pixel_y = 15
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
-/area/ms13/town)
 "aSD" = (
 /obj/structure/table/ms13/wood,
 /obj/machinery/ms13/terminal/wasteland{
@@ -12195,10 +12109,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet/shaggy,
 /area/ms13/town)
-"aVz" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/brown,
-/area/ms13/town)
 "aVB" = (
 /turf/open/floor/ms13/metal,
 /area/ms13/underground/tunnel/maintenance)
@@ -12298,14 +12208,6 @@
 /obj/effect/spawner/random/ms13/melee/lowrandom,
 /turf/open/floor/ms13/metal,
 /area/ms13/underground/tunnel/maintenance)
-"aVY" = (
-/obj/structure/sink/kitchen{
-	dir = 8;
-	pixel_x = 12
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/brown,
-/area/ms13/town)
 "aVZ" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/machinery/shower{
@@ -13442,10 +13344,6 @@
 "bkf" = (
 /obj/structure/filingcabinet/ms13/short/busted,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey{
-	pixel_x = 4;
-	pixel_y = 10
-	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
 "blC" = (
@@ -14259,11 +14157,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"cZm" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/machinery/griddle,
-/turf/open/floor/ms13/tile/large/white,
-/area/ms13/town)
 "dbg" = (
 /obj/structure/railing/ms13/solo{
 	dir = 1
@@ -14455,10 +14348,6 @@
 /obj/structure/table/ms13/no_smooth/large/wood{
 	dir = 8
 	},
-/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey{
-	pixel_x = -2;
-	pixel_y = 11
-	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
@@ -14602,12 +14491,6 @@
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
 "dFq" = (
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
-	pixel_y = 12
-	},
-/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
-	pixel_y = 6
-	},
 /obj/structure/table/ms13/no_smooth/wood,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet,
@@ -14755,9 +14638,6 @@
 "dVN" = (
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_y = 8
-	},
 /turf/open/floor/ms13/tile/large/cafeteria,
 /area/ms13/town)
 "dXN" = (
@@ -15056,10 +14936,6 @@
 /area/ms13/town)
 "eHc" = (
 /obj/structure/table/ms13/no_smooth/wood/stand,
-/obj/item/reagent_containers/food/drinks/bottle/ms13/whiskey{
-	pixel_x = -2;
-	pixel_y = 11
-	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
@@ -15181,10 +15057,6 @@
 /obj/structure/table/ms13/no_smooth/counter/wood,
 /obj/machinery/ms13/coffee{
 	pixel_y = 8
-	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
 	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/wide,
@@ -15798,13 +15670,6 @@
 	signal_title_1 = "Mayoral Storeroom"
 	},
 /turf/open/floor/wood/ms13/carpet/blue,
-/area/ms13/town)
-"gmq" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/machinery/light/ms13{
-	dir = 1
-	},
-/turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
 "gmB" = (
 /obj/structure/sink/kitchen{
@@ -16772,7 +16637,6 @@
 	dir = 4
 	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13,
 /obj/machinery/ms13/coffee{
 	pixel_y = 8
 	},
@@ -17014,7 +16878,6 @@
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 8
 	},
-/obj/item/reagent_containers/food/drinks/mug/ms13,
 /obj/machinery/ms13/coffee{
 	pixel_y = 7
 	},
@@ -17040,10 +16903,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/effect/spawner/random/ms13/clothing/under,
 /turf/open/floor/ms13/concrete/industrial,
-/area/ms13/town)
-"jav" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
 "jaQ" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
@@ -18154,11 +18013,6 @@
 "ldT" = (
 /obj/structure/table/ms13/no_smooth/counter/metal/bend,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 9;
-	pixel_y = 9
-	},
-/obj/item/reagent_containers/food/drinks/mug/ms13,
 /turf/open/floor/ms13/tile/large/cafeteria,
 /area/ms13/town)
 "lfP" = (
@@ -19581,13 +19435,6 @@
 /obj/effect/spawner/random/ms13/gun/military,
 /turf/open/floor/ms13/metal,
 /area/ms13/underground/tunnel/maintenance)
-"oaB" = (
-/obj/structure/ms13/storage/shelf{
-	dir = 8
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
-/area/ms13/town)
 "ocI" = (
 /obj/structure/dresser/ms13/torquise,
 /obj/structure/ms13/wall_decor/clock,
@@ -19702,11 +19549,6 @@
 	},
 /obj/effect/spawner/random/ms13/medical/bloodbag,
 /turf/open/floor/ms13/tile/long,
-/area/ms13/town)
-"ooT" = (
-/obj/machinery/light/ms13/broken,
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
 "ooW" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
@@ -20229,9 +20071,6 @@
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
 "prc" = (
-/obj/item/reagent_containers/food/drinks/bottle/ms13/plain{
-	pixel_y = 14
-	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/structure/ms13/trash/papers{
 	dir = 5
@@ -20298,16 +20137,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13)
-"pBG" = (
-/obj/structure/table/ms13/low_wall/wood,
-/obj/effect/decal/cleanable/glass,
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/bottle/ms13/trooper_beer{
-	pixel_x = -12;
-	pixel_y = 10
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/ncr)
 "pBL" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/structure/ms13/trash/papers{
@@ -20646,11 +20475,6 @@
 /obj/item/ammo_casing/ms13/spent,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"qrY" = (
-/obj/structure/table/ms13/no_smooth/metal,
-/obj/item/reagent_containers/food/drinks/mug/ms13,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/town)
 "qsg" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 8
@@ -20724,10 +20548,6 @@
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/machinery/ms13/coffee{
 	pixel_y = 7
-	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
 	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/ms13/concrete/industrial,
@@ -20898,13 +20718,6 @@
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
-"qVk" = (
-/obj/structure/ms13/storage/shelf{
-	dir = 4
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
-/area/ms13/town)
 "qVI" = (
 /obj/structure/closet/ms13/fridge,
 /obj/effect/spawner/random/ms13/food/produce_random,
@@ -20917,13 +20730,6 @@
 /turf/open/floor/ms13/concrete/industrial{
 	dir = 8
 	},
-/area/ms13/town)
-"qXK" = (
-/obj/structure/chair/office/ms13/green{
-	dir = 1
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
 "qYb" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/mountain,
@@ -21521,10 +21327,6 @@
 /obj/structure/closet/ms13/wall/firstaid,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"skY" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/concrete/industrial,
-/area/ms13/town)
 "snh" = (
 /obj/structure/table/ms13/no_smooth/counter/wood,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
@@ -21609,16 +21411,6 @@
 	},
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
-"suw" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/machinery/ms13/coffee{
-	pixel_y = 7
-	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13)
 "svF" = (
 /obj/structure/ms13/barricade{
 	dir = 1
@@ -22366,10 +22158,6 @@
 /obj/machinery/ms13/coffee{
 	pixel_y = 8
 	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
-	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
@@ -22432,10 +22220,6 @@
 /obj/machinery/ms13/coffee{
 	pixel_y = 7
 	},
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11;
-	pixel_y = 6
-	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13)
 "uhe" = (
@@ -22464,7 +22248,6 @@
 	dir = 4
 	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13,
 /obj/effect/spawner/random/ms13/medical/tier3,
 /obj/machinery/ms13/coffee{
 	pixel_y = 8
@@ -22627,12 +22410,6 @@
 	},
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /turf/open/floor/wood/ms13/mosaic,
-/area/ms13/town)
-"uIk" = (
-/obj/structure/table/ms13/wood,
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13,
-/turf/open/floor/wood/ms13/carpet/blue,
 /area/ms13/town)
 "uIl" = (
 /obj/structure/table/ms13/metal/heavy,
@@ -23033,10 +22810,6 @@
 /turf/open/floor/ms13/ceramic,
 /area/ms13)
 "vJt" = (
-/obj/item/reagent_containers/food/drinks/bottle/ms13/plain{
-	pixel_x = 6;
-	pixel_y = 8
-	},
 /obj/structure/ms13/trash/papers,
 /obj/structure/ms13/trash/papers,
 /obj/structure/bed/ms13/mattress/old,
@@ -23342,13 +23115,6 @@
 	},
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
-"wwU" = (
-/obj/structure/closet/ms13/fridge,
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/effect/spawner/random/ms13/food/random,
-/obj/effect/spawner/random/ms13/food/random,
-/turf/open/floor/ms13/tile/brown,
-/area/ms13/town)
 "wxS" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 8
@@ -23513,11 +23279,6 @@
 /obj/structure/ms13/rug/fancy,
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
-"wVl" = (
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/machinery/griddle,
-/turf/open/floor/ms13/tile/brown,
-/area/ms13/town)
 "wWG" = (
 /obj/structure/chair/ms13/metal/blue/broken,
 /obj/structure/ms13/storage/vent,
@@ -23643,14 +23404,6 @@
 /obj/structure/table/ms13/no_smooth/wood,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/ncr)
-"xiW" = (
-/obj/structure/sink{
-	dir = 4;
-	pixel_x = -12
-	},
-/obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/turf/open/floor/ms13/tile/brown,
-/area/ms13/town)
 "xlA" = (
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
@@ -23985,9 +23738,6 @@
 	},
 /obj/structure/ms13/storage/vent,
 /obj/effect/mapping_helpers/sunlight/pseudo_roof_setter/wood,
-/obj/item/reagent_containers/food/drinks/mug/ms13{
-	pixel_x = 11
-	},
 /turf/open/floor/wood/ms13/carpet/violet,
 /area/ms13/town)
 "ybG" = (
@@ -25058,7 +24808,7 @@ amz
 aPY
 aXj
 fQZ
-aOO
+alE
 ays
 ahY
 ikw
@@ -27139,7 +26889,7 @@ aPW
 abw
 khV
 ace
-alw
+aHQ
 ahj
 aLH
 aLH
@@ -28203,9 +27953,9 @@ cro
 cro
 why
 hSG
-xiW
+aBs
 why
-wVl
+apj
 fWC
 mGg
 aCj
@@ -28847,8 +28597,8 @@ aLH
 aLH
 aXI
 aNX
-jav
-jav
+aTA
+aTA
 aRY
 aYa
 aYa
@@ -30314,7 +30064,7 @@ aPY
 cro
 cro
 why
-wVl
+apj
 lWb
 dOP
 apW
@@ -30461,7 +30211,7 @@ ahj
 aIF
 aoE
 ahj
-apV
+rXR
 azP
 ahj
 aLH
@@ -31656,7 +31406,7 @@ aLH
 aLH
 ahj
 ahj
-cZm
+rbi
 mUz
 qHB
 ahj
@@ -33030,7 +32780,7 @@ aLH
 aLH
 why
 wYo
-aVz
+fWC
 aWL
 fWC
 fWC
@@ -33042,7 +32792,7 @@ why
 wzP
 yjc
 wzP
-jav
+aTA
 aCj
 aLH
 aLH
@@ -33344,7 +33094,7 @@ why
 wzP
 lVw
 wzP
-jav
+aTA
 aCj
 aLH
 aLH
@@ -33643,10 +33393,10 @@ iKF
 phB
 apW
 tec
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
 aCj
 aLH
 aLH
@@ -33921,7 +33671,7 @@ aLH
 qkh
 cjv
 ajp
-aVz
+fWC
 aor
 qkh
 aAP
@@ -33946,8 +33696,8 @@ apW
 apW
 why
 fPK
-jav
-jav
+aTA
+aTA
 ntn
 aCj
 aLH
@@ -34238,7 +33988,7 @@ aLH
 aLH
 abJ
 alj
-wVl
+apj
 fWC
 apW
 apW
@@ -34248,8 +33998,8 @@ apW
 apW
 why
 nQc
-jav
-jav
+aTA
+aTA
 jJu
 aCj
 aLH
@@ -34712,7 +34462,7 @@ aLH
 aLH
 aLH
 ahj
-aSC
+fPK
 aTA
 aTA
 aEO
@@ -35411,11 +35161,11 @@ aAv
 awn
 why
 cjv
-aVz
+fWC
 abr
 why
 cjv
-aVz
+fWC
 abr
 aCj
 aLH
@@ -35733,7 +35483,7 @@ abJ
 qkh
 cjv
 ajp
-aVz
+fWC
 ayB
 qkh
 acX
@@ -36213,7 +35963,7 @@ ahj
 acp
 aDq
 ahj
-aSC
+fPK
 aTA
 aGR
 ahj
@@ -36849,7 +36599,7 @@ apW
 apW
 afD
 aTA
-cZm
+rbi
 ahj
 aLH
 aLH
@@ -38473,7 +38223,7 @@ aLH
 aLH
 aCj
 wYo
-xiW
+aBs
 aWL
 fWC
 fWC
@@ -40286,25 +40036,25 @@ aLH
 aLH
 aXy
 kSI
-jav
-jav
+aTA
+aTA
 fWC
-jav
-jav
-jav
+aTA
+aTA
+aTA
 fWC
 yjc
-jav
+aTA
 fWC
-jav
-jav
+aTA
+aTA
 yjc
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
 fWC
-jav
+aTA
 vob
 aXy
 aLH
@@ -40588,26 +40338,26 @@ aLH
 aLH
 aXy
 oBB
-jav
-jav
+aTA
+aTA
 fWC
-jav
+aTA
 dRZ
 dRZ
 fWC
-jav
-jav
+aTA
+aTA
 fWC
-jav
-jav
-jav
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
+aTA
+aTA
+aTA
 fWC
-jav
-jav
+aTA
+aTA
 aXy
 aLH
 aLH
@@ -41192,15 +40942,15 @@ aAt
 uSw
 apW
 fWC
-jav
-jav
-jav
-jav
-jav
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
+aTA
+aTA
+aTA
+aTA
+aTA
 wlv
 aXy
 aHe
@@ -41494,15 +41244,15 @@ vfV
 tFZ
 apW
 aca
-jav
-jav
-jav
+aTA
+aTA
+aTA
 xal
-jav
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
+aTA
 aXy
 aXy
 aXy
@@ -41803,8 +41553,8 @@ aXy
 dvl
 dvl
 aXy
-jav
-jav
+aTA
+aTA
 aKk
 aIx
 aRX
@@ -42002,7 +41752,7 @@ abm
 abm
 aXT
 lqU
-jav
+aTA
 avX
 aXy
 avR
@@ -42105,8 +41855,8 @@ avN
 apW
 apW
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aQJ
 aIx
@@ -42300,10 +42050,10 @@ aBo
 aXy
 trR
 alt
-jav
+aTA
 sjq
 kxQ
-jav
+aTA
 aNR
 avE
 aXy
@@ -42311,7 +42061,7 @@ avR
 avR
 avR
 aPY
-aPY
+asy
 aPY
 aPY
 aPY
@@ -42407,8 +42157,8 @@ rjg
 rjg
 apW
 aXy
-jav
-ooT
+aTA
+aOP
 aXy
 aeo
 aXy
@@ -42508,7 +42258,7 @@ aLH
 aLH
 all
 all
-pBG
+afH
 afH
 all
 all
@@ -42601,7 +42351,7 @@ avR
 aBo
 aXy
 atV
-jav
+aTA
 oJl
 aXy
 aXy
@@ -42704,13 +42454,13 @@ aKu
 aXy
 aXt
 uKV
-uIk
+xbr
 xbr
 xbr
 apW
 tec
-jav
-jav
+aTA
+aTA
 aXy
 kdR
 aXy
@@ -42907,7 +42657,7 @@ iCf
 aAR
 aXy
 tAn
-jav
+aTA
 aai
 iUI
 rbi
@@ -42955,9 +42705,9 @@ aPY
 aPY
 aCj
 aRG
-aVz
-aVz
-aVz
+fWC
+fWC
+fWC
 aAP
 aAP
 aBa
@@ -42967,8 +42717,8 @@ aVW
 axC
 aCj
 aOy
-aVz
-aVz
+fWC
+fWC
 aWL
 aAP
 aAP
@@ -42979,8 +42729,8 @@ aAP
 aAP
 nxm
 aOy
-aVz
-aVz
+fWC
+fWC
 aWL
 aAP
 aAP
@@ -43011,8 +42761,8 @@ cEL
 cEL
 apW
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aXy
 aXy
@@ -43211,8 +42961,8 @@ aXy
 azh
 oIs
 apa
-jav
-jav
+aTA
+aTA
 aXy
 avR
 avR
@@ -43257,8 +43007,8 @@ aPY
 aPY
 aCj
 aUr
-aVz
-aVY
+fWC
+gmB
 aCj
 axy
 aAP
@@ -43268,9 +43018,9 @@ aqy
 aVW
 akq
 aCj
-wwU
-aVz
-aVY
+nPY
+fWC
+gmB
 aCj
 aBz
 aAP
@@ -43280,9 +43030,9 @@ aBz
 aAP
 aBY
 nxm
-wwU
-aVz
-aVY
+nPY
+fWC
+gmB
 aCj
 aXS
 aAP
@@ -43313,8 +43063,8 @@ apW
 apW
 apW
 aXy
-jav
-jav
+aTA
+aTA
 bQc
 vOq
 agY
@@ -43615,8 +43365,8 @@ aCC
 xIV
 shp
 aXy
-jav
-jav
+aTA
+aTA
 bQc
 vOq
 nEc
@@ -43812,11 +43562,11 @@ aLc
 aIx
 aXy
 azz
-jav
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
+aTA
 aXy
 avR
 avR
@@ -43861,7 +43611,7 @@ aPY
 aPY
 aCj
 cjv
-aVz
+fWC
 abr
 aCj
 aRu
@@ -43869,11 +43619,11 @@ aAP
 aAP
 jkn
 biw
-aVz
+fWC
 ayB
 aCj
 cjv
-aVz
+fWC
 ayB
 aCj
 aRu
@@ -43881,11 +43631,11 @@ aAP
 aAP
 why
 cjv
-aVz
+fWC
 abr
 nxm
 cjv
-aVz
+fWC
 abr
 aCj
 aZD
@@ -43918,7 +43668,7 @@ aXy
 aXy
 aXy
 qUu
-jav
+aTA
 aXy
 agY
 agY
@@ -44113,11 +43863,11 @@ aXy
 aZi
 aIx
 aXG
-jav
-jav
+aTA
+aTA
 aqT
-jav
-jav
+aTA
+aTA
 aFj
 aXy
 avR
@@ -44211,16 +43961,16 @@ aHe
 aHe
 aHe
 abO
-jav
-jav
+aTA
+aTA
 fqO
 xvF
 eTd
 xJi
 xTz
 aXy
-jav
-jav
+aTA
+aTA
 vvt
 agY
 agY
@@ -44415,8 +44165,8 @@ aXy
 aTT
 aIx
 aXy
-jav
-jav
+aTA
+aTA
 aHQ
 atg
 aiq
@@ -44513,15 +44263,15 @@ aHe
 aHe
 aHe
 hdU
-jav
-jav
-jav
+aTA
+aTA
+aTA
 xvF
 xZi
 agY
 kru
 bQc
-jav
+aTA
 vob
 aXy
 sGp
@@ -44816,15 +44566,15 @@ aHe
 aHe
 iiT
 lUe
-jav
-jav
+aTA
+aTA
 xvF
 jVT
 ygL
 agY
 uvr
 dRZ
-jav
+aTA
 bQc
 oAS
 uWu
@@ -45118,23 +44868,23 @@ aXy
 aXy
 aXy
 aXy
-jav
-jav
+aTA
+aTA
 xvF
 fPY
 vRQ
 agY
 aXy
-jav
-jav
+aTA
+aTA
 bQc
 hnp
 agY
 cWM
 adm
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aNy
 czH
@@ -45436,7 +45186,7 @@ aXy
 aXy
 aXy
 tVx
-jav
+aTA
 aPM
 aAP
 aAP
@@ -45722,23 +45472,23 @@ agY
 agY
 agY
 eem
-jav
-jav
+aTA
+aTA
 fWC
-jav
-jav
-jav
+aTA
+aTA
+aTA
 fWC
-jav
-jav
+aTA
+aTA
 ixF
-jav
-jav
+aTA
+aTA
 fqO
-jav
+aTA
 fWC
-jav
-jav
+aTA
+aTA
 aXy
 eCE
 orw
@@ -46024,23 +45774,23 @@ bbE
 agY
 tly
 aXy
-jav
-jav
+aTA
+aTA
 fWC
-jav
-jav
-jav
+aTA
+aTA
+aTA
 fWC
-jav
-jav
+aTA
+aTA
 rNz
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
 fWC
-jav
-jav
+aTA
+aTA
 aXy
 aXy
 aXy
@@ -46342,7 +46092,7 @@ tDR
 aXy
 aXy
 qUu
-jav
+aTA
 aXy
 aAP
 orw
@@ -46379,11 +46129,11 @@ aIr
 aIr
 aCj
 aaF
-aVz
+fWC
 awk
 aCj
 aaF
-aVz
+fWC
 awk
 aCj
 aIr
@@ -46629,7 +46379,7 @@ aXy
 aXy
 aXy
 adf
-jav
+aTA
 aXy
 aLH
 aLH
@@ -46643,8 +46393,8 @@ aLH
 aLH
 aLH
 aXy
-jav
-jav
+aTA
+aTA
 aPM
 aAP
 aAP
@@ -46930,8 +46680,8 @@ cGi
 hXV
 vLN
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aLH
 aLH
@@ -46945,8 +46695,8 @@ aLH
 aLH
 aLH
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 hCB
 adJ
@@ -47232,8 +46982,8 @@ agY
 agY
 qRu
 aXy
-jav
-jav
+aTA
+aTA
 tDR
 aLH
 aLH
@@ -47534,8 +47284,8 @@ aaV
 agY
 agY
 eem
-jav
-jav
+aTA
+aTA
 tDR
 aLH
 aLH
@@ -47549,13 +47299,13 @@ aLH
 aLH
 aLH
 tDR
-jav
-jav
+aTA
+aTA
 fWC
-jav
-jav
-jav
-jav
+aTA
+aTA
+aTA
+aTA
 aXy
 aLH
 aLH
@@ -47836,8 +47586,8 @@ hqC
 iYI
 dSx
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aLH
 aLH
@@ -47851,12 +47601,12 @@ aLH
 aLH
 aLH
 aXy
-gmq
-jav
+aLb
+aTA
 fWC
-jav
-jav
-jav
+aTA
+aTA
+aTA
 ntn
 aXy
 aLH
@@ -48138,8 +47888,8 @@ aXy
 aXy
 aXy
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aLH
 aLH
@@ -48440,8 +48190,8 @@ clL
 qBI
 isw
 aXy
-jav
-jav
+aTA
+aTA
 aXy
 aLH
 aLH
@@ -48742,8 +48492,8 @@ agY
 agY
 qRu
 aXy
-jav
-jav
+aTA
+aTA
 tDR
 aLH
 aLH
@@ -49044,8 +48794,8 @@ agY
 aaV
 agY
 eem
-jav
-jav
+aTA
+aTA
 tDR
 aLH
 aLH
@@ -52372,11 +52122,11 @@ atw
 why
 fGL
 bZV
-aVz
+fWC
 why
 fGL
 bZV
-aVz
+fWC
 iKF
 aHP
 anJ
@@ -52673,12 +52423,12 @@ ahd
 meW
 why
 aKQ
-aVz
-aVz
+fWC
+fWC
 why
 aLR
-aVz
-aVz
+fWC
+fWC
 iKF
 nka
 anJ
@@ -52686,7 +52436,7 @@ anJ
 anJ
 njd
 aqb
-aVz
+fWC
 awj
 aCj
 aLH
@@ -52989,7 +52739,7 @@ onf
 aYw
 why
 idA
-aVz
+fWC
 aCj
 aLH
 abJ
@@ -53270,7 +53020,7 @@ aLH
 why
 aSg
 bZV
-aVz
+fWC
 aCj
 bUH
 ahd
@@ -53571,8 +53321,8 @@ aLH
 aLH
 why
 aDb
-aVz
-aVz
+fWC
+fWC
 aCj
 atE
 ahd
@@ -57515,8 +57265,8 @@ apW
 apW
 hwT
 why
-qVk
-jav
+aFx
+aTA
 why
 ajF
 awj
@@ -58565,11 +58315,11 @@ aSo
 aCj
 aYB
 aRY
-jav
+aTA
 eIm
 aCj
 rXR
-jav
+aTA
 aRY
 yia
 aCj
@@ -58868,7 +58618,7 @@ aCj
 aCj
 aCj
 czD
-jav
+aTA
 aCj
 qUu
 iRd
@@ -59169,11 +58919,11 @@ aOL
 aCj
 aZr
 aRY
-jav
+aTA
 eIm
 aCj
 rXR
-jav
+aTA
 aRY
 sTs
 aCj
@@ -59356,10 +59106,10 @@ aLH
 aLH
 aLH
 aCj
-aVz
-aVz
+fWC
+fWC
 azi
-aVz
+fWC
 asW
 aCj
 aHg
@@ -59659,9 +59409,9 @@ aLH
 aLH
 aaJ
 anq
-aVz
-aVz
-aVz
+fWC
+fWC
+fWC
 aMD
 aCj
 aCj
@@ -59961,10 +59711,10 @@ aLH
 aLH
 aaJ
 aio
-aVz
+fWC
 ary
 ary
-aVz
+fWC
 ulZ
 azi
 aJY
@@ -60263,7 +60013,7 @@ aLH
 aLH
 aCj
 apj
-aVz
+fWC
 anq
 anq
 arZ
@@ -63839,8 +63589,8 @@ aLH
 aLH
 why
 fGL
-aVz
-aVz
+fWC
+fWC
 iKF
 bRH
 rxz
@@ -64142,7 +63892,7 @@ aLH
 why
 aDb
 jXe
-aVz
+fWC
 iKF
 sOh
 ahd
@@ -64753,12 +64503,12 @@ ahd
 ahd
 why
 aDb
-aVz
-aVz
+fWC
+fWC
 why
 aDb
-aVz
-aVz
+fWC
+fWC
 iKF
 xef
 ahd
@@ -64766,7 +64516,7 @@ ahd
 ahd
 ahd
 aqb
-aVz
+fWC
 awj
 aCj
 aLH
@@ -65056,11 +64806,11 @@ wtT
 why
 fGL
 jXe
-aVz
+fWC
 why
 fGL
 jXe
-aVz
+fWC
 iKF
 cCZ
 ahd
@@ -65068,8 +64818,8 @@ ahd
 qfS
 aLp
 why
-aVz
-aVz
+fWC
+fWC
 aCj
 aLH
 aLH
@@ -65699,7 +65449,7 @@ aLH
 aLH
 aWi
 mvS
-qrY
+aZH
 qQM
 anj
 tLt
@@ -71602,10 +71352,10 @@ arH
 arH
 arH
 uqS
-ajq
+aAU
 aeW
 aCG
-ajq
+aAU
 arH
 aSR
 akV
@@ -71904,10 +71654,10 @@ aYO
 arH
 arH
 uqS
-ajq
-ajq
+aAU
+aAU
 aHF
-ajq
+aAU
 arH
 aBy
 aSR
@@ -72201,18 +71951,18 @@ aNN
 aNN
 arH
 aQs
-aMd
+aYu
 akE
 aQs
 arH
 aeF
-ajq
+aAU
 aLV
-ajq
-ajq
+aAU
+aAU
 akU
 aAV
-ajq
+aAU
 agd
 arH
 arH
@@ -72503,7 +72253,7 @@ azV
 aNN
 arH
 aQs
-aAB
+aAU
 aSN
 aQs
 arH
@@ -72513,14 +72263,14 @@ aRm
 aRm
 aRm
 arH
-ajq
-ajq
+aAU
+aAU
 wnX
-ajq
+aAU
 aYP
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aAa
 aTQ
 aVV
@@ -72815,15 +72565,15 @@ arH
 arH
 arH
 arH
-ajq
-ajq
+aAU
+aAU
 dEA
-ajq
-ajq
-ajq
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
+aAU
+aAU
+aAU
 aTQ
 gdG
 aCa
@@ -72979,7 +72729,7 @@ qHK
 xEU
 aCj
 jwh
-jav
+aTA
 xbo
 aCj
 ayC
@@ -73117,15 +72867,15 @@ aJM
 arL
 arO
 arH
-ajq
-ajq
+aAU
+aAU
 fLF
-ajq
+aAU
 aVB
-ajq
+aAU
 aMg
-ajq
-ajq
+aAU
+aAU
 aTQ
 kKr
 aCa
@@ -73282,7 +73032,7 @@ aYU
 aCj
 fPy
 mpG
-jav
+aTA
 aCj
 iMZ
 akh
@@ -73419,15 +73169,15 @@ aYO
 aQA
 arO
 arH
-ajq
-ajq
+aAU
+aAU
 agd
-ajq
-ajq
+aAU
+aAU
 aZq
-ajq
+aAU
 qPl
-ajq
+aAU
 aXU
 arH
 arH
@@ -73504,7 +73254,7 @@ ase
 aAP
 aBv
 ata
-asy
+apb
 agS
 abN
 aws
@@ -73719,17 +73469,17 @@ arH
 aZT
 aZT
 aQA
-ajq
+aAU
 arH
-ajq
-ajq
+aAU
+aAU
 arH
 aBe
-ajq
+aAU
 apA
-ajq
+aAU
 apA
-ajq
+aAU
 aNO
 arH
 auu
@@ -74021,17 +73771,17 @@ arH
 aSR
 aAU
 aQA
-ajq
+aAU
 auX
 aSR
 aSR
 arH
 fID
-ajq
+aAU
 rmZ
-ajq
+aAU
 aKP
-ajq
+aAU
 aiF
 arH
 auu
@@ -74323,7 +74073,7 @@ arH
 aSR
 aYu
 aQA
-ajq
+aAU
 abx
 aSR
 aSR
@@ -74625,13 +74375,13 @@ arH
 ggu
 aTC
 aQA
-ajq
+aAU
 arH
 aNp
 aId
 arH
 aAK
-ajq
+aAU
 aXd
 arH
 aPY
@@ -74930,11 +74680,11 @@ aQA
 azT
 arH
 aBr
-ajq
+aAU
 akU
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 arH
 aPY
 aPY
@@ -75219,8 +74969,8 @@ aPY
 aPY
 aPY
 agd
-ajq
-ajq
+aAU
+aAU
 agd
 aPY
 aPY
@@ -75232,9 +74982,9 @@ abd
 awd
 arH
 aBr
-ajq
+aAU
 arH
-ajq
+aAU
 aaC
 aoi
 arH
@@ -75534,7 +75284,7 @@ arH
 arH
 arH
 aBr
-ajq
+aAU
 arH
 uqS
 ahX
@@ -75554,8 +75304,8 @@ aPY
 aPY
 aPY
 agd
-ajq
-ajq
+aAU
+aAU
 agd
 aPY
 aPY
@@ -75823,8 +75573,8 @@ aPY
 aPY
 aPY
 agd
-ajq
-ajq
+aAU
+aAU
 agd
 aPY
 aPY
@@ -75836,7 +75586,7 @@ aPY
 aPY
 arH
 ahn
-ajq
+aAU
 arH
 aMW
 awd
@@ -76138,7 +75888,7 @@ arH
 arH
 arH
 aBr
-ajq
+aAU
 arH
 aXR
 aXR
@@ -76158,7 +75908,7 @@ aPY
 aPY
 aPY
 agd
-ajq
+aAU
 aId
 agd
 aPY
@@ -76427,8 +76177,8 @@ ahg
 ahg
 ahg
 ahg
-ajq
-ajq
+aAU
+aAU
 arH
 arH
 arH
@@ -76438,17 +76188,17 @@ aHr
 air
 awd
 arH
-ajq
+aAU
 agw
 api
 aYP
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aYP
-ajq
+aAU
 aAV
-ajq
+aAU
 arH
 aaA
 arH
@@ -76726,11 +76476,11 @@ aPY
 ahg
 hrR
 kOC
-ajq
+aAU
 iQb
 ahg
-ajq
-ajq
+aAU
+aAU
 azm
 aCE
 aFd
@@ -76740,16 +76490,16 @@ aPl
 aMG
 afY
 arH
-ajq
+aAU
 aSR
 aSR
-ajq
-ajq
-ajq
-ajq
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
+aAU
+aAU
+aAU
+aAU
 hVh
 arH
 aaA
@@ -76762,8 +76512,8 @@ aPY
 aPY
 aPY
 arH
-ajq
-ajq
+aAU
+aAU
 arH
 arH
 arH
@@ -77027,32 +76777,32 @@ aPY
 aPY
 ahg
 azp
-ajq
-ajq
+aAU
+aAU
 aci
 ahg
-ajq
-ajq
+aAU
+aAU
 azm
 awd
 aZz
-ajq
+aAU
 akU
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 arH
-ajq
+aAU
 aeF
-ajq
+aAU
 arH
 aRm
 aRm
 aRm
 arH
-ajq
+aAU
 aFO
-ajq
+aAU
 arH
 aaA
 arH
@@ -77064,8 +76814,8 @@ aPY
 aPY
 aPY
 arH
-ajq
-ajq
+aAU
+aAU
 aXR
 awd
 ajf
@@ -77329,24 +77079,24 @@ aPY
 aPY
 ahg
 hrR
-ajq
-ajq
+aAU
+aAU
 iQb
 ahg
-ajq
-ajq
+aAU
+aAU
 azm
 aDI
-ajq
-ajq
+aAU
+aAU
 arH
 aPn
-ajq
-ajq
+aAU
+aAU
 arH
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 arH
 arH
 arH
@@ -77366,8 +77116,8 @@ arH
 aPY
 arH
 arH
-ajq
-ajq
+aAU
+aAU
 aXR
 awd
 aZz
@@ -77635,8 +77385,8 @@ ape
 ape
 ahg
 ahg
-ajq
-ajq
+aAU
+aAU
 arH
 arH
 arH
@@ -77650,7 +77400,7 @@ arH
 axm
 arH
 arH
-ajq
+aAU
 aTk
 arH
 aPY
@@ -77669,11 +77419,11 @@ aPY
 arH
 amX
 aIz
-ajq
+aAU
 aXR
 awd
-ajq
-ajq
+aAU
+aAU
 arH
 aPY
 aPY
@@ -77932,27 +77682,27 @@ ahg
 aqO
 afE
 aqO
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aYI
 ahg
 aMg
 hVh
 arH
-ajq
+aAU
 aYP
-ajq
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
+aAU
 aYP
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 arH
 aRv
-ajq
+aAU
 awd
 arH
 aPY
@@ -77974,7 +77724,7 @@ aHk
 acz
 arH
 uqS
-ajq
+aAU
 alS
 arH
 aPY
@@ -78234,27 +77984,27 @@ ats
 qYb
 aSA
 aHF
-ajq
-ajq
+aAU
+aAU
 aga
-ajq
+aAU
 aLE
 aSR
 aSR
 akU
-ajq
-ajq
+aAU
+aAU
 aaA
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aaA
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 akU
-ajq
-ajq
+aAU
+aAU
 arO
 arH
 aPY
@@ -78273,7 +78023,7 @@ aPY
 arH
 amX
 akd
-ajq
+aAU
 arH
 arH
 fnK
@@ -78534,18 +78284,18 @@ aZm
 aUY
 oyM
 arU
-ajq
+aAU
 aKt
 aoi
 ahg
 aeF
-ajq
+aAU
 ahg
 aSR
 aSR
 arH
-ajq
-ajq
+aAU
+aAU
 aaA
 aaA
 arH
@@ -78555,7 +78305,7 @@ axm
 arH
 arH
 arH
-ajq
+aAU
 awd
 awd
 arH
@@ -78575,11 +78325,11 @@ aPY
 arH
 arH
 adr
-ajq
-ajq
+aAU
+aAU
 aOH
-ajq
-ajq
+aAU
+aAU
 arH
 aPY
 aPY
@@ -78838,22 +78588,22 @@ hIX
 aEW
 ahX
 anH
-ajq
+aAU
 aEZ
 anH
-ajq
+aAU
 aLE
 aSR
 aSR
 arH
 aOm
-ajq
+aAU
 aaA
 aaA
 arH
 aaA
 aaA
-ajq
+aAU
 aaA
 aaA
 arH
@@ -78876,11 +78626,11 @@ arH
 aPY
 aPY
 arH
-ajq
-ajq
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
+aAU
+aAU
 aoi
 arH
 aPY
@@ -79140,12 +78890,12 @@ ahg
 aqO
 aXp
 aqO
-ajq
-ajq
+aAU
+aAU
 awd
 awd
 ahg
-ajq
+aAU
 aoi
 arH
 arH
@@ -79154,13 +78904,13 @@ arH
 arH
 arH
 aaA
-ajq
+aAU
 awr
 aug
 aaA
 aaA
 aSK
-ajq
+aAU
 aaA
 arH
 aPY
@@ -79179,7 +78929,7 @@ aPY
 aPY
 arH
 akd
-ajq
+aAU
 arH
 arH
 akk
@@ -79442,13 +79192,13 @@ ahg
 ahg
 ahg
 ahg
-ajq
+aAU
 ahg
 aGF
 aGF
 ahg
-ajq
-ajq
+aAU
+aAU
 arH
 aPY
 aPY
@@ -79456,11 +79206,11 @@ aPY
 aPY
 arH
 aaA
-ajq
+aAU
 awr
-ajq
+aAU
 aSJ
-ajq
+aAU
 aRg
 awr
 aDk
@@ -79481,11 +79231,11 @@ aPY
 aPY
 arH
 akd
-ajq
+aAU
 arH
 aRU
-ajq
-ajq
+aAU
+aAU
 arH
 aPY
 aPY
@@ -79744,13 +79494,13 @@ aPY
 aPY
 aPY
 ahg
-ajq
+aAU
 aRi
 aCG
 amu
 ahg
-ajq
-ajq
+aAU
+aAU
 arH
 arH
 arH
@@ -79760,10 +79510,10 @@ arH
 arH
 arH
 aNp
-ajq
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
+aAU
 awr
 aaA
 arH
@@ -79783,11 +79533,11 @@ arH
 arH
 arH
 akd
-ajq
+aAU
 aXR
 aSR
 aAU
-ajq
+aAU
 arH
 aPY
 aPY
@@ -80053,19 +79803,19 @@ arp
 ahg
 aSR
 aSR
-ajq
-ajq
+aAU
+aAU
 avw
-ajq
+aAU
 aaA
 aaA
 aaA
 aaA
 aaA
-ajq
-ajq
+aAU
+aAU
 aMg
-ajq
+aAU
 aaA
 aaA
 aaA
@@ -80089,7 +79839,7 @@ api
 aXR
 aSR
 aYu
-ajq
+aAU
 arH
 aPY
 aPY
@@ -80349,49 +80099,49 @@ aPY
 aPY
 ahg
 amw
-ajq
+aAU
 aKt
 aIb
 ahg
 aSR
 aSR
-ajq
-ajq
+aAU
+aAU
 aef
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aaA
 arH
 aaA
-ajq
+aAU
 aeq
-ajq
+aAU
 aWj
-ajq
+aAU
 aRy
 arH
 aaA
 aaA
 aaA
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aId
-ajq
-ajq
+aAU
+aAU
 abP
-ajq
-ajq
+aAU
+aAU
 aOH
-ajq
-ajq
+aAU
+aAU
 aSR
 aSR
 arH
 azT
 kdh
-ajq
+aAU
 arH
 aPY
 aPY
@@ -80666,11 +80416,11 @@ arH
 arH
 arH
 aaA
-ajq
+aAU
 aSK
-ajq
+aAU
 aSK
-ajq
+aAU
 aSK
 arH
 aaA
@@ -80964,15 +80714,15 @@ aRA
 aAC
 arH
 aTL
-ajq
-ajq
+aAU
+aAU
 arH
 arH
 axm
 arH
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aaA
 arH
 aaA
@@ -80980,13 +80730,13 @@ aaA
 arH
 aaA
 aaA
-ajq
+aAU
 akU
-ajq
+aAU
 awr
 aTP
 aYf
-ajq
+aAU
 arH
 anF
 aAG
@@ -81266,23 +81016,23 @@ anS
 afQ
 arH
 nZQ
-ajq
-ajq
+aAU
+aAU
 agd
-ajq
-ajq
+aAU
+aAU
 aVG
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aaA
 arH
 aaA
 aaA
 arH
-ajq
+aAU
 awr
-ajq
+aAU
 arH
 avd
 awr
@@ -81568,28 +81318,28 @@ aDP
 aDP
 arH
 tiw
-ajq
-ajq
+aAU
+aAU
 agj
-ajq
+aAU
 rLc
 alC
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
 aaA
 arH
 arH
-ajq
+aAU
 arH
 awr
-ajq
-ajq
-ajq
-ajq
+aAU
+aAU
+aAU
+aAU
 aQN
 aTP
-ajq
+aAU
 aqj
 arH
 adp
@@ -81871,28 +81621,28 @@ arH
 arH
 aPG
 afU
-ajq
+aAU
 agd
 aPO
-ajq
+aAU
 aVG
-ajq
-ajq
+aAU
+aAU
 aaA
 aaA
 aaA
 aaA
-ajq
+aAU
 arH
 aiD
-ajq
-ajq
+aAU
+aAU
 aDf
 awr
 azb
 aTP
 adv
-ajq
+aAU
 arH
 adU
 adU
@@ -82183,12 +81933,12 @@ arH
 arH
 arH
 aaA
-ajq
-ajq
+aAU
+aAU
 akU
 awr
-ajq
-ajq
+aAU
+aAU
 hxD
 awr
 awr
@@ -82486,17 +82236,17 @@ aPY
 arH
 aaA
 aaA
-ajq
+aAU
 arH
 awr
-ajq
-ajq
+aAU
+aAU
 arH
-ajq
+aAU
 azH
 aed
-ajq
-ajq
+aAU
+aAU
 arH
 aiA
 aae
@@ -82790,8 +82540,8 @@ arH
 aaA
 aaA
 arH
-ajq
-ajq
+aAU
+aAU
 aaA
 arH
 arH
@@ -85449,7 +85199,7 @@ aYA
 aYA
 jBh
 qWv
-skY
+aYa
 aYA
 aPY
 aPY
@@ -86376,7 +86126,7 @@ aLH
 aLH
 vVB
 adX
-amR
+ahu
 aEf
 ajY
 aEf
@@ -86684,7 +86434,7 @@ aEf
 ava
 apW
 aEj
-aKW
+azn
 apW
 apW
 tXj
@@ -87302,8 +87052,8 @@ aHX
 aHX
 aHX
 aAX
-jav
-jav
+aTA
+aTA
 pEs
 nfG
 jcu
@@ -87604,12 +87354,12 @@ aHX
 aHX
 aHX
 aMJ
-jav
-jav
+aTA
+aTA
 hcG
-jav
-jav
-jav
+aTA
+aTA
+aTA
 ntn
 vtF
 ale
@@ -87907,11 +87657,11 @@ aHX
 aHX
 aMJ
 pfD
-jav
-jav
+aTA
+aTA
 lGi
-jav
-jav
+aTA
+aTA
 ftB
 vlt
 xiD
@@ -88209,12 +87959,12 @@ aHX
 aHX
 aMJ
 kvv
-jav
-jav
-jav
+aTA
+aTA
+aTA
 qaB
-jav
-jav
+aTA
+aTA
 aSz
 xiD
 aYa
@@ -88511,12 +88261,12 @@ aHX
 aHX
 aAX
 xxR
-qXK
-jav
+aET
+aTA
 aUA
 bgf
-jav
-jav
+aTA
+aTA
 dqv
 aYa
 aYa
@@ -88797,7 +88547,7 @@ wDJ
 asz
 avC
 aCw
-aJS
+kXm
 aCj
 aLH
 aLH
@@ -88818,7 +88568,7 @@ aAX
 doL
 uAA
 qaB
-oaB
+aYd
 vtF
 pFv
 aNP
@@ -89014,7 +88764,7 @@ anp
 pKG
 oPh
 aLh
-suw
+ufF
 kUf
 pKG
 anp
