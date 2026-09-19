@@ -1,5 +1,153 @@
 // Focused extensions kept separate from the framework so variant balance can be tuned independently.
 
+/mob/living
+	var/ms13_hive_consumed = FALSE
+	var/ms13_hive_implanted = FALSE
+
+// A facehugger starts a real, bounded incubation even when no carrier reaches its victim.
+/datum/ms13_hive_incubation
+	var/datum/weakref/host_ref
+	var/datum/ms13_terrain_hivemind/network
+
+/datum/ms13_hive_incubation/New(mob/living/host, datum/ms13_terrain_hivemind/hive)
+	. = ..()
+	host_ref = WEAKREF(host)
+	network = hive
+	START_PROCESSING(SSobj, src)
+
+/datum/ms13_hive_incubation/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	host_ref = null
+	network = null
+	return ..()
+
+/datum/ms13_hive_incubation/process(delta_time)
+	var/mob/living/host = host_ref?.resolve()
+	if(!network?.active || !host || host.stat == DEAD || host.ms13_hive_consumed)
+		qdel(src)
+		return PROCESS_KILL
+	if(istype(network.get_corpse_claim(host), /obj/structure/ms13_hivemind/xenomorph_nest))
+		return
+	if(network.advance_corpse_conversion(host, src, delta_time, 90, FALSE))
+		qdel(src)
+		return PROCESS_KILL
+
+/datum/ms13_terrain_hivemind/xenomorph/is_convertible_corpse(mob/living/host)
+	if(host && !QDELETED(host) && !host.ms13_hive_consumed && host.stat != DEAD && isturf(host.loc) && !is_allied(host) && host.ms13_hive_implanted)
+		return TRUE
+	return ..()
+
+/// Prefer capturing wounded NPCs before the next melee strike would kill them.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/try_capture_npc(mob/living/victim)
+	if(!can_capture_npc(victim))
+		return FALSE
+	victim.Paralyze(2 MINUTES, TRUE)
+	network.report_corpse(victim)
+	LoseTarget()
+	return TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_capture_npc(mob/living/victim)
+	if(!istype(network, /datum/ms13_terrain_hivemind/xenomorph) || !istype(victim) || victim.stat == DEAD || victim.ckey || network.is_allied(victim))
+		return FALSE
+	if(!istype(victim, /mob/living/simple_animal) && !istype(victim, /mob/living/basic))
+		return FALSE
+	if(victim.health > max(victim.maxHealth * 0.35, melee_damage_upper))
+		return FALSE
+	return TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/AttackingTarget(atom/attacked_target)
+	if(try_capture_npc(attacked_target ? attacked_target : target))
+		return TRUE
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/MoveToTarget(list/possible_targets)
+	if(can_capture_npc(target))
+		if(Adjacent(target))
+			return try_capture_npc(target)
+		Goto(target, move_to_delay, 1)
+		return TRUE
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/OpenFire(atom/victim)
+	if(can_capture_npc(victim) || !CanAttack(victim))
+		return
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/Shoot(atom/victim)
+	// Recheck queued burst shots after an earlier projectile disables the target.
+	if(can_capture_npc(victim) || !CanAttack(victim))
+		return
+	return ..()
+
+/// Use existing pathfinding, including its repath throttle, for combat, roaming and hauling.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/Goto(atom/destination, delay, minimum_distance)
+	if(prevent_goto_movement || !destination || incapacitated())
+		return FALSE
+	if(get_dist(src, destination) <= minimum_distance)
+		SSmove_manager.stop_looping(src)
+		return TRUE
+	approaching_target = FALSE // Random combat dodges would step off the calculated route.
+	var/datum/move_loop/loop = SSmove_manager.jps_move(src, destination, delay = delay, repath_delay = 3 SECONDS, max_path_length = 60, minimum_distance = minimum_distance, simulated_only = FALSE, skip_first = TRUE, flags = MOVEMENT_LOOP_IGNORE_GLIDE)
+	if(loop)
+		RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(hive_path_step))
+	return TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind
+	COOLDOWN_DECLARE(hive_breach_cooldown)
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_path_step(datum/move_loop/has_target/jps/loop, result)
+	SIGNAL_HANDLER
+	if(result != MOVELOOP_FAILURE || loop.is_pathing || !network?.active || incapacitated() || !COOLDOWN_FINISHED(src, hive_breach_cooldown))
+		return
+	if(get_dist(src, loop.target) <= loop.minimum_distance)
+		return
+	COOLDOWN_START(src, hive_breach_cooldown, 2 SECONDS)
+	// Only breach when the pathfinder cannot use an existing entrance.
+	if(length(loop.movement_path))
+		// A route exists but a moving crowd can occupy its next tile; make room and repath.
+		step_rand(src)
+		return
+	if(!target && !corpse_target_ref && (length(network.territory) >= 12 || length(network.frontier)))
+		for(var/obj/machinery/door/door in orange(1, src))
+			if(door.density && try_force_open_door(door))
+				return
+		roam_target = null
+		return
+	var/turf/next_step = get_step_towards(src, loop.target)
+	if(next_step && Move(next_step, get_dir(src, next_step)))
+		return
+	var/direction = get_dir(src, loop.target)
+	if(ISDIAGONALDIR(direction))
+		direction = pick(direction & (NORTH|SOUTH), direction & (EAST|WEST))
+	DestroyObjectsInDirection(direction)
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/DestroyPathToTarget()
+	// Goto's failed-path handler handles breaches after trying existing routes.
+	return
+
+/// Both actual movement and pathfinding must agree about Mojave's table-derived low walls.
+/proc/ms13_hive_crosses_low_wall(atom/movable/mover)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = mover
+	if(istype(unit))
+		return unit.network?.can_cross_low_walls
+	for(var/obj/item/hand_item/grab/grab as anything in mover?.grabbed_by)
+		unit = grab.assailant
+		if(istype(unit) && unit.network?.can_cross_low_walls && unit.network.can_haul_over_low_walls)
+			return TRUE
+	return FALSE
+
+/obj/structure/table/ms13/low_wall/CanAllowThrough(atom/movable/mover, border_dir)
+	return ms13_hive_crosses_low_wall(mover) || ..()
+
+/obj/structure/table/ms13/low_wall/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	return ms13_hive_crosses_low_wall(pass_info.caller_ref?.resolve()) || ..()
+
+/obj/structure/low_wall/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	return ms13_hive_crosses_low_wall(pass_info.caller_ref?.resolve()) || ..()
+
+/obj/structure/ms13_hivemind/special/wall/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	return is_hivemind_wall_mover(pass_info.caller_ref?.resolve()) || ..()
+
 /datum/ms13_terrain_hivemind
 	/// A corpse delivered to a core or converter permanently expands the network's storage.
 	var/corpse_capacity_value = 5
@@ -68,7 +216,7 @@
 	if(!is_convertible_corpse(subject) || !is_territory(get_turf(subject)))
 		return destination
 	for(var/obj/structure/ms13_hivemind/xenomorph_nest/nest in get_turf(subject))
-		if(nest.network == src)
+		if(nest.network == src && nest.host_ref?.resolve() == subject)
 			return nest
 	return new /obj/structure/ms13_hivemind/xenomorph_nest(get_turf(subject), src, subject)
 
@@ -92,21 +240,12 @@
 			if(!claim_corpse(host, nest))
 				qdel(nest)
 
+/datum/ms13_terrain_hivemind/xenomorph/process_structure_corpse(atom/converter, delta_time)
+	// Living hosts belong to their individual nests, never the generic core recycler.
+	return
+
 /obj/structure/low_wall/CanAllowThrough(atom/movable/mover, border_dir)
-	. = ..()
-	if(.)
-		return
-	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = mover
-	if(istype(unit) && unit.network?.can_cross_low_walls)
-		return TRUE
-	var/mob/living/dragged_body = mover
-	if(!istype(dragged_body))
-		return FALSE
-	for(var/obj/item/hand_item/grab/grab as anything in dragged_body.grabbed_by)
-		unit = grab.assailant
-		if(istype(unit) && unit.network?.can_haul_over_low_walls)
-			return TRUE
-	return FALSE
+	return ms13_hive_crosses_low_wall(mover) || ..()
 
 /obj/structure/ms13_hivemind/special/xenomorph_egg
 	name = "xenomorph egg"
@@ -160,7 +299,7 @@
 	network = join_network
 
 /obj/item/clothing/mask/facehugger/ms13_hive/Leap(mob/living/hit_mob)
-	if(hit_mob?.stat == DEAD || !valid_to_attach(hit_mob))
+	if(!iscarbon(hit_mob) || hit_mob.stat == DEAD || !network?.active || !valid_to_attach(hit_mob))
 		return FALSE
 	var/mob/living/carbon/target = hit_mob
 	if(target.wear_mask && istype(target.wear_mask, /obj/item/clothing/mask/facehugger))
@@ -192,7 +331,11 @@
 	icon_state = "[base_icon_state]_impregnated"
 	worn_icon_state = "[base_icon_state]_impregnated"
 	if(network?.active)
+		if(!target.ms13_hive_implanted)
+			target.ms13_hive_implanted = TRUE
+			new /datum/ms13_hive_incubation(target, network)
 		network.report_corpse(target)
+	carbon_target.dropItemToGround(src)
 
 /obj/structure/ms13_hivemind/xenomorph_nest
 	name = "resin nest"
@@ -213,6 +356,7 @@
 	network = join_network
 	host_ref = WEAKREF(host)
 	var/mob/living/carbon/human/human_host = host
+	host.Paralyze(5 SECONDS, TRUE)
 	if(istype(human_host) && human_host.physiology)
 		human_host.physiology.bleed_mod *= 0.4
 		bleeding_reduced = TRUE
@@ -235,7 +379,7 @@
 	if(!network?.active || !network.is_convertible_corpse(host) || get_turf(host) != get_turf(src))
 		qdel(src)
 		return PROCESS_KILL
-	host.Paralyze(2 SECONDS)
+	host.Paralyze(5 SECONDS, TRUE)
 	host.adjustOxyLoss(-0.5 * delta_time)
 	if(network.advance_corpse_conversion(host, src, delta_time, network.structure_conversion_time))
 		qdel(src)
@@ -356,6 +500,12 @@
 	aggro_vision_range = 12
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/DestroyObjectsInDirection(direction)
+	var/turf/destination = get_step(src, direction)
+	if(!destination || !environment_smash)
+		return
+	for(var/obj/structure/ms13_hivemind/friendly in destination)
+		if(friendly.network == network && friendly.density)
+			return
 	if(force_opens_doors)
 		var/atom/target_from = GET_TARGETS_FROM(src)
 		var/turf/next_turf = get_step(target_from, direction)
@@ -363,7 +513,15 @@
 			for(var/obj/machinery/door/door in next_turf)
 				if(door.density && door.Adjacent(target_from) && try_force_open_door(door))
 					return
-	return ..()
+	if(CanSmashTurfs(destination))
+		destination.attack_animal(src)
+		return
+	for(var/obj/obstacle in destination)
+		if(!obstacle.density || obstacle.CanAllowThrough(src, direction) || !obstacle.Adjacent(src) || obstacle.IsObscured())
+			continue
+		if(ismachinery(obstacle) || isstructure(obstacle))
+			obstacle.attack_animal(src)
+			return
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/try_force_open_door(obj/machinery/door/door)
 	if(!force_opens_doors || !door?.density || istype(door, /obj/machinery/door/airlock/ms13))

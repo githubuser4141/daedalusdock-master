@@ -3,6 +3,27 @@
 Use the admin debug verb **MS13 - Spawn Terrain Hivemind** to choose a theme, a territory cap
 (including unbounded), and either your current tile or a View Variables marked target.
 
+The core now starts with 20 resources and buys a unit every 10 seconds when it has funds and
+population space (24 units maximum). Tile income is one quarter of the theme's old rate; special
+structures are attempted every 12 seconds. Separate generators still supplement core production.
+Finite territory, population and structure caps still intentionally limit spending.
+
+Movement uses the existing throttled JPS pathfinder (60-step search, three-second repath delay).
+Units try existing entrances before breaching a blocked route. Idle roaming only breaches for a
+cramped nest with fewer than 12 tiles and no frontier. Opened walls refresh an exhausted frontier.
+Both DD and Mojave's table-derived low walls support movement and pathfinding for crossing themes,
+including hauled bodies. Idle scouts, ranged units and heavies can help hauling hives when no idle
+hauler is within seven tiles of the subject. Friendly nest walls are also traversable by pathfinding.
+
+Xenomorphs subdue non-player simple/basic NPCs below 35% health (or within one melee strike of
+death), using forced paralysis instead of killing them. Ranged units close in to capture wounded
+NPCs and cancel subsequent burst shots. This implements the living-capture option rather than
+making already-dead NPCs eligible. Carriers nest at the first friendly resin tile and briefly
+restrain/stabilize hosts during transport. Each host gets its own nest, even on a shared tile.
+Successful facehugger implantation drops the spent hugger and starts a 90-second incubation;
+a resin nest accelerates the same progress to 25 seconds. Completed hosts cannot be reused.
+Incubation currently requires a surviving network; destroyed cores stop its processing.
+
 Each network has one destructible core and a shared resource pool. Claimed floor growth produces
 resources; expansion, walls, traps, turrets, and unit generators spend them. Units regenerate on
 their own terrain. Blob and necromorph units also decay away from it, although heavies are independent
