@@ -90,3 +90,59 @@
     name = "empty instamash box"
     desc = "Someone has, presumably, already insta'd the mash."
     icon_state = "instamash_trash"
+
+/obj/item/trash/ms13/trash_pile
+	name = "old trash"
+	desc = "garbage"
+	icon = 'mojave/imports/secondcity/icons/trash.dmi'
+	icon_state = "big1"
+
+/obj/item/trash/ms13/bigtrash/tyres_trash
+	name = "old tyres"
+	desc = "Three tires stacked on top of eachother"
+	icon_state = "big0"
+
+/obj/item/trash/ms13/trash_pile/ac_trash
+	name = "old machines"
+	desc = "A pile of broken machines"
+	icon_state = "big1"
+
+/obj/item/trash/ms13/trash_pile/tyres_trash2
+	name = "old tyres"
+	desc = "Thee tyres stacked on top of eachother"
+	icon_state = "big2"
+
+/obj/item/trash/ms13/trash_pile/trash3
+	name = "old metal siding"
+	desc = "A pile of broken-down metal sidings"
+	icon_state = "big3"
+
+/obj/item/trash/ms13/trash_pile/trash4
+	name = "metal scrap"
+	desc = "A pile of metal junk"
+	icon_state = "big4"
+
+/obj/item/trash/ms13/trash_pile/medtrash0
+	name = "bottle trash"
+	desc = "Rotten cardboard and bottles"
+	icon_state = "medium0"
+
+/obj/item/trash/ms13/trash_pile/medtrash1
+	name = "rotting garbage"
+	desc = ""
+	icon_state = "medium1"
+
+/obj/item/trash/ms13/trash_pile/medtrash2
+	name = "worn out saucepans"
+	desc = "A pile of worn-out saucepans, looks useless.."
+	icon_state = "medium2"
+
+/obj/item/trash/ms13/trash_pile/medtrash3
+	name = "broken toilet"
+	desc = ""
+	icon_state = "medium3"
+
+/obj/item/trash/ms13/trash_pile/medtrash4
+	name = "rotting tire"
+	desc = ""
+	icon_state = "medium4"
