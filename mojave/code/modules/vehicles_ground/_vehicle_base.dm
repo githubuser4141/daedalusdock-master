@@ -40,7 +40,6 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	/// never needs to know whether it is driving a jeep, truck, or a future vehicle. Gears and fuel
 	/// capacity belong to the gearbox and fuel tank parts instead.
 	var/acceleration_delay = 1 SECONDS
-	var/coast_delay = 1.2 SECONDS
 	var/turn_delay = 4
 	var/max_turn_speed = 2
 	var/turn_speed_loss = 1
@@ -66,7 +65,6 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/speed = 0
 	var/travel_dir
 	var/moving = FALSE
-	var/last_throttle_time = 0
 	var/next_acceleration_time = 0
 	/// Invalidates a pending movement callback when motion stops and later restarts.
 	var/movement_generation = 0
@@ -188,9 +186,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			frame.set_interior_light(FALSE, red, green, blue)
 
 /// Engines and the configured number of intact wheels/tracks provide motive power. Losing either prevents
-/// new throttle, while the existing momentum loop remains free to coast to a stop.
+/// new throttle, but does not cancel existing momentum.
 /datum/ms13_ground_vehicle/proc/has_motive_power()
-	if(!engine?.is_operational() || !gear_count())
+	if(!engine_running || !engine?.is_operational() || !gear_count())
 		return FALSE
 	var/working_running_gear = 0
 	for(var/obj/structure/ms13_vehicle_part/running_gear/running_gear in parts)
@@ -213,7 +211,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Does a sight ray from viewer_turf, leaving frame in exit_dir, hit a hull panel that won't let this viewer see
 /// out? Solid panels always block; a porthole only lets through viewers within its vision_range.
-/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir, turf/viewer_turf)
+/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir, turf/viewer_turf, use_cameras = FALSE)
+	if(use_cameras && camera_covers_edge(frame, exit_dir))
+		return FALSE
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
 		if(wall.parent_frame != frame || !(wall.dir & exit_dir))
 			continue
@@ -224,7 +224,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	return FALSE
 
 /// True when the line from an interior turf to target first exits through solid hull.
-/datum/ms13_ground_vehicle/proc/blocks_sight_from(turf/source, turf/target)
+/datum/ms13_ground_vehicle/proc/blocks_sight_from(turf/source, turf/target, use_cameras = FALSE)
 	var/obj/structure/ms13_vehicle_frame/current_frame = get_frame_at(source)
 	if(!current_frame || get_frame_at(target))
 		return FALSE
@@ -233,7 +233,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	for(var/index in 2 to length(sight_line))
 		var/turf/next_turf = sight_line[index]
 		var/obj/structure/ms13_vehicle_frame/next_frame = get_frame_at(next_turf)
-		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf), source))
+		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf), source, use_cameras))
 			return TRUE
 		current_turf = next_turf
 		current_frame = next_frame
@@ -361,12 +361,56 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			if(is_aboard(passenger))
 				.[passenger] = frame
 
+/// Each leading tile strikes with its own outward armor (or its exposed frame).
+/// ponytail: speed-band squared is an arcade impact estimate, not mass/velocity physics.
+/datum/ms13_ground_vehicle/proc/ram_obstacles(direction, list/manifest)
+	var/list/impacted = list()
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames.Copy())
+		var/turf/destination = get_step(frame, direction)
+		if(!destination)
+			return FALSE
+		if(get_frame_at(destination))
+			continue
+		var/list/obstacles = list()
+		if(destination.density)
+			obstacles += destination
+		else
+			for(var/atom/movable/obstacle in destination)
+				if(obstacle.density && !isliving(obstacle) && !(obstacle in manifest) && !(obstacle in parts) && !(obstacle in walls))
+					obstacles += obstacle
+		for(var/atom/obstacle as anything in obstacles)
+			if(QDELETED(obstacle) || (obstacle in impacted))
+				continue
+			impacted += obstacle
+			var/obj/contact = frame
+			for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in walls)
+				if(panel.parent_frame == frame && panel.dir == direction && panel.exterior && panel.density)
+					contact = panel
+					break
+			var/contact_armor = max(0, contact.returnArmor().getRating(BLUNT))
+			var/impact = speed ** 2 * (20 + contact_armor)
+			var/resistance = max(0, obstacle.returnArmor().getRating(BLUNT))
+			var/recoil = impact
+			if(obstacle.uses_integrity && !(obstacle.resistance_flags & INDESTRUCTIBLE) && obstacle.get_integrity() > 0)
+				recoil = min(impact, obstacle.get_integrity())
+				obstacle.take_damage(impact, BRUTE, BLUNT, TRUE, direction)
+			// Destroying an explosive obstacle may also destroy the vehicle during take_damage().
+			if(QDELETED(frame) || QDELETED(pivot))
+				return FALSE
+			if(!QDELETED(contact))
+				contact.take_damage(recoil * (20 + resistance) / (20 + contact_armor) * 0.35, BRUTE, BLUNT, FALSE, turn(direction, 180))
+			if(QDELETED(frame) || QDELETED(pivot))
+				return FALSE
+	return TRUE
+
 /// Moves every frame, every wall, and everyone/everything currently aboard one tile in direction.
 /datum/ms13_ground_vehicle/proc/do_move(direction, bypass_cooldown = FALSE)
 	if(!bypass_cooldown && world.time < next_move_time)
 		return FALSE
 	var/list/manifest = get_manifest()
-	// First reject terrain/structures, then resolve mobs and finally make sure their old tiles cleared.
+	// Resolve solid impacts before pushing mobs. A surviving obstacle still stops the vehicle.
+	if(speed && !ram_obstacles(direction, manifest))
+		return FALSE
 	if(!can_move(direction, TRUE) || !ram_living(direction, manifest) || !can_move(direction))
 		return FALSE
 	if(!bypass_cooldown)
@@ -389,22 +433,20 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Starts at low speed, accelerates while the driver holds the travel direction, and uses the
 /// opposite input as a brake before allowing a change between forward and reverse.
 /datum/ms13_ground_vehicle/proc/apply_throttle(direction)
+	// Brakes are mechanical: no fuel, ignition, or intact drivetrain is needed to slow down.
+	if(speed && direction != travel_dir)
+		speed--
+		next_acceleration_time = world.time + acceleration_delay
+		if(!speed)
+			stop_motion()
+		return TRUE
 	if(!has_motive_power())
 		return FALSE
 	if(!speed)
 		travel_dir = direction
 		speed = 1
-		last_throttle_time = world.time
 		next_acceleration_time = world.time + acceleration_delay
 		start_motion()
-		return TRUE
-
-	last_throttle_time = world.time
-	if(direction != travel_dir)
-		speed--
-		next_acceleration_time = world.time + acceleration_delay
-		if(!speed)
-			stop_motion()
 		return TRUE
 
 	if(world.time >= next_acceleration_time && speed < gear_count())
@@ -417,7 +459,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// same way commits to a full turn; steering the other way straightens out.
 /datum/ms13_ground_vehicle/proc/apply_steering(new_dir)
 	if(!speed)
-		return full_turn(new_dir)
+		return has_motive_power() && full_turn(new_dir)
 	if(world.time < next_steer_time)
 		return FALSE
 	next_steer_time = world.time + steer_delay
@@ -439,7 +481,6 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/full_turn(new_dir)
 	if(speed > max_turn_speed)
 		speed = max(1, speed - turn_speed_loss)
-		last_throttle_time = world.time
 		return FALSE
 	var/reversing = speed && travel_dir == turn(dir, 180)
 	if(!do_rotate(new_dir))
@@ -447,7 +488,6 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(speed)
 		travel_dir = reversing ? turn(new_dir, 180) : new_dir
 		speed = max(1, speed - turn_speed_loss)
-		last_throttle_time = world.time
 	return TRUE
 
 /datum/ms13_ground_vehicle/proc/handle_drive_input(direction)
@@ -478,17 +518,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	set_parts_moving(FALSE)
 	running_gear_soundloop?.stop()
 
-/// Self-schedules one tile at a time. Releasing the throttle coasts briefly, drops through the
-/// configured speed bands, then stops; collisions cancel the remaining momentum immediately.
+/// Self-schedules one tile at a time at the selected speed until explicitly slowed or blocked.
 /datum/ms13_ground_vehicle/proc/movement_tick(generation)
 	if(generation != movement_generation || !moving || !speed)
 		return
-	if(world.time >= last_throttle_time + coast_delay || speed > max(gear_count(), 1))
-		speed--
-		last_throttle_time = world.time
-		if(!speed)
-			stop_motion()
-			return
+	// Throttle selects a persistent speed band. Only braking, turning, or an impact slows it.
 	if(!do_move(travel_dir, TRUE))
 		playsound(pivot, crash_sound, crash_sound_volume, TRUE)
 		stop_motion()
@@ -637,6 +671,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	roof.color = is_damaged && !roof_damaged_icon ? roof_damage_color : hull_color
 
 /obj/structure/ms13_vehicle_frame/Destroy()
+	// Power updates rebuild cabin lighting; do this before deleting this frame's lighting images.
+	if(vehicle?.pivot == src)
+		vehicle.set_ignition(FALSE)
 	GLOB.ms13_vehicle_roofs -= roof
 	for(var/client/viewer as anything in GLOB.clients)
 		viewer.images -= roof
@@ -731,7 +768,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/extended_view = "[mask_view[1] + 4]x[mask_view[2] + 4]"
 	// ponytail: rebuilds the visible mask plus a two-tile margin; cache rays if vehicle sizes grow.
 	for(var/turf/target in range(extended_view, src))
-		if(!vehicle.blocks_sight_from(get_turf(src), target))
+		if(!vehicle.blocks_sight_from(get_turf(src), target, vehicle.driver == src))
 			continue
 		var/image/mask = image(icon = 'icons/effects/alphacolors.dmi', loc = target, layer = ABOVE_ALL_MOB_LAYER)
 		mask.color = "#000000"

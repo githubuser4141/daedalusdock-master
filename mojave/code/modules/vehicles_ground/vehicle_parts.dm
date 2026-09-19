@@ -174,6 +174,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	var/datum/looping_sound/ms13/vehicle_engine/soundloop
 
 /obj/structure/ms13_vehicle_part/engine/Destroy()
+	vehicle?.stop_engine()
 	QDEL_NULL(soundloop)
 	return ..()
 
@@ -181,20 +182,23 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	modify_max_integrity(vehicle.engine_integrity)
 	vehicle.engine = src
 	soundloop = new(src)
+	// All layouts use this shared mount path; keep the walk-over battery at the driver's end.
+	if(!vehicle.battery)
+		vehicle.pivot.spawn_part(/obj/structure/ms13_vehicle_part/battery)
 
 /obj/structure/ms13_vehicle_part/engine/proc/consume_fuel(amount)
-	if(is_operational())
+	if(vehicle?.engine_running && is_operational())
 		vehicle.fuel_tank.draw_fuel(amount)
 	if(!is_operational())
-		set_moving(FALSE)
+		vehicle?.stop_engine()
 
 /obj/structure/ms13_vehicle_part/engine/is_operational()
 	return ..() && vehicle?.fuel_tank?.has_fuel()
 
 /obj/structure/ms13_vehicle_part/engine/set_moving(is_moving)
 	if(!broken)
-		icon_state = is_moving && is_operational() ? running_icon_state : static_icon_state
-	if(is_moving && is_operational())
+		icon_state = vehicle?.engine_running && is_operational() ? running_icon_state : static_icon_state
+	if(vehicle?.engine_running && is_operational())
 		soundloop?.start()
 	else
 		soundloop?.stop()
@@ -202,6 +206,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/engine/atom_break(damage_flag)
 	. = ..()
 	broken = TRUE
+	vehicle?.stop_engine()
 	icon_state = broken_icon_state
 	soundloop?.stop()
 
@@ -335,7 +340,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	update_appearance()
 
 /obj/structure/ms13_vehicle_part/interior_light/proc/is_lit()
-	return on && !broken && !QDELETED(src)
+	return on && is_operational() && vehicle?.interior_lights_on && vehicle.has_electrical_power()
 
 /// Returns list(r, g, b), each 0-1, of what this fixture adds to frame.
 /obj/structure/ms13_vehicle_part/interior_light/proc/light_at(obj/structure/ms13_vehicle_frame/frame)
@@ -345,7 +350,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	return list(channels[1] * strength, channels[2] * strength, channels[3] * strength)
 
 /obj/structure/ms13_vehicle_part/interior_light/update_icon_state()
-	icon_state = broken ? "floor-broken" : on ? "floor" : "floor-burned"
+	icon_state = broken ? "floor-broken" : is_lit() ? "floor" : "floor-burned"
 	return ..()
 
 /obj/structure/ms13_vehicle_part/interior_light/update_overlays()
@@ -418,7 +423,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 
 /// Vehicle-scale rounds use existing projectile behavior and MS13's placeholder ammunition art.
 TYPEINFO_DEF(/obj/projectile/bullet/ms13/vehicle_autocannon)
-	default_armor = list(BLUNT = 0, PUNCTURE = GIANT_CAL_RIFLE, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/ms13/vehicle_autocannon
 	parent_type = /obj/projectile/bullet/ms13/a50MG/ap
 	name = "30mm autocannon shell"
@@ -427,7 +432,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/vehicle_autocannon)
 	bulletTipType = BULLET_SHARP
 
 TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/medium)
-	default_armor = list(BLUNT = 0, PUNCTURE = GIANT_CAL_RIFLE, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/cannonball/ms13_vehicle/medium
 	name = "76mm tank shell"
 	damage = 220
@@ -435,7 +440,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/medium)
 	bulletTipType = BULLET_SHARP
 
 TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
-	default_armor = list(BLUNT = 0, PUNCTURE = GIANT_CAL_RIFLE, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
+	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
 	name = "122mm tank shell"
 	damage = 300
@@ -513,6 +518,8 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	var/max_ammo = 0
 	var/ammo = 0
 	var/next_fire_time = 0
+	/// Hand-operated machine guns need no electricity; powered heavy mounts do.
+	var/shot_power_cost = 0
 
 /obj/structure/ms13_vehicle_part/turret/Destroy()
 	if(gunner_seat)
@@ -573,6 +580,9 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 /obj/structure/ms13_vehicle_part/turret/proc/fire_at(atom/target, mob/living/user, list/modifiers)
 	if(!projectile_type || !is_operational() || !gunner_seat || user.buckled != gunner_seat || !(user in gunner_seat.buckled_mobs) || user.incapacitated())
 		return FALSE
+	if(shot_power_cost && (!vehicle?.has_electrical_power() || vehicle.battery.cell.charge < shot_power_cost))
+		balloon_alert(user, "mount has no power!")
+		return FALSE
 	var/turf/target_turf = get_turf(target)
 	if(!target_turf || vehicle?.get_frame_at(target_turf) || !aim_at(target))
 		return FALSE
@@ -593,6 +603,9 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	if(!shot.preparePixelProjectile(target, muzzle, modifiers))
 		qdel(shot)
 		return FALSE
+	if(shot_power_cost && !vehicle.use_battery(shot_power_cost))
+		qdel(shot)
+		return FALSE
 	ammo--
 	next_fire_time = world.time + fire_delay
 	playsound(src, fire_sound, fire_sound_volume, TRUE)
@@ -607,6 +620,12 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	fire_delay = 2
 	max_ammo = 100
 	ammo = 100
+
+/obj/structure/ms13_vehicle_part/turret/autocannon
+	shot_power_cost = 25
+
+/obj/structure/ms13_vehicle_part/turret/tank
+	shot_power_cost = 50
 
 /obj/structure/ms13_vehicle_part/turret/autocannon/btr80
 	weapon_name = "Shipunov 2A72 30mm autocannon"

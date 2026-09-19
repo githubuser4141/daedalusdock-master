@@ -10,7 +10,9 @@
 	TEST_ASSERT_EQUAL(length(front.vehicle.frames), 2, "Jeep did not assemble both frame tiles.")
 	// Front tile: front/left/right (3). Back tile: left/right (2) - its rear stays open as the entrance.
 	TEST_ASSERT_EQUAL(length(front.vehicle.walls), 5, "Jeep did not assemble all 5 expected wall segments.")
-	TEST_ASSERT_EQUAL(length(front.vehicle.parts), 7, "Jeep did not assemble its engine, gearbox, fuel tank and four wheels.")
+	TEST_ASSERT_EQUAL(length(front.vehicle.parts), 9, "Jeep did not assemble its drivetrain, battery, headlight and wheels.")
+	front.vehicle.set_ignition(TRUE)
+	TEST_ASSERT(front.vehicle.start_engine(), "Jeep engine failed to start.")
 	TEST_ASSERT(front.vehicle.has_motive_power(), "A complete, fueled jeep did not have motive power.")
 	var/wheel_count = 0
 	for(var/obj/structure/ms13_vehicle_part/running_gear/wheel/wheel in front.vehicle.parts)
@@ -102,6 +104,8 @@
 	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
 	var/datum/ms13_ground_vehicle/jeep/vehicle = front.vehicle
 	TEST_ASSERT(vehicle, "Jeep did not build a configured controller for the momentum test.")
+	vehicle.set_ignition(TRUE)
+	TEST_ASSERT(vehicle.start_engine(), "Jeep engine failed to start.")
 
 	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent)
 	driver.forceMove(get_turf(front))
@@ -125,7 +129,7 @@
 	vehicle.apply_throttle(turn(vehicle.travel_dir, 180))
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Opposite input did not brake the vehicle by one speed band.")
 	vehicle.stop_motion()
-	TEST_ASSERT(!vehicle.engine.soundloop?.is_active(), "The engine running loop continued after the vehicle stopped.")
+	TEST_ASSERT(vehicle.engine.soundloop?.is_active(), "Stopping the wheels also stopped the idling engine.")
 	TEST_ASSERT(!vehicle.running_gear_soundloop?.is_active(), "The wheel movement loop continued after the vehicle stopped.")
 
 	var/turf/ram_turf = get_step(front, vehicle.dir)
@@ -149,12 +153,98 @@
 	vehicle.driver = null
 	vehicle.speed = 1
 	vehicle.travel_dir = vehicle.dir
-	vehicle.last_throttle_time = world.time
 	vehicle.moving = TRUE
 	vehicle.movement_generation++
 	var/turf/driverless_destination = get_step(front, vehicle.travel_dir)
 	vehicle.movement_tick(vehicle.movement_generation)
 	TEST_ASSERT_EQUAL(get_turf(front), driverless_destination, "Vehicle stopped immediately when its driver was lost despite having momentum.")
+	vehicle.set_ignition(FALSE)
+	TEST_ASSERT(vehicle.apply_throttle(turn(vehicle.travel_dir, 180)), "Mechanical braking failed with the ignition off.")
+	TEST_ASSERT_EQUAL(vehicle.speed, 0, "Braking did not stop an unpowered vehicle.")
+	vehicle.stop_motion()
+
+/datum/unit_test/ms13_vehicle_electrical
+	name = "VEHICLES: Battery, Ignition, Lights And Driver Cameras"
+
+/datum/unit_test/ms13_vehicle_electrical/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/armored_truck_front_left/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	TEST_ASSERT(vehicle.battery && !vehicle.battery.density, "Vehicle battery is missing or not walk-overable.")
+	TEST_ASSERT(!vehicle.has_motive_power() && !vehicle.start_engine(), "Engine started without ignition.")
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera = locate() in vehicle.parts
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/light/light = locate() in vehicle.parts
+	var/obj/structure/ms13_vehicle_part/interior_light/dome = locate() in vehicle.parts
+	TEST_ASSERT(camera && light && dome, "Truck did not fit electrical accessories.")
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/equipment in vehicle.parts)
+		TEST_ASSERT(ms13_icon_has_state(equipment.equipment_icon, equipment.on_state), "Missing powered accessory art.")
+		TEST_ASSERT(ms13_icon_has_state(equipment.equipment_icon, equipment.off_state), "Missing unpowered accessory art.")
+	TEST_ASSERT(!camera.is_enabled() && !dome.is_lit(), "Equipment works with ignition off.")
+	vehicle.set_ignition(TRUE)
+	var/charge_before = vehicle.battery.cell.charge
+	TEST_ASSERT(vehicle.start_engine(), "Fueled engine with charged battery failed to start.")
+	TEST_ASSERT_EQUAL(vehicle.battery.cell.charge, charge_before - vehicle.starter_cost, "Starter did not consume its charge.")
+	vehicle.start_engine()
+	TEST_ASSERT_EQUAL(vehicle.battery.cell.charge, charge_before - vehicle.starter_cost, "Starting an already running engine consumed charge twice.")
+	var/fuel_before = vehicle.fuel_tank.reagents.get_reagent_amount(/datum/reagent/fuel)
+	vehicle.process_power(2)
+	TEST_ASSERT(vehicle.battery.cell.charge > charge_before - vehicle.starter_cost, "Running engine did not recharge battery.")
+	TEST_ASSERT(vehicle.fuel_tank.reagents.get_reagent_amount(/datum/reagent/fuel) < fuel_before, "Idling engine consumed no fuel.")
+	vehicle.stop_engine()
+	TEST_ASSERT(!vehicle.has_motive_power() && camera.is_enabled(), "Stopping the engine also disabled battery equipment.")
+	charge_before = vehicle.battery.cell.charge
+	vehicle.process_power(2)
+	TEST_ASSERT(vehicle.battery.cell.charge < charge_before, "Powered equipment did not drain battery.")
+	vehicle.exterior_lights_on = TRUE
+	vehicle.update_electrical()
+	TEST_ASSERT(light.is_enabled() && light.light_outer_range > 0 && light.light_power == 1, "Exterior lighting switch did not illuminate lamps.")
+	var/turf/camera_turf = get_turf(camera)
+	var/turf/outside = get_step(camera, camera.dir)
+	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside), "Camera created a physical window for passengers/NPCs.")
+	TEST_ASSERT(!vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Camera did not reveal its hull edge to the driver.")
+	vehicle.cameras_on = FALSE
+	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Switched-off camera still revealed the outside.")
+	vehicle.cameras_on = TRUE
+	camera.update_integrity(camera.max_integrity * 0.1)
+	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Broken camera still revealed the outside.")
+	camera.repair_damage(camera.max_integrity)
+	TEST_ASSERT(!vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Repaired camera did not recover its view.")
+	vehicle.battery.cell.charge = 1
+	vehicle.process_power(2)
+	TEST_ASSERT(!vehicle.has_electrical_power() && !dome.is_lit() && !light.light_outer_range, "Drained battery left lighting powered.")
+	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Empty battery left camera vision active.")
+	TEST_ASSERT(!vehicle.start_engine(), "Empty battery started engine.")
+	vehicle.battery.cell.give(1000)
+	vehicle.update_electrical()
+	TEST_ASSERT(vehicle.start_engine(), "Charged battery did not restore starting.")
+	vehicle.battery.update_integrity(vehicle.battery.max_integrity * 0.1)
+	TEST_ASSERT(!vehicle.engine_running && !vehicle.has_electrical_power(), "Broken battery left the electrical system powered.")
+
+/datum/unit_test/ms13_vehicle_obstacle_impact
+	name = "VEHICLES: Ramming Damages Obstacles And Contact Armor"
+
+/datum/unit_test/ms13_vehicle_obstacle_impact/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	var/obj/structure/window/ms13_vehicle_wall/contact
+	for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in vehicle.walls)
+		if(panel.parent_frame == front && panel.dir == vehicle.dir)
+			contact = panel
+	TEST_ASSERT(contact, "No frontal armor for impact test.")
+	var/turf/ahead = get_step(front, vehicle.dir)
+	var/obj/structure/table/light_obstacle = new(ahead)
+	var/integrity_before = contact.get_integrity()
+	vehicle.speed = 3
+	TEST_ASSERT(vehicle.ram_obstacles(vehicle.dir, vehicle.get_manifest()), "Impact resolution failed on a light obstacle.")
+	TEST_ASSERT(QDELETED(light_obstacle), "Fast vehicle could not smash a light table.")
+	TEST_ASSERT(contact.get_integrity() < integrity_before, "Impact did not damage the contacting panel.")
+	var/obj/structure/table/reinforced_obstacle = new(ahead)
+	reinforced_obstacle.modify_max_integrity(5000)
+	integrity_before = reinforced_obstacle.get_integrity()
+	TEST_ASSERT(!vehicle.do_move(vehicle.dir, TRUE), "Vehicle phased through a surviving reinforced obstacle.")
+	TEST_ASSERT(reinforced_obstacle.get_integrity() < integrity_before, "Surviving obstacle took no collision damage.")
+	TEST_ASSERT_EQUAL(get_turf(front), spot, "Vehicle moved into an uncleared obstacle.")
 	vehicle.stop_motion()
 
 /// Confirms the boxier armored truck assembles its full 2x2 footprint, masks sight across solid hull,
@@ -168,7 +258,9 @@
 	TEST_ASSERT(front_left.vehicle, "Armored truck front-left tile did not build a vehicle controller.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.frames), 4, "Armored truck did not assemble all 4 frame tiles.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.walls), 8, "Armored truck did not assemble all 8 expected wall segments.")
-	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 8, "Armored truck did not assemble its engine, gearbox, fuel tank, cabin light and four wheels.")
+	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 15, "Armored truck did not assemble its drivetrain, battery, lighting, cameras and wheels.")
+	front_left.vehicle.set_ignition(TRUE)
+	TEST_ASSERT(front_left.vehicle.start_engine(), "Truck engine failed to start.")
 	TEST_ASSERT(front_left.vehicle.has_motive_power(), "A complete, fueled truck did not have motive power.")
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in front_left.vehicle.frames)
 		TEST_ASSERT(frame.roof, "An armored truck frame did not create its opaque roof image.")
@@ -352,7 +444,9 @@
 			TEST_ASSERT(wall.layer < front_left.roof.layer, "An M113 bulkhead would show through the roof.")
 	TEST_ASSERT_EQUAL(exterior_walls, 14, "M113 did not assemble its complete outer hull.")
 	TEST_ASSERT_EQUAL(interior_walls, 6, "M113 did not assemble its bulkheads and access panels.")
-	TEST_ASSERT_EQUAL(length(vehicle.parts), 9, "M113 did not assemble its powerpack, fuel cell, two lights and four track units.")
+	TEST_ASSERT_EQUAL(length(vehicle.parts), 16, "M113 did not assemble its powerpack, battery, lighting, cameras and tracks.")
+	vehicle.set_ignition(TRUE)
+	TEST_ASSERT(vehicle.start_engine(), "M113 engine failed to start.")
 	TEST_ASSERT(istype(vehicle.gearbox, /obj/structure/ms13_vehicle_part/gearbox/m113), "M113 did not receive its transmission.")
 	TEST_ASSERT(istype(vehicle.fuel_tank, /obj/structure/ms13_vehicle_part/fuel_tank/m113), "M113 did not receive its fuel cell.")
 	TEST_ASSERT(vehicle.gearbox.density && vehicle.fuel_tank.density && vehicle.engine.density, "M113 powerpack or fuel cell could be walked through.")
@@ -484,7 +578,6 @@
 	vehicle.drift_interval = 1
 	vehicle.moving = TRUE
 	vehicle.movement_generation++
-	vehicle.last_throttle_time = world.time
 	var/turf/expected = get_step(get_step(front, facing), right)
 	vehicle.movement_tick(vehicle.movement_generation)
 	TEST_ASSERT_EQUAL(get_turf(front), expected, "A drifting vehicle did not sidestep while driving.")

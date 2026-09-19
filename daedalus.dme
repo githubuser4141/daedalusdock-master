@@ -5419,6 +5419,7 @@
 #include "mojave\code\modules\vehicles_ground\soviet_vehicles.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_ai_awareness.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_parts.dm"
+#include "mojave\code\modules\vehicles_ground\vehicle_power.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_seats.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_underside.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_walls.dm"

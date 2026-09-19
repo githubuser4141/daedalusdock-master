@@ -14,7 +14,6 @@
 
 /datum/ms13_ground_vehicle/m113
 	acceleration_delay = 1.8 SECONDS
-	coast_delay = 2 SECONDS
 	turn_delay = 7
 	max_turn_speed = 1
 	turn_speed_loss = 1
@@ -180,7 +179,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	// Commander sits behind the driver, backed by a partition; troops face each other across the aisle.
 	middle_front_left.add_bulkhead(180, "seat partition")
 	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = add_seat(0, "driver's seat", "driver_tank")
-	driver_seat.is_driver_seat = TRUE
+	driver_seat.configure_driver_seat()
 	middle_front_left.add_seat(0, "commander's seat")
 	middle_back_left.add_seat(-90, "troop seat")
 	middle_front_right.add_seat(90, "troop seat")
@@ -194,6 +193,12 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 
 	middle_back.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
 	spawn_part(/obj/structure/ms13_vehicle_part/interior_light/instrument)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera, 90)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera, -90)
+	back.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera, 180)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right)

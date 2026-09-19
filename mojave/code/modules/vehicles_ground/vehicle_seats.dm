@@ -19,6 +19,84 @@
 	var/is_driver_seat = FALSE
 	var/obj/structure/ms13_vehicle_part/turret/operated_turret
 	var/obj/item/ms13_vehicle_turret_control/turret_control
+	var/control_menu_open = FALSE
+
+/obj/structure/chair/ms13_vehicle_seat/attack_hand(mob/living/user, list/modifiers)
+	if(!is_driver_seat || user.combat_mode)
+		return ..()
+	open_controls(user)
+	return TRUE
+
+/obj/structure/chair/ms13_vehicle_seat/proc/open_controls(mob/living/user)
+	if(control_menu_open || !user?.client || !can_use_controls(user))
+		return
+	control_menu_open = TRUE
+	show_controls(user)
+	control_menu_open = FALSE
+
+/obj/structure/chair/ms13_vehicle_seat/proc/configure_driver_seat()
+	is_driver_seat = TRUE
+	name = "driver's seat and dashboard"
+	desc = "The driver's seat has a full-size control monitor. Click the monitor or seat to open vehicle controls; buckling in opens them automatically."
+	update_appearance(UPDATE_OVERLAYS)
+
+/obj/structure/chair/ms13_vehicle_seat/setDir(new_dir)
+	. = ..()
+	if(is_driver_seat)
+		update_appearance(UPDATE_OVERLAYS)
+
+/obj/structure/chair/ms13_vehicle_seat/update_overlays()
+	. = ..()
+	if(!is_driver_seat)
+		return
+	// Attached appearances remain clickable as the seat, and travel/rotate with it.
+	// Offset the monitor toward the dashboard so it does not cover the seated driver.
+	for(var/state in list("computer", "generic", "generic_key"))
+		var/mutable_appearance/monitor = mutable_appearance('icons/obj/computer.dmi', state, ABOVE_MOB_LAYER)
+		monitor.pixel_x = dir == EAST ? 16 : dir == WEST ? -16 : 0
+		monitor.pixel_y = dir == NORTH ? 16 : dir == SOUTH ? -16 : 0
+		. += monitor
+
+/obj/structure/chair/ms13_vehicle_seat/proc/can_use_controls(mob/living/user)
+	return !QDELETED(src) && parent_frame?.vehicle && !QDELETED(parent_frame.vehicle.pivot) && !QDELETED(user) && !user.incapacitated() && user.Adjacent(src) && IsReachableBy(user) && get_ms13_ground_vehicle_at(user) == parent_frame.vehicle && (!length(buckled_mobs) || user in buckled_mobs)
+
+/obj/structure/chair/ms13_vehicle_seat/proc/show_controls(mob/living/user)
+	while(can_use_controls(user))
+		var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
+		var/list/options = list("Drive", "Engine toggle ([vehicle.engine_running ? "on" : "off"])", "Ignition toggle ([vehicle.ignition ? "on" : "off"])", "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])", "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])", "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])", "Horn", "Exit", "Unbuckle")
+		var/battery_percent = vehicle.battery?.cell ? round(vehicle.battery.cell.percent()) : 0
+		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nForward/reverse controls increase speed or brake. Speed persists until you brake or hit an obstacle.", "Vehicle controls") as null|anything in options
+		if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
+			return
+		switch(options.Find(choice))
+			if(1)
+				vehicle.set_ignition(TRUE)
+				if(vehicle.start_engine(user) && user.buckled != src)
+					user_buckle_mob(user, user)
+				return
+			if(2)
+				if(vehicle.engine_running)
+					vehicle.stop_engine()
+				else
+					vehicle.start_engine(user)
+			if(3)
+				vehicle.set_ignition(!vehicle.ignition)
+			if(4)
+				vehicle.exterior_lights_on = !vehicle.exterior_lights_on
+			if(5)
+				vehicle.interior_lights_on = !vehicle.interior_lights_on
+			if(6)
+				vehicle.cameras_on = !vehicle.cameras_on
+			if(7)
+				if(world.time >= vehicle.next_horn_time && vehicle.use_battery(2))
+					vehicle.next_horn_time = world.time + 1 SECONDS
+					playsound(src, 'sound/items/carhorn.ogg', 80, TRUE)
+			if(8)
+				return
+			if(9)
+				if(user.buckled == src)
+					user_unbuckle_mob(user, user)
+		vehicle.update_electrical()
 
 /obj/structure/chair/ms13_vehicle_seat/Destroy()
 	if(operated_turret?.gunner_seat == src)
@@ -27,6 +105,7 @@
 	QDEL_NULL(turret_control)
 	if(is_driver_seat && parent_frame?.vehicle?.driver)
 		parent_frame.vehicle.driver = null
+		parent_frame.vehicle.update_interior_masks()
 	parent_frame = null
 	return ..()
 
@@ -39,6 +118,8 @@
 	ADD_TRAIT(M, TRAIT_CANNOT_BE_UNBUCKLED, BUCKLED_TRAIT)
 	if(is_driver_seat && parent_frame?.vehicle)
 		parent_frame.vehicle.driver = M
+		M.update_ms13_vehicle_interior_mask()
+		INVOKE_ASYNC(src, PROC_REF(open_controls), M)
 	if(operated_turret)
 		turret_control = new(operated_turret)
 		if(!M.put_in_hands(turret_control, del_on_fail = TRUE))
@@ -50,6 +131,7 @@
 	REMOVE_TRAIT(M, TRAIT_CANNOT_BE_UNBUCKLED, BUCKLED_TRAIT)
 	if(is_driver_seat && parent_frame?.vehicle?.driver == M)
 		parent_frame.vehicle.driver = null
+		M.update_ms13_vehicle_interior_mask()
 	QDEL_NULL(turret_control)
 
 /obj/structure/chair/ms13_vehicle_seat/attackby(obj/item/used_item, mob/user, params)

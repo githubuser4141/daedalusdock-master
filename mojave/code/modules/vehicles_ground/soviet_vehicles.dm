@@ -47,6 +47,14 @@
 	if(!build_hull())
 		return
 	furnish()
+	// Paired headlights and rear work lights, shared by every Civ96 hull.
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
+		if(frame.right_offset != 0 && frame.right_offset != length(tile_rows[1]) - 1)
+			continue
+		if(frame.forward_offset == 0)
+			frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+		else if(frame.forward_offset == 1 - length(tile_rows))
+			frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
 	vehicle.update_interior_lighting()
 
 /// Lays out every tile and its outer hull. FALSE if there isn't room.
@@ -140,7 +148,7 @@
 
 /obj/structure/ms13_vehicle_frame/civ96/proc/add_driver_seat(tile)
 	var/obj/structure/chair/ms13_vehicle_seat/seat = add_seat_at(tile, 0, "driver's seat", "driver_tank")
-	seat.is_driver_seat = TRUE
+	seat.configure_driver_seat()
 	add_part(tile, /obj/structure/ms13_vehicle_part/interior_light/instrument)
 	return seat
 
@@ -169,7 +177,6 @@
 
 /datum/ms13_ground_vehicle/btr80
 	acceleration_delay = 1.2 SECONDS
-	coast_delay = 1.8 SECONDS
 	turn_delay = 5
 	max_turn_speed = 2
 	ram_damage_base = 7
@@ -255,7 +262,6 @@
 
 /datum/ms13_ground_vehicle/mtlb
 	acceleration_delay = 1.6 SECONDS
-	coast_delay = 2 SECONDS
 	turn_delay = 6
 	max_turn_speed = 1
 	ram_damage_base = 8
@@ -340,7 +346,6 @@
 
 /datum/ms13_ground_vehicle/bmd2
 	acceleration_delay = 1.1 SECONDS
-	coast_delay = 1.6 SECONDS
 	turn_delay = 5
 	max_turn_speed = 2
 	ram_damage_base = 6
@@ -421,7 +426,6 @@
 
 /datum/ms13_ground_vehicle/t34
 	acceleration_delay = 2 SECONDS
-	coast_delay = 2.2 SECONDS
 	turn_delay = 8
 	max_turn_speed = 1
 	ram_damage_base = 12
@@ -514,7 +518,6 @@
 
 /datum/ms13_ground_vehicle/is3
 	acceleration_delay = 2.6 SECONDS
-	coast_delay = 2.4 SECONDS
 	turn_delay = 10
 	max_turn_speed = 1
 	ram_damage_base = 16

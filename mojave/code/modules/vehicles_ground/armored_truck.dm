@@ -10,7 +10,6 @@
  */
 /datum/ms13_ground_vehicle/armored_truck
 	acceleration_delay = 1.2 SECONDS
-	coast_delay = 1.6 SECONDS
 	turn_delay = 5
 	max_turn_speed = 1
 	turn_speed_loss = 1
@@ -84,7 +83,7 @@
 
 	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = new(get_turf(src))
 	driver_seat.parent_frame = src
-	driver_seat.is_driver_seat = TRUE
+	driver_seat.configure_driver_seat()
 	driver_seat.icon_state = "driver_car"
 	driver_seat.setDir(dir)
 
@@ -98,6 +97,12 @@
 	back_right.spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/large)
 	// The cargo box is sealed hull, so it needs its own light.
 	back_right.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera, 90)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera, -90)
+	back_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera, 180)
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 	back_left.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)

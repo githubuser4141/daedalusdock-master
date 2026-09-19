@@ -8,7 +8,6 @@
  */
 /datum/ms13_ground_vehicle/jeep
 	acceleration_delay = 0.8 SECONDS
-	coast_delay = 1 SECONDS
 	turn_delay = 3
 	max_turn_speed = 2
 	turn_speed_loss = 1
@@ -56,7 +55,7 @@
 
 	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = new(front_turf)
 	driver_seat.parent_frame = src
-	driver_seat.is_driver_seat = TRUE
+	driver_seat.configure_driver_seat()
 	driver_seat.icon_state = "driver_car"
 	driver_seat.setDir(dir)
 
@@ -68,6 +67,7 @@
 	spawn_part(/obj/structure/ms13_vehicle_part/engine)
 	spawn_part(/obj/structure/ms13_vehicle_part/gearbox)
 	back.spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 270)
 	back.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
