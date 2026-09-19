@@ -22,7 +22,22 @@ making already-dead NPCs eligible. Carriers nest at the first friendly resin til
 restrain/stabilize hosts during transport. Each host gets its own nest, even on a shared tile.
 Successful facehugger implantation drops the spent hugger and starts a 90-second incubation;
 a resin nest accelerates the same progress to 25 seconds. Completed hosts cannot be reused.
+Simple-animal/basic NPC hosts gib on chestburst; human hosts retain the chest-damage behavior.
 Incubation currently requires a surviving network; destroyed cores stop its processing.
+
+Recovery now persists until 80% health after a unit crosses its retreat threshold (45% normally,
+40% for infectors). Reaching friendly terrain no longer immediately ends recovery. Combat can still
+interrupt ordinary units; infectors share the same recovery logic.
+Crossing-capable themes also traverse Mojave tables and guard rails, including hauled hosts.
+Door forcing pauses movement for a two-second attempt. After eight seconds of failure, the unit
+requests an adjacent wall bypass from a nearby heavy and backs off retrying that door for 30 seconds.
+A completed bypass clears the request and cancels other units' active pry attempts. Vault and
+Mojave mechanical airlocks remain excluded from forcing.
+
+Performance: same-tile target scans are reused for one second, failed idle routes back off for five
+seconds rather than continually replacing pathfinding loops, and units already healing on terrain
+do not search the whole territory for a recovery destination. These are bounded local reductions,
+not a measured whole-server speedup; the basic-mob target-search subsystem is separate from hive AI.
 
 Each network has one destructible core and a shared resource pool. Claimed floor growth produces
 resources; expansion, walls, traps, turrets, and unit generators spend them. Units regenerate on
@@ -85,8 +100,55 @@ gaps.
 
 The frontier list means normal expansion does not scan the map. `territory_limit = 0` is genuinely
 unbounded, so admins should use it deliberately. This prototype only spreads across reachable open,
-destructible turfs; it does not yet consume closed walls, cross z-levels, assimilate machines,
+destructible turfs; terrain growth itself does not yet consume closed walls, cross z-levels, assimilate machines,
 choose strategic targets, or persist between rounds.
+
+## Vertical movement and ambush units
+
+`terrain_hiveminds_vertical.dm` adds bounded inter-floor routing for pursuit, hauling and returning
+to the core. Units use nearby unlocked ladders (24 tiles), stairs (24 tiles), and floor openings
+(7 tiles), preserving their grabbed host during vertical movement. They notice exposed prey below
+nearby holes. Evolved climbers also notice prey above open ceilings and climb roof edges; ordinary
+units cannot climb arbitrary walls. Evolved ambushers stay dormant until prey enters four tiles or
+they are injured, and remain awake for at least 30 seconds after contact.
+
+This is local routing, not full-map 3D pathfinding: each routing attempt checks at most three local
+entrances with the existing horizontal pathfinder. Solid ceilings, locked ladders, and blocked
+landings still prevent travel. Remote routes that require travelling away from the destination's
+floor first are not supported. Roof/floor-hole movement needs linked map z-levels.
+
+## Necromorph Marker (separate content pack)
+
+All Marker-specific code is in `necromorph_marker.dm`. Spawn it through the hive admin menu's
+**Necromorph Marker (power/public radio)** entry or place
+`/obj/structure/ms13_hivemind/core/marker` in the map editor. It starts a necromorph network.
+Existing cult pylon artwork is a placeholder, not a newly imported Marker asset.
+
+- Its 30-tile, same-floor influence gives conscious player humans private, harmless phantom attacks,
+  sometimes visually replacing another human. No actual damage or forged player attack logs.
+- Every 10 seconds it examines up to 32 corpses using a rotating scan and can convert one suitable
+  unclaimed corpse away from biomass. Rebirth requires resources, unit capacity and a clear spawn tile.
+- A cable node beneath the Marker receives 250 kW. Destroying the Marker removes its power output
+  and public-channel relay. No cell or APC bypass is involved.
+- The relay carries public radio globally. Unsuppressed, it occasionally adds unsettling messages
+  under a living human's name, with a 45-second cooldown. Server logs identify the Marker as source.
+- It is **unsuppressed by default**. Place a
+  `/obj/machinery/power/ms13_marker_suppressor` within four tiles, connect its cable node and click
+  to enable it. It needs 50 kW of spare grid power. Its existing field-generator sprite lights up
+  while containment is live; examine either structure for status.
+- Suppression pauses growth, resource accumulation, all new unit births/corpse conversions,
+  hallucination pulses and radio impersonation. Real public radio and the 250 kW feed continue.
+  Existing mobs, turrets and traps remain dangerous; containment does not erase an established hive.
+  Existing short-lived hallucinations finish normally. Power loss, destruction or disabling the
+  projector restores the danger on the next processing tick (no permanent suppression latch).
+- After **five continuous minutes** of containment, losing the last working suppression field
+  releases one EMP (heavy radius 15, light radius 30, using native EMP effects). Every failure
+  clears the charge, including short interruptions: cycling containment cannot bank time or spam
+  pulses. Another pulse requires another uninterrupted five minutes. Examine shows charging/armed
+  status; redundant projectors prevent a failure while any working field remains.
+
+This intentionally reuses native cable accounting rather than duplicating supermatter's gas/reaction
+simulation. Output, influence radius, suppression draw/radius and messages are prototype balance.
 
 ## Imported assets
 

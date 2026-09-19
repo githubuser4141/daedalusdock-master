@@ -1,4 +1,12 @@
-// One small test covers the four skins plus the shared controller's spawn and expansion path.
+// Shared movement/conversion regressions plus the hive themes and separate Marker content.
+
+/obj/effect/ms13_marker_emp_test_probe
+	var/pulses = 0
+	var/last_severity
+
+/obj/effect/ms13_marker_emp_test_probe/emp_act(severity)
+	pulses++
+	last_severity = severity
 
 /datum/unit_test/ms13_terrain_hiveminds
 	name = "MOJAVE SUN: Terrain Hivemind Framework"
@@ -61,7 +69,7 @@
 		TEST_ASSERT(length(network.special_types) == 5, "[network.name] must expose walls, traps, turrets, unit generators, and corpse converters.")
 		qdel(network)
 
-	TEST_ASSERT_EQUAL(concrete_variants, 5, "The prototype should expose blob, flock, necromorph, Eris, and xenomorph variants.")
+	TEST_ASSERT_EQUAL(concrete_variants, 6, "The prototype should expose the five hive themes plus the separate necromorph Marker.")
 
 	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
 	TEST_ASSERT(isopenturf(origin) && !origin.density, "The unit-test area has no open turf for a live hivemind check.")
@@ -90,6 +98,25 @@
 	var/turf/claimed_turf = get_turf(claimed_growth)
 	var/obj/structure/ms13_hivemind/special/wall/test_wall = new(claimed_turf, live_network)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/test_unit = new(claimed_turf, live_network)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/recovering_converter = new(claimed_turf, live_network)
+	for(var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/recovering_unit in list(test_unit, recovering_converter))
+		recovering_unit.health = recovering_unit.maxHealth * 0.3
+		TEST_ASSERT(recovering_unit.handle_terrain_recovery(TRUE), "A wounded hive unit does not begin recovery on friendly terrain.")
+		recovering_unit.health = recovering_unit.maxHealth * 0.6
+		TEST_ASSERT(recovering_unit.handle_terrain_recovery(TRUE), "A recovering hive unit leaves before healing to its exit threshold.")
+		recovering_unit.health = recovering_unit.maxHealth * 0.8
+		TEST_ASSERT(!recovering_unit.handle_terrain_recovery(TRUE) && !recovering_unit.terrain_recovering, "A healed hive unit does not resume activity.")
+		recovering_unit.health = recovering_unit.maxHealth * 0.6
+		TEST_ASSERT(!recovering_unit.handle_terrain_recovery(TRUE), "A moderately injured, non-recovering unit retreats too early.")
+		recovering_unit.health = recovering_unit.maxHealth
+	qdel(recovering_converter)
+	var/list/initial_targets = test_unit.ListTargets()
+	var/initial_target_count = length(initial_targets)
+	initial_targets.Cut()
+	TEST_ASSERT_EQUAL(length(test_unit.ListTargets()), initial_target_count, "A caller can corrupt the cached target list.")
+	COOLDOWN_START(test_unit, roam_retry_cooldown, 5 SECONDS)
+	TEST_ASSERT(test_unit.handle_roaming() && !test_unit.roam_target, "An idle unit starts another route during its failed-route backoff.")
+	COOLDOWN_RESET(test_unit, roam_retry_cooldown)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/test_scout = new(claimed_turf, live_network)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/ranged/test_ranged = new(claimed_turf, live_network)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/test_heavy = new(claimed_turf, live_network)
@@ -108,6 +135,27 @@
 	TEST_ASSERT(test_worker.off_terrain_damage_multiplier > 0 && test_worker.off_terrain_damage_multiplier < 1, "Corpse workers do not have reduced off-terrain decay.")
 	TEST_ASSERT(test_worker.corpse_converter, "The dedicated converter unit did not initialize as a corpse worker.")
 	TEST_ASSERT(!test_worker.force_opens_doors && test_unit.force_opens_doors, "Door forcing is not limited to combat-capable hive units.")
+	var/obj/machinery/door/unpowered/ms13/metal/pry_door = new(get_step(claimed_turf, NORTH))
+	pry_door.locked = TRUE
+	TEST_ASSERT(test_unit.begin_door_pry(pry_door), "A hive unit cannot begin prying a locked Mojave door.")
+	test_unit.door_pry_started = world.time - 3 SECONDS
+	TEST_ASSERT(test_unit.handle_door_pry() && !pry_door.density && !test_unit.prying_door_ref, "Prying does not open a locked Mojave door and release the unit.")
+	qdel(pry_door)
+	var/obj/machinery/door/airlock/blocked_door = new(get_step(claimed_turf, NORTH))
+	blocked_door.locked = TRUE
+	var/turf/bypass_site = get_step(blocked_door, EAST)
+	var/old_bypass_type = bypass_site.type
+	bypass_site = bypass_site.ChangeTurf(/turf/closed/wall)
+	TEST_ASSERT(test_unit.begin_door_pry(blocked_door), "A hive unit cannot attempt a blocked airlock.")
+	test_unit.door_pry_started = world.time - 9 SECONDS
+	TEST_ASSERT(!test_unit.handle_door_pry(), "A failed pry never times out.")
+	TEST_ASSERT(live_network.door_breach_requests[WEAKREF(blocked_door)], "A failed pry does not report a bypass to wall-breakers.")
+	test_heavy.forceMove(get_step(bypass_site, SOUTH))
+	TEST_ASSERT(test_heavy.handle_door_breach_requests(), "A nearby heavy ignores a reported blocked door.")
+	TEST_ASSERT(!get_step(blocked_door, EAST).density && !length(live_network.door_breach_requests), "Opening a wall bypass does not clear the door request.")
+	get_step(blocked_door, EAST).ChangeTurf(old_bypass_type)
+	test_heavy.forceMove(claimed_turf)
+	qdel(blocked_door)
 	var/mob/living/simple_animal/chicken/test_corpse = new(claimed_turf)
 	test_corpse.set_stat(DEAD)
 	test_unit.find_local_corpses()
@@ -234,6 +282,8 @@
 			xeno_turf = candidate_turf
 			break
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler/xeno_carrier = new(xeno_turf, xeno_network)
+	// Path searches can yield: do not let the live AI deliver/nest this host between movement assertions.
+	xeno_carrier.toggle_ai(AI_OFF)
 	var/mob/living/simple_animal/chicken/living_host = new(xeno_turf)
 	living_host.Paralyze(10 MINUTES, TRUE)
 	TEST_ASSERT(xeno_network.is_convertible_corpse(living_host), "A disabled living host is not valid xenomorph feedstock.")
@@ -256,6 +306,14 @@
 	TEST_ASSERT(xeno_carrier.is_grabbing(living_host), "Crossing a low wall drops the captive host.")
 	TEST_ASSERT(xeno_carrier.Move(xeno_turf, SOUTH), "A carrier cannot return from a Mojave low wall.")
 	qdel(mojave_low_wall)
+	var/obj/structure/table/ms13/wood/test_table = new(get_step(xeno_turf, NORTH))
+	var/obj/structure/railing/ms13/solo/test_rail = new(get_turf(test_table))
+	test_rail.setDir(SOUTH)
+	TEST_ASSERT(test_table.CanAStarPass(NORTH, carrier_pass) && test_rail.CanAStarPass(SOUTH, carrier_pass), "Xenomorph pathfinding cannot cross tables and guard rails.")
+	TEST_ASSERT(xeno_carrier.Move(get_turf(test_table), NORTH) && xeno_carrier.Move(xeno_turf, SOUTH), "A xenomorph cannot enter and leave a guarded table.")
+	TEST_ASSERT(xeno_carrier.is_grabbing(living_host), "Crossing a guarded table loses the host.")
+	qdel(test_table)
+	qdel(test_rail)
 	qdel(carrier_pass)
 	qdel(host_pass)
 	TEST_ASSERT(xeno_carrier.handle_corpse_work(), "The xenomorph carrier did not deliver its living host to a nest.")
@@ -264,11 +322,9 @@
 	TEST_ASSERT_EQUAL(xeno_network.get_corpse_claim(living_host), xeno_nest, "The delivered living host was not reserved by its resin nest.")
 	var/old_xeno_unit_count = length(xeno_network.units)
 	xeno_nest.process(xeno_network.structure_conversion_time)
-	TEST_ASSERT(!QDELETED(living_host), "A completed xenomorph incubation deleted its host instead of leaving a wounded body.")
-	TEST_ASSERT_EQUAL(living_host.stat, DEAD, "A completed xenomorph incubation did not fatally wound its host; progress was [xeno_network.corpse_conversion_progress[WEAKREF(living_host)] || 0] and claimant was [xeno_network.get_corpse_claim(living_host)].")
+	TEST_ASSERT(QDELETED(living_host), "A simple NPC host was not gibbed on chestburst.")
 	TEST_ASSERT(!xeno_network.is_convertible_corpse(living_host), "A xenomorph nest can incubate the same dead host twice.")
 	TEST_ASSERT_EQUAL(length(xeno_network.units), old_xeno_unit_count + 1, "A completed living-host incubation did not birth one xenomorph.")
-	qdel(living_host)
 	qdel(xeno_low_wall)
 	var/mob/living/simple_animal/chicken/capture_host = new(xeno_turf)
 	capture_host.health = 5
@@ -283,11 +339,17 @@
 	var/datum/ms13_hive_incubation/incubation = new(implanted_host, xeno_network)
 	TEST_ASSERT(xeno_network.is_convertible_corpse(implanted_host), "An implanted, awake host is ignored by the hive.")
 	incubation.process(90)
-	TEST_ASSERT(implanted_host.ms13_hive_consumed && implanted_host.stat == DEAD, "Facehugger incubation never completes outside a nest.")
+	TEST_ASSERT(QDELETED(implanted_host), "Facehugger incubation does not gib its simple NPC host outside a nest.")
 	TEST_ASSERT(!xeno_network.is_convertible_corpse(implanted_host), "A completed facehugger host can be reused.")
-	qdel(implanted_host)
+	// The corner fixture has few spawn tiles; previous births must not occupy all of them.
+	for(var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/previous_birth as anything in xeno_network.units.Copy())
+		if(previous_birth != xeno_carrier)
+			qdel(previous_birth)
+	TEST_ASSERT(xeno_network.get_unit_spawn_turf(get_turf(xeno_network.core)), "The core-spawn test has no free spawn tile.")
 	var/units_before_core_spawn = length(xeno_network.units)
 	xeno_network.resources = xeno_network.unit_cost
+	// Earlier movement checks yield; the live subsystem may already have ticked the core.
+	COOLDOWN_RESET(xeno_network, core_spawn_cooldown)
 	xeno_network.process(0)
 	TEST_ASSERT_EQUAL(length(xeno_network.units), units_before_core_spawn + 1, "A funded core cannot spawn units without a separate generator.")
 	TEST_ASSERT_EQUAL(xeno_network.resources, 0, "Core spawning did not spend its resource cost.")
@@ -299,3 +361,98 @@
 	TEST_ASSERT_EQUAL(xeno_carrier.health, old_carrier_health, "A xenomorph loses health after its core is destroyed.")
 	QDEL_LIST(xeno_units_to_clean)
 	QDEL_LIST(xeno_growths_to_clean)
+
+	// Marker suppression must gate every birth path without switching off its generator/relay.
+	var/datum/ms13_terrain_hivemind/necromorph/marker/marker_network = new(origin, 20)
+	var/obj/structure/ms13_hivemind/core/marker/marker = marker_network.core
+	var/obj/effect/ms13_marker_emp_test_probe/emp_probe = new(origin)
+	TEST_ASSERT(marker && marker.power_feed && marker.radio_relay, "The Marker did not create its power and public-radio components.")
+	TEST_ASSERT(!marker.is_suppressed(), "The Marker starts suppressed without a powered projector.")
+	TEST_ASSERT(FREQ_COMMON in marker.radio_relay.freq_listening, "The Marker does not relay the public channel.")
+	var/obj/machinery/power/ms13_marker_suppressor/projector = new(get_step(origin, WEST))
+	var/datum/powernet/marker_grid = new
+	marker_grid.add_machine(projector)
+	marker_grid.add_machine(marker.power_feed)
+	projector.enabled = TRUE
+	projector.process(1)
+	TEST_ASSERT(!marker.is_suppressed(), "An unpowered projector suppresses the Marker.")
+	marker_grid.avail = 100000
+	projector.process(1)
+	TEST_ASSERT_EQUAL(marker_grid.load, 50000, "Containment did not charge the grid 50 kW.")
+	TEST_ASSERT(marker.is_suppressed(), "A powered nearby projector does not suppress the Marker.")
+	marker.power_feed.process(1)
+	TEST_ASSERT_EQUAL(marker_grid.newavail, 250000, "Suppression switched off Marker power production.")
+	marker_network.resources = 100
+	var/initial_growth_count = length(marker_network.territory)
+	marker_network.process(30)
+	TEST_ASSERT_EQUAL(length(marker_network.units), 0, "A suppressed core generated hostiles.")
+	TEST_ASSERT_EQUAL(length(marker_network.territory), initial_growth_count, "A suppressed Marker still spreads.")
+	TEST_ASSERT(!marker_network.spend(1), "Suppressed remote spawners can still spend resources.")
+	TEST_ASSERT(!marker_network.spawn_unit(/mob/living/simple_animal/hostile/ms13/terrain_hivemind, get_step(origin, EAST)), "Suppression does not gate direct births.")
+	TEST_ASSERT(!marker.radio_relay.spoof_public_message(), "A suppressed Marker still spoofs radio speech.")
+	var/turf/remote_turf = get_step(get_step(get_step(origin, EAST), EAST), EAST)
+	var/mob/living/simple_animal/chicken/remote_corpse = new(remote_turf)
+	remote_corpse.death()
+	TEST_ASSERT(!marker_network.is_territory(remote_turf), "The remote-rebirth fixture is on biomass.")
+	TEST_ASSERT(!marker_network.advance_corpse_conversion(remote_corpse, marker, 1, 1), "Suppression allows corpse conversion.")
+	marker_grid.avail = 0
+	projector.process(1)
+	TEST_ASSERT(!marker.is_suppressed(), "Containment persists after power failure.")
+	TEST_ASSERT_EQUAL(emp_probe.pulses, 0, "Brief containment generated an EMP.")
+	TEST_ASSERT(isnull(marker.containment_started_at), "A short failure retained accumulated containment time.")
+	for(var/cycle in 1 to 3)
+		marker_grid.avail = 100000
+		marker_grid.load = 0
+		projector.process(1)
+		TEST_ASSERT_EQUAL(marker.containment_started_at, world.time, "Recontainment does not start a fresh arming period.")
+		marker_grid.avail = 0
+		projector.process(1)
+	TEST_ASSERT_EQUAL(emp_probe.pulses, 0, "Rapid containment cycling generated an EMP.")
+	marker_grid.avail = 100000
+	marker_grid.load = 0
+	projector.process(1)
+	marker.containment_started_at = world.time - marker.containment_emp_arm_time
+	marker_grid.avail = 0
+	projector.process(1)
+	TEST_ASSERT_EQUAL(emp_probe.pulses, 1, "Sustained containment failure did not emit exactly one EMP.")
+	TEST_ASSERT_EQUAL(emp_probe.last_severity, EMP_HEAVY, "The central containment EMP is not heavy strength.")
+	marker.is_suppressed()
+	marker.is_suppressed()
+	TEST_ASSERT_EQUAL(emp_probe.pulses, 1, "Repeated containment checks retrigger the same EMP.")
+	marker_grid.avail = 100000
+	marker_grid.load = 0
+	projector.process(1)
+	marker_grid.avail = 0
+	projector.process(1)
+	TEST_ASSERT_EQUAL(emp_probe.pulses, 1, "An EMP can be retriggered without another full arming period.")
+	qdel(emp_probe)
+	COOLDOWN_RESET(marker, influence_cooldown)
+	marker.corpse_scan_cursor = GLOB.dead_mob_list.Find(remote_corpse)
+	marker.process(1)
+	TEST_ASSERT(QDELETED(remote_corpse) && length(marker_network.units) == 1, "An uncontained Marker did not remotely resurrect a corpse away from biomass.")
+	TEST_ASSERT(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/climber in marker_network.evolved_mob_types, "Evolution does not unlock the roof climber.")
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/ambusher = new(remote_turf, marker_network)
+	TEST_ASSERT(ambusher.hibernating && ambusher.can_scale_roofs, "The ambusher does not start dormant with climbing capability.")
+	ambusher.toggle_ai(AI_OFF)
+	var/mob/living/simple_animal/chicken/travel_host = new(remote_turf)
+	travel_host.Paralyze(10 MINUTES, TRUE)
+	TEST_ASSERT(ambusher.try_make_grab(travel_host), "The vertical hauling fixture could not grab its host.")
+	ambusher.corpse_target_ref = WEAKREF(travel_host)
+	var/turf/landing = get_step(origin, NORTH)
+	ambusher.forceMoveWithGroup(landing, ZMOVING_VERTICAL)
+	TEST_ASSERT(get_turf(travel_host) == landing && ambusher.is_grabbing(travel_host), "Group relocation loses the dragged host while moving its carrier first.")
+	qdel(travel_host)
+	TEST_ASSERT_EQUAL(ms13_hive_distance(origin, remote_turf), 3, "Same-floor hive distances changed.")
+	TEST_ASSERT_EQUAL(ms13_hive_distance(origin, null), INFINITY, "Missing targets count as adjacent.")
+	var/turf/other_floor = locate(origin.x, origin.y, origin.z == 1 ? 2 : 1)
+	if(other_floor)
+		TEST_ASSERT_EQUAL(ms13_hive_distance(origin, other_floor), INFINITY, "Targets on other floors count as adjacent.")
+	var/list/marker_units = marker_network.units.Copy()
+	var/list/marker_growths = marker_network.territory.Copy()
+	var/obj/machinery/power/ms13_marker_feed/old_feed = marker.power_feed
+	var/obj/machinery/telecomms/allinone/ms13_marker_relay/old_relay = marker.radio_relay
+	qdel(marker_network)
+	TEST_ASSERT(QDELETED(old_feed) && QDELETED(old_relay), "Destroying a Marker leaves live power/radio components.")
+	QDEL_LIST(marker_units)
+	QDEL_LIST(marker_growths)
+	qdel(projector)

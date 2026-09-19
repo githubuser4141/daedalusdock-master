@@ -81,8 +81,13 @@
 
 /// Use existing pathfinding, including its repath throttle, for combat, roaming and hauling.
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Goto(atom/destination, delay, minimum_distance)
-	if(prevent_goto_movement || !destination || incapacitated())
+	if(prying_door_ref || prevent_goto_movement || !destination || incapacitated())
 		return FALSE
+	var/turf/destination_turf = get_turf(destination)
+	if(!destination_turf)
+		return FALSE
+	if(destination_turf.z != z)
+		return hive_navigate_vertical(destination)
 	if(get_dist(src, destination) <= minimum_distance)
 		SSmove_manager.stop_looping(src)
 		return TRUE
@@ -94,12 +99,27 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	COOLDOWN_DECLARE(hive_breach_cooldown)
+	var/datum/weakref/prying_door_ref
+	var/door_pry_started = 0
+	var/datum/weakref/failed_door_ref
+	COOLDOWN_DECLARE(door_retry_cooldown)
+
+/datum/ms13_terrain_hivemind
+	/// Door weakref -> direction of the adjacent wall requested as a bypass.
+	var/list/door_breach_requests = list()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_path_step(datum/move_loop/has_target/jps/loop, result)
 	SIGNAL_HANDLER
-	if(result != MOVELOOP_FAILURE || loop.is_pathing || !network?.active || incapacitated() || !COOLDOWN_FINISHED(src, hive_breach_cooldown))
+	if(result != MOVELOOP_FAILURE || !network?.active || incapacitated() || prying_door_ref)
 		return
-	if(get_dist(src, loop.target) <= loop.minimum_distance)
+	if(ms13_hive_distance(src, loop.target) <= loop.minimum_distance)
+		return
+	// A door on a valid route is not a crowd: stop and pry before yielding/repathing.
+	var/turf/blocked_step = length(loop.movement_path) ? loop.movement_path[1] : get_step_towards(src, loop.target)
+	for(var/obj/machinery/door/door in blocked_step)
+		if(begin_door_pry(door))
+			return
+	if(loop.is_pathing || !COOLDOWN_FINISHED(src, hive_breach_cooldown))
 		return
 	COOLDOWN_START(src, hive_breach_cooldown, 2 SECONDS)
 	// Only breach when the pathfinder cannot use an existing entrance.
@@ -109,9 +129,11 @@
 		return
 	if(!target && !corpse_target_ref && (length(network.territory) >= 12 || length(network.frontier)))
 		for(var/obj/machinery/door/door in orange(1, src))
-			if(door.density && try_force_open_door(door))
+			if(begin_door_pry(door))
 				return
 		roam_target = null
+		COOLDOWN_START(src, roam_retry_cooldown, 5 SECONDS)
+		SSmove_manager.stop_looping(src)
 		return
 	var/turf/next_step = get_step_towards(src, loop.target)
 	if(next_step && Move(next_step, get_dir(src, next_step)))
@@ -136,17 +158,36 @@
 			return TRUE
 	return FALSE
 
-/obj/structure/table/ms13/low_wall/CanAllowThrough(atom/movable/mover, border_dir)
+/obj/structure/table/ms13/CanAllowThrough(atom/movable/mover, border_dir)
 	return ms13_hive_crosses_low_wall(mover) || ..()
 
-/obj/structure/table/ms13/low_wall/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+/obj/structure/table/ms13/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	return ms13_hive_crosses_low_wall(pass_info.caller_ref?.resolve()) || ..()
+
+/obj/structure/railing/ms13/CanAllowThrough(atom/movable/mover, border_dir)
+	return ms13_hive_crosses_low_wall(mover) || ..()
+
+/obj/structure/railing/ms13/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	return ms13_hive_crosses_low_wall(pass_info.caller_ref?.resolve()) || ..()
+
+/obj/structure/railing/ms13/on_exit(datum/source, atom/movable/leaving, direction)
+	if(ms13_hive_crosses_low_wall(leaving))
+		return
+	return ..()
 
 /obj/structure/low_wall/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	return ms13_hive_crosses_low_wall(pass_info.caller_ref?.resolve()) || ..()
 
 /obj/structure/ms13_hivemind/special/wall/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
 	return is_hivemind_wall_mover(pass_info.caller_ref?.resolve()) || ..()
+
+/obj/machinery/door/unpowered/ms13/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	if(!density)
+		return TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = pass_info.caller_ref?.resolve()
+	if(istype(unit) && unit.force_opens_doors && unit.network?.active)
+		return !unit.network.door_breach_requests[WEAKREF(src)] && (unit.failed_door_ref?.resolve() != src || COOLDOWN_FINISHED(unit, door_retry_cooldown))
+	return ..()
 
 /datum/ms13_terrain_hivemind
 	/// A corpse delivered to a core or converter permanently expands the network's storage.
@@ -401,7 +442,7 @@
 	if(AIStatus == AI_OFF || !network?.active)
 		return FALSE
 	// Once committed, keep still long enough to make progress unless survival is genuinely urgent.
-	if(health > maxHealth * 0.25 && has_adjacent_conversion_target())
+	if(!terrain_recovering && health > maxHealth * 0.25 && has_adjacent_conversion_target())
 		clear_roam_target()
 		return TRUE
 	if(handle_converter_recovery())
@@ -410,7 +451,7 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/handle_corpse_work()
 	var/mob/living/corpse = corpse_target_ref?.resolve()
-	if(corpse && get_dist(src, corpse) <= 1 && LAZYLEN(corpse.grabbed_by))
+	if(corpse && ms13_hive_distance(src, corpse) <= 1 && LAZYLEN(corpse.grabbed_by))
 		clear_corpse_task()
 		return FALSE
 	return ..()
@@ -431,22 +472,13 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/proc/has_adjacent_conversion_target()
 	var/mob/living/corpse = corpse_target_ref?.resolve()
-	if(!network?.is_convertible_corpse(corpse) || get_dist(src, corpse) > 1 || LAZYLEN(corpse.grabbed_by))
+	if(!network?.is_convertible_corpse(corpse) || ms13_hive_distance(src, corpse) > 1 || LAZYLEN(corpse.grabbed_by))
 		return FALSE
 	var/datum/current_claim = network.get_corpse_claim(corpse)
 	return !current_claim || current_claim == src
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/proc/handle_converter_recovery()
-	if(network.is_territory(get_turf(src)) || health > maxHealth * terrain_recovery_health)
-		return FALSE
-	var/obj/structure/ms13_hivemind/terrain/growth = get_closest_atom(/obj/structure/ms13_hivemind/terrain, network.territory, src)
-	if(!growth || get_dist(src, growth) > terrain_recovery_range)
-		return FALSE
-	LoseTarget()
-	clear_corpse_task()
-	clear_roam_target()
-	Goto(growth, move_to_delay, 0)
-	return TRUE
+	return handle_terrain_recovery(ignore_dependency = TRUE)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide
 	unit_role = "suicide"
@@ -466,7 +498,7 @@
 	var/atom/victim = attacked_target
 	if(!victim)
 		victim = target
-	if(!victim || get_dist(src, victim) > 1)
+	if(!victim || ms13_hive_distance(src, victim) > 1)
 		return ..()
 	var/turf/origin = get_turf(src)
 	var/attack_direction = get_dir(src, victim)
@@ -511,7 +543,7 @@
 		var/turf/next_turf = get_step(target_from, direction)
 		if(next_turf?.Adjacent(target_from))
 			for(var/obj/machinery/door/door in next_turf)
-				if(door.density && door.Adjacent(target_from) && try_force_open_door(door))
+				if(begin_door_pry(door))
 					return
 	if(CanSmashTurfs(destination))
 		destination.attack_animal(src)
@@ -524,7 +556,7 @@
 			return
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/try_force_open_door(obj/machinery/door/door)
-	if(!force_opens_doors || !door?.density || istype(door, /obj/machinery/door/airlock/ms13))
+	if(!force_opens_doors || !door?.density || !Adjacent(door) || istype(door, /obj/machinery/door/airlock/ms13))
 		return FALSE
 	var/opened
 	if(istype(door, /obj/machinery/door/airlock))
@@ -535,3 +567,77 @@
 	if(opened)
 		visible_message(span_warning("[src] forces [door] open!"))
 	return opened
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/begin_door_pry(obj/machinery/door/door)
+	if(!force_opens_doors || !door?.density || !Adjacent(door) || istype(door, /obj/machinery/door/airlock/ms13))
+		return FALSE
+	if(door == failed_door_ref?.resolve() && !COOLDOWN_FINISHED(src, door_retry_cooldown))
+		return FALSE
+	if(network.door_breach_requests[WEAKREF(door)])
+		return FALSE
+	prying_door_ref = WEAKREF(door)
+	door_pry_started = world.time
+	in_melee = FALSE
+	SSmove_manager.stop_looping(src)
+	visible_message(span_warning("[src] braces against [door] and starts forcing it open!"))
+	return TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_door_pry()
+	var/obj/machinery/door/door = prying_door_ref?.resolve()
+	if(!door || !door.density || !Adjacent(door) || network.door_breach_requests[prying_door_ref])
+		prying_door_ref = null
+		return FALSE
+	if(world.time < door_pry_started + 2 SECONDS)
+		return TRUE
+	if(try_force_open_door(door))
+		prying_door_ref = null
+		return TRUE
+	if(world.time < door_pry_started + 8 SECONDS)
+		return TRUE
+	// ponytail: one adjacent wall tile per request; multi-thick walls need a later breach.
+	failed_door_ref = prying_door_ref
+	COOLDOWN_START(src, door_retry_cooldown, 30 SECONDS)
+	var/approach_direction = get_dir(src, door)
+	for(var/side in list(turn(approach_direction, 90), turn(approach_direction, -90)))
+		var/turf/wall = get_step(door, side)
+		if(iswallturf(wall) && !(wall.resistance_flags & INDESTRUCTIBLE))
+			network.door_breach_requests[prying_door_ref] = side
+			break
+	prying_door_ref = null
+	clear_roam_target()
+	return FALSE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_door_breach_requests()
+	if(!(environment_smash & ENVIRONMENT_SMASH_WALLS))
+		return FALSE
+	for(var/datum/weakref/door_ref as anything in network.door_breach_requests)
+		var/obj/machinery/door/door = door_ref.resolve()
+		var/turf/wall = door ? get_step(door, network.door_breach_requests[door_ref]) : null
+		if(!door?.density || !wall?.density)
+			network.finish_door_breach(door_ref)
+			continue
+		if(door.z != z || get_dist(src, door) > 10 || !CanSmashTurfs(wall) || (wall.resistance_flags & INDESTRUCTIBLE))
+			continue
+		clear_corpse_task()
+		clear_roam_target()
+		if(Adjacent(wall))
+			SSmove_manager.stop_looping(src)
+			wall.attack_animal(src)
+			var/turf/bypass = get_step(door, network.door_breach_requests[door_ref])
+			if(!bypass.density)
+				network.finish_door_breach(door_ref)
+		else
+			Goto(wall, move_to_delay, 1)
+		return TRUE
+	return FALSE
+
+/datum/ms13_terrain_hivemind/proc/finish_door_breach(datum/weakref/door_ref)
+	door_breach_requests -= door_ref
+	for(var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit as anything in units)
+		if(unit.prying_door_ref == door_ref)
+			unit.prying_door_ref = null
+			unit.failed_door_ref = door_ref
+			COOLDOWN_START(unit, door_retry_cooldown, 30 SECONDS)
+
+#include "terrain_hiveminds_vertical.dm"
+#include "necromorph_marker.dm"

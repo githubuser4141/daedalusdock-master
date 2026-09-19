@@ -349,7 +349,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/closest_distance = INFINITY
 	for(var/obj/structure/ms13_hivemind/terrain/growth as anything in territory)
 		var/turf/candidate = get_turf(growth)
-		var/distance = get_dist(origin, candidate)
+		var/distance = ms13_hive_distance(origin, candidate)
 		if(distance <= 4 && distance < closest_distance && can_spawn_unit_at(candidate))
 			closest = candidate
 			closest_distance = distance
@@ -484,7 +484,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	corpse_reports -= corpse_ref
 	corpse_claims -= corpse_ref
 	corpse_conversion_progress -= corpse_ref
-	if(living_host)
+	if(living_host && isanimal_or_basicmob(corpse))
+		corpse.gib()
+	else if(living_host)
 		corpse.apply_damage(living_conversion_damage, BRUTE, BODY_ZONE_CHEST, forced = TRUE, sharpness = SHARP_POINTY)
 		if(corpse.stat != DEAD)
 			corpse.death()
@@ -531,7 +533,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 
 /datum/ms13_terrain_hivemind/proc/process_structure_corpse(atom/converter, delta_time)
 	var/mob/living/corpse = get_claimed_corpse(converter)
-	if(corpse && (get_dist(converter, corpse) > 1 || LAZYLEN(corpse.grabbed_by)))
+	if(corpse && (ms13_hive_distance(converter, corpse) > 1 || LAZYLEN(corpse.grabbed_by)))
 		release_corpse_claim(corpse, converter)
 		corpse = null
 	if(!corpse)
@@ -551,7 +553,14 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		converters += core
 	for(var/obj/structure/ms13_hivemind/special/converter/converter in specials)
 		converters += converter
-	return get_closest_atom(/obj/structure/ms13_hivemind, converters, source)
+	var/obj/structure/ms13_hivemind/closest = core
+	var/closest_distance = INFINITY
+	for(var/obj/structure/ms13_hivemind/converter as anything in converters)
+		var/distance = ms13_hive_distance(source, converter)
+		if(distance < closest_distance)
+			closest = converter
+			closest_distance = distance
+	return closest
 
 /// Themes may replace the generic delivery structure after a hauler arrives.
 /datum/ms13_terrain_hivemind/proc/prepare_delivered_subject(mob/living/subject, obj/structure/ms13_hivemind/destination)
@@ -1167,6 +1176,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	/// Hurt, idle units only retreat when friendly terrain is close enough to be an obvious safe step.
 	var/terrain_recovery_health = 0.45
 	var/terrain_recovery_range = 6
+	/// Once retreating, heal well past the entry threshold before resuming work.
+	var/terrain_recovering = FALSE
 	var/corpse_converter = FALSE
 	var/corpse_hauler = TRUE
 	/// Dedicated logistics castes take an available body before looking for a fresh fight.
@@ -1178,6 +1189,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/datum/weakref/corpse_target_ref
 	COOLDOWN_DECLARE(roam_retarget_cooldown)
 	COOLDOWN_DECLARE(corpse_report_cooldown)
+	COOLDOWN_DECLARE(roam_retry_cooldown)
+	COOLDOWN_DECLARE(target_scan_cooldown)
+	var/turf/target_scan_turf
+	var/list/cached_hive_targets
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
 	. = ..()
@@ -1289,6 +1304,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	cached_hive_targets = null
+	target_scan_turf = null
 	clear_corpse_task()
 	clear_roam_target()
 	if(network)
@@ -1317,7 +1334,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return PROCESS_KILL
 	if(network?.active && can_field_convert_corpses())
 		var/mob/living/corpse = corpse_target_ref?.resolve()
-		if(network.is_convertible_corpse(corpse) && get_dist(src, corpse) <= 1 && !LAZYLEN(corpse.grabbed_by))
+		if(network.is_convertible_corpse(corpse) && ms13_hive_distance(src, corpse) <= 1 && !LAZYLEN(corpse.grabbed_by))
 			var/conversion_time = corpse_converter ? network.converter_conversion_time : network.field_conversion_time
 			if(network.advance_corpse_conversion(corpse, src, delta_time, conversion_time))
 				corpse_target_ref = null
@@ -1326,7 +1343,13 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	set waitfor = FALSE
 	if(AIStatus == AI_OFF || !network?.active)
 		return FALSE
+	if(handle_hive_vertical_action())
+		return TRUE
 	release_finished_target()
+	if(prying_door_ref && handle_door_pry())
+		return TRUE
+	if((!target || !Adjacent(target)) && handle_door_breach_requests())
+		return TRUE
 	if(target)
 		clear_corpse_task()
 		clear_roam_target()
@@ -1353,10 +1376,17 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		toggle_ai(AI_ON)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ListTargets()
+	// Reuse same-tile scans briefly; acquisition and the parent combat tick can both call this.
+	if(target_scan_turf == get_turf(src) && !COOLDOWN_FINISHED(src, target_scan_cooldown))
+		return cached_hive_targets.Copy()
 	. = ..()
 	for(var/obj/structure/window/ms13_vehicle_wall/wall in oview(vision_range, src))
 		if(is_vehicle_hull_target(wall))
 			. |= wall
+	var/list/scanned_targets = .
+	cached_hive_targets = scanned_targets.Copy()
+	target_scan_turf = get_turf(src)
+	COOLDOWN_START(src, target_scan_cooldown, 1 SECONDS)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/CanAttack(atom/the_target)
 	if(istype(the_target, /obj/structure/window/ms13_vehicle_wall))
@@ -1399,15 +1429,26 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_work_corpses()
 	return can_field_convert_corpses() || network?.units_haul_corpses
 
-/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_terrain_recovery()
-	if(!terrain_dependent || network.is_territory(get_turf(src)) || health > maxHealth * terrain_recovery_health)
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_terrain_recovery(ignore_dependency = FALSE)
+	if((!terrain_dependent && !ignore_dependency) || health >= maxHealth * 0.8)
+		terrain_recovering = FALSE
 		return FALSE
-	var/obj/structure/ms13_hivemind/terrain/growth = get_closest_atom(/obj/structure/ms13_hivemind/terrain, network.territory, src)
-	if(!growth || get_dist(src, growth) > terrain_recovery_range)
+	if(!terrain_recovering && health > maxHealth * terrain_recovery_health)
 		return FALSE
+	var/obj/structure/ms13_hivemind/terrain/growth
+	if(!network.is_territory(get_turf(src)))
+		growth = get_closest_atom(/obj/structure/ms13_hivemind/terrain, network.territory, src)
+		if(!growth || ms13_hive_distance(src, growth) > terrain_recovery_range)
+			terrain_recovering = FALSE
+			return FALSE
+	terrain_recovering = TRUE
+	LoseTarget()
 	clear_corpse_task()
 	clear_roam_target()
-	Goto(growth, move_to_delay, 0)
+	if(network.is_territory(get_turf(src)))
+		SSmove_manager.stop_looping(src)
+	else
+		Goto(growth, move_to_delay, 0)
 	return TRUE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/clear_corpse_task(release_body = TRUE)
@@ -1445,7 +1486,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		if(LAZYLEN(corpse.grabbed_by))
 			clear_corpse_task()
 			return FALSE
-		if(get_dist(src, corpse) > 1)
+		if(ms13_hive_distance(src, corpse) > 1)
 			Goto(corpse, move_to_delay, 1)
 		else
 			SSmove_manager.stop_looping(src)
@@ -1453,7 +1494,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(!network.units_haul_corpses)
 		return FALSE
 	if(!is_grabbing(corpse))
-		if(get_dist(src, corpse) > 1)
+		if(ms13_hive_distance(src, corpse) > 1)
 			Goto(corpse, move_to_delay, 1)
 			return TRUE
 		if(!try_make_grab(corpse))
@@ -1479,7 +1520,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(!destination)
 		clear_corpse_task()
 		return FALSE
-	if(get_dist(src, destination) > 1)
+	if(ms13_hive_distance(src, destination) > 1)
 		Goto(destination, move_to_delay, 1)
 		return TRUE
 	release_grabs(corpse)
@@ -1525,6 +1566,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_roaming()
 	if(roam_range <= 0 || !isturf(loc))
 		return FALSE
+	if(!COOLDOWN_FINISHED(src, roam_retry_cooldown))
+		return TRUE
 	if(!roam_target || roam_target.z != z || get_dist(src, roam_target) <= 1 || COOLDOWN_FINISHED(src, roam_retarget_cooldown))
 		roam_target = pick_roam_target()
 		if(!roam_target)
@@ -1543,6 +1586,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		"CEV-Eris machine hive" = /datum/ms13_terrain_hivemind/eris,
 		"Daedalus flock" = /datum/ms13_terrain_hivemind/flock,
 		"DS13 necromorph corruption" = /datum/ms13_terrain_hivemind/necromorph,
+		"Necromorph Marker (power/public radio)" = /datum/ms13_terrain_hivemind/necromorph/marker,
 		"SS13 blob" = /datum/ms13_terrain_hivemind/blob,
 		"TGMC xenomorph hive" = /datum/ms13_terrain_hivemind/xenomorph,
 	)
