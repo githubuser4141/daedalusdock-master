@@ -556,7 +556,8 @@ SUBSYSTEM_DEF(explosions)
 
 		if (length(T.contents))
 			for (var/atom/movable/AM as anything in T)
-				if (AM.simulated)
+				// MOJAVE EDIT: simple animals opt out of simulation, not explosion damage.
+				if (AM.simulated || isliving(AM))
 					if (cabin_power != turf_power && vehicle.is_sheltered(AM)) // MOJAVE EDIT
 						if (cabin_power > 0)
 							EX_ACT(AM, cabin_severity)

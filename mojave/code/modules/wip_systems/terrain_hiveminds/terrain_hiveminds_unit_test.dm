@@ -14,6 +14,53 @@
 /datum/ai_controller/basic_controller/ms13/planner_test_probe/ProcessBehaviorSelection(delta_time)
 	plans++
 
+/datum/unit_test/ms13_hive_combat
+	name = "MOJAVE SUN: Hive Charges And NPC Explosion Damage"
+	var/list/original_tiles = list()
+
+/datum/unit_test/ms13_hive_combat/Destroy()
+	// The shared test runner clears objects, but not turfs damaged by the live blast.
+	for(var/list/tile in original_tiles)
+		var/turf/current = locate(tile[1], tile[2], tile[3])
+		current.ChangeTurf(tile[4], tile[5])
+	return ..()
+
+/datum/unit_test/ms13_hive_combat/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	for(var/turf/tile in RANGE_TURFS(4, origin))
+		original_tiles += list(list(tile.x, tile.y, tile.z, tile.type, islist(tile.baseturfs) ? tile.baseturfs.Copy() : tile.baseturfs))
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/charger = new(origin, network)
+	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, locate(origin.x + 3, origin.y, origin.z))
+	victim.maxHealth = 1000
+	victim.health = 1000
+	victim.set_density(TRUE)
+	victim.toggle_ai(AI_OFF)
+	charger.GiveTarget(victim)
+	TEST_ASSERT(charger.try_hive_charge(), "An eligible brute never starts its special attack.")
+	TEST_ASSERT(get_turf(charger) != origin, "A charging brute never moves.")
+	TEST_ASSERT(victim.health < 1000, "A charge collides without hurting the hostile victim.")
+	TEST_ASSERT(!length(charger.hive_charge.charging), "A completed charge leaves the mob movement-locked.")
+	TEST_ASSERT(!charger.hive_charge.IsAvailable(), "A completed charge has no cooldown.")
+	qdel(charger)
+	victim.forceMove(origin)
+	victim.health = 1000
+	var/turf_tally = 0
+	var/movable_tally = 0
+	var/list/blast_tiles = list()
+	blast_tiles[origin] = 2
+	SSexplosions.perform_explosion(origin, blast_tiles, 2, 3, 0, &turf_tally, &movable_tally, null)
+	TEST_ASSERT(victim.health < 1000, "Explosion processing skips non-simulated simple animals.")
+	TEST_ASSERT(turf_tally == 1 && movable_tally >= 1, "Explosion processing did not visit its NPC tile.")
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph/exploder = new(get_turf(victim), network)
+	TEST_ASSERT(exploder.blast_heavy_range >= 1 && exploder.blast_light_range >= 3, "A necromorph exploder has only a cosmetic blast.")
+	var/health_before_blast = victim.health
+	exploder.AttackingTarget(victim)
+	sleep(1 SECONDS)
+	TEST_ASSERT(QDELETED(exploder) && victim.health < health_before_blast, "A necromorph exploder disappears without causing actual blast damage.")
+	qdel(network)
+
 /datum/unit_test/ms13_terrain_hiveminds
 	name = "MOJAVE SUN: Terrain Hivemind Framework"
 
@@ -112,6 +159,25 @@
 	var/turf/claimed_turf = get_turf(claimed_growth)
 	var/obj/structure/ms13_hivemind/special/wall/test_wall = new(claimed_turf, live_network)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/test_unit = new(claimed_turf, live_network)
+	TEST_ASSERT_EQUAL(test_unit.AIStatus, AI_ON, "A lone new hive unit starts asleep.")
+	TEST_ASSERT(!test_unit.AIShouldSleep(list()), "An active hive waits for players when no combat target is present.")
+	for(var/sleep_state in list(AI_IDLE, AI_Z_OFF))
+		test_unit.toggle_ai(sleep_state)
+		test_unit.consider_wakeup()
+		TEST_ASSERT_EQUAL(test_unit.AIStatus, AI_ON, "A hive cannot wake from state [sleep_state] without a living player.")
+	test_unit.toggle_ai(AI_OFF)
+	test_unit.consider_wakeup()
+	TEST_ASSERT_EQUAL(test_unit.AIStatus, AI_OFF, "Hive wakeup overrides an explicit AI shutdown.")
+	test_unit.toggle_ai(AI_ON)
+	var/mob/dead/observer/ghost_host = new(claimed_turf)
+	TEST_ASSERT(!live_network.is_convertible_corpse(ghost_host), "A hive considers an observer a convertible corpse.")
+	qdel(ghost_host)
+	var/mob/living/simple_animal/hostile/ms13/wildlife = new(get_step(claimed_turf, SOUTH))
+	wildlife.toggle_ai(AI_IDLE)
+	wildlife.consider_wakeup()
+	TEST_ASSERT_EQUAL(wildlife.AIStatus, AI_ON, "An idle MS NPC ignores a visible hive without a player present.")
+	TEST_ASSERT(wildlife.CanAttack(test_unit), "An ordinary MS NPC cannot attack a hostile hive unit.")
+	qdel(wildlife)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/recovering_converter = new(claimed_turf, live_network)
 	for(var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/recovering_unit in list(test_unit, recovering_converter))
 		recovering_unit.health = recovering_unit.maxHealth * 0.3
@@ -286,6 +352,24 @@
 	QDEL_LIST(hauling_growths_to_clean)
 
 	var/datum/ms13_terrain_hivemind/xenomorph/xeno_network = new(hauling_origin, 20)
+	var/mob/dead/observer/xeno_ghost = new(hauling_origin)
+	TEST_ASSERT(!xeno_network.is_convertible_corpse(xeno_ghost), "The living-host override accepts ghosts.")
+	qdel(xeno_ghost)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/charger = new(hauling_origin, xeno_network)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/pouncer = new(hauling_origin, xeno_network)
+	TEST_ASSERT(charger.hive_charge && pouncer.hive_charge, "Crushers or runners have no special attack.")
+	TEST_ASSERT(charger.hive_charge.charge_damage > pouncer.hive_charge.charge_damage, "Pounce and ram use identical damage.")
+	var/friendly_health = pouncer.health
+	charger.hive_charge.hit_target(charger, pouncer, 35)
+	TEST_ASSERT_EQUAL(pouncer.health, friendly_health, "A charge damages an allied unit.")
+	var/mob/living/simple_animal/chicken/charge_host = new(hauling_origin)
+	charge_host.health = 5
+	charger.hive_charge.hit_target(charger, charge_host, 35)
+	TEST_ASSERT(charge_host.stat != DEAD && charge_host.health == 5 && charge_host.IsParalyzed(), "A xenomorph charge kills a capturable NPC.")
+	charger.clear_corpse_task()
+	qdel(charge_host)
+	qdel(charger)
+	qdel(pouncer)
 	var/obj/structure/ms13_hivemind/terrain/xeno_growth = xeno_network.territory[1]
 	var/turf/xeno_turf = get_turf(xeno_growth)
 	// Use two unobstructed resin tiles; the first registered growth may contain the dense core.

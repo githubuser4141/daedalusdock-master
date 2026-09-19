@@ -165,6 +165,28 @@ simulation. Output, influence radius, suppression draw/radius and messages are p
 
 ## Imported assets
 
+### Combat audio and rush attacks
+
+`terrain_hiveminds_combat.dm` gives crushers, necromorph brutes and tripods a
+six-tile, 35-damage ramming charge (one-second warning, twelve-second cooldown).
+Xenomorph runners get a shorter four-tile, 15-damage pounce with a 0.6-second
+warning and eight-second cooldown. Both stop at the first collision and knock
+hostile victims down; wounded NPC hosts are captured rather than finished off.
+Rams damage only the contacted obstacle, not every surrounding wall. Pounces
+do not demolish obstacles. Hauling and door-prying take priority.
+
+Necromorph role-specific attacks/deaths/challenges use DS13-1.0 audio. Xenos
+have TGMC death, challenge, pounce and acid-spit audio, isolated under
+`mojave/sound/by_nc/tgmc_xenomorphs/`; see its attribution for the outstanding
+per-file licensing clarification. Challenges are throttled to twelve seconds.
+Necromorph exploders have a one-tile heavy / three-tile light radial blast;
+the machine hive retains its small blast plus shaped-charge jet.
+
+Active hives do not enter the legacy player-presence sleep state: they can
+fight NPCs while observed only by ghosts. Explicit AI-off and role-specific
+ambush hibernation remain separate. Ordinary MS wildlife keeps its six-second
+idle scan but includes NPC threats rather than only player clients.
+
 - CEV-Eris machine-hive icons are from `discordia-space/CEV-Eris` commit
   `5f7847f26585d80505500be5a62e621022a56bf7`, under that project's AGPLv3 terms.
 - Necromorph corruption and swarmer icons are from `DS-13-Dev-Team/DS13-2.0` `master`, whose README

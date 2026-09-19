@@ -303,6 +303,16 @@
 		if(eggable == TRUE)
 			eggsleft = 0
 
+/mob/living/simple_animal/hostile/ms13/consider_wakeup()
+	if(AIStatus == AI_OFF || stat == DEAD || ckey)
+		return
+	// Wasteland NPCs must notice each other, not just living clients on station levels.
+	// Keep the existing six-second idle scan instead of running all wildlife continuously.
+	if(shouldwakeup || LAZYLEN(grabbed_by) || FindTarget(ListTargets(), TRUE))
+		toggle_ai(AI_ON)
+	else
+		toggle_ai(AI_IDLE)
+
 /mob/living/simple_animal/hostile/ms13/proc/tamed(mob/living/tamer)
 	faction = list("neutral")
 	tame = TRUE

@@ -108,7 +108,8 @@
 		if(!length(GLOB.dead_mob_list))
 			break
 		var/mob/living/corpse = GLOB.dead_mob_list[corpse_scan_cursor++]
-		if(corpse.z != z || get_dist(src, corpse) > influence_radius || LAZYLEN(corpse.grabbed_by) || !network.is_convertible_corpse(corpse))
+		// dead_mob_list also contains observers; typed assignments do not filter DM lists.
+		if(!network.is_convertible_corpse(corpse) || corpse.z != z || get_dist(src, corpse) > influence_radius || LAZYLEN(corpse.grabbed_by))
 			continue
 		if(network.get_corpse_claim(corpse) || length(network.units) >= network.max_units || network.resources < network.unit_cost)
 			continue

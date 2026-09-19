@@ -33,7 +33,7 @@
 		return PROCESS_KILL
 
 /datum/ms13_terrain_hivemind/xenomorph/is_convertible_corpse(mob/living/host)
-	if(host && !QDELETED(host) && !host.ms13_hive_consumed && host.stat != DEAD && isturf(host.loc) && !is_allied(host) && host.ms13_hive_implanted)
+	if(isliving(host) && !QDELETED(host) && !host.ms13_hive_consumed && host.stat != DEAD && isturf(host.loc) && !is_allied(host) && host.ms13_hive_implanted)
 		return TRUE
 	return ..()
 
@@ -85,7 +85,7 @@
 
 /// Use existing pathfinding, including its repath throttle, for combat, roaming and hauling.
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Goto(atom/destination, delay, minimum_distance)
-	if(prying_door_ref || prevent_goto_movement || !destination || incapacitated())
+	if(prying_door_ref || length(hive_charge?.charging) || prevent_goto_movement || !destination || incapacitated() || !isturf(loc))
 		return FALSE
 	var/turf/destination_turf = get_turf(destination)
 	if(!destination_turf)
@@ -502,16 +502,24 @@
 	roam_range = 18
 	roam_min_distance = 8
 	var/fires_shaped_charge_jet = TRUE
+	var/blast_heavy_range = -1
+	var/blast_light_range = 1
+	var/detonating = FALSE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph
 	fires_shaped_charge_jet = FALSE
+	blast_heavy_range = 1
+	blast_light_range = 3
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/AttackingTarget(atom/attacked_target)
+	if(detonating)
+		return FALSE
 	var/atom/victim = attacked_target
 	if(!victim)
 		victim = target
 	if(!victim || ms13_hive_distance(src, victim) > 1)
 		return ..()
+	detonating = TRUE
 	var/turf/origin = get_turf(src)
 	var/attack_direction = get_dir(src, victim)
 	if(!attack_direction)
@@ -519,7 +527,9 @@
 	var/jet_angle = dir2angle(attack_direction)
 	var/blast_shape = fires_shaped_charge_jet ? "focused" : "violent"
 	visible_message(span_danger("[src] ruptures in a [blast_shape] blast!"))
-	explosion(origin, devastation_range = -1, heavy_impact_range = -1, light_impact_range = 1, adminlog = FALSE, explosion_cause = src)
+	if(!fires_shaped_charge_jet)
+		playsound(src, 'mojave/sound/wip/necromorphs/exploder_blast_1.ogg', 85, TRUE)
+	explosion(origin, devastation_range = -1, heavy_impact_range = blast_heavy_range, light_impact_range = blast_light_range, adminlog = FALSE, explosion_cause = src)
 	if(fires_shaped_charge_jet)
 		ms13_fire_shaped_charge_jet(origin, jet_angle, 48, 150, 5, 4, src)
 	qdel(src)

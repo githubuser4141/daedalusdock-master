@@ -362,7 +362,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return new unit_type(spawn_turf, src)
 
 /datum/ms13_terrain_hivemind/proc/is_convertible_corpse(mob/living/corpse)
-	if(!corpse || QDELETED(corpse) || corpse.ms13_hive_consumed || !isturf(corpse.loc) || is_allied(corpse))
+	if(!isliving(corpse) || QDELETED(corpse) || corpse.ms13_hive_consumed || !isturf(corpse.loc) || is_allied(corpse))
 		return FALSE
 	if(corpse.stat == DEAD)
 		return converts_dead_hosts
@@ -794,7 +794,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	)
 	elite_mob_types = list(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy)
 	ranged_projectile_type = /obj/projectile/ms13_hivemind/xenomorph
-	ranged_projectile_sound = 'sound/effects/splat.ogg'
+	ranged_projectile_sound = 'mojave/sound/by_nc/tgmc_xenomorphs/spitacid.ogg'
 
 /obj/projectile/ms13_hivemind
 	name = "hivemind bolt"
@@ -1217,6 +1217,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	orphan_damage = network.mob_orphan_damage
 	faction = list(network.faction_id)
 	network.units |= src
+	configure_hive_combat()
 	START_PROCESSING(SSobj, src)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout
@@ -1304,6 +1305,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	QDEL_NULL(hive_charge)
 	cached_hive_targets = null
 	target_scan_turf = null
 	clear_corpse_task()
@@ -1321,6 +1323,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/process(delta_time)
 	if(stat == DEAD)
 		return PROCESS_KILL
+	// A hive operates against NPCs too, including on levels observed only by ghosts.
+	if(network?.active && !ckey && (AIStatus == AI_IDLE || AIStatus == AI_Z_OFF))
+		consider_wakeup()
 	if(network?.active && network.is_territory(get_turf(src)))
 		adjustHealth(-network.mob_regeneration * regeneration_multiplier * delta_time)
 	else if(!network)
@@ -1343,6 +1348,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	set waitfor = FALSE
 	if(AIStatus == AI_OFF || !network?.active)
 		return FALSE
+	if(length(hive_charge?.charging))
+		return TRUE
 	if(handle_hive_vertical_action())
 		return TRUE
 	release_finished_target()
@@ -1353,6 +1360,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(target)
 		clear_corpse_task()
 		clear_roam_target()
+		if(try_hive_charge())
+			return TRUE
 		return ..()
 	if(handle_terrain_recovery())
 		return TRUE
@@ -1374,9 +1383,18 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return ..()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/consider_wakeup()
-	. = ..()
-	if(AIStatus == AI_IDLE && network?.active && (network.find_reported_corpse(src) || roam_range))
-		toggle_ai(AI_ON)
+	if(network?.active)
+		if(stat != DEAD && !ckey && (AIStatus == AI_IDLE || AIStatus == AI_Z_OFF))
+			toggle_ai(AI_ON)
+		return
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/AIShouldSleep(list/possible_targets)
+	// Roaming, recovery and ambush hibernation already provide bounded work/backoff.
+	// The legacy idle pool would instead wait for a player to make this hive active.
+	if(network?.active)
+		return FALSE
+	return ..()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ListTargets()
 	// Reuse same-tile scans briefly; acquisition and the parent combat tick can both call this.
@@ -1620,6 +1638,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/datum/ms13_terrain_hivemind/network = new hive_type(target, limits[limit])
 	message_admins(span_adminnotice("[key_name_admin(src)] spawned [network.name] at [ADMIN_COORDJMP(target)] ([limit])."))
 	log_admin("[key_name(src)] spawned [network.name] at [AREACOORD(target)] ([limit]).")
+
+#include "terrain_hiveminds_combat.dm"
 
 #undef MS13_HIVE_ROLE_SCOUT
 #undef MS13_HIVE_ROLE_SOLDIER
