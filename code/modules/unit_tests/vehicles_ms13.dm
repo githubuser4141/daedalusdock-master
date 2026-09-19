@@ -44,6 +44,11 @@
 
 	driver_seat.user_buckle_mob(driver, driver)
 	TEST_ASSERT_EQUAL(front.vehicle.driver, driver, "Buckling into the driver seat did not register as the vehicle's driver.")
+	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent)
+	passenger.forceMove(get_turf(back))
+	TEST_ASSERT(driver_seat.can_use_controls(passenger), "A nearby passenger cannot use the occupied dashboard.")
+	for(var/mutable_appearance/monitor as anything in driver_seat.overlays)
+		TEST_ASSERT(!monitor.pixel_x && !monitor.pixel_y, "Dashboard art protrudes past the cabin tile.")
 	TEST_ASSERT(istype(front.vehicle, /datum/ms13_ground_vehicle/jeep), "Jeep did not instantiate its own handling configuration.")
 	TEST_ASSERT_EQUAL(front.vehicle.gear_count(), 4, "Jeep gearbox did not provide four gears.")
 
@@ -159,9 +164,24 @@
 	vehicle.movement_tick(vehicle.movement_generation)
 	TEST_ASSERT_EQUAL(get_turf(front), driverless_destination, "Vehicle stopped immediately when its driver was lost despite having momentum.")
 	vehicle.set_ignition(FALSE)
-	TEST_ASSERT(vehicle.apply_throttle(turn(vehicle.travel_dir, 180)), "Mechanical braking failed with the ignition off.")
-	TEST_ASSERT_EQUAL(vehicle.speed, 0, "Braking did not stop an unpowered vehicle.")
+	vehicle.movement_tick(vehicle.movement_generation)
+	TEST_ASSERT_EQUAL(vehicle.speed, 0, "Engine-off vehicle did not coast to a stop.")
+	TEST_ASSERT(!vehicle.moving, "Engine-off movement loop stayed active.")
 	vehicle.stop_motion()
+
+	vehicle.set_ignition(TRUE)
+	TEST_ASSERT(vehicle.start_engine(), "Could not restart for brakes-mode test.")
+	vehicle.brakes_mode = TRUE
+	vehicle.next_move_time = 0
+	var/turf/before_brakes = get_turf(front)
+	TEST_ASSERT(vehicle.handle_drive_input(turn(vehicle.dir, 180)), "Brakes mode could not reverse one tile.")
+	TEST_ASSERT_EQUAL(get_turf(front), get_step(before_brakes, turn(vehicle.dir, 180)), "Brakes mode did not move exactly one tile.")
+	TEST_ASSERT_EQUAL(vehicle.speed, 0, "Brakes mode retained momentum.")
+	TEST_ASSERT(!vehicle.moving, "Brakes mode started a continuous movement loop.")
+	TEST_ASSERT(!vehicle.handle_drive_input(vehicle.dir), "Brakes mode bypassed its slow movement cooldown.")
+	TEST_ASSERT(vehicle.gear_delay(1) >= 1 SECONDS, "Brakes mode is not limited to a slow crawl.")
+	vehicle.brakes_mode = FALSE
+	TEST_ASSERT_EQUAL(vehicle.gear_delay(vehicle.gear_count()), vehicle.gearbox.gear_delays[vehicle.gear_count()] / 1.25, "Shared speed increase was not applied.")
 
 /datum/unit_test/ms13_vehicle_electrical
 	name = "VEHICLES: Battery, Ignition, Lights And Driver Cameras"
@@ -176,6 +196,12 @@
 	var/obj/structure/ms13_vehicle_part/exterior_equipment/light/light = locate() in vehicle.parts
 	var/obj/structure/ms13_vehicle_part/interior_light/dome = locate() in vehicle.parts
 	TEST_ASSERT(camera && light && dome, "Truck did not fit electrical accessories.")
+	for(var/facing in list(NORTH, SOUTH, EAST, WEST))
+		camera.setDir(facing)
+		TEST_ASSERT_EQUAL(camera.exterior_image.dir, turn(facing, 180), "Camera art faces its mount incorrectly.")
+		TEST_ASSERT_EQUAL(camera.exterior_image.pixel_x, facing == EAST ? 32 : facing == WEST ? -32 : 0, "Camera mount is detached horizontally.")
+		TEST_ASSERT_EQUAL(camera.exterior_image.pixel_y, facing == NORTH ? 32 : facing == SOUTH ? -32 : 0, "Camera mount is detached vertically.")
+	camera.setDir(turn(vehicle.dir, camera.relative_turn))
 	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/equipment in vehicle.parts)
 		TEST_ASSERT(ms13_icon_has_state(equipment.equipment_icon, equipment.on_state), "Missing powered accessory art.")
 		TEST_ASSERT(ms13_icon_has_state(equipment.equipment_icon, equipment.off_state), "Missing unpowered accessory art.")
@@ -560,6 +586,8 @@
 		if(seat.is_driver_seat)
 			seat.user_buckle_mob(driver, driver)
 	TEST_ASSERT_EQUAL(vehicle.driver, driver, "No driver for the drift test.")
+	vehicle.set_ignition(TRUE)
+	TEST_ASSERT(vehicle.start_engine(), "Could not start engine for the drift test.")
 
 	var/facing = vehicle.dir
 	var/right = turn(facing, -90)
@@ -596,6 +624,55 @@
 	vehicle.stop_motion()
 
 /// What a vehicle drives over stays on the ground under it, and a blast from below has to get through the floor.
+/datum/unit_test/ms13_vehicle_run_over
+	name = "VEHICLES: Prone Victims Stay Underneath And Frames Leave Steel"
+
+/datum/unit_test/ms13_vehicle_run_over/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	TEST_ASSERT_EQUAL(length(vehicle.frames), 2, "Run-over test needs both frames inside the test room.")
+	var/turf/victim_turf = get_step(front, vehicle.dir)
+	var/mob/living/carbon/human/consistent/victim = allocate(/mob/living/carbon/human/consistent)
+	victim.forceMove(victim_turf)
+	victim.set_resting(TRUE, TRUE)
+	var/damage_before = victim.getBruteLoss()
+	TEST_ASSERT(vehicle.do_move(vehicle.dir, TRUE), "Prone victim blocked the vehicle.")
+	TEST_ASSERT(victim.getBruteLoss() > damage_before, "First frame did no run-over damage.")
+	TEST_ASSERT((victim in vehicle.underneath) && !vehicle.is_aboard(victim), "Run-over victim became cabin cargo.")
+	victim.set_resting(FALSE, TRUE)
+	TEST_ASSERT(HAS_TRAIT(victim, TRAIT_FLOORED) && victim.body_position == LYING_DOWN, "Victim could stand inside the vehicle.")
+	damage_before = victim.getBruteLoss()
+	var/organ_damage_before = 0
+	for(var/obj/item/organ/organ as anything in victim.organs)
+		organ_damage_before += organ.damage
+	TEST_ASSERT(vehicle.do_move(vehicle.dir, TRUE), "Second frame could not pass over victim.")
+	TEST_ASSERT_EQUAL(get_turf(victim), victim_turf, "Run-over victim was carried along.")
+	var/organ_damage_after = 0
+	for(var/obj/item/organ/organ as anything in victim.organs)
+		organ_damage_after += organ.damage
+	TEST_ASSERT(victim.getBruteLoss() > damage_before || organ_damage_after > organ_damage_before, "Second frame did no run-over damage: brute [damage_before] -> [victim.getBruteLoss()], organs [organ_damage_before] -> [organ_damage_after], underneath [victim in vehicle.underneath], frame [vehicle.get_frame_at(victim_turf)].")
+	TEST_ASSERT(vehicle.do_move(vehicle.dir, TRUE), "Vehicle could not leave the victim behind.")
+	TEST_ASSERT(!(victim in vehicle.underneath) && !HAS_TRAIT(victim, TRAIT_FLOORED), "Victim stayed pinned after vehicle left.")
+	TEST_ASSERT_EQUAL(victim.invisibility, 0, "Uncovered victim stayed invisible.")
+
+	var/mob/living/simple_animal/corpse = allocate(/mob/living/simple_animal)
+	corpse.death(FALSE)
+	corpse.forceMove(get_step(front, EAST))
+	var/corpse_health = corpse.health
+	TEST_ASSERT(vehicle.do_move(EAST, TRUE), "Dead simple animal blocked the vehicle.")
+	TEST_ASSERT(!QDELETED(corpse), "Dead simple animal was gibbed.")
+	TEST_ASSERT_EQUAL(corpse.health, corpse_health, "Dead simple animal still processed run-over damage.")
+	TEST_ASSERT(corpse in vehicle.underneath, "Corpse was not tracked underneath.")
+	var/turf/wreck_turf = get_turf(front)
+	front.take_damage(10000, BRUTE, BLUNT, FALSE, armor_penetration = 100)
+	TEST_ASSERT(QDELETED(front), "Frame survived lethal damage.")
+	var/steel_amount = 0
+	for(var/obj/item/stack/sheet/ms13/scrap_steel/steel in wreck_turf)
+		steel_amount += steel.amount
+	TEST_ASSERT_EQUAL(steel_amount, 10, "Destroyed frame did not leave ten steel sheets.")
+	TEST_ASSERT(!HAS_TRAIT_FROM(corpse, TRAIT_FLOORED, REF(vehicle)), "Destroyed frame left its victim pinned.")
+
 /datum/unit_test/ms13_vehicle_underside
 	name = "VEHICLES: The Floor Separates The Cabin From The Ground"
 

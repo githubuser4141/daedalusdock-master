@@ -210,6 +210,14 @@
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera/is_enabled()
 	return ..() && vehicle.cameras_on
 
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/setDir(new_dir)
+	. = ..()
+	if(exterior_image)
+		// Camera art points toward its mount; reverse only the image, not its vision edge.
+		exterior_image.dir = turn(dir, 180)
+		exterior_image.pixel_x = dir == EAST ? 32 : dir == WEST ? -32 : 0
+		exterior_image.pixel_y = dir == NORTH ? 32 : dir == SOUTH ? -32 : 0
+
 /obj/structure/ms13_vehicle_part/exterior_equipment/light
 	name = "vehicle exterior light"
 	desc = "An exterior lamp. Its switch is at the driver's controls."

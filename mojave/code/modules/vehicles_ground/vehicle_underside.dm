@@ -34,11 +34,26 @@
 	return 0
 
 /// Called after the vehicle moves or turns: covers whatever it rolled onto and uncovers what it left.
+/datum/ms13_ground_vehicle/proc/can_run_over(mob/living/victim)
+	return !victim.buckled && !victim.anchored && (victim.body_position == LYING_DOWN || victim.stat == DEAD)
+
 /datum/ms13_ground_vehicle/proc/update_underneath(list/manifest)
 	uncover_exposed()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		for(var/atom/movable/thing as anything in frame.loc)
-			if(!thing.simulated || isliving(thing) || manifest[thing] || (thing in underneath))
+			if(manifest[thing])
+				continue
+			if(isliving(thing))
+				var/mob/living/victim = thing
+				if(!can_run_over(victim))
+					continue
+				if(!(victim in underneath))
+					cover(victim)
+				// No corpse processing for either NPC framework; never explicitly gib a victim.
+				if(victim.stat != DEAD || (!isanimal(victim) && !isbasicmob(victim)))
+					victim.apply_damage(ram_damage_base + ram_damage_per_speed * max(speed, 1), BRUTE, BODY_ZONE_CHEST)
+				continue
+			if(!thing.simulated || (thing in underneath))
 				continue
 			if((thing in frames) || (thing in walls) || (thing in parts))
 				continue
@@ -52,12 +67,20 @@
 /datum/ms13_ground_vehicle/proc/cover(atom/movable/thing)
 	underneath[thing] = thing.invisibility
 	thing.invisibility = INVISIBILITY_ABSTRACT
+	if(isliving(thing))
+		ADD_TRAIT(thing, TRAIT_FLOORED, REF(src))
+		var/mob/living/victim = thing
+		if(victim.client)
+			set_roof_visible(victim.client, TRUE)
+			victim.clear_ms13_vehicle_interior_mask()
 	RegisterSignal(thing, COMSIG_MOVABLE_MOVED, PROC_REF(on_underneath_moved))
 	RegisterSignal(thing, COMSIG_PARENT_QDELETING, PROC_REF(on_underneath_deleted))
 
 /datum/ms13_ground_vehicle/proc/uncover(atom/movable/thing)
 	thing.invisibility = underneath[thing]
 	underneath -= thing
+	if(isliving(thing))
+		REMOVE_TRAIT(thing, TRAIT_FLOORED, REF(src))
 	UnregisterSignal(thing, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
 
 /// Blown or dragged out from under the vehicle.

@@ -12,9 +12,8 @@
 
 /// Same radiation effects/telegraph/messages as vanilla (inherited as-is), but protects by whether
 /// the area is actually indoors (area.outdoors == FALSE) instead of a hardcoded station area list,
-/// and has a real probability so it can occur naturally through SSweather's own rotation instead of
-/// needing a round event to trigger it.
+/// Admin-triggerable only: a nonzero probability makes SSweather start this at roundstart.
 /datum/weather/rad_storm/ms13
 	protected_areas = list()
 	protect_indoors = TRUE
-	probability = 60
+	probability = 0

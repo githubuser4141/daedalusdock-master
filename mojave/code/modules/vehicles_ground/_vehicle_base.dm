@@ -63,6 +63,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 	/// Current momentum state. Speed is the current gear (see gear_delay()), not tiles per tick.
 	var/speed = 0
+	/// Low-speed, input-only maneuvering instead of continuous momentum.
+	var/brakes_mode = FALSE
 	var/travel_dir
 	var/moving = FALSE
 	var/next_acceleration_time = 0
@@ -87,7 +89,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/list/delays = gearbox?.gear_delays
 	if(!length(delays))
 		return 10
-	return delays[clamp(gear, 1, length(delays))]
+	if(brakes_mode)
+		return max(1 SECONDS, delays[1])
+	return delays[clamp(gear, 1, length(delays))] / 1.25
 
 /datum/ms13_ground_vehicle/proc/get_all_parts()
 	. = list()
@@ -97,6 +101,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Shows this vehicle's roof to an outside viewer, or hides it from somebody aboard.
 /datum/ms13_ground_vehicle/proc/set_roof_visible(client/viewer, visible)
+	if(viewer.mob in underneath)
+		visible = TRUE
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		if(!frame.roof)
 			continue
@@ -298,6 +304,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				continue
 			if(ignore_living && isliving(blocker))
 				continue
+			if(isliving(blocker) && can_run_over(blocker))
+				continue
 			if(blocker.density)
 				return FALSE
 	return TRUE
@@ -322,7 +330,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				victims |= victim
 
 	var/impact_speed = max(speed, 1)
+	var/rammed = FALSE
 	for(var/mob/living/victim as anything in victims)
+		if(can_run_over(victim))
+			continue
+		rammed = TRUE
 		var/turf/push_turf = get_step(victim, direction)
 		var/can_push = can_push_living(victim, push_turf)
 		victim.visible_message(span_danger("[pivot] rams [victim]!"), span_userdanger("[pivot] rams into you!"))
@@ -331,7 +343,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		if(!can_push)
 			return FALSE
 		victim.forceMove(push_turf)
-	if(length(victims))
+	if(rammed)
 		playsound(pivot, ram_sound, ram_sound_volume, TRUE)
 	return TRUE
 
@@ -346,6 +358,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			return FALSE
 		for(var/atom/movable/blocker in dest)
 			if(blocker in parts)
+				continue
+			if(isliving(blocker) && can_run_over(blocker))
 				continue
 			if(blocker.density)
 				return FALSE
@@ -442,6 +456,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		return TRUE
 	if(!has_motive_power())
 		return FALSE
+	if(brakes_mode)
+		if(world.time < next_move_time)
+			return FALSE
+		speed = 1
+		var/moved = do_move(direction)
+		stop_motion()
+		return moved
 	if(!speed)
 		travel_dir = direction
 		speed = 1
@@ -522,7 +543,12 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/movement_tick(generation)
 	if(generation != movement_generation || !moving || !speed)
 		return
-	// Throttle selects a persistent speed band. Only braking, turning, or an impact slows it.
+	// Engine shutdown/fuel loss winds down momentum rather than coasting forever.
+	if(!engine_running || !engine?.is_operational())
+		speed--
+		if(!speed)
+			stop_motion()
+			return
 	if(!do_move(travel_dir, TRUE))
 		playsound(pivot, crash_sound, crash_sound_volume, TRUE)
 		stop_motion()
@@ -690,6 +716,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	vehicle = null
 	return ..()
 
+/obj/structure/ms13_vehicle_frame/deconstruct(disassembled = TRUE, mob/user)
+	if(!QDELETED(src) && !(flags_1 & NODECONSTRUCT_1))
+		new /obj/item/stack/sheet/ms13/scrap_steel(drop_location(), 10)
+	return ..()
+
 /obj/structure/ms13_vehicle_frame/setDir(new_dir)
 	. = ..()
 	if(roof)
@@ -761,7 +792,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(!client || ms13_active_gunner_sight)
 		return
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
-	if(!vehicle)
+	if(!vehicle || (src in vehicle.underneath))
 		return
 	ms13_vehicle_interior_masks = list()
 	var/list/mask_view = getviewsize(client.view)

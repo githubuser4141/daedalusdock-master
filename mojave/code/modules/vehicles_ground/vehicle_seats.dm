@@ -19,7 +19,7 @@
 	var/is_driver_seat = FALSE
 	var/obj/structure/ms13_vehicle_part/turret/operated_turret
 	var/obj/item/ms13_vehicle_turret_control/turret_control
-	var/control_menu_open = FALSE
+	var/list/control_menu_users
 
 /obj/structure/chair/ms13_vehicle_seat/attack_hand(mob/living/user, list/modifiers)
 	if(!is_driver_seat || user.combat_mode)
@@ -28,11 +28,11 @@
 	return TRUE
 
 /obj/structure/chair/ms13_vehicle_seat/proc/open_controls(mob/living/user)
-	if(control_menu_open || !user?.client || !can_use_controls(user))
+	if(!user?.client || (user in control_menu_users) || !can_use_controls(user))
 		return
-	control_menu_open = TRUE
+	LAZYADD(control_menu_users, user)
 	show_controls(user)
-	control_menu_open = FALSE
+	LAZYREMOVE(control_menu_users, user)
 
 /obj/structure/chair/ms13_vehicle_seat/proc/configure_driver_seat()
 	is_driver_seat = TRUE
@@ -50,26 +50,28 @@
 	if(!is_driver_seat)
 		return
 	// Attached appearances remain clickable as the seat, and travel/rotate with it.
-	// Offset the monitor toward the dashboard so it does not cover the seated driver.
+	// Keep the monitor on the seat's interior tile, not beyond the front hull edge.
 	for(var/state in list("computer", "generic", "generic_key"))
 		var/mutable_appearance/monitor = mutable_appearance('icons/obj/computer.dmi', state, ABOVE_MOB_LAYER)
-		monitor.pixel_x = dir == EAST ? 16 : dir == WEST ? -16 : 0
-		monitor.pixel_y = dir == NORTH ? 16 : dir == SOUTH ? -16 : 0
+		monitor.dir = dir
 		. += monitor
 
 /obj/structure/chair/ms13_vehicle_seat/proc/can_use_controls(mob/living/user)
-	return !QDELETED(src) && parent_frame?.vehicle && !QDELETED(parent_frame.vehicle.pivot) && !QDELETED(user) && !user.incapacitated() && user.Adjacent(src) && IsReachableBy(user) && get_ms13_ground_vehicle_at(user) == parent_frame.vehicle && (!length(buckled_mobs) || user in buckled_mobs)
+	return !QDELETED(src) && parent_frame?.vehicle && !QDELETED(parent_frame.vehicle.pivot) && !QDELETED(user) && !user.incapacitated() && user.Adjacent(src) && IsReachableBy(user) && get_ms13_ground_vehicle_at(user) == parent_frame.vehicle && !(user in parent_frame.vehicle.underneath)
 
 /obj/structure/chair/ms13_vehicle_seat/proc/show_controls(mob/living/user)
 	while(can_use_controls(user))
 		var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
-		var/list/options = list("Drive", "Engine toggle ([vehicle.engine_running ? "on" : "off"])", "Ignition toggle ([vehicle.ignition ? "on" : "off"])", "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])", "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])", "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])", "Horn", "Exit", "Unbuckle")
+		var/list/options = list("Drive", "Engine toggle ([vehicle.engine_running ? "on" : "off"])", "Ignition toggle ([vehicle.ignition ? "on" : "off"])", "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])", "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])", "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])", "Horn", "Exit", "Unbuckle", "Stop", "Brakes mode ([vehicle.brakes_mode ? "on" : "off"])")
 		var/battery_percent = vehicle.battery?.cell ? round(vehicle.battery.cell.percent()) : 0
-		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nForward/reverse controls increase speed or brake. Speed persists until you brake or hit an obstacle.", "Vehicle controls") as null|anything in options
+		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nStop applies the brakes. Brakes mode moves slowly only while pressing a direction. Engine-off vehicles slow to a stop.", "Vehicle controls") as null|anything in options
 		if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
 			return
 		switch(options.Find(choice))
 			if(1)
+				if(length(buckled_mobs) && !(user in buckled_mobs))
+					to_chat(user, span_warning("The driver's seat is occupied."))
+					continue
 				vehicle.set_ignition(TRUE)
 				if(vehicle.start_engine(user) && user.buckled != src)
 					user_buckle_mob(user, user)
@@ -96,6 +98,11 @@
 			if(9)
 				if(user.buckled == src)
 					user_unbuckle_mob(user, user)
+			if(10)
+				vehicle.stop_motion()
+			if(11)
+				vehicle.brakes_mode = !vehicle.brakes_mode
+				vehicle.stop_motion()
 		vehicle.update_electrical()
 
 /obj/structure/chair/ms13_vehicle_seat/Destroy()
