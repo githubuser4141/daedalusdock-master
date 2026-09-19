@@ -58,6 +58,189 @@
 	elite_mob_types |= /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph
 	elite_mob_types |= /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/regenerator
 
+/datum/ms13_terrain_hivemind/xenomorph/New(turf/start, new_territory_limit)
+	special_types = special_types.Copy()
+	special_types -= /obj/structure/ms13_hivemind/special/converter
+	special_types += /obj/structure/ms13_hivemind/special/xenomorph_egg
+	return ..()
+
+/datum/ms13_terrain_hivemind/xenomorph/prepare_delivered_subject(mob/living/subject, obj/structure/ms13_hivemind/destination)
+	if(!is_convertible_corpse(subject) || !is_territory(get_turf(subject)))
+		return destination
+	for(var/obj/structure/ms13_hivemind/xenomorph_nest/nest in get_turf(subject))
+		if(nest.network == src)
+			return nest
+	return new /obj/structure/ms13_hivemind/xenomorph_nest(get_turf(subject), src, subject)
+
+/datum/ms13_terrain_hivemind/xenomorph/process_terrain_corpses(delta_time)
+	var/territory_count = length(territory)
+	if(!territory_count)
+		return
+	var/check_count = min(terrain_corpse_scan_budget, territory_count)
+	for(var/i in 1 to check_count)
+		if(terrain_corpse_scan_cursor > territory_count)
+			terrain_corpse_scan_cursor = 1
+		var/obj/structure/ms13_hivemind/terrain/growth = territory[terrain_corpse_scan_cursor++]
+		if(!growth || QDELETED(growth))
+			continue
+		for(var/mob/living/host in get_turf(growth))
+			if(!is_convertible_corpse(host) || LAZYLEN(host.grabbed_by) || get_corpse_claim(host))
+				continue
+			var/obj/structure/ms13_hivemind/xenomorph_nest/nest = prepare_delivered_subject(host, core)
+			if(!nest)
+				continue
+			if(!claim_corpse(host, nest))
+				qdel(nest)
+
+/obj/structure/low_wall/CanAllowThrough(atom/movable/mover, border_dir)
+	. = ..()
+	if(.)
+		return
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = mover
+	if(istype(unit) && unit.network?.can_cross_low_walls)
+		return TRUE
+	var/mob/living/dragged_body = mover
+	if(!istype(dragged_body))
+		return FALSE
+	for(var/obj/item/hand_item/grab/grab as anything in dragged_body.grabbed_by)
+		unit = grab.assailant
+		if(istype(unit) && unit.network?.can_haul_over_low_walls)
+			return TRUE
+	return FALSE
+
+/obj/structure/ms13_hivemind/special/xenomorph_egg
+	name = "xenomorph egg"
+	desc = "A taut resin egg holding a single, violently impatient parasite."
+	icon = 'icons/mob/alien.dmi'
+	icon_state = "egg"
+	density = FALSE
+	max_integrity = 80
+	var/activation_range = 5
+	var/spent = FALSE
+
+/obj/structure/ms13_hivemind/special/xenomorph_egg/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
+	. = ..()
+	if(network)
+		START_PROCESSING(SSobj, src)
+
+/obj/structure/ms13_hivemind/special/xenomorph_egg/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/structure/ms13_hivemind/special/xenomorph_egg/process(delta_time)
+	if(spent || !network?.active)
+		return PROCESS_KILL
+	for(var/mob/living/carbon/target in viewers(activation_range, src))
+		if(target.stat == DEAD || network.is_allied(target) || !target.get_bodypart(BODY_ZONE_HEAD) || istype(target.wear_mask, /obj/item/clothing/mask/facehugger))
+			continue
+		spent = TRUE
+		visible_message(span_danger("[src] splits open and launches a facehugger at [target]!"))
+		var/obj/item/clothing/mask/facehugger/ms13_hive/hugger = new(get_turf(src), network)
+		hugger.throw_at(target, activation_range, 1, null)
+		new /obj/structure/ms13_hivemind/xenomorph_egg_wreck(get_turf(src))
+		qdel(src)
+		return PROCESS_KILL
+
+/obj/structure/ms13_hivemind/xenomorph_egg_wreck
+	name = "wrecked xenomorph egg"
+	desc = "An empty, split-open resin shell."
+	icon = 'icons/mob/alien.dmi'
+	icon_state = "egg_hatched"
+	anchored = TRUE
+	density = FALSE
+	max_integrity = 30
+
+/obj/item/clothing/mask/facehugger/ms13_hive
+	name = "hive facehugger"
+	var/datum/ms13_terrain_hivemind/network
+	var/armor_threshold = 40
+
+/obj/item/clothing/mask/facehugger/ms13_hive/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
+	. = ..()
+	network = join_network
+
+/obj/item/clothing/mask/facehugger/ms13_hive/Leap(mob/living/hit_mob)
+	if(hit_mob?.stat == DEAD || !valid_to_attach(hit_mob))
+		return FALSE
+	var/mob/living/carbon/target = hit_mob
+	if(target.wear_mask && istype(target.wear_mask, /obj/item/clothing/mask/facehugger))
+		return FALSE
+	target.visible_message(span_danger("[src] leaps at [target]'s face!"), span_userdanger("[src] leaps at your face!"))
+	if(target.getarmor(BODY_ZONE_HEAD, PUNCTURE) >= armor_threshold)
+		target.visible_message(span_warning("[src] cracks against [target]'s head protection and falls away!"), span_notice("Your head protection stops [src]."))
+		Die()
+		return FALSE
+	if(target.head && !target.dropItemToGround(target.head))
+		Die()
+		return FALSE
+	if(target.wear_mask && !target.dropItemToGround(target.wear_mask))
+		Die()
+		return FALSE
+	if(!target.equip_to_slot_if_possible(src, ITEM_SLOT_MASK, 0, 1, 1))
+		return FALSE
+	log_combat(target, src, "was facehugged by")
+	return TRUE
+
+/obj/item/clothing/mask/facehugger/ms13_hive/Impregnate(mob/living/target)
+	if(!target || target.stat == DEAD || !iscarbon(target))
+		return
+	var/mob/living/carbon/carbon_target = target
+	if(carbon_target.wear_mask != src)
+		return
+	target.visible_message(span_danger("[src] falls limp after implanting [target]!"), span_userdanger("[src] falls limp after implanting you!"))
+	Die()
+	icon_state = "[base_icon_state]_impregnated"
+	worn_icon_state = "[base_icon_state]_impregnated"
+	if(network?.active)
+		network.report_corpse(target)
+
+/obj/structure/ms13_hivemind/xenomorph_nest
+	name = "resin nest"
+	desc = "A cocoon of resin which restrains and stabilizes a living host."
+	icon = 'mojave/icons/by_nc/tgmc_xenomorphs/structures.dmi'
+	icon_state = "thickmembrane15"
+	anchored = TRUE
+	density = FALSE
+	layer = ABOVE_MOB_LAYER
+	max_integrity = 90
+	var/datum/weakref/host_ref
+	var/bleeding_reduced = FALSE
+
+/obj/structure/ms13_hivemind/xenomorph_nest/Initialize(mapload, datum/ms13_terrain_hivemind/join_network, mob/living/host)
+	. = ..()
+	if(!join_network || !host)
+		return INITIALIZE_HINT_QDEL
+	network = join_network
+	host_ref = WEAKREF(host)
+	var/mob/living/carbon/human/human_host = host
+	if(istype(human_host) && human_host.physiology)
+		human_host.physiology.bleed_mod *= 0.4
+		bleeding_reduced = TRUE
+	START_PROCESSING(SSobj, src)
+
+/obj/structure/ms13_hivemind/xenomorph_nest/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	var/mob/living/host = host_ref?.resolve()
+	if(bleeding_reduced && ishuman(host))
+		var/mob/living/carbon/human/human_host = host
+		if(human_host.physiology)
+			human_host.physiology.bleed_mod /= 0.4
+	network?.release_corpse_claim(host, src)
+	host_ref = null
+	network = null
+	return ..()
+
+/obj/structure/ms13_hivemind/xenomorph_nest/process(delta_time)
+	var/mob/living/host = host_ref?.resolve()
+	if(!network?.active || !network.is_convertible_corpse(host) || get_turf(host) != get_turf(src))
+		qdel(src)
+		return PROCESS_KILL
+	host.Paralyze(2 SECONDS)
+	host.adjustOxyLoss(-0.5 * delta_time)
+	if(network.advance_corpse_conversion(host, src, delta_time, network.structure_conversion_time))
+		qdel(src)
+		return PROCESS_KILL
+
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	var/force_opens_doors = TRUE
 

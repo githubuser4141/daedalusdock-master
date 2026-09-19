@@ -24,7 +24,9 @@ doors or structures on the way, and periodically retarget, so a mature hive disp
 remaining piled around its generator. They recognize ground-vehicle hulls as obstacles: any exterior
 panel on a light vehicle is fair game, while tank-grade vehicles draw attacks to their closed hatches.
 Generators and corpse conversion relocate new units to nearby growth rather than creating them inside
-a vehicle footprint.
+a vehicle footprint or on a dense hive structure. Hive walls prefer the core's perimeter while always
+leaving a usable growth tile for spawning. Blob growths flow over low walls, flock units phase across
+them, necromorphs clamber over them, and xenomorphs can vault them while dragging a host.
 
 Conversion subjects are shared work targets rather than private AI targets. A theme independently
 chooses whether dead bodies, disabled living hosts, or both are eligible. Any unit which sees an
@@ -46,9 +48,12 @@ The themes deliberately use that shared machinery differently:
 - Eris units recover bodies to machine recyclers, while a costly mobile recycler handles remote
   finds;
 - xenomorph warriors and evolved carriers reserve incapacitated living enemies instead of corpses,
-  haul them to incubation nests, and keep them paralyzed during incubation. Birth causes catastrophic
-  chest damage and leaves the body behind. Xenomorphs do not lose health away from weeds or after the
-  core dies.
+  stop attacking knocked-down prey, and haul them onto resin. A resin nest forms around a delivered
+  host, slows bleeding, stabilizes oxygen loss, and keeps the host restrained during incubation. The
+  hive's one-use eggs launch facehuggers: sufficiently strong head armor stops one, while weaker gear
+  is torn off before attachment. Facehuggers feed this same nest-incubation path rather than installing
+  the base SS13 embryo. Birth causes catastrophic chest damage and leaves the body behind. Xenomorphs
+  do not lose health away from weeds or after the core dies.
 
 Flock and necromorph terrain use their native eight-neighbor connected bitmask icon states, while
 xenomorph weeds use their native cardinal-only states. Connections are scoped

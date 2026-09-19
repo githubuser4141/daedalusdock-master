@@ -61,6 +61,11 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/converts_dead_hosts = TRUE
 	var/converts_living_hosts = FALSE
 	var/living_hosts_must_be_incapacitated = TRUE
+	/// Allows a theme to reserve living hosts which have merely been knocked down.
+	var/captures_knocked_down_hosts = FALSE
+	/// Theme-selected low-wall traversal; hauled bodies only follow themes which opt in separately.
+	var/can_cross_low_walls = FALSE
+	var/can_haul_over_low_walls = FALSE
 	/// Resources recovered when a completed corpse cannot become a unit because the population cap is full.
 	var/corpse_recycling_value = 10
 	var/corpse_conversion_effect = MS13_HIVE_CORPSE_EFFECT_BLOOD
@@ -253,8 +258,15 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /datum/ms13_terrain_hivemind/proc/try_build_special()
 	if(resources < special_cost || !length(territory) || length(specials) >= max(1, round(length(territory) / territory_per_special)))
 		return FALSE
+	var/special_type = pick(special_types)
 	var/list/candidates = territory.Copy()
 	shuffle_inplace(candidates)
+	if(ispath(special_type, /obj/structure/ms13_hivemind/special/wall) && core)
+		var/list/core_neighbors = list()
+		for(var/obj/structure/ms13_hivemind/terrain/growth as anything in candidates)
+			if(get_dist(growth, core) <= 1)
+				core_neighbors += growth
+		candidates = core_neighbors + (candidates - core_neighbors)
 	for(var/obj/structure/ms13_hivemind/terrain/growth as anything in candidates)
 		var/turf/target = get_turf(growth)
 		if(!target || target == get_turf(core) || locate(/obj/structure/ms13_hivemind/special) in target || locate(/mob/living) in target)
@@ -266,7 +278,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 				break
 		if(blocked)
 			continue
-		var/special_type = pick(special_types)
+		if(ispath(special_type, /obj/structure/ms13_hivemind/special/wall) && would_block_core_spawn(target))
+			continue
 		new special_type(target, src)
 		resources -= special_cost
 		return TRUE
@@ -294,7 +307,20 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return available_types
 
 /datum/ms13_terrain_hivemind/proc/can_spawn_unit_at(turf/target)
-	return isopenturf(target) && !target.density && !get_ms13_ground_vehicle_at(target)
+	if(!isopenturf(target) || target.density || get_ms13_ground_vehicle_at(target))
+		return FALSE
+	for(var/atom/movable/content in target)
+		if(content.density)
+			return FALSE
+	return TRUE
+
+/datum/ms13_terrain_hivemind/proc/would_block_core_spawn(turf/build_target)
+	if(!core || get_dist(build_target, core) > 1)
+		return FALSE
+	for(var/turf/candidate in RANGE_TURFS(1, core))
+		if(candidate != build_target && candidate != get_turf(core) && is_territory(candidate) && can_spawn_unit_at(candidate))
+			return FALSE
+	return TRUE
 
 /datum/ms13_terrain_hivemind/proc/get_unit_spawn_turf(turf/origin)
 	if(can_spawn_unit_at(origin))
@@ -322,10 +348,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return converts_dead_hosts
 	if(!converts_living_hosts)
 		return FALSE
-	return !living_hosts_must_be_incapacitated || corpse.stat == UNCONSCIOUS || corpse.IsParalyzed()
+	return !living_hosts_must_be_incapacitated || corpse.stat == UNCONSCIOUS || corpse.IsParalyzed() || (captures_knocked_down_hosts && corpse.IsKnockdown())
 
 /datum/ms13_terrain_hivemind/proc/report_corpse(mob/living/corpse)
-	if(!is_convertible_corpse(corpse))
+	if(!active || !corpse_reports || !is_convertible_corpse(corpse))
 		return FALSE
 	if(get_corpse_claim(corpse))
 		return TRUE
@@ -339,6 +365,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return TRUE
 
 /datum/ms13_terrain_hivemind/proc/get_corpse_claim(mob/living/corpse)
+	if(!corpse || !corpse_claims)
+		return
 	var/datum/weakref/corpse_ref = WEAKREF(corpse)
 	var/datum/weakref/claim_ref = corpse_claims[corpse_ref]
 	var/datum/claimant = claim_ref?.resolve()
@@ -347,7 +375,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return claimant
 
 /datum/ms13_terrain_hivemind/proc/claim_corpse(mob/living/corpse, datum/claimant)
-	if(!is_convertible_corpse(corpse) || QDELETED(claimant))
+	if(!active || !corpse_claims || !is_convertible_corpse(corpse) || QDELETED(claimant))
 		return FALSE
 	var/datum/current_claim = get_corpse_claim(corpse)
 	if(current_claim && current_claim != claimant)
@@ -358,7 +386,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return TRUE
 
 /datum/ms13_terrain_hivemind/proc/release_corpse_claim(mob/living/corpse, datum/claimant, requeue = TRUE)
-	if(!corpse)
+	if(!corpse || !corpse_claims)
 		return
 	var/datum/weakref/corpse_ref = WEAKREF(corpse)
 	var/datum/weakref/claim_ref = corpse_claims[corpse_ref]
@@ -378,6 +406,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 			corpse_conversion_progress -= corpse_ref
 			continue
 		if(corpse.z != seeker.z)
+			continue
+		if(LAZYLEN(corpse.grabbed_by))
 			continue
 		var/datum/current_claim = get_corpse_claim(corpse)
 		if(current_claim && current_claim != seeker)
@@ -491,6 +521,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		converters += converter
 	return get_closest_atom(/obj/structure/ms13_hivemind, converters, source)
 
+/// Themes may replace the generic delivery structure after a hauler arrives.
+/datum/ms13_terrain_hivemind/proc/prepare_delivered_subject(mob/living/subject, obj/structure/ms13_hivemind/destination)
+	return destination
+
 /datum/ms13_terrain_hivemind/proc/should_spawn_converter()
 	if(!converter_unit_enabled || length(territory) < converter_unit_threshold || resources < converter_unit_cost || !find_reported_corpse(core))
 		return FALSE
@@ -508,6 +542,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	spread_delay = 2 SECONDS
 	mobs_require_terrain = TRUE
 	base_units_convert_corpses = TRUE
+	can_cross_low_walls = TRUE
 	terrain_conversion_time = 75
 	field_conversion_time = 36
 	structure_conversion_time = 8
@@ -543,6 +578,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	name = "Daedalus flock"
 	abstract = FALSE
 	faction_id = FACTION_FLOCK
+	can_cross_low_walls = TRUE
 	mob_regeneration = 3
 	terrain_conversion_time = 150
 	structure_conversion_time = 10
@@ -584,6 +620,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	resource_per_tile = 0.15
 	mobs_require_terrain = TRUE
 	units_haul_corpses = TRUE
+	can_cross_low_walls = TRUE
 	elite_units_convert_corpses = TRUE
 	terrain_conversion_time = 135
 	field_conversion_time = 28
@@ -669,6 +706,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	mob_off_terrain_damage = 0
 	mob_orphan_damage = 0
 	units_haul_corpses = TRUE
+	captures_knocked_down_hosts = TRUE
+	can_cross_low_walls = TRUE
+	can_haul_over_low_walls = TRUE
 	converter_unit_enabled = FALSE
 	converts_dead_hosts = FALSE
 	converts_living_hosts = TRUE
@@ -889,6 +929,24 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		icon = network.wall_icon
 		icon_state = network.wall_icon_state
 
+/obj/structure/ms13_hivemind/special/wall/CanAllowThrough(atom/movable/mover, border_dir)
+	if(is_hivemind_wall_mover(mover))
+		return TRUE
+	return ..()
+
+/obj/structure/ms13_hivemind/special/wall/proc/is_hivemind_wall_mover(atom/movable/mover)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = mover
+	if(istype(unit) && unit.network == network)
+		return TRUE
+	var/mob/living/dragged_body = mover
+	if(!istype(dragged_body))
+		return FALSE
+	for(var/obj/item/hand_item/grab/grab as anything in dragged_body.grabbed_by)
+		unit = grab.assailant
+		if(istype(unit) && unit.network == network)
+			return TRUE
+	return FALSE
+
 /obj/structure/ms13_hivemind/special/trap
 	name = "hivemind trap"
 	density = FALSE
@@ -1028,6 +1086,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 
 /obj/structure/ms13_hivemind/special/converter/Destroy()
 	STOP_PROCESSING(SSobj, src)
+	var/mob/living/corpse = network?.get_claimed_corpse(src)
+	while(corpse)
+		network.release_corpse_claim(corpse, src)
+		corpse = network.get_claimed_corpse(src)
 	return ..()
 
 /obj/structure/ms13_hivemind/special/converter/process(delta_time)
@@ -1074,12 +1136,15 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/terrain_recovery_range = 6
 	var/corpse_converter = FALSE
 	var/corpse_hauler = TRUE
+	/// Dedicated logistics castes take an available body before looking for a fresh fight.
+	var/prioritizes_corpse_work = FALSE
 	var/roam_range = 14
 	var/roam_min_distance = 7
 	var/roam_retarget_delay = 15 SECONDS
 	var/turf/roam_target
 	var/datum/weakref/corpse_target_ref
 	COOLDOWN_DECLARE(roam_retarget_cooldown)
+	COOLDOWN_DECLARE(corpse_report_cooldown)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
 	. = ..()
@@ -1170,6 +1235,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	unit_role = MS13_HIVE_ROLE_INFECTOR
 	corpse_converter = TRUE
 	corpse_hauler = FALSE
+	prioritizes_corpse_work = TRUE
 	health_multiplier = 1.25
 	damage_multiplier = 0.75
 	off_terrain_damage_multiplier = 0.5
@@ -1183,6 +1249,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	damage_multiplier = 0.7
 	off_terrain_damage_multiplier = 0.5
 	corpse_hauler = TRUE
+	prioritizes_corpse_work = TRUE
 	move_to_delay = 3
 	roam_range = 14
 	roam_min_distance = 7
@@ -1194,6 +1261,11 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(network)
 		network.units -= src
 	network = null
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/death(gibbed, cause_of_death = "Unknown")
+	clear_corpse_task()
+	clear_roam_target()
 	return ..()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/process(delta_time)
@@ -1221,11 +1293,15 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	set waitfor = FALSE
 	if(AIStatus == AI_OFF || !network?.active)
 		return FALSE
+	release_finished_target()
 	if(target)
 		clear_corpse_task()
 		clear_roam_target()
 		return ..()
 	if(handle_terrain_recovery())
+		return TRUE
+	if(prioritizes_corpse_work && handle_corpse_work())
+		roam_target = null
 		return TRUE
 	if(FindTarget(ListTargets(), TRUE))
 		clear_corpse_task()
@@ -1253,10 +1329,24 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(istype(the_target, /obj/structure/window/ms13_vehicle_wall))
 		return is_vehicle_hull_target(the_target)
 	var/mob/living/living_target = the_target
-	if(istype(living_target) && network?.is_convertible_corpse(living_target))
-		network.report_corpse(living_target)
-		return FALSE
+	if(istype(living_target))
+		if(network?.is_convertible_corpse(living_target))
+			network.report_corpse(living_target)
+			return FALSE
+		if(living_target.stat != CONSCIOUS)
+			return FALSE
 	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/release_finished_target()
+	var/mob/living/living_target = target
+	if(!istype(living_target))
+		return FALSE
+	if(network.is_convertible_corpse(living_target))
+		network.report_corpse(living_target)
+	else if(living_target.stat == CONSCIOUS)
+		return FALSE
+	LoseTarget()
+	return TRUE
 
 /// Tank-grade hull is futile prey except at its hatches; lighter hull can be torn open anywhere.
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/is_vehicle_hull_target(obj/structure/window/ms13_vehicle_wall/wall)
@@ -1297,6 +1387,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	SSmove_manager.stop_looping(src)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/find_local_corpses()
+	if(!COOLDOWN_FINISHED(src, corpse_report_cooldown))
+		return
+	COOLDOWN_START(src, corpse_report_cooldown, 3 SECONDS)
 	for(var/mob/living/corpse in view(network.corpse_search_range, src))
 		if(network.is_convertible_corpse(corpse))
 			network.report_corpse(corpse)
@@ -1314,6 +1407,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 			return FALSE
 		corpse_target_ref = WEAKREF(corpse)
 	if(can_field_convert_corpses())
+		if(LAZYLEN(corpse.grabbed_by))
+			clear_corpse_task()
+			return FALSE
 		if(get_dist(src, corpse) > 1)
 			Goto(corpse, move_to_delay, 1)
 		else
@@ -1340,7 +1436,17 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	release_grabs(corpse)
 	corpse.forceMove(get_turf(src))
 	network.release_corpse_claim(corpse, src, FALSE)
-	network.claim_corpse(corpse, destination)
+	destination = network.prepare_delivered_subject(corpse, destination)
+	if(!destination)
+		network.report_corpse(corpse)
+		corpse_target_ref = null
+		return FALSE
+	if(!network.claim_corpse(corpse, destination))
+		if(istype(destination, /obj/structure/ms13_hivemind/xenomorph_nest))
+			qdel(destination)
+		network.report_corpse(corpse)
+		corpse_target_ref = null
+		return FALSE
 	corpse_target_ref = null
 	SSmove_manager.stop_looping(src)
 	return TRUE
