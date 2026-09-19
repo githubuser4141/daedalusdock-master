@@ -1,5 +1,18 @@
 # WIP terrain hiveminds
 
+Capture regression notes: a successful NPC capture immediately reserves a hauling task;
+assigned hauls finish before searching for another fight. Resin nests hold their own
+immobilization/incapacitation traits until destroyed, independent of the short stun refresh.
+The framework test covers capture claims, nest restraint/release, ordinary MS corpse-target
+deprioritization, and movement callback cleanup. Ordinary MS basic mobs can still attack
+corpses, but recheck for living threats at most every two seconds while doing so.
+Cancelled JPS/A* routes disconnect completion
+callbacks so repeated hive repathing does not retain deleted movement loops.
+The basic-AI planner retains its pending work across budget yields instead of restarting
+the list; this prevents later mobs being starved under load. Robot gunners drop unseen
+combat targets while preserving suppression memory, and use the existing cover search to
+find a firing angle when an obstacle blocks their outgoing shots.
+
 Use the admin debug verb **MS13 - Spawn Terrain Hivemind** to choose a theme, a territory cap
 (including unbounded), and either your current tile or a View Variables marked target.
 

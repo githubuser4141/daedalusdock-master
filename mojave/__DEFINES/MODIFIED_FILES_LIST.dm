@@ -93,6 +93,8 @@ code/modules/unit_tests/farming_ms13.dm,
 code/modules/admin/admin_verbs.dm,
 code/__DEFINES/icon_smoothing.dm,
 code/modules/grab/grab_living.dm,
+code/controllers/subsystem/ai_controllers.dm,
+code/modules/unit_tests/cover_ms13.dm,
 
 
 */

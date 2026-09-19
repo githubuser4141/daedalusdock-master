@@ -34,10 +34,10 @@
 	//        y+3      S . . .              S seeker (exposed)
 	//        y+2      . . . .
 	//        y+1      C O . . T            O obstacle   C cover tile   T threat
-	//               x+2 3 4 5 6
-	var/turf/threat_turf = locate(origin.x + 6, origin.y + 1, origin.z)
-	var/turf/obstacle_turf = locate(origin.x + 3, origin.y + 1, origin.z)
-	var/turf/seeker_turf = locate(origin.x + 2, origin.y + 3, origin.z)
+	//               x+0 1 2 3 4 (the reserved room is only five floor tiles wide)
+	var/turf/threat_turf = locate(origin.x + 4, origin.y + 1, origin.z)
+	var/turf/obstacle_turf = locate(origin.x + 1, origin.y + 1, origin.z)
+	var/turf/seeker_turf = locate(origin.x, origin.y + 3, origin.z)
 	TEST_ASSERT(threat_turf && obstacle_turf && seeker_turf, "Test area is too small to lay out the cover-seeking case.")
 	TEST_ASSERT(!threat_turf.density && !obstacle_turf.density && !seeker_turf.density, "Cover-seeking layout runs into a wall - the unit test area is smaller than this test assumes.")
 
@@ -65,7 +65,14 @@
 
 	// Bracing only works for partial cover. Treating an adjacent hard obstacle as shootable made AI choose
 	// sealed corners it could never return fire through.
+	// Use a straight firing line here: the cover picker may choose a diagonal tile whose
+	// outgoing rasterized line already clears the obstacle without needing to brace.
+	var/turf/behind_obstacle = locate(origin.x, origin.y + 1, origin.z)
+	seeker.forceMove(behind_obstacle)
 	obstacle.projectile_passchance = 0
-	TEST_ASSERT_EQUAL(ms13_shot_quality(found, threat_turf, ignore_braced = TRUE), 0, "Hard cover must still block an outgoing shot while braced.")
+	TEST_ASSERT_EQUAL(ms13_shot_quality(behind_obstacle, threat_turf, ignore_braced = TRUE), 0, "Hard cover must still block an outgoing shot while braced.")
+	var/turf/firing_angle = ms13_find_cover_turf(seeker, threat_turf)
+	TEST_ASSERT(firing_angle, "A blocked shooter did not find an available lateral firing angle.")
+	TEST_ASSERT(ms13_shot_quality(firing_angle, threat_turf, ignore_braced = TRUE) >= 0.6, "The chosen firing angle still cannot shoot past the obstacle.")
 
 	qdel(obstacle)

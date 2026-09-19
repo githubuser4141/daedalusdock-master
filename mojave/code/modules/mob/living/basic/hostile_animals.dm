@@ -32,8 +32,7 @@
 	// passes, so BB_BASIC_MOB_CURRENT_TARGET never gets set, so basic_melee_attack_subtree never has a target
 	// to act on - the mob never engages, ever, no matter how close/hostile the player is. Switched to
 	// /datum/targeting_strategy/generic, DD's real working implementation (faction/LOS/vision/stat checks) -
-	// see targeting_strategy_generic.dm. BB_TARGET_MINIMUM_STAT = DEAD (same as monkey_controller.dm uses)
-	// so it isn't gated on stat at all, matching this mob type's original "attack anyone in range" intent.
+	// The MS controller lets living threats preempt corpse attacks.
 	blackboard = list(
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/generic,
 		BB_TARGET_MINIMUM_STAT = DEAD,
@@ -466,5 +465,3 @@
 /mob/living/basic/ms13/hostile_animal/boar/death(gibbed, cause_of_death = "Unknown")
 	. = ..()
 	playsound(src, 'mojave/sound/ms13npc/hellpig_death1.ogg', 45, TRUE)
-
-

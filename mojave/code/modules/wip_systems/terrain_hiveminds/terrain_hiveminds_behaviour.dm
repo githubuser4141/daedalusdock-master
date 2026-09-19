@@ -42,8 +42,12 @@
 	if(!can_capture_npc(victim))
 		return FALSE
 	victim.Paralyze(2 MINUTES, TRUE)
+	if(!network.is_convertible_corpse(victim))
+		return FALSE
 	network.report_corpse(victim)
 	LoseTarget()
+	if(!corpse_target_ref && network.claim_corpse(victim, src))
+		corpse_target_ref = WEAKREF(victim)
 	return TRUE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_capture_npc(mob/living/victim)
@@ -396,6 +400,10 @@
 		return INITIALIZE_HINT_QDEL
 	network = join_network
 	host_ref = WEAKREF(host)
+	// A nest restrains continuously, not just until the next five-second stun expires.
+	ADD_TRAIT(host, TRAIT_IMMOBILIZED, REF(src))
+	ADD_TRAIT(host, TRAIT_INCAPACITATED, REF(src))
+	ADD_TRAIT(host, TRAIT_HANDS_BLOCKED, REF(src))
 	var/mob/living/carbon/human/human_host = host
 	host.Paralyze(5 SECONDS, TRUE)
 	if(istype(human_host) && human_host.physiology)
@@ -406,6 +414,10 @@
 /obj/structure/ms13_hivemind/xenomorph_nest/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	var/mob/living/host = host_ref?.resolve()
+	if(host)
+		REMOVE_TRAIT(host, TRAIT_IMMOBILIZED, REF(src))
+		REMOVE_TRAIT(host, TRAIT_INCAPACITATED, REF(src))
+		REMOVE_TRAIT(host, TRAIT_HANDS_BLOCKED, REF(src))
 	if(bleeding_reduced && ishuman(host))
 		var/mob/living/carbon/human/human_host = host
 		if(human_host.physiology)

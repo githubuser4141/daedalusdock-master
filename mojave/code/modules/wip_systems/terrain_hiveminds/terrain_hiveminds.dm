@@ -368,7 +368,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return converts_dead_hosts
 	if(!converts_living_hosts)
 		return FALSE
-	return !living_hosts_must_be_incapacitated || corpse.stat == UNCONSCIOUS || corpse.IsParalyzed() || (captures_knocked_down_hosts && corpse.IsKnockdown())
+	return !living_hosts_must_be_incapacitated || corpse.stat == UNCONSCIOUS || HAS_TRAIT(corpse, TRAIT_INCAPACITATED) || corpse.IsParalyzed() || (captures_knocked_down_hosts && corpse.IsKnockdown())
 
 /datum/ms13_terrain_hivemind/proc/report_corpse(mob/living/corpse)
 	if(!active || !corpse_reports || !is_convertible_corpse(corpse))
@@ -1355,6 +1355,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		clear_roam_target()
 		return ..()
 	if(handle_terrain_recovery())
+		return TRUE
+	// Finish an assigned haul before searching for a new fight. Existing combat still takes priority.
+	if(corpse_target_ref && network.units_haul_corpses && handle_corpse_work())
 		return TRUE
 	if(prioritizes_corpse_work && handle_corpse_work())
 		roam_target = null

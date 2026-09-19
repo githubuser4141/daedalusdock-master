@@ -58,6 +58,37 @@
 /datum/ai_behavior/basic_melee_attack/ms13/ghoul
 	action_cooldown = 1.5 SECONDS
 
+// Corpse attacks are idle work: periodically let a living threat preempt them.
+// Keep the timer on the controller, not the shared behavior datum.
+/datum/ai_controller/basic_controller/ms13
+	COOLDOWN_DECLARE(living_threat_scan)
+
+/datum/ai_controller/basic_controller/ms13/able_to_plan()
+	if(QDELETED(pawn) || HAS_TRAIT(pawn, TRAIT_AI_DISABLE_PLANNING))
+		return FALSE
+	. = ..()
+	if(.)
+		return
+	var/mob/living/current_target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	return istype(current_target) && current_target.stat == DEAD && COOLDOWN_FINISHED(src, living_threat_scan)
+
+/datum/ai_controller/basic_controller/ms13/ProcessBehaviorSelection(delta_time)
+	var/atom/current_target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+	var/mob/living/current_mob = current_target
+	if((!current_target || QDELETED(current_target) || (istype(current_mob) && current_mob.stat == DEAD)) && COOLDOWN_FINISHED(src, living_threat_scan))
+		COOLDOWN_START(src, living_threat_scan, 2 SECONDS)
+		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
+		var/list/threats = hearers(9, pawn) + visible_hostile_machines(pawn, 9)
+		for(var/atom/threat as anything in threats)
+			var/mob/living/living_threat = threat
+			if(threat == pawn || (istype(living_threat) && living_threat.stat == DEAD) || !strategy.can_attack(pawn, threat, 9))
+				continue
+			CancelActions()
+			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, threat)
+			set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION, strategy.find_hidden_mobs(pawn, threat))
+			break
+	return ..()
+
 /mob/living/basic/ms13/ghoul/brown
 	icon_state = "feralghoul_brown"
 	icon_dead = "feralghoul_brown_dead"

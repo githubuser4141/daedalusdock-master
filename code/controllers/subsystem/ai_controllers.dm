@@ -11,6 +11,8 @@ SUBSYSTEM_DEF(ai_controllers)
 	var/list/ai_subtrees = list()
 	///List of all ai controllers currently running
 	var/list/active_ai_controllers = list()
+	/// Remaining planners in this pass, retained when the master controller yields us.
+	var/list/currentrun = list()
 
 	/// The average tick cost of all active AI, calculated on fire.
 	var/our_cost
@@ -30,9 +32,14 @@ SUBSYSTEM_DEF(ai_controllers)
 /datum/controller/subsystem/ai_controllers/fire(resumed)
 	if(!resumed)
 		summing_cost = 0
+		currentrun = active_ai_controllers.Copy()
 
 	var/timer = TICK_USAGE_REAL
-	for(var/datum/ai_controller/ai_controller as anything in active_ai_controllers)
+	while(length(currentrun))
+		var/datum/ai_controller/ai_controller = currentrun[length(currentrun)]
+		currentrun.len--
+		if(QDELETED(ai_controller) || ai_controller.ai_status != AI_STATUS_ON)
+			continue
 		if(!COOLDOWN_FINISHED(ai_controller, failed_planning_cooldown))
 			continue
 

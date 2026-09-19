@@ -41,8 +41,8 @@
 	var/suppressed = FALSE
 	var/containment_started_at
 	var/containment_emp_arm_time = 5 MINUTES
-	var/containment_emp_heavy_range = 15
-	var/containment_emp_light_range = 30
+	var/containment_emp_heavy_range = 45
+	var/containment_emp_light_range = 90
 	var/obj/machinery/power/ms13_marker_feed/power_feed
 	var/obj/machinery/telecomms/allinone/ms13_marker_relay/radio_relay
 	COOLDOWN_DECLARE(influence_cooldown)
@@ -65,7 +65,7 @@
 
 /obj/structure/ms13_hivemind/core/marker/examine(mob/user)
 	. = ..()
-	. += span_notice("A cable node beneath it can draw 250 kW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles on this floor.")
+	. += span_notice("A cable node beneath it can draw 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles on this floor.")
 	. += span_notice((is_suppressed() ? "Its signal is suppressed. Power and public radio remain available." : "Its signal is uncontained. An operating Marker suppression projector within four tiles can contain it."))
 	if(suppressed)
 		. += span_warning("Containment feedback: [world.time - containment_started_at >= containment_emp_arm_time ? "charged — containment loss will release a massive EMP" : "building charge"].")
@@ -140,7 +140,7 @@
 		return PROCESS_KILL
 	if(!powernet)
 		connect_to_network()
-	add_avail(250000)
+	add_avail(1000000)
 
 /obj/machinery/telecomms/allinone/ms13_marker_relay
 	name = "Marker public relay"

@@ -8,10 +8,24 @@
 	pulses++
 	last_severity = severity
 
+/datum/ai_controller/basic_controller/ms13/planner_test_probe
+	var/plans = 0
+
+/datum/ai_controller/basic_controller/ms13/planner_test_probe/ProcessBehaviorSelection(delta_time)
+	plans++
+
 /datum/unit_test/ms13_terrain_hiveminds
 	name = "MOJAVE SUN: Terrain Hivemind Framework"
 
 /datum/unit_test/ms13_terrain_hiveminds/Run()
+	var/datum/move_loop/has_target/jps/deleted_route = new
+	var/datum/callback/pending_route_callback = deleted_route.on_finish_callback
+	qdel(deleted_route)
+	TEST_ASSERT(!pending_route_callback.object, "A deleted JPS route is retained by its completion callback.")
+	var/datum/move_loop/has_target/astar/deleted_astar_route = new
+	var/datum/callback/pending_astar_callback = deleted_astar_route.on_finish_callback
+	qdel(deleted_astar_route)
+	TEST_ASSERT(!pending_astar_callback.object, "A deleted A* route is retained by its completion callback.")
 	var/concrete_variants = 0
 	for(var/hive_type in subtypesof(/datum/ms13_terrain_hivemind))
 		var/datum/ms13_terrain_hivemind/network = new hive_type
@@ -330,7 +344,56 @@
 	capture_host.health = 5
 	TEST_ASSERT(xeno_carrier.try_capture_npc(capture_host), "Xenomorphs fail to subdue a wounded NPC.")
 	TEST_ASSERT(capture_host.IsParalyzed() && capture_host.stat != DEAD && capture_host.health == 5, "Capturing an NPC killed or damaged it instead of restraining it.")
+	TEST_ASSERT_EQUAL(xeno_network.get_corpse_claim(capture_host), xeno_carrier, "Capturing an NPC did not reserve it for its carrier.")
+	TEST_ASSERT_EQUAL(xeno_carrier.corpse_target_ref?.resolve(), capture_host, "Capturing an NPC did not assign the hauling task.")
+	xeno_carrier.clear_corpse_task()
 	qdel(capture_host)
+	var/mob/living/basic/ms13/ghoul/nested_ghoul = new(xeno_turf)
+	var/datum/ai_controller/ghoul_controller = nested_ghoul.ai_controller
+	var/datum/move_loop/has_target/dist_bound/immobile_route = new(null, null, nested_ghoul, extra_info = ghoul_controller)
+	immobile_route.target = get_step(xeno_turf, NORTH)
+	ADD_TRAIT(nested_ghoul, TRAIT_IMMOBILIZED, "hive_test")
+	TEST_ASSERT(ghoul_controller.ai_movement.pre_move(immobile_route) & MOVELOOP_SKIP_STEP, "Table-vaulting AI ignores immobilization.")
+	REMOVE_TRAIT(nested_ghoul, TRAIT_IMMOBILIZED, "hive_test")
+	qdel(immobile_route)
+	var/obj/structure/ms13_hivemind/xenomorph_nest/ghoul_nest = new(xeno_turf, xeno_network, nested_ghoul)
+	nested_ghoul.SetParalyzed(0, TRUE)
+	TEST_ASSERT(HAS_TRAIT(nested_ghoul, TRAIT_IMMOBILIZED) && !nested_ghoul.ai_controller.able_to_run(), "Resin lets basic NPCs act after the short stun expires.")
+	TEST_ASSERT(xeno_network.is_convertible_corpse(nested_ghoul), "A restrained nest host becomes ineligible when its stun expires.")
+	qdel(ghoul_nest)
+	TEST_ASSERT(!HAS_TRAIT(nested_ghoul, TRAIT_IMMOBILIZED) && !HAS_TRAIT(nested_ghoul, TRAIT_INCAPACITATED), "Destroying resin leaves its host permanently restrained.")
+	var/datum/ai_controller/basic_controller/ms13/planner_test_probe/planner_probe = new(nested_ghoul)
+	var/list/saved_planner_run = SSai_controllers.currentrun
+	SSai_controllers.currentrun = list(planner_probe)
+	SSai_controllers.fire(TRUE)
+	TEST_ASSERT_EQUAL(planner_probe.plans, 1, "Resumed AI planning did not process its pending controller.")
+	TEST_ASSERT(!length(SSai_controllers.currentrun), "Resumed AI planning did not consume the pending work list.")
+	SSai_controllers.currentrun = saved_planner_run
+	qdel(planner_probe)
+	var/mob/living/simple_animal/chicken/ignored_corpse = new(xeno_turf)
+	ignored_corpse.death()
+	for(var/controller_type in list(/datum/ai_controller/basic_controller/ms13/ghoul, /datum/ai_controller/basic_controller/ms13/hostile_animal, /datum/ai_controller/basic_controller/ms13/raider, /datum/ai_controller/basic_controller/ms13/robot, /datum/ai_controller/basic_controller/ms13/robot/gunner))
+		var/datum/ai_controller/test_controller = new controller_type(nested_ghoul)
+		TEST_ASSERT_EQUAL(test_controller.blackboard[BB_TARGET_MINIMUM_STAT], DEAD, "[controller_type] no longer allows low-priority corpse attacks.")
+		test_controller.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, ignored_corpse)
+		test_controller.ProcessBehaviorSelection(1)
+		var/mob/living/chosen_threat = test_controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
+		TEST_ASSERT(istype(chosen_threat) && chosen_threat.stat != DEAD, "[controller_type] stays on a corpse instead of a nearby living hive enemy.")
+		qdel(test_controller)
+	var/datum/ai_controller/basic_controller/ms13/robot/gunner/gunner_probe = new(nested_ghoul)
+	var/datum/ai_planning_subtree/ms13_take_cover/cover_planner = SSai_controllers.ai_subtrees[/datum/ai_planning_subtree/ms13_take_cover]
+	gunner_probe.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, ignored_corpse)
+	cover_planner.SelectBehaviors(gunner_probe, 1)
+	TEST_ASSERT(!gunner_probe.blackboard["ms13_next_cover_attempt"], "The gunner searches for cover from a corpse.")
+	var/datum/ai_planning_subtree/ms13_combat_awareness/awareness = SSai_controllers.ai_subtrees[/datum/ai_planning_subtree/ms13_combat_awareness]
+	gunner_probe.set_blackboard_key("ms13_last_known_turf", xeno_turf)
+	gunner_probe.set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, locate(xeno_turf.x > 12 ? xeno_turf.x - 12 : xeno_turf.x + 12, xeno_turf.y, xeno_turf.z))
+	awareness.SelectBehaviors(gunner_probe, 1)
+	TEST_ASSERT(!gunner_probe.blackboard[BB_BASIC_MOB_CURRENT_TARGET], "The gunner retains an unseen target and blocks new acquisition.")
+	TEST_ASSERT_EQUAL(gunner_probe.blackboard["ms13_last_known_turf"], xeno_turf, "Losing sight erased the gunner's suppression memory.")
+	qdel(gunner_probe)
+	qdel(ignored_corpse)
+	qdel(nested_ghoul)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/helper_runner = new(xeno_turf, xeno_network)
 	TEST_ASSERT(helper_runner.can_work_corpses(), "Idle runners cannot assist a hauling hive.")
 	qdel(helper_runner)
@@ -373,6 +436,10 @@
 	var/datum/powernet/marker_grid = new
 	marker_grid.add_machine(projector)
 	marker_grid.add_machine(marker.power_feed)
+	marker.power_feed.process(1)
+	var/unsuppressed_marker_output = marker_grid.newavail
+	TEST_ASSERT(unsuppressed_marker_output > 0, "The Marker did not produce power before containment.")
+	marker_grid.newavail = 0
 	projector.enabled = TRUE
 	projector.process(1)
 	TEST_ASSERT(!marker.is_suppressed(), "An unpowered projector suppresses the Marker.")
@@ -381,7 +448,7 @@
 	TEST_ASSERT_EQUAL(marker_grid.load, 50000, "Containment did not charge the grid 50 kW.")
 	TEST_ASSERT(marker.is_suppressed(), "A powered nearby projector does not suppress the Marker.")
 	marker.power_feed.process(1)
-	TEST_ASSERT_EQUAL(marker_grid.newavail, 250000, "Suppression switched off Marker power production.")
+	TEST_ASSERT_EQUAL(marker_grid.newavail, unsuppressed_marker_output, "Suppression changed Marker power production.")
 	marker_network.resources = 100
 	var/initial_growth_count = length(marker_network.territory)
 	marker_network.process(30)

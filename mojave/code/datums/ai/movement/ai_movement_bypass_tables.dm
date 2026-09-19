@@ -3,6 +3,9 @@
 
 //Copypaste the entire thing, could probably make this into a modular thing upstream
 /datum/ai_movement/basic_avoidance/bypass_tables/pre_move(datum/move_loop/has_target/dist_bound/source, params)
+	. = ..()
+	if(. & MOVELOOP_SKIP_STEP || QDELETED(source))
+		return MOVELOOP_SKIP_STEP
 	var/atom/movable/pawn = source.moving
 	var/datum/ai_controller/controller = source.extra_info
 	// AI EDIT: movement_delay isn't a plain var on /datum/ai_controller - it's get_movement_delay() (confirmed
@@ -91,3 +94,17 @@
 /datum/ai_movement/basic_avoidance/bypass_tables/proc/end_jump(var/atom/movable/the_pawn)
 	the_pawn.pixel_y = the_pawn.base_pixel_y
 	the_pawn.layer = initial(the_pawn.layer)
+
+// Disconnect pending callbacks as well as the loop's own callback reference: a cancelled
+// route must not retain its movement loop or call back into it after deletion.
+/datum/move_loop/has_target/jps/Destroy()
+	if(on_finish_callback)
+		on_finish_callback.object = null
+		on_finish_callback = null
+	return ..()
+
+/datum/move_loop/has_target/astar/Destroy()
+	if(on_finish_callback)
+		on_finish_callback.object = null
+		on_finish_callback = null
+	return ..()

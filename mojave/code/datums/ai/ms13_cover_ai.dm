@@ -59,6 +59,7 @@
 		return null
 
 	var/current_quality = ms13_shot_quality(threat_turf, seeker_turf)
+	var/needs_firing_angle = ms13_shot_quality(seeker_turf, threat_turf, ignore_braced = TRUE) < MS13_AI_MIN_RETURN_FIRE
 	var/current_threat_distance = get_dist_manhattan(seeker_turf, threat_turf)
 	var/threat_x = SIGN(threat_turf.x - seeker_turf.x)
 	var/threat_y = SIGN(threat_turf.y - seeker_turf.y)
@@ -95,7 +96,9 @@
 				continue
 
 			var/candidate_quality = ms13_shot_quality(threat_turf, candidate)
-			if(candidate_quality > current_quality - MS13_AI_COVER_IMPROVEMENT)
+			// If our own shot is blocked, a usable firing angle is worth moving for even
+			// when it is not better defensive cover. Otherwise we shoot the obstacle forever.
+			if(!needs_firing_angle && candidate_quality > current_quality - MS13_AI_COVER_IMPROVEMENT)
 				continue
 
 			// Prove the route now. Handing an unreachable destination to the movement behavior made it
@@ -134,6 +137,9 @@
 	if(QDELETED(target) || !isliving(pawn))
 		return
 	if(!ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+		// Keep the last seen position for suppression, but free acquisition to find another enemy.
+		controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET)
+		controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 		return
 
 	controller.set_blackboard_key(BB_MS13_LAST_KNOWN_TURF, get_turf(target))
@@ -150,8 +156,11 @@
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	if(QDELETED(target) || !isliving(pawn))
 		return
+	var/mob/living/living_target = target
+	if(istype(living_target) && living_target.stat == DEAD)
+		return // A corpse cannot return fire; don't spend path searches taking cover from it.
 	// Already behind something that works - stay put and let the firing subtrees run instead.
-	if(ms13_shot_quality(target, pawn) < MS13_AI_EXPOSED_THRESHOLD)
+	if(ms13_shot_quality(target, pawn) < MS13_AI_EXPOSED_THRESHOLD && ms13_shot_quality(pawn, target, ignore_braced = TRUE) >= MS13_AI_MIN_RETURN_FIRE)
 		return
 
 	// Don't re-run the synchronous candidate/path search after every shot. Previously this cooldown was
@@ -279,6 +288,7 @@
 	// Acquired visible targets are already within this range. Ordinary aimed fire must not also own a
 	// movement loop: all combat movement is chosen and path-validated by ms13_take_cover above.
 	required_distance = MS13_AI_SIGHT_RANGE
+	behavior_flags = NONE
 	action_cooldown = 0.5 SECONDS
 
 /datum/ai_behavior/basic_ranged_attack/ms13_gunner/perform(delta_time, datum/ai_controller/controller, target_key, targeting_strategy_key, hiding_location_key)
