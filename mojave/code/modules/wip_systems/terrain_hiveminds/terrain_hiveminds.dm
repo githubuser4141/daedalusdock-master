@@ -719,7 +719,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	name = "hivemind bolt"
 	icon = 'icons/obj/guns/projectiles.dmi'
 	icon_state = "pulse0"
-	damage = 10
+	damage = 20
 	range = 8
 	var/datum/ms13_terrain_hivemind/source_network
 
