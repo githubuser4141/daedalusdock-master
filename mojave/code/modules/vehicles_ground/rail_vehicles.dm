@@ -47,6 +47,38 @@
 	var/list/rail_route
 	/// Speed bands shed per movement tick; stopping distance is computed using the same rule.
 	var/braking_power = 1
+	/// The frame riding the guide rail. The line can run under any part of the hull, not just the pivot.
+	var/obj/structure/ms13_vehicle_frame/rail_bogie
+
+/proc/ms13_rail_at(turf/location)
+	return location ? (locate(/obj/structure/ms13_rail) in location) : null
+
+/**
+ * The frame currently on the guide rail: the one it was already riding while that still holds, otherwise the
+ * one nearest the middle of the hull. Null when nothing of the vehicle is over a rail at all.
+ */
+/datum/ms13_ground_vehicle/rail/proc/rail_frame()
+	if(rail_bogie && !QDELETED(rail_bogie) && (rail_bogie in frames) && ms13_rail_at(get_turf(rail_bogie)))
+		return rail_bogie
+	rail_bogie = null
+	var/min_forward = INFINITY
+	var/max_forward = -INFINITY
+	var/min_right = INFINITY
+	var/max_right = -INFINITY
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		min_forward = min(min_forward, frame.forward_offset)
+		max_forward = max(max_forward, frame.forward_offset)
+		min_right = min(min_right, frame.right_offset)
+		max_right = max(max_right, frame.right_offset)
+	var/best_score
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		if(!ms13_rail_at(get_turf(frame)))
+			continue
+		var/score = abs(frame.forward_offset - (min_forward + max_forward) / 2) + abs(frame.right_offset - (min_right + max_right) / 2)
+		if(isnull(best_score) || score < best_score)
+			best_score = score
+			rail_bogie = frame
+	return rail_bogie
 
 /datum/ms13_ground_vehicle/rail/can_operate_steering()
 	return length(rail_route) || ..()
@@ -93,12 +125,14 @@
 	return ..()
 
 /datum/ms13_ground_vehicle/rail/apply_steering(new_dir)
-	if(!(locate(/obj/structure/ms13_rail) in get_step(pivot, new_dir)))
+	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
+	if(!bogie || !ms13_rail_at(get_step(bogie, new_dir)))
 		return FALSE
 	return has_motive_power() && full_turn(new_dir)
 
 /datum/ms13_ground_vehicle/rail/do_move(direction, bypass_cooldown = FALSE)
-	if(!(locate(/obj/structure/ms13_rail) in get_turf(pivot)) || !(locate(/obj/structure/ms13_rail) in get_step(pivot, direction)))
+	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
+	if(!bogie || !ms13_rail_at(get_step(bogie, direction)))
 		return FALSE
 	// Region transfer relocates the whole hull further than one rail tile; not a supported rail link yet.
 	if(SSmapping.ms13_surface_links["[pivot.z]"])
@@ -107,17 +141,18 @@
 				return FALSE
 	. = ..()
 	if(. && length(rail_route))
-		if(get_turf(pivot) == rail_route[1])
+		if(get_turf(rail_frame()) == rail_route[1])
 			rail_route.Cut(1, 2)
 		else
 			stop_motion()
 
 /// One bounded breadth-first search when selecting a destination, never a world scan each tick.
 /datum/ms13_ground_vehicle/rail/proc/find_rail_routes()
-	var/turf/start = get_turf(pivot)
+	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
 	var/list/parents = list()
-	if(!(locate(/obj/structure/ms13_rail) in start))
+	if(!bogie)
 		return parents
+	var/turf/start = get_turf(bogie)
 	var/list/queue = list(start)
 	parents[start] = start
 	// ponytail: 4096 connected tiles per trip; use incremental pathfinding for larger rail networks.
@@ -136,7 +171,7 @@
 	var/list/stops = list()
 	for(var/turf/location as anything in parents)
 		for(var/obj/structure/ms13_rail/rail in location)
-			if(rail.is_station && location != get_turf(pivot))
+			if(rail.is_station && location != get_turf(rail_frame()))
 				stops["[rail.name] ([location.x], [location.y])"] = location
 	if(!length(stops))
 		to_chat(user, span_warning("No connected rail stops found."))
@@ -154,7 +189,7 @@
 	if(!start_engine(user) || !has_motive_power())
 		return
 	rail_route = list()
-	while(destination != get_turf(pivot))
+	while(destination != get_turf(rail_frame()))
 		rail_route.Insert(1, destination)
 		destination = parents[destination]
 	brakes_mode = FALSE
@@ -173,11 +208,15 @@
 	if(!length(rail_route) || !has_motive_power())
 		stop_motion()
 		return
-	var/turf/next = rail_route[1]
-	if(get_dist(pivot, next) != 1 || next.z != pivot.z)
+	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
+	if(!bogie)
 		stop_motion()
 		return
-	var/direction = get_dir(pivot, next)
+	var/turf/next = rail_route[1]
+	if(get_dist(bogie, next) != 1 || next.z != bogie.z)
+		stop_motion()
+		return
+	var/direction = get_dir(bogie, next)
 	if(direction != dir)
 		if(speed > max_turn_speed)
 			speed = max(max_turn_speed, speed - max(1, braking_power))
@@ -189,7 +228,7 @@
 		return
 	// Brake before a corner or the final stop, using the same per-tile deceleration as movement.
 	var/straight = 0
-	var/turf/previous = get_turf(pivot)
+	var/turf/previous = get_turf(bogie)
 	for(var/turf/rail_tile as anything in rail_route)
 		if(get_dir(previous, rail_tile) != dir)
 			break
@@ -232,7 +271,9 @@
 			if(!target || target.density)
 				return INITIALIZE_HINT_QDEL
 			for(var/atom/movable/blocker in target)
-				if(blocker != src && (blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame)))
+				if(blocker == src || ismob(blocker))
+					continue
+				if(vehicle.blocks_vehicle(blocker))
 					return INITIALIZE_HINT_QDEL
 	for(var/back in 0 to car_length - 1)
 		for(var/right in 0 to car_width - 1)
