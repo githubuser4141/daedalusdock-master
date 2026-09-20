@@ -107,6 +107,9 @@
  * * lifespan - The lifespan of the message in deciseconds
  */
 /datum/chatmessage/proc/generate_image(text, atom/target, mob/owner, datum/language/language, list/extra_classes, lifespan)
+	if(QDELETED(target) || QDELETED(owner) || !owner.client || !get_turf(target))
+		qdel(src)
+		return
 	/// Cached icons to show what language the user is speaking
 	var/static/list/language_icons
 
@@ -167,6 +170,11 @@
 
 
 	message_loc = isturf(target) ? target : get_atom_on_turf(target)
+	// Icon generation / MeasureText can yield while an exploding speaker is deleted.
+	var/turf/message_turf = get_turf(message_loc)
+	if(QDELETED(src) || QDELETED(target) || !message_turf || !owned_by)
+		qdel(src)
+		return
 
 	// Build message image
 	message = new /image{
@@ -214,7 +222,6 @@
 					m.end_of_life()
 
 		//if(ismob(message_loc)) // If this proc starts getting $$$, re-add this check
-		var/turf/message_turf = get_turf(message_loc)
 		var/list/turfs2check = block(locate(max(message_turf.x-4, 1), message_turf.y, message_turf.z), locate(min(message_turf.x+4, world.maxx), message_turf.y, message_turf.z)) - message_turf
 		for(var/turf/T as anything in turfs2check)
 			var/mob/living/L = locate() in T

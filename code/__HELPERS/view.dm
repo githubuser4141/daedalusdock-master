@@ -16,7 +16,11 @@
 	return view_info
 
 /proc/in_view_range(mob/user, atom/A)
+	if(!user?.client)
+		return FALSE
 	var/list/view_range = getviewsize(user.client.view)
 	var/turf/source = get_turf(user)
 	var/turf/target = get_turf(A)
+	if(!source || !target)
+		return FALSE
 	return ISINRANGE(target.x, source.x - view_range[1], source.x + view_range[1]) && ISINRANGE(target.y, source.y - view_range[1], source.y + view_range[1])

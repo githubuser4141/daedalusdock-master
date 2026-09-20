@@ -164,7 +164,7 @@
 
 /obj/item/bodypart/arm/update_interaction_speed()
 	. = ..()
-	if(. != 1)
+	if(owner && . != 1)
 		owner.apply_status_effect(/datum/status_effect/arm_slowdown)
 
 /obj/item/bodypart/proc/set_sever_artery(val = TRUE)

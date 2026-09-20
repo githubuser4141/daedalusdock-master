@@ -654,6 +654,8 @@ GLOBAL_LIST_EMPTY(map_model_default)
 			var/atom_def = text2path(path_to_init) //path definition, e.g /obj/foo/bar
 
 			if(!ispath(atom_def, /atom)) // Skip the item if the path does not exist.  Fix your crap, mappers!
+				// Attributes were appended before validating the path; keep the two lists aligned.
+				members_attributes.Cut(length(members_attributes))
 				if(bad_paths)
 					// Rare case, avoid the var to save time most of the time
 					LAZYOR(bad_paths[copytext(line, 1, -1)], model_key)
@@ -953,8 +955,8 @@ GLOBAL_LIST_EMPTY(map_model_default)
 	SSatoms.map_loader_stop(REF(src)) // Just in case, I don't want to double up here
 	if(turf_blacklist)
 		turf_blacklist.Cut()
-	parsed_bounds.Cut()
-	bounds.Cut()
+	parsed_bounds?.Cut()
+	bounds?.Cut()
 	grid_models.Cut()
 	gridSets.Cut()
 	return QDEL_HINT_HARDDEL_NOW

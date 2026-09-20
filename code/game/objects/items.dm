@@ -935,9 +935,9 @@ DEFINE_INTERACTABLE(/obj/item)
 
 	if(!initial)
 		if(equip_sound && (slot_flags & slot))
-			playsound(src, equip_sound, EQUIP_SOUND_VOLUME, TRUE, ignore_walls = FALSE)
+			playsound(src, islist(equip_sound) ? pick(equip_sound) : equip_sound, EQUIP_SOUND_VOLUME, TRUE, ignore_walls = FALSE)
 		else if(slot == ITEM_SLOT_HANDS)
-			playsound(src, pickup_sound, PICKUP_SOUND_VOLUME, ignore_walls = FALSE)
+			playsound(src, islist(pickup_sound) ? pick(pickup_sound) : pickup_sound, PICKUP_SOUND_VOLUME, ignore_walls = FALSE)
 
 	if(slowdown)
 		user.update_equipment_speed_mods()

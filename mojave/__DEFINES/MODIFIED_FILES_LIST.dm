@@ -1,6 +1,12 @@
 #warn MODIFIED ORIGINAL FILES:
 
 /*
+ code/__HELPERS/view.dm,
+ code/datums/chatmessage.dm,
+ code/datums/actions/mobs/charge.dm,
+ code/modules/mapping/reader.dm,
+ code/modules/surgery/bodyparts/injuries.dm,
+ code/modules/mob/living/simple_animal/hostile/hostile.dm,
  mojave/code/_DEFINES/traits.dm,
  code/_globalvars/traits.dm,
  code/datums/components/crafting/crafting.dm,

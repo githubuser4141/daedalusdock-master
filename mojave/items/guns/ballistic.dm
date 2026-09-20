@@ -106,6 +106,9 @@
 //Automatics
 /obj/item/gun/ballistic/automatic/ms13
 	name = "generic ms13 gun"
+	// Magazine/slide visuals are baked into MS full-state sprites, not DD overlays.
+	show_bolt_icon = FALSE
+	mag_display = FALSE
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/weapons/guns_inhand_left.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/weapons/guns_inhand_right.dmi'
@@ -210,6 +213,11 @@
 
 	if(has_scope)
 		AddComponent(/datum/component/scope, range_modifier = (scope_range))
+
+// MS pistol states already contain the magazine and slide; DD's separate overlays do not exist.
+/obj/item/gun/ballistic/automatic/pistol/ms13
+	show_bolt_icon = FALSE
+	mag_display = FALSE
 
 /obj/item/gun/ballistic/automatic/pistol/ms13/update_icon_state()
 	. = ..()

@@ -80,7 +80,7 @@
 	RegisterSignal(new_loop, COMSIG_MOVELOOP_PREPROCESS_CHECK, PROC_REF(pre_move))
 	RegisterSignal(new_loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(post_move))
 	RegisterSignal(new_loop, COMSIG_PARENT_QDELETING, PROC_REF(charge_end))
-	if(ismob(charger))
+	if(ismob(charger) && !(charger == owner && (check_flags & AB_CHECK_CONSCIOUS)))
 		RegisterSignal(charger, COMSIG_MOB_STATCHANGE, PROC_REF(stat_changed))
 
 	// Yes this is disgusting. But we need to queue this stuff, and this code just isn't setup to support that right now. So gotta do it with sleeps
@@ -100,7 +100,9 @@
 /datum/action/cooldown/mob_cooldown/charge/proc/charge_end(datum/move_loop/source)
 	SIGNAL_HANDLER
 	var/atom/movable/charger = source.moving
-	UnregisterSignal(charger, list(COMSIG_MOVABLE_BUMP, COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_STATCHANGE))
+	UnregisterSignal(charger, list(COMSIG_MOVABLE_BUMP, COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED))
+	if(!(charger == owner && (check_flags & AB_CHECK_CONSCIOUS)))
+		UnregisterSignal(charger, COMSIG_MOB_STATCHANGE)
 	SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
 	actively_moving = FALSE
 	charging -= charger
@@ -109,6 +111,12 @@
 	SIGNAL_HANDLER
 	if(new_stat == DEAD)
 		SSmove_manager.stop_looping(source) //This will cause the loop to qdel, triggering an end to our charging
+
+// Grant already registers this listener on conscious actions; keep button updates and charge cancellation.
+/datum/action/cooldown/mob_cooldown/charge/update_status_on_signal(mob/source)
+	. = ..()
+	if((source in charging) && source.stat == DEAD)
+		SSmove_manager.stop_looping(source)
 
 /datum/action/cooldown/mob_cooldown/charge/proc/do_charge_indicator(atom/charger, atom/charge_target)
 	var/turf/target_turf = get_turf(charge_target)
@@ -239,4 +247,3 @@
 	pixel_y = -32
 	color = "#FF0000"
 	duration = 10
-

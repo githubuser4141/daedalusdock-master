@@ -5427,6 +5427,7 @@
 #include "mojave\code\modules\wallening-temp\wall_mount.dm"
 #include "mojave\code\modules\wallening-temp\wallening.dm"
 #include "mojave\code\modules\wip_systems\material_physics.dm"
+#include "mojave\code\modules\wip_systems\runtime_regressions.dm"
 #include "mojave\code\modules\wip_systems\surface_regions.dm"
 #include "mojave\code\modules\wip_systems\surface_region_vehicles.dm"
 #include "mojave\code\modules\vehicles_ground\rail_vehicles.dm"
