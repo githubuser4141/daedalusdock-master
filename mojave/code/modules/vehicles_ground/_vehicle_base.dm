@@ -46,6 +46,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	/// never needs to know whether it is driving a jeep, truck, or a future vehicle. Gears and fuel
 	/// capacity belong to the gearbox and fuel tank parts instead.
 	var/acceleration_delay = 1 SECONDS
+	/// How fast this vehicle drives: every gear's move delay is divided by it. 1 drives the gearbox's own
+	/// delays, 2 is twice as fast, 0.5 half as fast. Set it per vehicle; it needs no other tuning.
+	var/speed_multiplier = 1.25
 	var/turn_delay = 4
 	var/max_turn_speed = 2
 	var/turn_speed_loss = 1
@@ -96,8 +99,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(!length(delays))
 		return 10
 	if(brakes_mode)
+		// Braking mode is a fixed crawl, whatever the vehicle's top speed.
 		return max(1 SECONDS, delays[1])
-	return delays[clamp(gear, 1, length(delays))] / 1.25
+	return delays[clamp(gear, 1, length(delays))] / max(speed_multiplier, 0.1)
 
 /datum/ms13_ground_vehicle/proc/get_all_parts()
 	. = list()

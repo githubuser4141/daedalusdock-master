@@ -13,7 +13,8 @@ Forward/reverse input selects successive speed bands; opposite input brakes, eve
 Stop immediately sets speed to zero. Stopping the engine (including fuel loss) sheds one speed band
 per movement tick until stopped. Releasing the controls or leaving the seat preserves powered momentum.
 Brakes mode stops current motion and uses input-only steps, at most one tile per second: release the
-key to stop. Normal gear delays are divided by 1.25 across all vehicles for a 25% nominal speed increase.
+key to stop. Gear delays are divided by the controller's `speed_multiplier` (1.25 by default, so 25%
+faster than the gearbox's raw delays) - set that per vehicle to make one faster or slower.
 Turning can reduce speed; an obstacle that survives a ram stops it. Impacts use speed squared and
 the actual leading panel's blunt armor, falling back to the frame on exposed edges. Objects and
 turfs use their normal integrity/armor/destruction behavior; indestructible terrain stays intact.

@@ -42,6 +42,13 @@
 			driver_seat = seat
 	TEST_ASSERT(driver_seat, "No driver seat found on the jeep's front tile.")
 
+	// One knob sets how fast a vehicle drives: every gear delay is divided by it.
+	var/datum/ms13_ground_vehicle/handling = front.vehicle
+	var/baseline_delay = handling.gear_delay(1)
+	handling.speed_multiplier *= 2
+	TEST_ASSERT(abs(handling.gear_delay(1) - baseline_delay / 2) < 0.01, "Doubling speed_multiplier did not halve the move delay.")
+	handling.speed_multiplier /= 2
+
 	driver_seat.user_buckle_mob(driver, driver)
 	TEST_ASSERT_EQUAL(front.vehicle.driver, driver, "Buckling into the driver seat did not register as the vehicle's driver.")
 	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent)
