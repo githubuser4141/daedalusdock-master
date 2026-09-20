@@ -62,7 +62,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/kit)
                 FIRE = CLASS2_FIRE)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 1, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/cloth = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 1, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/cloth = 2)
 
 /obj/item/clothing/suit/armor/ms13/kit/reinf
 	name = "reinforced armor kit"
@@ -83,7 +83,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/kit)
 	max_integrity = 400
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/leather = 3, /obj/item/stack/sheet/ms13/cloth = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/leather = 3, /obj/item/stack/sheet/ms13/cloth = 2)
 
 // Light/Leather Armor //
 
@@ -108,7 +108,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/tire)
                 FIRE = CLASS2_FIRE)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/cloth = 3. /obj/item/stack/sheet/ms13/rubber = 5)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/cloth = 3, /obj/item/stack/sheet/ms13/rubber = 5)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/leatherarmor)
 	default_armor = list(BLUNT = 40, PUNCTURE = 15, SLASH = 40, LASER = 40, ENERGY = 0, BOMB = 10, BIO = 0, FIRE = 50, ACID = 50)
@@ -131,7 +131,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/leatherarmor)
                 FIRE = CLASS2_FIRE)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 1, /obj/item/stack/sheet/ms13/leather = 5, /obj/item/stack/sheet/ms13/cloth = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 1, /obj/item/stack/sheet/ms13/leather = 5, /obj/item/stack/sheet/ms13/cloth = 2)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/leatherarmor/reinforced)
 	default_armor = list(BLUNT = 60, PUNCTURE = 30, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 20, BIO = 0, FIRE = 75, ACID = 50)
@@ -152,7 +152,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/leatherarmor/reinforced)
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 450
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/leather = 7, /obj/item/stack/sheet/ms13/cloth = 4, obj/item/stack/sheet/ms13/ceramic = 1)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/leather = 7, /obj/item/stack/sheet/ms13/cloth = 4, /obj/item/stack/sheet/ms13/ceramic = 1)
 
 // Metal Armor //
 
@@ -178,7 +178,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal)
 	max_integrity = 500
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 10, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/cloth = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 10, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/cloth = 2)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal/reinforced)
 	default_armor = list(BLUNT = 70, PUNCTURE = 40, SLASH = 80, LASER = 55, ENERGY = 0, BOMB = 25, BIO = 0, FIRE = 50, ACID = 50)
@@ -200,7 +200,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal/reinforced)
                 ENERGY = CLASS2_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 575
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 7, /obj/item/stack/sheet/ms13/leather = 4, /obj/item/stack/sheet/ms13/cloth = 4, /obj/item/stack/sheet/ms13/steel = 3)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 7, /obj/item/stack/sheet/ms13/leather = 4, /obj/item/stack/sheet/ms13/cloth = 4, /obj/item/stack/sheet/ms13/scrap_steel = 3)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal/heavy)
 	default_armor = list(BLUNT = 75, PUNCTURE = 50, SLASH = 90, LASER = 60, ENERGY = 0, BOMB = 40, BIO = 0, FIRE = 75, ACID = 75)
@@ -222,7 +222,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/metal/heavy)
                 ENERGY = CLASS3_PLASMA, \
                 FIRE = CLASS4_FIRE)
 	max_integrity = 600
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 6, /obj/item/stack/sheet/ms13/leather = 4, /obj/item/stack/sheet/ms13/cloth = 4, /obj/item/stack/sheet/ms13/steel = 6)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 6, /obj/item/stack/sheet/ms13/leather = 4, /obj/item/stack/sheet/ms13/cloth = 4, /obj/item/stack/sheet/ms13/scrap_steel = 6)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vaultvan)
 	default_armor = list(BLUNT = 60, PUNCTURE = 10, SLASH = 60, LASER = 40, ENERGY = 0, BOMB = 15, BIO = 0, FIRE = 50, ACID = 50)
@@ -245,7 +245,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vaultvan)
                 FIRE = CLASS2_FIRE)
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/steel = 1)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/scrap_steel = 1)
 
 // Armor Vests //
 
@@ -272,7 +272,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 1, /obj/item/stack/sheet/ms13/rubber = 2, /obj/item/stack/sheet/ms13/kevlar = 3)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 1, /obj/item/stack/sheet/ms13/rubber = 2, /obj/item/stack/sheet/ms13/mil_fiber = 4)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/civilian)
 	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 35, LASER = 30, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 50, ACID = 50)
@@ -291,7 +291,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/civilian)
                 ENERGY = 0, \
                 FIRE = CLASS1_FIRE)
 	//storage_type = /datum/storage/ms13/suit/small
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 1, /obj/item/stack/sheet/ms13/rubber = 2, /obj/item/stack/sheet/ms13/kevlar = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 1, /obj/item/stack/sheet/ms13/rubber = 2, /obj/item/stack/sheet/ms13/mil_fiber = 3)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/military)
 	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 15, BIO = 0, FIRE = 50, ACID = 50)
@@ -311,7 +311,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/military)
                 LASER = CLASS2_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/kevlar = 6)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/mil_fiber = 10)
 
 /obj/item/clothing/suit/armor/ms13/vest/vault
 	name = "vault security vest"
@@ -356,7 +356,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/snowcrest)
 	inhand_icon_state = "det_suit"
 	blood_overlay_type = "armor"
 	body_parts_covered = CHEST|ARMS|GROIN
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/scrap = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/scrap = 2)
 
 /obj/item/clothing/suit/ms13/trench/boss
 	name = "boss' coat"
@@ -376,7 +376,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/vest/snowcrest)
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
 	//storage_type = /datum/storage/ms13/suit/med
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/scrap = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 2, /obj/item/stack/sheet/ms13/leather = 2, /obj/item/stack/sheet/ms13/scrap = 2)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider)
 	default_armor = list(BLUNT = 25, PUNCTURE = 10, SLASH = 25, LASER = 25, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 35)
@@ -402,7 +402,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 	//storage_type = /datum/storage/ms13/suit/small
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 3, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/scrap = 1)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 3, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/scrap = 1)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider/plated)
 	default_armor = list(BLUNT = 35, PUNCTURE = 15, SLASH = 40, LASER = 35, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 35)
@@ -422,7 +422,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider/plated)
                 LASER = CLASS1_LASER, \
                 ENERGY = CLASS1_PLASMA, \
                 FIRE = CLASS2_FIRE)
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 3, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/scrap = 2)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 3, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/scrap = 2)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider/kevlar)
 	default_armor = list(BLUNT = 35, PUNCTURE = 25, SLASH = 40, LASER = 35, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 35, ACID = 35)
@@ -442,7 +442,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/ms13/raider/kevlar)
                 LASER = CLASS1_LASER, \
                 ENERGY = 0, \
                 FIRE = CLASS2_FIRE)
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/cloth = 1, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/kevlar = 3, /obj/item/stack/sheet/ms13/scrap = 1)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/cloth = 1, /obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/mil_fiber = 5, /obj/item/stack/sheet/ms13/scrap = 1)
 
 // Combat Armor //
 
@@ -468,7 +468,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat)
 	max_integrity = 400
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/mil_fiber = 5, /obj/item/stack/sheet/ms13/ceramic = 5)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/mil_fiber = 5, /obj/item/stack/sheet/ms13/ceramic = 5)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat/advanced)
 	default_armor = list(BLUNT = 60, PUNCTURE = 60, SLASH = 75, LASER = 60, ENERGY = 0, BOMB = 50, BIO = 0, FIRE = 75, ACID = 75)
@@ -489,7 +489,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/combat/advanced)
                 ENERGY = CLASS3_PLASMA, \
                 FIRE = CLASS3_FIRE)
 	max_integrity = 400
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/rubber = 5, /obj/item/stack/sheet/ms13/mil_fiber = 7, /obj/item/stack/sheet/ms13/ceramic = 8)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/rubber = 5, /obj/item/stack/sheet/ms13/mil_fiber = 7, /obj/item/stack/sheet/ms13/ceramic = 8)
 
 // Special Armor //
 
@@ -516,7 +516,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/assassin)
 	clothing_traits = list(TRAIT_SILENT_FOOTSTEPS)
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/plastic = 1, /obj/item/stack/sheet/ms13/mil_fiber = 1)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/leather = 1, /obj/item/stack/sheet/ms13/plastic = 1, /obj/item/stack/sheet/ms13/mil_fiber = 1)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/tesla)
 	default_armor = list(BLUNT = 40, PUNCTURE = 10, SLASH = 30, LASER = 80, ENERGY = 80, BOMB = 0, BIO = 0, FIRE = 60, ACID = 60)
@@ -541,7 +541,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/tesla)
 	max_integrity = 500
 	equip_delay_self = 3.5 SECONDS
 	equip_delay_other = 5 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/mil_fiber = 3, /obj/item/stack/sheet/ms13/ceramic = 4)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/mil_fiber = 3, /obj/item/stack/sheet/ms13/ceramic = 4)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/eliteriot)
 	default_armor = list(BLUNT = 70, PUNCTURE = 30, SLASH = 70, LASER = 50, ENERGY = 20, BOMB = 20, BIO = 0, FIRE = 80, ACID = 80)
@@ -565,7 +565,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13/eliteriot)
 	max_integrity = 450
 	equip_delay_self = 4 SECONDS
 	equip_delay_other = 6 SECONDS
-	ms13_breakdown_result = (/obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/kevlar = 5, /obj/item/stack/sheet/ms13/ceramic = 2, /obj/item/stack/sheet/ms13/plastic = 3)
+	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/rubber = 3, /obj/item/stack/sheet/ms13/mil_fiber = 8, /obj/item/stack/sheet/ms13/ceramic = 2, /obj/item/stack/sheet/ms13/plastic = 3)
 
 TYPEINFO_DEF(/obj/item/clothing/suit/ms13/ljacket/bountyhunter)
 	default_armor = list(BLUNT = 40, PUNCTURE = 35, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 25, BIO = 0, FIRE = 60, ACID = 60)
