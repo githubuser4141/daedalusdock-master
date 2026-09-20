@@ -475,6 +475,10 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"aor" = (
+/obj/structure/ms13/trash/books/pile,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "aoz" = (
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire{
 	dir = 8
@@ -4046,6 +4050,12 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"cCK" = (
+/obj/item/trash/ms13/packaging/dandy,
+/obj/structure/ms13/trash/food/misc,
+/obj/structure/ms13/trash/bricks,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "cCR" = (
 /obj/structure/chair/office/ms13/blue{
 	dir = 8
@@ -6984,6 +6994,10 @@
 /obj/structure/ms13/barricade,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"eta" = (
+/obj/item/grenade/ms13_bomb/small,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13/underground/vault_outer)
 "ete" = (
 /obj/structure/sink/kitchen{
 	dir = 1
@@ -11879,6 +11893,12 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/underground/bos)
+"gVm" = (
+/obj/machinery/power/ms13_bomb_trigger/pressure_plate{
+	id_tag = 1
+	},
+/turf/open/floor/plating/ms13/ground/road,
+/area/ms13)
 "gVu" = (
 /obj/structure/railing/ms13/solo,
 /turf/open/floor/ms13/concrete,
@@ -17539,6 +17559,10 @@
 /obj/structure/table/ms13/metal/heavy,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"kbV" = (
+/obj/machinery/power/ms13_bomb_mount,
+/turf/open/floor/plating/ms13/ground/mountain,
+/area/ms13/underground/vault_outer)
 "kcg" = (
 /obj/structure/ms13/storage/shelf{
 	dir = 4
@@ -20027,6 +20051,14 @@
 	},
 /turf/open/openspace/ms13,
 /area/ms13/town)
+"lyA" = (
+/obj/item/grenade/ms13_bomb/small{
+	id_tag = 1
+	},
+/obj/structure/ms13/trash/papers/two,
+/obj/item/trash/ms13/trash_pile/medtrash1,
+/turf/open/floor/plating/ms13/ground/road,
+/area/ms13)
 "lyD" = (
 /obj/structure/ms13/foundation/variantfour{
 	dir = 4
@@ -21104,6 +21136,10 @@
 /obj/item/target,
 /turf/open/floor/plating/ms13/ground/snow,
 /area/ms13/snow/lightforest)
+"mif" = (
+/obj/item/trash/ms13/packaging/instamash,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "mim" = (
 /obj/machinery/door/unpowered/ms13/metal{
 	dir = 1
@@ -24838,6 +24874,10 @@
 	},
 /turf/open/floor/ms13/tile/brown,
 /area/ms13/ncr)
+"otH" = (
+/obj/machinery/power/ms13_bomb_trigger,
+/turf/open/floor/plating/ms13/ground/mountain,
+/area/ms13/underground/vault_outer)
 "otO" = (
 /obj/machinery/light/ms13,
 /turf/open/floor/wood/ms13/wide,
@@ -26074,6 +26114,10 @@
 	},
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13)
+"ptL" = (
+/obj/item/grenade/ms13_bomb/large,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13/underground/vault_outer)
 "pue" = (
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/plating/ms13/ground/snow,
@@ -27019,6 +27063,10 @@
 /obj/effect/spawner/random/ms13/clothing/hat,
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/town)
+"qvh" = (
+/obj/item/trash/ms13/packaging/macncheese,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "qvj" = (
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/effect/spawner/random/ms13/clothing/hat,
@@ -27504,6 +27552,13 @@
 	},
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
+"raW" = (
+/obj/machinery/power/ms13_bomb_trigger/pressure_plate{
+	id_tag = 2
+	},
+/obj/structure/ms13/trash/glass/plate,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "rbd" = (
 /obj/structure/table/ms13/low_wall/brick,
 /obj/structure/window/fulltile/ms13/glass,
@@ -28098,6 +28153,10 @@
 /obj/effect/spawner/random/ms13/drink/soda,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"rIR" = (
+/obj/item/grenade/ms13_bomb/antipersonnel,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13/underground/vault_outer)
 "rJr" = (
 /obj/structure/ms13/lamp/medical_lamp{
 	dir = 1
@@ -29178,6 +29237,13 @@
 	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"sVE" = (
+/obj/item/grenade/ms13_bomb/small{
+	id_tag = 1
+	},
+/obj/item/trash/ms13/trash_pile/tyres_trash2,
+/turf/open/floor/plating/ms13/ground/road,
+/area/ms13)
 "sWa" = (
 /obj/structure/chair/sofa/left{
 	dir = 8
@@ -29289,6 +29355,10 @@
 /mob/living/basic/ms13/hostile_animal/radroach,
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
+"tbY" = (
+/obj/item/grenade/ms13_bomb/incendiary,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13/underground/vault_outer)
 "tcc" = (
 /obj/structure/ms13/storage/shelf/wood{
 	dir = 1
@@ -29978,6 +30048,10 @@
 /obj/structure/ms13/storage/washingmachine/industrial,
 /turf/open/floor/ms13/tile/long/blue,
 /area/ms13/town)
+"tMK" = (
+/obj/structure/ms13/trash/glass/basic,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "tMS" = (
 /obj/machinery/door/airlock/ms13/town/doctor{
 	dir = 4
@@ -30710,6 +30784,14 @@
 /obj/structure/table/ms13/metal,
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/tunnel/maintenance)
+"uLm" = (
+/obj/item/grenade/ms13_bomb/antipersonnel{
+	id_tag = 2
+	},
+/obj/structure/ms13/trash/glass/cans,
+/obj/item/trash/ms13/trash_pile/trash4,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13)
 "uMc" = (
 /obj/structure/table/ms13/no_smooth/large/wood/desk,
 /obj/effect/spawner/random/ms13/currency/mammoth/prewar/lowrandom,
@@ -32282,6 +32364,10 @@
 /obj/structure/table/ms13/low_wall/concrete,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"wKu" = (
+/obj/item/grenade/ms13_bomb/antiarmor,
+/turf/open/floor/plating/ms13/ground/sidewalk,
+/area/ms13/underground/vault_outer)
 "wKZ" = (
 /obj/machinery/light/ms13,
 /obj/effect/spawner/random/ms13/tools/lights,
@@ -32946,6 +33032,10 @@
 	},
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
+"xtz" = (
+/obj/machinery/power/ms13_bomb_trigger/pressure_plate,
+/turf/open/floor/plating/ms13/ground/mountain,
+/area/ms13/underground/vault_outer)
 "xtC" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
@@ -33434,6 +33524,10 @@
 /obj/effect/turf_decal/ms13/covering/tiles/blue,
 /turf/closed/wall/ms13/vault/rust,
 /area/ms13/underground/vault_atrium_middle)
+"xVT" = (
+/obj/item/grenade/ms13_bomb/thermobaric,
+/turf/open/floor/plating/ms13/ground/mountain,
+/area/ms13/underground/vault_outer)
 "xWl" = (
 /obj/structure/toilet{
 	dir = 1
@@ -53193,9 +53287,9 @@ bwP
 dyV
 dlL
 fKQ
-fKQ
-xpz
-xpz
+rIR
+xVT
+kbV
 uiX
 cqe
 ehh
@@ -53495,9 +53589,9 @@ tJW
 dmC
 dmC
 fKQ
-fKQ
-fKQ
-xpz
+wKu
+eta
+xtz
 tqI
 uiX
 ehh
@@ -53798,8 +53892,8 @@ khQ
 khQ
 xpz
 fKQ
-fKQ
-xpz
+ptL
+otH
 uiX
 uiX
 hCX
@@ -54100,7 +54194,7 @@ khQ
 khQ
 xpz
 fKQ
-fKQ
+tbY
 oyd
 uiX
 uiX
@@ -60157,10 +60251,10 @@ ykT
 ykT
 ykT
 ykT
+lyA
 ykT
 ykT
-ykT
-ykT
+gVm
 ykT
 ykT
 ykT
@@ -60763,9 +60857,9 @@ ykT
 ykT
 ykT
 ykT
+gVm
 ykT
-ykT
-ykT
+sVE
 ykT
 ykT
 tXh
@@ -66202,7 +66296,7 @@ eOd
 hDP
 lIr
 gvP
-xZD
+tMK
 xZD
 xZD
 ykT
@@ -66502,10 +66596,10 @@ xZD
 xZD
 xZD
 xZD
-xZD
-xZD
-xZD
-xZD
+qvh
+cCK
+uLm
+raW
 xZD
 ykT
 ykT
@@ -66804,9 +66898,9 @@ xZD
 xZD
 xZD
 xZD
-xZD
-xZD
-xZD
+aor
+mif
+aor
 xZD
 xZD
 ykT
