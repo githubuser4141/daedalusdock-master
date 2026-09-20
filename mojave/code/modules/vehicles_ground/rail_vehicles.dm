@@ -79,7 +79,7 @@
 		if(ground.density)
 			return FALSE
 		for(var/atom/movable/blocker in ground)
-			if(!(blocker in aboard) && (blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame)))
+			if(!(blocker in aboard) && blocks_vehicle(blocker))
 				return FALSE
 	return TRUE
 

@@ -93,6 +93,13 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/proc/configure_from_vehicle()
 	return
 
+/// Unsupported hardware breaks off as scrap. Normal destruction clears engine/power/turret refs.
+/obj/structure/ms13_vehicle_part/proc/lose_support()
+	if(QDELETED(src))
+		return
+	new /obj/item/stack/sheet/ms13/scrap_steel(get_turf(src), 1)
+	deconstruct(FALSE)
+
 /** Running gear is a real, non-dense damage target; only its clickable image is exterior-only. */
 /obj/structure/ms13_vehicle_part/running_gear
 	name = "vehicle running gear"

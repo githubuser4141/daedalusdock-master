@@ -29,8 +29,14 @@ Vehicle impacts estimate mass using `mass_per_frame * frame count`. Speed increa
 the ability to displace another vehicle; brakes double shove resistance. A successful
 shove moves the entire struck formation one clear tile and costs the striking vehicle
 one speed band. Blocked shoves become normal damage collisions; push chains are disabled.
-Side plating's leading tips now collide with new solid-turf contact outside the footprint,
-and remaining side panels take frontal impacts when the front panel is missing.
+Collision checks stay inside the swept frame footprint, so an exact-width corridor is passable.
+Remaining side panels take frontal impacts when the front panel is missing; adjacent walls do not
+artificially widen the vehicle. In-path windows and low walls are processed as structure impacts.
+
+Attached parts block vehicle collisions even when players can walk over them. Breaching or destroying
+a hull panel breaks off the cameras/lights mounted on that edge. Destroying a frame destroys its
+supported hardware and hull panels, removes its seats, and releases passengers onto the ground;
+loose cargo stays there. Broken-off hardware leaves MS steel scrap rather than working orphan parts.
 
 Obstacle impacts use `E = 50 * (mass / 1000) * speed_band^2`: twice the mass gives
 twice the impact budget, twice the speed gives four times the budget. Contact armor
@@ -44,4 +50,5 @@ successive impacts. Changing the driving speed band resets the estimate to that
 band; this is an arcade model, not kilograms/metres-per-second rigid-body physics.
 
 Regression check: `/datum/unit_test/ms13_rail_vehicles` covers shoves, blocked/heavy
-targets, side-wall damage, connected routes, a full four-turn loop, cargo, fuel and stopping.
+targets, exact-width corridors in all four orientations, stacked windows/low walls,
+mounting failures, connected routes, a full four-turn loop, cargo, fuel and stopping.

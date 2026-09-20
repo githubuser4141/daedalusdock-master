@@ -300,8 +300,6 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// than count as obstacles to their own vehicle (this matters most for rotation, below: the pivot's
 /// own "destination" is its current tile, which its driver is standing on).
 /datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE)
-	if(length(side_wall_contacts(direction)))
-		return FALSE
 	var/list/parts = get_all_parts() + get_manifest()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/dest = get_step(frame, direction)
@@ -315,7 +313,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			if(isliving(blocker) && can_run_over(blocker))
 				continue
 			// Vehicle floors are non-dense, but another vehicle's footprint is never empty road.
-			if(blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame))
+			if(blocks_vehicle(blocker))
 				return FALSE
 	return TRUE
 
@@ -341,13 +339,15 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/impact_speed = max(speed, 1)
 	var/rammed = FALSE
 	for(var/mob/living/victim as anything in victims)
-		if(can_run_over(victim))
+		if(QDELETED(victim) || can_run_over(victim))
 			continue
 		rammed = TRUE
 		var/turf/push_turf = get_step(victim, direction)
 		var/can_push = can_push_living(victim, push_turf)
 		victim.visible_message(span_danger("[pivot] rams [victim]!"), span_userdanger("[pivot] rams into you!"))
 		victim.apply_damage(ram_damage_base + ram_damage_per_speed * impact_speed, BRUTE, BODY_ZONE_CHEST)
+		if(QDELETED(victim)) // Robots and other death effects can delete the victim immediately.
+			continue
 		victim.Knockdown(ram_knockdown_per_speed * impact_speed)
 		if(!can_push)
 			return FALSE
@@ -370,7 +370,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				continue
 			if(isliving(blocker) && can_run_over(blocker))
 				continue
-			if(blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame))
+			if(blocks_vehicle(blocker))
 				return FALSE
 	return TRUE
 
@@ -396,10 +396,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		var/list/obstacles = list()
 		if(destination.density)
 			obstacles += destination
-		else
-			for(var/atom/movable/obstacle in destination)
-				if((obstacle.density || istype(obstacle, /obj/structure/ms13_vehicle_frame)) && !isliving(obstacle) && !(obstacle in manifest) && !(obstacle in parts) && !(obstacle in walls) && !(obstacle in frames))
-					obstacles += obstacle
+		// Check structures as well as the turf, including windows stacked on low walls.
+		for(var/atom/movable/obstacle in destination)
+			if(blocks_vehicle(obstacle) && !isliving(obstacle) && !(obstacle in manifest) && !(obstacle in parts) && !(obstacle in walls) && !(obstacle in frames))
+				obstacles += obstacle
 		for(var/atom/obstacle as anything in obstacles)
 			if(QDELETED(obstacle) || (obstacle in impacted))
 				continue
@@ -419,24 +419,15 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 						break
 			if(!damage_collision(obstacle, contact, direction) || QDELETED(frame))
 				return FALSE
-	var/list/side_contacts = side_wall_contacts(direction)
-	for(var/atom/obstacle as anything in side_contacts)
-		if(!QDELETED(obstacle) && !(obstacle in impacted))
-			if(!damage_collision(obstacle, side_contacts[obstacle], direction))
-				return FALSE
 	return TRUE
 
-/// The leading tip of a side panel also occupies its outer edge. Check new contact with solid
-/// turfs beside the footprint, without repeatedly ramming a wall we were already parked alongside.
-/datum/ms13_ground_vehicle/proc/side_wall_contacts(direction)
-	. = list()
-	for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in walls)
-		if(!panel.exterior || !panel.density || (panel.dir & direction) || (panel.dir & turn(direction, 180)))
-			continue
-		var/turf/old_edge = get_step(panel, panel.dir)
-		var/turf/new_edge = get_step(old_edge, direction)
-		if(new_edge?.density && !old_edge.density)
-			.[new_edge] = panel
+/datum/ms13_ground_vehicle/proc/blocks_vehicle(atom/movable/obstacle)
+	if(obstacle.density || istype(obstacle, /obj/structure/ms13_vehicle_frame))
+		return TRUE
+	if(istype(obstacle, /obj/structure/ms13_vehicle_part))
+		var/obj/structure/ms13_vehicle_part/part = obstacle
+		return !!part.vehicle
+	return FALSE
 
 /datum/ms13_ground_vehicle/proc/damage_collision(atom/obstacle, obj/contact, direction)
 	if(QDELETED(contact))
@@ -513,6 +504,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
 		part.forceMove(get_step(part, direction))
 	for(var/atom/movable/passenger as anything in manifest)
+		// Earlier moves can merge/delete cargo stacks; impacts can destroy their supporting frame.
+		if(QDELETED(passenger) || QDELETED(manifest[passenger]))
+			continue
 		passenger.forceMove(get_step(passenger, direction))
 	update_underneath(manifest)
 	if(!being_pushed)
@@ -680,6 +674,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		part.forceMove(part_dest[part])
 		part.setDir(part_dir[part])
 	for(var/atom/movable/passenger as anything in manifest)
+		if(QDELETED(passenger))
+			continue
 		var/obj/structure/ms13_vehicle_frame/old_frame = manifest[passenger]
 		passenger.forceMove(frame_dest[old_frame])
 		if(istype(passenger, /obj/structure/chair/ms13_vehicle_seat))
@@ -779,6 +775,19 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	roof.color = is_damaged && !roof_damaged_icon ? roof_damage_color : hull_color
 
 /obj/structure/ms13_vehicle_frame/Destroy()
+	// Tear down supported hardware while the frame and its lighting images are still valid.
+	if(vehicle)
+		vehicle.stop_motion()
+		for(var/obj/structure/ms13_vehicle_part/part as anything in vehicle.parts.Copy())
+			if(part.forward_offset == forward_offset && part.right_offset == right_offset)
+				part.lose_support()
+		for(var/obj/structure/chair/ms13_vehicle_seat/seat in get_turf(src))
+			if(seat.parent_frame == src)
+				seat.unbuckle_all_mobs(force = TRUE)
+				qdel(seat)
+		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls.Copy())
+			if(wall.parent_frame == src)
+				qdel(wall)
 	// Power updates rebuild cabin lighting; do this before deleting this frame's lighting images.
 	if(vehicle?.pivot == src)
 		vehicle.set_ignition(FALSE)

@@ -13,7 +13,7 @@
 
 /// Is thing riding in this vehicle, as opposed to being part of it or lying on the ground under it?
 /datum/ms13_ground_vehicle/proc/is_aboard(atom/movable/thing)
-	if(!thing.simulated || (thing in underneath) || (thing in frames) || (thing in walls) || (thing in parts))
+	if(QDELETED(thing) || !thing.simulated || (thing in underneath) || (thing in frames) || (thing in walls) || (thing in parts))
 		return FALSE
 	return !thing.anchored || istype(thing, /obj/structure/chair/ms13_vehicle_seat)
 

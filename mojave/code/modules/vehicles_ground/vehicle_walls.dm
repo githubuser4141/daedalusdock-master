@@ -71,6 +71,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	if(hull_broken)
 		return
 	hull_broken = TRUE
+	destroy_mounted_equipment()
 	intact_armor = returnArmor()
 	bullet_damage_ratio = 0.2
 	setArmor(getArmor(
@@ -178,6 +179,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 		parent_frame?.update_roof_damage()
 
 /obj/structure/window/ms13_vehicle_wall/Destroy()
+	destroy_mounted_equipment()
 	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
 	if(exterior_image)
 		GLOB.ms13_vehicle_exterior_part_images -= exterior_image
@@ -191,6 +193,15 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	vehicle?.update_interior_masks()
 	parent_frame = null
 	return ..()
+
+/// Accessories use their frame offsets and facing as the mounting edge, not sprite pixel offsets.
+/obj/structure/window/ms13_vehicle_wall/proc/destroy_mounted_equipment()
+	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
+	if(!exterior || !vehicle)
+		return
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/part in vehicle.parts.Copy())
+		if(part.forward_offset == forward_offset && part.right_offset == right_offset && part.dir == dir)
+			part.lose_support()
 
 /**
  * A solid hull panel instead of a see-through pane. It keeps the border-object mechanic for movement
