@@ -5,8 +5,8 @@ fixed horizontal region links and ground-tile mirages, without importing Icebox 
 or making the world wrap around. Underground/roof Up/Down links remain unchanged.
 
 Mammoth's config has `surface_level: 2` (the surface file, not an absolute BYOND z).
-Its `surface_neighbors` is empty until maps exist. Create maps in BYOND's editor and place
-them alongside Mammoth.dmm in `_maps/Mammoth/`, then add only the directions you have:
+Four blank 240x300 single-z desert maps are provided and enabled alongside Mammoth.dmm
+in `_maps/Mammoth/`. Open these in BYOND's map editor to build out each region:
 
 ```json
 "surface_level": 2,
@@ -48,7 +48,7 @@ are checked before anything moves; no walls, other vehicles, standing mobs, or u
 may occupy the arrival footprint. The whole vehicle lands beyond the transition strip, so
 long trucks do not bounce back. Speed, heading, drift, driver/gunner seats, cargo, component
 integrity, ammunition, battery, lights and engine state are retained. A crossing consumes
-one normal movement step of fuel. No new maps load until configured.
+one normal movement step of fuel. All four blank neighbors load with Mammoth's config.
 
 ## Dodgy crossings (WIP)
 
