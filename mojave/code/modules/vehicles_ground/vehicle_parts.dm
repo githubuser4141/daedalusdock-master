@@ -435,7 +435,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/medium)
 	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/cannonball/ms13_vehicle/medium
 	name = "76mm tank shell"
-	damage = 220
+	damage = 400
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	bulletTipType = BULLET_SHARP
 
@@ -443,7 +443,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
 	name = "122mm tank shell"
-	damage = 300
+	damage = 800
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	bulletTipType = BULLET_SHARP
 

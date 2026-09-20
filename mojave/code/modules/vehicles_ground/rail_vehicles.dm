@@ -1,0 +1,258 @@
+/// Visible, destructible guide rails. Cable art, not electrical cables: these never join a powernet.
+/obj/structure/ms13_rail
+	name = "rail"
+	desc = "A ground-vehicle guide rail. Adjacent cardinal rails connect automatically."
+	icon = 'icons/obj/power_cond/cable.dmi'
+	icon_state = "0"
+	color = "#999999"
+	layer = ABOVE_OPEN_TURF_LAYER
+	plane = FLOOR_PLANE
+	density = FALSE
+	anchored = TRUE
+	max_integrity = 200
+	var/is_station = FALSE
+
+/obj/structure/ms13_rail/station
+	name = "rail stop"
+	desc = "A stopping point for automated trains. Its mapped name appears in the driver's destination menu."
+	color = "#ffcc33"
+	is_station = TRUE
+
+/obj/structure/ms13_rail/Initialize(mapload)
+	. = ..()
+	refresh_connections()
+
+/obj/structure/ms13_rail/proc/refresh_connections()
+	update_appearance(UPDATE_OVERLAYS)
+	for(var/direction in GLOB.cardinals)
+		var/obj/structure/ms13_rail/neighbor = locate() in get_step(src, direction)
+		neighbor?.update_appearance(UPDATE_OVERLAYS)
+
+/obj/structure/ms13_rail/update_overlays()
+	. = ..()
+	for(var/direction in GLOB.cardinals)
+		var/obj/structure/ms13_rail/neighbor = locate() in get_step(src, direction)
+		if(neighbor && !QDELETED(neighbor))
+			. += mutable_appearance(icon, "[direction]")
+
+/obj/structure/ms13_rail/Destroy()
+	refresh_connections()
+	return ..()
+
+/datum/ms13_ground_vehicle/rail
+	mass_per_frame = 1200
+	max_turn_speed = 1
+	fuel_per_tile = 0.2
+	var/list/rail_route
+	/// Speed bands shed per movement tick; stopping distance is computed using the same rule.
+	var/braking_power = 1
+
+/datum/ms13_ground_vehicle/rail/can_operate_steering()
+	return length(rail_route) || ..()
+
+/// Conservatively reserve the turning apron, not just the final footprint: a long car must not
+/// rotate through a house merely because its final orientation happens to be clear.
+/datum/ms13_ground_vehicle/rail/can_rotate(new_dir)
+	if(!..())
+		return FALSE
+	var/min_x = pivot.x
+	var/max_x = pivot.x
+	var/min_y = pivot.y
+	var/max_y = pivot.y
+	var/turn_radius = 0
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		var/turf/destination = get_relative_turf(frame.forward_offset, frame.right_offset, new_dir)
+		min_x = min(min_x, frame.x, destination.x)
+		max_x = max(max_x, frame.x, destination.x)
+		min_y = min(min_y, frame.y, destination.y)
+		max_y = max(max_y, frame.y, destination.y)
+		turn_radius = max(turn_radius, abs(frame.forward_offset), abs(frame.right_offset))
+	if(new_dir == turn(dir, 180))
+		min_x = pivot.x - turn_radius
+		max_x = pivot.x + turn_radius
+		min_y = pivot.y - turn_radius
+		max_y = pivot.y + turn_radius
+	if(min_x < 1 || min_y < 1 || max_x > world.maxx || max_y > world.maxy)
+		return FALSE
+	var/list/aboard = get_all_parts() | get_manifest()
+	for(var/turf/ground in block(locate(min_x, min_y, pivot.z), locate(max_x, max_y, pivot.z)))
+		if(ground.density)
+			return FALSE
+		for(var/atom/movable/blocker in ground)
+			if(!(blocker in aboard) && (blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame)))
+				return FALSE
+	return TRUE
+
+/datum/ms13_ground_vehicle/rail/stop_motion()
+	rail_route = null
+	return ..()
+
+/datum/ms13_ground_vehicle/rail/handle_drive_input(direction)
+	rail_route = null
+	return ..()
+
+/datum/ms13_ground_vehicle/rail/apply_steering(new_dir)
+	if(!(locate(/obj/structure/ms13_rail) in get_step(pivot, new_dir)))
+		return FALSE
+	return has_motive_power() && full_turn(new_dir)
+
+/datum/ms13_ground_vehicle/rail/do_move(direction, bypass_cooldown = FALSE)
+	if(!(locate(/obj/structure/ms13_rail) in get_turf(pivot)) || !(locate(/obj/structure/ms13_rail) in get_step(pivot, direction)))
+		return FALSE
+	// Region transfer relocates the whole hull further than one rail tile; not a supported rail link yet.
+	if(SSmapping.ms13_surface_links["[pivot.z]"])
+		for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+			if(SSmapping.ms13_surface_edge(get_step(frame, direction)))
+				return FALSE
+	. = ..()
+	if(. && length(rail_route))
+		if(get_turf(pivot) == rail_route[1])
+			rail_route.Cut(1, 2)
+		else
+			stop_motion()
+
+/// One bounded breadth-first search when selecting a destination, never a world scan each tick.
+/datum/ms13_ground_vehicle/rail/proc/find_rail_routes()
+	var/turf/start = get_turf(pivot)
+	var/list/parents = list()
+	if(!(locate(/obj/structure/ms13_rail) in start))
+		return parents
+	var/list/queue = list(start)
+	parents[start] = start
+	// ponytail: 4096 connected tiles per trip; use incremental pathfinding for larger rail networks.
+	for(var/index = 1, index <= length(queue) && index <= 4096, index++)
+		var/turf/current = queue[index]
+		for(var/direction in GLOB.cardinals)
+			var/turf/neighbor = get_step(current, direction)
+			if(!neighbor || parents[neighbor] || !(locate(/obj/structure/ms13_rail) in neighbor))
+				continue
+			parents[neighbor] = current
+			queue += neighbor
+	return parents
+
+/datum/ms13_ground_vehicle/rail/proc/choose_destination(mob/living/user, obj/structure/chair/ms13_vehicle_seat/seat)
+	var/list/parents = find_rail_routes()
+	var/list/stops = list()
+	for(var/turf/location as anything in parents)
+		for(var/obj/structure/ms13_rail/rail in location)
+			if(rail.is_station && location != get_turf(pivot))
+				stops["[rail.name] ([location.x], [location.y])"] = location
+	if(!length(stops))
+		to_chat(user, span_warning("No connected rail stops found."))
+		return
+	var/choice = input(user, "Select a connected stop. Clear space is needed around corners.", "Rail destination") as null|anything in stops
+	if(!choice || !seat.can_use_controls(user) || seat.parent_frame.vehicle != src)
+		return
+	// The vehicle may have moved while the menu was open.
+	parents = find_rail_routes()
+	var/turf/destination = stops[choice]
+	if(!parents[destination])
+		return
+	stop_motion()
+	set_ignition(TRUE)
+	if(!start_engine(user) || !has_motive_power())
+		return
+	rail_route = list()
+	while(destination != get_turf(pivot))
+		rail_route.Insert(1, destination)
+		destination = parents[destination]
+	brakes_mode = FALSE
+	speed = 1
+	travel_dir = dir
+	start_motion()
+
+/datum/ms13_ground_vehicle/rail/proc/stopping_distance()
+	return CEILING(speed / max(1, braking_power), 1)
+
+/datum/ms13_ground_vehicle/rail/movement_tick(generation)
+	if(!rail_route)
+		return ..()
+	if(generation != movement_generation || !moving || !speed)
+		return
+	if(!length(rail_route) || !has_motive_power())
+		stop_motion()
+		return
+	var/turf/next = rail_route[1]
+	if(get_dist(pivot, next) != 1 || next.z != pivot.z)
+		stop_motion()
+		return
+	var/direction = get_dir(pivot, next)
+	if(direction != dir)
+		if(speed > max_turn_speed)
+			speed = max(max_turn_speed, speed - max(1, braking_power))
+		else if(world.time >= next_move_time)
+			if(!full_turn(direction))
+				stop_motion()
+				return
+		addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), gear_delay(speed))
+		return
+	// Brake before a corner or the final stop, using the same per-tile deceleration as movement.
+	var/straight = 0
+	var/turf/previous = get_turf(pivot)
+	for(var/turf/rail_tile as anything in rail_route)
+		if(get_dir(previous, rail_tile) != dir)
+			break
+		straight++
+		previous = rail_tile
+		if(straight > gear_count() + 1)
+			break
+	if(straight <= stopping_distance())
+		speed = max(1, speed - max(1, braking_power))
+	else if(world.time >= next_acceleration_time)
+		speed = min(gear_count(), speed + 1)
+		next_acceleration_time = world.time + acceleration_delay
+	travel_dir = dir
+	. = ..()
+	if(rail_route && !length(rail_route))
+		stop_motion()
+
+/// Rigid, ordinary vehicle formations; the front-left pivot follows the guide rail.
+/obj/structure/ms13_vehicle_frame/tram
+	name = "small tram"
+	vehicle_controller_type = /datum/ms13_ground_vehicle/rail
+	var/car_length = 4
+	var/car_width = 2
+
+/obj/structure/ms13_vehicle_frame/tram/train
+	name = "short train"
+	car_length = 6
+
+/obj/structure/ms13_vehicle_frame/tram/Initialize(mapload)
+	. = ..()
+	vehicle = new vehicle_controller_type
+	vehicle.pivot = src
+	vehicle.dir = dir
+	vehicle.frames += src
+	// Validate the whole assembly before adding any components.
+	for(var/back in 0 to car_length - 1)
+		for(var/right in 0 to car_width - 1)
+			var/turf/target = vehicle.get_relative_turf(-back, right, dir)
+			if(!target || target.density)
+				return INITIALIZE_HINT_QDEL
+			for(var/atom/movable/blocker in target)
+				if(blocker != src && (blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame)))
+					return INITIALIZE_HINT_QDEL
+	for(var/back in 0 to car_length - 1)
+		for(var/right in 0 to car_width - 1)
+			var/obj/structure/ms13_vehicle_frame/frame = (!back && !right) ? src : add_segment(-back, right, "frame_steel", "roof_steel")
+			if(!back)
+				frame.spawn_wall(dir, "c_windshield", /obj/structure/window/ms13_vehicle_wall/shuttered)
+			if(back == car_length - 1)
+				frame.spawn_wall(turn(dir, 180), , /obj/structure/window/ms13_vehicle_wall/solid/door)
+			if(!right)
+				frame.spawn_wall(turn(dir, 90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered)
+			if(right == car_width - 1)
+				frame.spawn_wall(turn(dir, -90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered)
+			var/obj/structure/chair/ms13_vehicle_seat/seat = frame.add_seat(0, "rail passenger seat")
+			if(frame == src)
+				seat.configure_driver_seat()
+			if(!back || back == car_length - 1)
+				if(!right)
+					frame.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
+				if(right == car_width - 1)
+					frame.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, -90)
+	spawn_part(/obj/structure/ms13_vehicle_part/engine)
+	spawn_part(/obj/structure/ms13_vehicle_part/gearbox/three_speed)
+	spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/large)
+	spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)

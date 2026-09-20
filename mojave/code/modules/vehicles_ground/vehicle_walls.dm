@@ -58,6 +58,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	var/exterior_pixel_x = 0
 	var/exterior_pixel_y = 0
 	var/image/exterior_image
+	bullet_damage_ratio = 1
 
 /obj/structure/window/ms13_vehicle_wall/proc/blocks_sight()
 	return blocks_vision && !hull_broken
@@ -71,6 +72,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 		return
 	hull_broken = TRUE
 	intact_armor = returnArmor()
+	bullet_damage_ratio = 0.2
 	setArmor(getArmor(
 		intact_armor.blunt * broken_armor_mult,
 		intact_armor.puncture * broken_armor_mult,
@@ -93,6 +95,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	hull_broken = FALSE
 	setArmor(intact_armor)
 	intact_armor = null
+	bullet_damage_ratio = initial(bullet_damage_ratio)
 	update_appearance()
 	parent_frame?.vehicle?.update_interior_masks()
 

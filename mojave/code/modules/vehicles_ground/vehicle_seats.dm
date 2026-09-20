@@ -38,7 +38,14 @@
 	is_driver_seat = TRUE
 	name = "driver's seat and dashboard"
 	desc = "The driver's seat has a full-size control monitor. Click the monitor or seat to open vehicle controls; buckling in opens them automatically."
+	handle_layer()
 	update_appearance(UPDATE_OVERLAYS)
+
+/obj/structure/chair/ms13_vehicle_seat/handle_layer()
+	if(is_driver_seat)
+		layer = BELOW_MOB_LAYER
+		return
+	return ..()
 
 /obj/structure/chair/ms13_vehicle_seat/setDir(new_dir)
 	. = ..()
@@ -52,8 +59,10 @@
 	// Attached appearances remain clickable as the seat, and travel/rotate with it.
 	// Keep the monitor on the seat's interior tile, not beyond the front hull edge.
 	for(var/state in list("computer", "generic", "generic_key"))
-		var/mutable_appearance/monitor = mutable_appearance('icons/obj/computer.dmi', state, ABOVE_MOB_LAYER)
+		var/mutable_appearance/monitor = mutable_appearance('icons/obj/computer.dmi', state, BELOW_MOB_LAYER)
 		monitor.dir = dir
+		monitor.pixel_x = (dir & EAST) ? -6 : (dir & WEST) ? 6 : 0
+		monitor.pixel_y = (dir & NORTH) ? -6 : (dir & SOUTH) ? 6 : 0
 		. += monitor
 
 /obj/structure/chair/ms13_vehicle_seat/proc/can_use_controls(mob/living/user)
@@ -64,6 +73,8 @@
 		var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
 		var/list/options = list("Drive", "Engine toggle ([vehicle.engine_running ? "on" : "off"])", "Ignition toggle ([vehicle.ignition ? "on" : "off"])", "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])", "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])", "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])", "Horn", "Exit", "Unbuckle", "Stop", "Brakes mode ([vehicle.brakes_mode ? "on" : "off"])")
 		var/battery_percent = vehicle.battery?.cell ? round(vehicle.battery.cell.percent()) : 0
+		if(istype(vehicle, /datum/ms13_ground_vehicle/rail))
+			options += "Rail destination"
 		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nStop applies the brakes. Brakes mode moves slowly only while pressing a direction. Engine-off vehicles slow to a stop.", "Vehicle controls") as null|anything in options
 		if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
 			return
@@ -103,6 +114,9 @@
 			if(11)
 				vehicle.brakes_mode = !vehicle.brakes_mode
 				vehicle.stop_motion()
+			if(12)
+				var/datum/ms13_ground_vehicle/rail/train = vehicle
+				train.choose_destination(user, src)
 		vehicle.update_electrical()
 
 /obj/structure/chair/ms13_vehicle_seat/Destroy()

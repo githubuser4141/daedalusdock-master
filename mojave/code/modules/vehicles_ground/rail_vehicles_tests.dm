@@ -1,0 +1,146 @@
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_rail_vehicles/Run()
+	var/test_z = run_loc_floor_bottom_left.z
+	for(var/turf/ground in block(locate(10, 10, test_z), locate(55, 55, test_z)))
+		ground.ChangeTurf(/turf/open/floor/plating)
+		for(var/obj/obstacle in ground)
+			qdel(obstacle)
+	var/list/base_impact = measure_impact(500, 1, 20, test_z)
+	var/list/heavy_impact = measure_impact(1000, 1, 20, test_z)
+	var/list/fast_impact = measure_impact(500, 2, 20, test_z)
+	var/list/armored_impact = measure_impact(500, 1, 80, test_z)
+	if(abs(heavy_impact[1] - 2 * base_impact[1]) > 0.1 || abs(fast_impact[1] - 4 * base_impact[1]) > 0.1)
+		Fail("Collision damage did not scale linearly with mass and quadratically with speed.")
+	if(armored_impact[1] <= base_impact[1] || armored_impact[2] >= base_impact[2])
+		Fail("Contact armor did not improve damage delivery and reduce self-damage.")
+	// Shoving moves the whole struck vehicle, including loose cargo. A blocked shove cannot recurse.
+	var/obj/structure/ms13_vehicle_frame/jeep_front/rammer = allocate(/obj/structure/ms13_vehicle_frame/jeep_front, locate(20, 20, test_z))
+	var/obj/structure/ms13_vehicle_frame/jeep_front/victim = allocate(/obj/structure/ms13_vehicle_frame/jeep_front, locate(20, 18, test_z))
+	var/obj/item/cargo = allocate(/obj/item, get_turf(victim))
+	rammer.vehicle.speed = 2
+	if(!rammer.vehicle.do_move(SOUTH, TRUE) || victim.y != 17 || cargo.y != 17 || rammer.y != 19)
+		Fail("Vehicle collision failed to shove an intact formation and its cargo.")
+	var/obj/structure/blocker = allocate(/obj/structure, locate(20, 16, test_z))
+	blocker.density = TRUE
+	if(rammer.vehicle.try_shove_vehicle(victim.vehicle, SOUTH) || victim.y != 17)
+		Fail("Vehicle shoved through a blocked destination.")
+	qdel(blocker)
+	victim.vehicle.mass_per_frame = 100000
+	if(rammer.vehicle.try_shove_vehicle(victim.vehicle, SOUTH))
+		Fail("A light vehicle shoved an excessively heavy vehicle.")
+	clear_vehicle(rammer.vehicle)
+	clear_vehicle(victim.vehicle)
+	// Side plating's forward tip must hit a house wall just outside the frame footprint.
+	rammer = allocate(/obj/structure/ms13_vehicle_frame/jeep_front, locate(20, 20, test_z))
+	var/turf/house_wall = locate(19, 19, test_z)
+	house_wall = house_wall.ChangeTurf(/turf/closed/wall)
+	var/list/contacts = rammer.vehicle.side_wall_contacts(SOUTH)
+	if(!contacts[house_wall] || rammer.vehicle.can_move(SOUTH))
+		Fail("Side hull tip ignored an adjacent house wall.")
+	var/integrity_before = house_wall.get_integrity()
+	rammer.vehicle.speed = 1
+	rammer.vehicle.ram_obstacles(SOUTH, rammer.vehicle.get_manifest())
+	if(house_wall.get_integrity() >= integrity_before)
+		Fail("Side hull collision did not damage the house wall.")
+	house_wall.ChangeTurf(/turf/open/floor/plating)
+	clear_vehicle(rammer.vehicle)
+	// A real loop of guide rails, with room for the rigid car to sweep around its pivot.
+	var/list/route = list()
+	for(var/x in 26 to 35)
+		route += locate(x, 35, test_z)
+	for(var/y = 34, y >= 25, y--)
+		route += locate(35, y, test_z)
+	for(var/x = 34, x >= 25, x--)
+		route += locate(x, 25, test_z)
+	for(var/y in 26 to 35)
+		route += locate(25, y, test_z)
+	route += locate(26, 35, test_z)
+	for(var/turf/rail_tile as anything in route)
+		if(!(locate(/obj/structure/ms13_rail) in rail_tile))
+			allocate(/obj/structure/ms13_rail, rail_tile)
+	var/obj/structure/ms13_vehicle_frame/tram/tram = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(25, 35, test_z))
+	var/datum/ms13_ground_vehicle/rail/train = tram.vehicle
+	if(length(train.frames) != 8)
+		Fail("Tram is not 2x4.")
+	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = locate() in get_turf(tram)
+	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent, get_turf(tram))
+	driver_seat.user_buckle_mob(driver, driver)
+	for(var/direction in GLOB.cardinals)
+		driver_seat.setDir(direction)
+		if(driver_seat.layer >= MOB_LAYER)
+			Fail("Driver's seat was drawn over its driver.")
+		for(var/mutable_appearance/monitor as anything in driver_seat.update_overlays())
+			if(monitor.layer >= MOB_LAYER)
+				Fail("Dashboard overlay was drawn over its driver.")
+	driver_seat.setDir(train.dir)
+	// Intermediate obstacles must block a turn even when both endpoint footprints are clear.
+	blocker = allocate(/obj/structure, locate(23, 37, test_z))
+	blocker.density = TRUE
+	if(train.can_rotate(EAST))
+		Fail("Train rotated through an obstacle in its turning apron.")
+	qdel(blocker)
+	cargo = allocate(/obj/item, get_turf(tram))
+	var/list/parents = train.find_rail_routes()
+	if(!parents[locate(35, 25, test_z)] || length(parents) != 40)
+		Fail("Rail search did not find the complete connected loop.")
+	train.set_ignition(TRUE)
+	train.start_engine()
+	var/fuel_before = train.fuel_tank.reagents.total_volume
+	train.rail_route = route.Copy()
+	train.moving = TRUE
+	train.speed = 3
+	var/list/headings = list()
+	for(var/tick in 1 to 90)
+		train.next_move_time = 0
+		train.next_acceleration_time = 0
+		train.movement_tick(train.movement_generation)
+		headings |= train.dir
+		if(!train.moving)
+			break
+	if(train.moving || train.speed || get_turf(tram) != locate(26, 35, test_z) || cargo.loc != tram.loc || length(headings) != 4 || driver.buckled != driver_seat || driver.loc != tram.loc)
+		Fail("Autopilot failed a full E/S/W/N/E loop, cargo transport, or its final stop.")
+	if(train.fuel_tank.reagents.total_volume >= fuel_before)
+		Fail("Rail movement did not consume normal vehicle fuel.")
+	if(train.do_move(NORTH, TRUE))
+		Fail("Train drove off its guide rail.")
+	var/obj/structure/ms13_rail/removed = locate() in get_step(tram, EAST)
+	qdel(removed)
+	if(train.do_move(EAST, TRUE))
+		Fail("Train ignored destroyed rails.")
+	clear_vehicle(train)
+	var/obj/structure/ms13_vehicle_frame/tram/train/large = allocate(/obj/structure/ms13_vehicle_frame/tram/train, locate(40, 40, test_z))
+	if(length(large.vehicle.frames) != 12)
+		Fail("Train is not 2x6.")
+	clear_vehicle(large.vehicle)
+
+/datum/unit_test/ms13_rail_vehicles/proc/clear_vehicle(datum/ms13_ground_vehicle/vehicle)
+	vehicle.stop_motion()
+	for(var/atom/movable/component as anything in (vehicle.get_all_parts() | vehicle.get_manifest()))
+		qdel(component)
+
+/datum/unit_test/ms13_rail_vehicles/proc/measure_impact(mass, band, armor, test_z)
+	var/obj/structure/ms13_vehicle_frame/frame = allocate(/obj/structure/ms13_vehicle_frame, locate(15, 15, test_z))
+	var/datum/ms13_ground_vehicle/vehicle = new
+	frame.vehicle = vehicle
+	vehicle.pivot = frame
+	vehicle.frames += frame
+	vehicle.mass_per_frame = mass
+	vehicle.speed = band
+	frame.setArmor(getArmor(armor))
+	var/obj/structure/obstacle = allocate(/obj/structure, locate(15, 14, test_z))
+	obstacle.modify_max_integrity(100000)
+	obstacle.setArmor(getArmor(0))
+	var/integrity_before = obstacle.get_integrity()
+	var/frame_before = frame.get_integrity()
+	var/energy_before = vehicle.collision_energy()
+	vehicle.damage_collision(obstacle, frame, SOUTH)
+	. = list(integrity_before - obstacle.get_integrity(), frame_before - frame.get_integrity())
+	if(vehicle.speed && vehicle.collision_energy() >= energy_before)
+		Fail("A collision did not spend retained impact energy.")
+	var/retained = vehicle.collision_energy()
+	vehicle.damage_collision(obstacle, frame, SOUTH)
+	if(vehicle.speed && vehicle.collision_energy() >= retained)
+		Fail("Repeated collisions regenerated momentum without acceleration.")
+	clear_vehicle(vehicle)
+	qdel(obstacle)
+#endif

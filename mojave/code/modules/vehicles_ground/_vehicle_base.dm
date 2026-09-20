@@ -22,6 +22,12 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_roofs)
 GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /datum/ms13_ground_vehicle
+	/// Approximate loaded mass per floor tile; mapper/controller tuning, not a rigid-body simulation.
+	var/mass_per_frame = 500
+	var/being_pushed = FALSE
+	/// Retain sub-band collision losses instead of granting fresh momentum for each fence post.
+	var/impact_energy_reserve
+	var/impact_speed_band = 0
 	var/list/obj/structure/ms13_vehicle_frame/frames = list()
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
 	var/list/obj/structure/ms13_vehicle_part/parts = list()
@@ -294,6 +300,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// than count as obstacles to their own vehicle (this matters most for rotation, below: the pivot's
 /// own "destination" is its current tile, which its driver is standing on).
 /datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE)
+	if(length(side_wall_contacts(direction)))
+		return FALSE
 	var/list/parts = get_all_parts() + get_manifest()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/dest = get_step(frame, direction)
@@ -306,7 +314,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				continue
 			if(isliving(blocker) && can_run_over(blocker))
 				continue
-			if(blocker.density)
+			// Vehicle floors are non-dense, but another vehicle's footprint is never empty road.
+			if(blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame))
 				return FALSE
 	return TRUE
 
@@ -361,7 +370,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				continue
 			if(isliving(blocker) && can_run_over(blocker))
 				continue
-			if(blocker.density)
+			if(blocker.density || istype(blocker, /obj/structure/ms13_vehicle_frame))
 				return FALSE
 	return TRUE
 
@@ -376,46 +385,113 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				.[passenger] = frame
 
 /// Each leading tile strikes with its own outward armor (or its exposed frame).
-/// ponytail: speed-band squared is an arcade impact estimate, not mass/velocity physics.
+/// ponytail: mass times speed-band squared approximates kinetic energy, not full rigid-body physics.
 /datum/ms13_ground_vehicle/proc/ram_obstacles(direction, list/manifest)
 	var/list/impacted = list()
+	var/list/pushed = list()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames.Copy())
 		var/turf/destination = get_step(frame, direction)
 		if(!destination)
 			return FALSE
-		if(get_frame_at(destination))
-			continue
 		var/list/obstacles = list()
 		if(destination.density)
 			obstacles += destination
 		else
 			for(var/atom/movable/obstacle in destination)
-				if(obstacle.density && !isliving(obstacle) && !(obstacle in manifest) && !(obstacle in parts) && !(obstacle in walls))
+				if((obstacle.density || istype(obstacle, /obj/structure/ms13_vehicle_frame)) && !isliving(obstacle) && !(obstacle in manifest) && !(obstacle in parts) && !(obstacle in walls) && !(obstacle in frames))
 					obstacles += obstacle
 		for(var/atom/obstacle as anything in obstacles)
 			if(QDELETED(obstacle) || (obstacle in impacted))
 				continue
 			impacted += obstacle
+			var/datum/ms13_ground_vehicle/struck = get_ms13_ground_vehicle_at(obstacle)
+			if(struck && struck != src && !(struck in pushed))
+				pushed += struck
+				if(try_shove_vehicle(struck, direction))
+					// Its entire formation moved; all cached obstacles on this tile are stale.
+					break
 			var/obj/contact = frame
 			for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in walls)
-				if(panel.parent_frame == frame && panel.dir == direction && panel.exterior && panel.density)
+				if(panel.parent_frame == frame && panel.exterior && panel.density && panel.dir != turn(direction, 180))
 					contact = panel
-					break
-			var/contact_armor = max(0, contact.returnArmor().getRating(BLUNT))
-			var/impact = speed ** 2 * (20 + contact_armor)
-			var/resistance = max(0, obstacle.returnArmor().getRating(BLUNT))
-			var/recoil = impact
-			if(obstacle.uses_integrity && !(obstacle.resistance_flags & INDESTRUCTIBLE) && obstacle.get_integrity() > 0)
-				recoil = min(impact, obstacle.get_integrity())
-				obstacle.take_damage(impact, BRUTE, BLUNT, TRUE, direction)
-			// Destroying an explosive obstacle may also destroy the vehicle during take_damage().
-			if(QDELETED(frame) || QDELETED(pivot))
+					// Side panels also have a leading edge, even after the front plating is gone.
+					if(panel.dir == direction)
+						break
+			if(!damage_collision(obstacle, contact, direction) || QDELETED(frame))
 				return FALSE
-			if(!QDELETED(contact))
-				contact.take_damage(recoil * (20 + resistance) / (20 + contact_armor) * 0.35, BRUTE, BLUNT, FALSE, turn(direction, 180))
-			if(QDELETED(frame) || QDELETED(pivot))
+	var/list/side_contacts = side_wall_contacts(direction)
+	for(var/atom/obstacle as anything in side_contacts)
+		if(!QDELETED(obstacle) && !(obstacle in impacted))
+			if(!damage_collision(obstacle, side_contacts[obstacle], direction))
 				return FALSE
 	return TRUE
+
+/// The leading tip of a side panel also occupies its outer edge. Check new contact with solid
+/// turfs beside the footprint, without repeatedly ramming a wall we were already parked alongside.
+/datum/ms13_ground_vehicle/proc/side_wall_contacts(direction)
+	. = list()
+	for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in walls)
+		if(!panel.exterior || !panel.density || (panel.dir & direction) || (panel.dir & turn(direction, 180)))
+			continue
+		var/turf/old_edge = get_step(panel, panel.dir)
+		var/turf/new_edge = get_step(old_edge, direction)
+		if(new_edge?.density && !old_edge.density)
+			.[new_edge] = panel
+
+/datum/ms13_ground_vehicle/proc/damage_collision(atom/obstacle, obj/contact, direction)
+	if(QDELETED(contact))
+		return !QDELETED(pivot)
+	var/energy = collision_energy()
+	var/contact_armor = clamp(contact.returnArmor().getRating(BLUNT), 0, 100)
+	var/efficiency = 0.35 + 0.0065 * contact_armor
+	var/impact = energy * efficiency
+	var/resistance = clamp(obstacle.returnArmor().getRating(BLUNT), 0, 100)
+	var/work = impact
+	if(obstacle.uses_integrity && !(obstacle.resistance_flags & INDESTRUCTIBLE) && obstacle.get_integrity() > 0)
+		var/integrity_before = obstacle.get_integrity()
+		var/dealt = obstacle.take_damage(impact, BRUTE, BLUNT, TRUE, direction)
+		// Don't spend a reinforced wall's worth of energy on a flimsy chair. Armor absorption counts.
+		if(dealt > 0)
+			work = min(impact, min(integrity_before, dealt) / max(0.05, 1 - resistance / 100))
+	if(QDELETED(pivot))
+		return FALSE
+	var/self_damage = 0
+	if(!QDELETED(contact))
+		var/contact_integrity = contact.get_integrity()
+		var/recoil = work * (1 - efficiency) * (0.5 + resistance / 100)
+		self_damage = min(contact_integrity, contact.take_damage(recoil, BRUTE, BLUNT, FALSE, turn(direction, 180)) || 0)
+	impact_energy_reserve = max(0, energy - work - 1.5 * self_damage)
+	var/mass_factor = max(0.1, length(frames) * mass_per_frame / 1000)
+	speed = min(speed, CEILING(sqrt(impact_energy_reserve / (50 * mass_factor)), 1))
+	impact_speed_band = speed
+	if(!speed)
+		stop_motion()
+		return FALSE
+	return !QDELETED(pivot)
+
+/// Driving/gear changes replenish the speed-band estimate; repeated impacts at one band share it.
+/datum/ms13_ground_vehicle/proc/collision_energy()
+	var/nominal = 50 * max(0.1, length(frames) * mass_per_frame / 1000) * speed ** 2
+	if(isnull(impact_energy_reserve) || impact_speed_band != speed)
+		impact_energy_reserve = nominal
+		impact_speed_band = speed
+	return min(nominal, impact_energy_reserve)
+
+/// One physical tile of displacement, only into clear space. No recursive vehicle push chains.
+/datum/ms13_ground_vehicle/proc/try_shove_vehicle(datum/ms13_ground_vehicle/struck, direction)
+	if(being_pushed || struck.being_pushed || QDELETED(struck.pivot))
+		return FALSE
+	var/momentum = length(frames) * mass_per_frame * speed
+	var/resistance = length(struck.frames) * struck.mass_per_frame * (struck.brakes_mode ? 2 : 1)
+	if(momentum < resistance || !struck.can_move(direction))
+		return FALSE
+	struck.stop_motion()
+	struck.being_pushed = TRUE
+	var/moved = struck.do_move(direction, TRUE)
+	struck.being_pushed = FALSE
+	if(moved)
+		speed = max(1, speed - 1)
+	return moved
 
 /// Moves every frame, every wall, and everyone/everything currently aboard one tile in direction.
 /datum/ms13_ground_vehicle/proc/do_move(direction, bypass_cooldown = FALSE)
@@ -439,7 +515,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	for(var/atom/movable/passenger as anything in manifest)
 		passenger.forceMove(get_step(passenger, direction))
 	update_underneath(manifest)
-	engine?.consume_fuel(fuel_per_tile)
+	if(!being_pushed)
+		engine?.consume_fuel(fuel_per_tile)
 	alert_watchers()
 	crush_mines()
 	return TRUE
@@ -530,6 +607,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	movement_tick(movement_generation)
 
 /datum/ms13_ground_vehicle/proc/stop_motion()
+	impact_energy_reserve = null
+	impact_speed_band = 0
 	moving = FALSE
 	speed = 0
 	travel_dir = null
@@ -563,7 +642,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Turns the whole vehicle in place to face new_dir, rotating every frame/wall's position around the
 /// pivot and every wall's own facing to match, and carrying passengers to their frame's new tile.
 /datum/ms13_ground_vehicle/proc/do_rotate(new_dir)
-	if(!driver || world.time < next_move_time)
+	if(!can_operate_steering() || world.time < next_move_time)
 		return FALSE
 	if(!can_rotate(new_dir))
 		return FALSE
@@ -609,6 +688,9 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	alert_watchers()
 	crush_mines()
 	return TRUE
+
+/datum/ms13_ground_vehicle/proc/can_operate_steering()
+	return !!driver
 
 /// One cell of a vehicle's footprint - just a floor. Walls (vehicle_walls.dm) mounted on it, plus
 /// whatever's standing on it, are what actually make it feel like part of a vehicle.

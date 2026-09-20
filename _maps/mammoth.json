@@ -2,6 +2,8 @@
 	"version": 1,
 	"map_name": "Mammoth",
 	"map_path": "Mammoth",
+	"surface_level": 2,
+	"surface_neighbors": {},
 	"map_file": [
 		"Mammoth_below.dmm",
 		"Mammoth.dmm",
