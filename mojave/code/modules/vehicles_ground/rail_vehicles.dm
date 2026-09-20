@@ -42,7 +42,8 @@
 /datum/ms13_ground_vehicle/rail
 	mass_per_frame = 1200
 	max_turn_speed = 1
-	fuel_per_tile = 0.2
+	fuel_per_tile = 0.1
+	acceleration_delay = 0.5 SECONDS
 	var/list/rail_route
 	/// Speed bands shed per movement tick; stopping distance is computed using the same rule.
 	var/braking_power = 1
@@ -216,6 +217,7 @@
 /obj/structure/ms13_vehicle_frame/tram/train
 	name = "short train"
 	car_length = 6
+	car_width = 3
 
 /obj/structure/ms13_vehicle_frame/tram/Initialize(mapload)
 	. = ..()
@@ -239,6 +241,7 @@
 				frame.spawn_wall(dir, "c_windshield", /obj/structure/window/ms13_vehicle_wall/shuttered)
 			if(back == car_length - 1)
 				frame.spawn_wall(turn(dir, 180), , /obj/structure/window/ms13_vehicle_wall/solid/door)
+				frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
 			if(!right)
 				frame.spawn_wall(turn(dir, 90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered)
 			if(right == car_width - 1)

@@ -7,8 +7,8 @@
  * freely afterward.
  */
 /datum/ms13_ground_vehicle/jeep
-	acceleration_delay = 0.8 SECONDS
-	turn_delay = 3
+	acceleration_delay = 0.5 SECONDS
+	turn_delay = 2
 	max_turn_speed = 2
 	turn_speed_loss = 1
 	ram_damage_base = 3

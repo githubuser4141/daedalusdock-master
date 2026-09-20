@@ -274,6 +274,9 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/gearbox/three_speed
 	gear_delays = list(8, 6, 4)
 
+/obj/structure/ms13_vehicle_part/gearbox/five_speed
+	gear_delays = list(8, 6, 4, 2, 1)
+
 /// Fuel lives here, not in the engine. Pour fuel in to refill it; once broken it leaks as the vehicle moves.
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)

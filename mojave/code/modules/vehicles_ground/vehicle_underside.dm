@@ -51,7 +51,7 @@
 					cover(victim)
 				// No corpse processing for either NPC framework; never explicitly gib a victim.
 				if(victim.stat != DEAD || (!isanimal(victim) && !isbasicmob(victim)))
-					victim.apply_damage(ram_damage_base + ram_damage_per_speed * max(speed, 1), BRUTE, BODY_ZONE_CHEST)
+					victim.apply_damage((ram_damage_base * 3) + ram_damage_per_speed * max(speed, 1), BRUTE, BODY_ZONE_CHEST) // gonna stick a 3x here
 				continue
 			if(!thing.simulated || (thing in underneath))
 				continue
