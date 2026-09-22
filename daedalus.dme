@@ -5421,6 +5421,7 @@
 #include "mojave\code\modules\vehicles_ground\armored_truck.dm"
 #include "mojave\code\modules\vehicles_ground\jeep.dm"
 #include "mojave\code\modules\vehicles_ground\m113.dm"
+#include "mojave\code\modules\vehicles_ground\rail_electric.dm"
 #include "mojave\code\modules\vehicles_ground\rail_vehicles.dm"
 #include "mojave\code\modules\vehicles_ground\rail_vehicles_tests.dm"
 #include "mojave\code\modules\vehicles_ground\soviet_vehicles.dm"

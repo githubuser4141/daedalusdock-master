@@ -182,6 +182,89 @@
 	check_smooth_running(test_z)
 	check_equipment(test_z)
 	check_crossings()
+	check_electric()
+
+/// Runs line to stop, one tile at a time. TRUE if it came to a stand on the stop.
+/datum/unit_test/ms13_rail_vehicles/proc/run_to_stand(datum/ms13_ground_vehicle/rail/line, turf/stop)
+	for(var/tick in 1 to 120)
+		if(!line.moving)
+			break
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	return !line.moving && get_turf(line.rail_frame()) == stop
+
+/// An electric car runs off a rail feeder's powernet and brakes to a stop when the power goes. A blast door slides
+/// open and shut along its own hidden rail at the press of a door button, shoving whoever is in its way.
+/datum/unit_test/ms13_rail_vehicles/proc/check_electric()
+	var/datum/space_level/level = SSmapping.add_new_zlevel("Electric rail test", list())
+	var/z = level.z_value
+	for(var/turf/ground in block(locate(10, 10, z), locate(45, 45, z)))
+		ground.ChangeTurf(/turf/open/floor/plating)
+	for(var/y in 13 to 40)
+		allocate(/obj/structure/ms13_rail, locate(20, y, z))
+	var/turf/stop = locate(20, 12, z)
+	allocate(/obj/structure/ms13_rail/station, stop)
+	var/obj/machinery/power/ms13_rail_feeder/feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(20, 40, z))
+	var/datum/powernet/net = new
+	net.add_machine(feeder)
+	var/obj/structure/ms13_vehicle_frame/tram/electric/car = allocate(/obj/structure/ms13_vehicle_frame/tram/electric, locate(20, 38, z))
+	var/datum/ms13_ground_vehicle/rail/electric/line = car.vehicle
+	if(line.engine || line.battery || line.fuel_tank || !istype(line.gearbox, /obj/structure/ms13_vehicle_part/gearbox/traction) || line.gear_count() != 1)
+		Fail("An electric car came with an engine, battery or tank, or more than one speed.")
+	if(!(feeder in line.feeders))
+		Fail("An electric car didn't find the feeder on its line.")
+	if(line.depart_for(stop))
+		Fail("An electric car set off on a dead line.")
+	net.avail = 1000000
+	if(!line.depart_for(stop))
+		Fail("An electric car would not set off on a live line.")
+		clear_vehicle(line)
+		return
+	line.movement_tick(line.movement_generation)
+	if(net.load < line.traction_draw)
+		Fail("An electric car moved without drawing its load from the line.")
+	if(!run_to_stand(line, stop))
+		Fail("An electric car did not run to its stop on a live line.")
+	// Heading back, the power goes: it brakes to a stop short of where it was going.
+	var/turf/start = locate(20, 38, z)
+	line.depart_for(start)
+	for(var/tick in 1 to 6)
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	net.avail = 0
+	net.load = 0
+	line.power_cycle = -1
+	if(run_to_stand(line, start) || line.moving)
+		Fail("An electric car kept going to its stop after the power went.")
+	clear_vehicle(line)
+
+	// A blast door, shut across x = 31, y = 30 to 32, slides north until its middle stands at y = 34.
+	for(var/y in 31 to 34)
+		allocate(/obj/structure/ms13_rail/hidden, locate(31, y, z))
+	var/obj/machinery/power/ms13_rail_feeder/door_feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(31, 34, z))
+	net.add_machine(door_feeder)
+	net.avail = 1000000
+	var/obj/structure/ms13_vehicle_frame/tram/blast_door/door = allocate(/obj/structure/ms13_vehicle_frame/tram/blast_door, locate(31, 30, z))
+	door.id = "ms13_test_blast_door"
+	var/datum/ms13_ground_vehicle/rail/electric/blast_door/drive = door.vehicle
+	if(length(drive.frames) != 3 || length(drive.walls) || length(drive.parts) != 1 || drive.battery)
+		Fail("The blast door isn't just three frames and its motor.")
+	for(var/obj/structure/ms13_vehicle_frame/slab as anything in drive.frames)
+		if(!slab.density)
+			Fail("A blast door frame can be walked through.")
+	var/turf/shut = get_turf(drive.rail_frame())
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, locate(31, 33, z))
+	var/obj/item/assembly/control/button = allocate(/obj/item/assembly/control, locate(35, 30, z))
+	button.id = door.id
+	button.activate()
+	if(!run_to_stand(drive, locate(31, 34, z)))
+		Fail("A door button did not slide the blast door open to the far end of its rail.")
+	if(drive.get_frame_at(get_turf(bystander)) || bystander.stat == DEAD)
+		Fail("The blast door did not shove a bystander out of its way.")
+	door.toggle()
+	if(!run_to_stand(drive, shut))
+		Fail("The blast door did not slide shut again.")
+	clear_vehicle(drive)
 
 /// Power doors the driver works, latches worked by hand from inside only, a battery bank, a welding torch that burns
 /// the battery and winds back past its hose, and a smoke generator that burns fuel into a screen outside.

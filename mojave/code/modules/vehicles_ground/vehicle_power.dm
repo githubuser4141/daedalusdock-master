@@ -17,6 +17,10 @@
 /datum/ms13_ground_vehicle/proc/has_electrical_power()
 	return ignition && battery?.is_operational() && battery.cell?.charge > 0
 
+/// Power for things that run with the ignition off, like a rail car's route terminal.
+/datum/ms13_ground_vehicle/proc/has_standby_power()
+	return battery?.is_operational() && battery.cell?.charge > 0
+
 /datum/ms13_ground_vehicle/proc/use_battery(amount)
 	if(!has_electrical_power() || !battery.cell.use(amount))
 		return FALSE

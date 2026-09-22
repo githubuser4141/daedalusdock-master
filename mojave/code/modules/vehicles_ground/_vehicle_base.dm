@@ -211,8 +211,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Engines and the configured number of intact wheels/tracks provide motive power. Losing either prevents
 /// new throttle, but does not cancel existing momentum.
 /datum/ms13_ground_vehicle/proc/has_motive_power()
-	if(!engine_running || !engine?.is_operational() || !gear_count())
-		return FALSE
+	return drive_turning() && gear_count() && has_running_gear()
+
+/// Something is turning the drive: here a running engine that works and has fuel.
+/datum/ms13_ground_vehicle/proc/drive_turning()
+	return engine_running && engine?.is_operational()
+
+/datum/ms13_ground_vehicle/proc/has_running_gear()
 	var/working_running_gear = 0
 	for(var/obj/structure/ms13_vehicle_part/running_gear/running_gear in parts)
 		if(running_gear.is_operational())
@@ -661,7 +666,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		if(!moving)
 			return
 	// Engine shutdown/fuel loss winds down momentum rather than coasting forever.
-	if(!engine_running || !engine?.is_operational())
+	if(!drive_turning())
 		speed--
 		if(!speed)
 			stop_motion()

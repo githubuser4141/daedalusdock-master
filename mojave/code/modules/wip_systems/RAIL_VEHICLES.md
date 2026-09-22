@@ -42,6 +42,28 @@ up, as for any other vehicle crossing (see `SURFACE_REGIONS.md`). The car comes 
 beyond the far map's transition strip and runs on. Stops in other regions and on other levels
 show on the route board: the region beyond is drawn past its edge, and other levels dashed.
 
+## Electric cars
+
+`/tram/electric` and `/tram/train/electric` take their power from the guide rail. They have a
+one-speed traction motor and no engine, fuel tank or battery; their lights, power doors and
+route terminal run off the line too. Put a `/obj/machinery/power/ms13_rail_feeder` on a rail
+tile over a cable knot on a live grid: it joins the whole connected line to that cable's power.
+Several feeders on one line all count. A moving car draws `traction_draw` (20 kW) from a feeder
+once a power cycle; it won't set off on a dead line, and brakes to a stop along the line if the
+power goes. The rail itself holds no power and nothing processes, so an unused line and a
+parked car cost nothing. A parked car only notices a dead grid when it's next used.
+
+## Blast doors
+
+`/obj/structure/ms13_vehicle_frame/tram/blast_door` is a three-tile armored slab that slides on
+its own rail line, driven off a rail feeder like an electric car. Map it facing along its
+length where it stands shut, set its `id`, and run rail (`/obj/structure/ms13_rail/hidden` can't
+be seen) under its middle tile from there to where its middle should stand open, with a feeder
+on that line. Any door button (`/obj/machinery/button`) with the same `id` slides it to the far
+end of its rail and back, or reverses it part-way. It shoves anyone in its way along ahead of it,
+and stops against anyone it can't shove. It's three dense frames and a motor, with tank-grade
+armor and 3000 integrity each.
+
 Vehicle impacts estimate mass using `mass_per_frame * frame count`. Speed increases
 the ability to displace another vehicle; brakes double shove resistance. A successful
 shove moves the entire struck formation one clear tile and costs the striking vehicle

@@ -389,6 +389,11 @@
 					continue
 				if(vehicle.blocks_vehicle(blocker))
 					return INITIALIZE_HINT_QDEL
+	build_car()
+	fit_drivetrain()
+
+/// Lays out the car: frames, hull, seats, lights and wheels.
+/obj/structure/ms13_vehicle_frame/tram/proc/build_car()
 	// Boarding is from the platform alongside: one door each side, and the row inside them kept clear.
 	var/door_row = round(car_length / 2)
 	var/lamp_column = round((car_width - 1) / 2)
@@ -426,15 +431,24 @@
 					frame.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
 				if(right == car_width - 1)
 					frame.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, -90)
+	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+
+/// Diesel: an engine, its gearbox and a tank. Electric cars take a traction motor instead (rail_electric.dm).
+/obj/structure/ms13_vehicle_frame/tram/proc/fit_drivetrain()
+	if(ispath(vehicle_controller_type, /datum/ms13_ground_vehicle/rail/electric))
+		spawn_part(/obj/structure/ms13_vehicle_part/gearbox/traction)
+		var/datum/ms13_ground_vehicle/rail/electric/line = vehicle
+		// Finds the feeders on its line, so it has power from the start.
+		line.find_rail_routes()
+		return
 	spawn_part(/obj/structure/ms13_vehicle_part/engine)
 	spawn_part(/obj/structure/ms13_vehicle_part/gearbox/three_speed)
 	spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/large)
-	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 
 /// The car's route board: a line map of the connected rails and their stops. Pick one and the car runs there.
 /obj/structure/ms13_vehicle_part/rail_terminal
 	name = "route terminal"
-	desc = "A RobCo transit terminal showing the line and its stops. It runs off the car's battery."
+	desc = "A RobCo transit terminal showing the line and its stops. It runs off the car's power."
 	icon = 'mojave/icons/structure/terminals.dmi'
 	icon_state = "terminal"
 	pixel_y = 8
@@ -445,7 +459,7 @@
 	var/list/board_levels
 
 /obj/structure/ms13_vehicle_part/rail_terminal/proc/is_powered()
-	return is_operational() && vehicle?.battery?.is_operational() && vehicle.battery.cell?.charge > 0
+	return is_operational() && vehicle?.has_standby_power()
 
 /obj/structure/ms13_vehicle_part/rail_terminal/update_icon_state()
 	icon_state = broken ? "terminal_ruined" : "terminal"
