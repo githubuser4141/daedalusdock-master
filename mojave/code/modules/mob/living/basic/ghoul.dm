@@ -11,8 +11,8 @@
 	speed = 0.25
 	attack_verb_continuous = "tears"
 	attack_verb_simple = "claws"
-	melee_damage_lower = 15
-	melee_damage_upper = 15
+	melee_damage_lower = 22
+	melee_damage_upper = 22
 	subtractible_armour_penetration = 5
 	attack_sound = list('mojave/sound/ms13npc/ghoul_attack1.ogg', 'mojave/sound/ms13npc/ghoul_attack2.ogg', 'mojave/sound/ms13npc/ghoul_attack3.ogg')
 	deathsound = list('mojave/sound/ms13npc/ghoul_death1.ogg', 'mojave/sound/ms13npc/ghoul_death2.ogg', 'mojave/sound/ms13npc/ghoul_death3.ogg')
@@ -101,8 +101,8 @@
 	health = 140
 	maxHealth = 140
 	speed = 1.35
-	melee_damage_lower = 15
-	melee_damage_upper = 15
+	melee_damage_lower = 22
+	melee_damage_upper = 22
 	subtractible_armour_penetration = 20
 
 /mob/living/basic/ms13/ghoul/radioactive
@@ -112,8 +112,8 @@
 	icon_dead = "glowingghoul_dead"
 	health = 125
 	maxHealth = 125
-	melee_damage_lower = 20
-	melee_damage_upper = 20
+	melee_damage_lower = 26
+	melee_damage_upper = 26
 	subtractible_armour_penetration = 20
 	light_outer_range = 2
 	light_color = "#4ba54f"

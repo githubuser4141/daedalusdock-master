@@ -7,8 +7,8 @@
 	idlechance = 10
 	health = 160
 	maxHealth = 160
-	melee_damage_lower = 20
-	melee_damage_upper = 20
+	melee_damage_lower = 25
+	melee_damage_upper = 25
 	subtractible_armour_penetration = 30
 	vision_range = 12
 	aggro_vision_range = 10
