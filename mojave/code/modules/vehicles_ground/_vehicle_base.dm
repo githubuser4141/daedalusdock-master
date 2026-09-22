@@ -311,8 +311,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// vehicle - including its current passengers, who are expected to come along for the ride rather
 /// than count as obstacles to their own vehicle (this matters most for rotation, below: the pivot's
 /// own "destination" is its current tile, which its driver is standing on).
-/datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE)
-	var/list/parts = get_all_parts() + get_manifest()
+/datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE, list/aboard)
+	var/list/parts = aboard || (get_all_parts() + get_manifest())
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/dest = get_step(frame, direction)
 		if(!dest || dest.density)
@@ -504,7 +504,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	// Resolve solid impacts before pushing mobs. A surviving obstacle still stops the vehicle.
 	if(speed && !ram_obstacles(direction, manifest))
 		return FALSE
-	if(!can_move(direction, TRUE) || !ram_living(direction, manifest) || !can_move(direction))
+	var/list/aboard = get_all_parts() | manifest
+	if(!can_move(direction, TRUE, aboard) || !ram_living(direction, manifest) || !can_move(direction, FALSE, aboard))
 		return FALSE
 	if(!bypass_cooldown)
 		next_move_time = world.time + gear_delay(max(speed, 1))
@@ -944,6 +945,14 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	ms13_mask_dir = vehicle.dir
 	ms13_vehicle_interior_masks = list()
 	var/driving = vehicle.driver == src
+	// Every blacked-out tile copies this, rather than setting each image up afresh.
+	var/static/image/blackout
+	if(!blackout)
+		blackout = image(icon = 'icons/effects/alphacolors.dmi', layer = FOV_EFFECTS_LAYER)
+		blackout.color = "#000000"
+		blackout.plane = FULLSCREEN_PLANE
+		blackout.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+		blackout.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/list/mask_view = getviewsize(client.view)
 	var/extended_view = "[mask_view[1] + 4]x[mask_view[2] + 4]"
 	// ponytail: rebuilds the visible mask plus a two-tile margin; cache rays if vehicle sizes grow.
@@ -958,17 +967,15 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 				cover.blend_mode = BLEND_ADD
 				cover.invisibility = INVISIBILITY_LIGHTING
 				cover.color = feed.cabin_glow
+				cover.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+				cover.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		if(!cover)
 			if(!vehicle.blocks_sight_from(here, target, driving))
 				continue
-			cover = image(icon = 'icons/effects/alphacolors.dmi', loc = anchor, layer = FOV_EFFECTS_LAYER)
-			cover.color = "#000000"
-			cover.plane = FULLSCREEN_PLANE
+			cover = image(blackout, anchor, layer = FOV_EFFECTS_LAYER)
 		// Offsets from the frame, which carries its own art offset.
 		cover.pixel_x = (target.x - anchor.x) * world.icon_size - anchor.pixel_x
 		cover.pixel_y = (target.y - anchor.y) * world.icon_size - anchor.pixel_y
-		cover.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
-		cover.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		ms13_vehicle_interior_masks += cover
 	client.images += ms13_vehicle_interior_masks
 	refresh_ms13_heat_sight()
