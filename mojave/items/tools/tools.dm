@@ -191,8 +191,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 
 /obj/item/weldingtool/ms13/update_overlays()
 	. = ..()
-	if(welding)
-		. += "empty"
+	// Lit art is its own icon state (update_icon_state()); these sheets have no "-on" overlay.
+	. -= "[initial(icon_state)]-on"
 
 /obj/item/wrench/ms13
 	name = "wrench"
