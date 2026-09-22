@@ -500,6 +500,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		return FALSE
 	if(!bypass_cooldown)
 		next_move_time = world.time + gear_delay(max(speed, 1))
+	// Hull and riders glide each tile together, over the time until the next one; mismatched glides judder.
+	var/glide = DELAY_TO_GLIDE_SIZE(gear_delay(max(speed, 1)))
+	for(var/atom/movable/thing as anything in get_all_parts() | manifest)
+		thing.set_glide_size(glide)
 
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		frame.forceMove(get_step(frame, direction))

@@ -162,7 +162,8 @@
 
 	// Momentum belongs to the vehicle, so losing the driver prevents new input but does not cancel
 	// an already-moving vehicle's next coast step.
-	vehicle.driver = null
+	driver_seat.user_unbuckle_mob(driver, driver)
+	TEST_ASSERT(!vehicle.driver, "Unbuckling left the driver at the controls.")
 	vehicle.speed = 1
 	vehicle.travel_dir = vehicle.dir
 	vehicle.moving = TRUE
@@ -170,6 +171,8 @@
 	var/turf/driverless_destination = get_step(front, vehicle.travel_dir)
 	vehicle.movement_tick(vehicle.movement_generation)
 	TEST_ASSERT_EQUAL(get_turf(front), driverless_destination, "Vehicle stopped immediately when its driver was lost despite having momentum.")
+	TEST_ASSERT_EQUAL(driver.glide_size, front.glide_size, "A standing rider glided out of step with the hull.")
+	TEST_ASSERT_EQUAL(front.glide_size, DELAY_TO_GLIDE_SIZE(vehicle.gear_delay(1)), "The hull did not glide over its move interval.")
 	vehicle.set_ignition(FALSE)
 	vehicle.movement_tick(vehicle.movement_generation)
 	TEST_ASSERT_EQUAL(vehicle.speed, 0, "Engine-off vehicle did not coast to a stop.")
@@ -188,7 +191,7 @@
 	TEST_ASSERT(!vehicle.handle_drive_input(vehicle.dir), "Brakes mode bypassed its slow movement cooldown.")
 	TEST_ASSERT(vehicle.gear_delay(1) >= 1 SECONDS, "Brakes mode is not limited to a slow crawl.")
 	vehicle.brakes_mode = FALSE
-	TEST_ASSERT_EQUAL(vehicle.gear_delay(vehicle.gear_count()), vehicle.gearbox.gear_delays[vehicle.gear_count()] / 1.25, "Shared speed increase was not applied.")
+	TEST_ASSERT_EQUAL(vehicle.gear_delay(vehicle.gear_count()), vehicle.gearbox.gear_delays[vehicle.gear_count()] / vehicle.speed_multiplier, "Vehicle speed multiplier was not applied.")
 
 /datum/unit_test/ms13_vehicle_electrical
 	name = "VEHICLES: Battery, Ignition, Lights And Driver Cameras"
