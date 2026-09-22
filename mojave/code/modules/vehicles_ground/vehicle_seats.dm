@@ -114,10 +114,10 @@
 				if(user.buckled == src)
 					user_unbuckle_mob(user, user)
 			if(10)
-				vehicle.stop_motion()
+				vehicle.apply_brakes()
 			if(11)
 				vehicle.brakes_mode = !vehicle.brakes_mode
-				vehicle.stop_motion()
+				vehicle.apply_brakes()
 			if(12)
 				var/datum/ms13_ground_vehicle/rail/train = vehicle
 				train.choose_destination(user, src)

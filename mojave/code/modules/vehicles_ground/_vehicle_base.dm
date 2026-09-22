@@ -88,6 +88,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	/// A held steering key only counts as a second press after this long.
 	var/steer_delay = 0.8 SECONDS
 	var/next_steer_time = 0
+	/// The brakes shed one speed band this often, so stopping or reversing from speed takes a while.
+	var/brake_delay = 0.6 SECONDS
+	var/next_brake_time = 0
+	/// Brakes held on until the vehicle stops.
+	var/braking = FALSE
+	var/brake_sound = 'sound/machines/hiss.ogg'
+	var/brake_sound_volume = 35
 
 /// Gears the driver can currently select; zero without a working gearbox.
 /datum/ms13_ground_vehicle/proc/gear_count()
@@ -98,7 +105,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/list/delays = gearbox?.gear_delays
 	if(!length(delays))
 		return 10
-	if(brakes_mode)
+	if(brakes_mode && !moving)
 		// Braking mode is a fixed crawl, whatever the vehicle's top speed.
 		return max(1 SECONDS, delays[1])
 	return delays[clamp(gear, 1, length(delays))] / max(speed_multiplier, 0.1)
@@ -529,11 +536,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/apply_throttle(direction)
 	// Brakes are mechanical: no fuel, ignition, or intact drivetrain is needed to slow down.
 	if(speed && direction != travel_dir)
-		speed--
+		brake_step()
 		next_acceleration_time = world.time + acceleration_delay
-		if(!speed)
-			stop_motion()
 		return TRUE
+	// Stopping to crawl in brakes mode: the throttle does nothing until it has.
+	if(moving && brakes_mode)
+		return TRUE
+	braking = FALSE
 	if(!has_motive_power())
 		return FALSE
 	if(brakes_mode)
@@ -609,7 +618,28 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	running_gear_soundloop.start()
 	movement_tick(movement_generation)
 
+/// Sheds one speed band on the brakes, no more often than brake_delay allows. TRUE if it did.
+/datum/ms13_ground_vehicle/proc/brake_step()
+	if(world.time < next_brake_time)
+		return FALSE
+	next_brake_time = world.time + brake_delay
+	speed--
+	playsound(pivot, brake_sound, brake_sound_volume, TRUE)
+	if(!speed)
+		stop_motion()
+	return TRUE
+
+/// Brakes to a halt: at once from a crawl, otherwise a band at a time.
+/datum/ms13_ground_vehicle/proc/apply_brakes()
+	if(speed > 1)
+		braking = TRUE
+		return
+	if(speed)
+		playsound(pivot, brake_sound, brake_sound_volume, TRUE)
+	stop_motion()
+
 /datum/ms13_ground_vehicle/proc/stop_motion()
+	braking = FALSE
 	impact_energy_reserve = null
 	impact_speed_band = 0
 	moving = FALSE
@@ -625,6 +655,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/movement_tick(generation)
 	if(generation != movement_generation || !moving || !speed)
 		return
+	if(braking)
+		brake_step()
+		if(!moving)
+			return
 	// Engine shutdown/fuel loss winds down momentum rather than coasting forever.
 	if(!engine_running || !engine?.is_operational())
 		speed--

@@ -290,6 +290,28 @@
 	vehicle.battery.update_integrity(vehicle.battery.max_integrity * 0.1)
 	TEST_ASSERT(!vehicle.engine_running && !vehicle.has_electrical_power(), "Broken battery left the electrical system powered.")
 
+/datum/unit_test/ms13_vehicle_braking
+	name = "VEHICLES: Braking From Speed Takes Time"
+
+/datum/unit_test/ms13_vehicle_braking/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	vehicle.speed = 3
+	vehicle.travel_dir = vehicle.dir
+	vehicle.moving = TRUE
+	vehicle.apply_throttle(turn(vehicle.dir, 180))
+	TEST_ASSERT_EQUAL(vehicle.speed, 2, "Braking did not shed a speed band.")
+	vehicle.apply_throttle(turn(vehicle.dir, 180))
+	TEST_ASSERT_EQUAL(vehicle.speed, 2, "The brakes shed a second band at once, stopping dead.")
+	TEST_ASSERT_EQUAL(vehicle.travel_dir, vehicle.dir, "The vehicle reversed before it had stopped.")
+	vehicle.apply_brakes()
+	TEST_ASSERT(vehicle.braking && vehicle.moving, "Stop halted a fast vehicle at once instead of braking.")
+	for(var/step in 1 to 2)
+		vehicle.next_brake_time = 0
+		vehicle.brake_step()
+	TEST_ASSERT(!vehicle.moving && !vehicle.speed && !vehicle.braking, "Braking down from speed did not bring the vehicle to a stop.")
+
 /datum/unit_test/ms13_vehicle_obstacle_impact
 	name = "VEHICLES: Ramming Damages Obstacles And Contact Armor"
 

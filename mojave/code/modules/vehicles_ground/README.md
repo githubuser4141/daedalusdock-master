@@ -9,11 +9,12 @@ Drive switches on ignition, attempts a battery-powered start, and buckles you in
 starts/stops without buckling (ignition must already be on). Exit closes the menu; Unbuckle leaves
 the seat without applying the brakes. The horn has a one-second cooldown.
 
-Forward/reverse input selects successive speed bands; opposite input brakes, even without power.
-Stop immediately sets speed to zero. Stopping the engine (including fuel loss) sheds one speed band
-per movement tick until stopped. Releasing the controls or leaving the seat preserves powered momentum.
-Brakes mode stops current motion and uses input-only steps, at most one tile per second: release the
-key to stop. Gear delays are divided by the controller's `speed_multiplier` (1.25 by default, so 25%
+Forward/reverse input selects successive speed bands; opposite input brakes, even without power. The
+brakes shed one band per `brake_delay` (0.6 s), with `brake_sound`, so a vehicle at speed has to brake
+down before it stops or reverses. Stop brakes to a halt the same way; from a crawl it stops at once.
+Stopping the engine (including fuel loss) sheds one speed band per movement tick until stopped.
+Releasing the controls or leaving the seat preserves powered momentum. Brakes mode brakes to a stop,
+then uses input-only steps, at most one tile per second: release the key to stop. Gear delays are divided by the controller's `speed_multiplier` (1.25 by default, so 25%
 faster than the gearbox's raw delays) - set that per vehicle to make one faster or slower.
 Turning can reduce speed; an obstacle that survives a ram stops it. Impacts use speed squared and
 the actual leading panel's blunt armor, falling back to the frame on exposed edges. Objects and
