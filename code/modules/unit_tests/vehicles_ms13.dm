@@ -803,12 +803,17 @@
 	TEST_ASSERT_EQUAL(corpse.health, corpse_health, "Dead simple animal still processed run-over damage.")
 	TEST_ASSERT(corpse in vehicle.underneath, "Corpse was not tracked underneath.")
 	var/turf/wreck_turf = get_turf(front)
+	// Ten sheets from the frame, and one from each part it was carrying.
+	var/expected_steel = 10
+	for(var/obj/structure/ms13_vehicle_part/part as anything in vehicle.parts)
+		if(part.forward_offset == front.forward_offset && part.right_offset == front.right_offset)
+			expected_steel++
 	front.take_damage(10000, BRUTE, BLUNT, FALSE, armor_penetration = 100)
 	TEST_ASSERT(QDELETED(front), "Frame survived lethal damage.")
 	var/steel_amount = 0
 	for(var/obj/item/stack/sheet/ms13/scrap_steel/steel in wreck_turf)
 		steel_amount += steel.amount
-	TEST_ASSERT_EQUAL(steel_amount, 10, "Destroyed frame did not leave ten steel sheets.")
+	TEST_ASSERT_EQUAL(steel_amount, expected_steel, "Destroyed frame did not leave its own steel and its parts' scrap.")
 	TEST_ASSERT(!HAS_TRAIT_FROM(corpse, TRAIT_FLOORED, REF(vehicle)), "Destroyed frame left its victim pinned.")
 
 /datum/unit_test/ms13_vehicle_underside
