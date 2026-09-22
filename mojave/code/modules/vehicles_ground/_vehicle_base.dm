@@ -227,9 +227,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Does a sight ray from viewer_turf, leaving frame in exit_dir, hit a hull panel that won't let this viewer see
 /// out? Solid panels always block; a porthole only lets through viewers within its vision_range.
-/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir, turf/viewer_turf, use_cameras = FALSE)
-	if(use_cameras && camera_covers_edge(frame, exit_dir))
-		return FALSE
+/datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir, turf/viewer_turf)
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
 		if(wall.parent_frame != frame || !(wall.dir & exit_dir))
 			continue
@@ -239,17 +237,20 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			return TRUE
 	return FALSE
 
-/// True when the line from an interior turf to target first exits through solid hull.
+/// True when the line from an interior turf to target first exits through solid hull. use_cameras: the driver,
+/// who also sees whatever a working camera takes in.
 /datum/ms13_ground_vehicle/proc/blocks_sight_from(turf/source, turf/target, use_cameras = FALSE)
 	var/obj/structure/ms13_vehicle_frame/current_frame = get_frame_at(source)
 	if(!current_frame || get_frame_at(target))
+		return FALSE
+	if(use_cameras && camera_covering(target))
 		return FALSE
 	var/list/sight_line = get_line(source, target)
 	var/turf/current_turf = source
 	for(var/index in 2 to length(sight_line))
 		var/turf/next_turf = sight_line[index]
 		var/obj/structure/ms13_vehicle_frame/next_frame = get_frame_at(next_turf)
-		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf), source, use_cameras))
+		if(current_frame && !next_frame && boundary_blocks_vision(current_frame, get_dir(current_turf, next_turf), source))
 			return TRUE
 		current_turf = next_turf
 		current_frame = next_frame
@@ -892,35 +893,51 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	ms13_vehicle_interior_masks = null
 	ms13_mask_anchor = null
 
-/// Black out only exterior turfs whose ray from this occupant crosses closed solid hull.
+/// Black out only exterior turfs whose ray from this occupant crosses closed solid hull. The driver also sees what
+/// the cameras take in, lit green where a night vision camera looks.
 /mob/proc/update_ms13_vehicle_interior_mask()
 	clear_ms13_vehicle_interior_mask()
 	if(!client || ms13_active_gunner_sight || ms13_vehicle_camera)
+		refresh_ms13_heat_sight()
 		return
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
 	if(!vehicle || (src in vehicle.underneath))
+		refresh_ms13_heat_sight()
 		return
 	var/turf/here = get_turf(src)
 	var/obj/structure/ms13_vehicle_frame/anchor = vehicle.get_frame_at(here)
 	ms13_mask_anchor = anchor
 	ms13_mask_dir = vehicle.dir
 	ms13_vehicle_interior_masks = list()
+	var/driving = vehicle.driver == src
 	var/list/mask_view = getviewsize(client.view)
 	var/extended_view = "[mask_view[1] + 4]x[mask_view[2] + 4]"
 	// ponytail: rebuilds the visible mask plus a two-tile margin; cache rays if vehicle sizes grow.
 	for(var/turf/target in range(extended_view, src))
-		if(!vehicle.blocks_sight_from(here, target, vehicle.driver == src))
-			continue
-		var/image/mask = image(icon = 'icons/effects/alphacolors.dmi', loc = anchor, layer = FOV_EFFECTS_LAYER)
-		mask.color = "#000000"
-		mask.plane = FULLSCREEN_PLANE
+		var/image/cover
+		if(driving)
+			var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/feed = vehicle.get_frame_at(target) ? null : vehicle.camera_covering(target)
+			if(feed?.cabin_glow)
+				// Added to the lighting plane: the scene brightens here and nowhere else.
+				cover = image(icon = 'icons/effects/alphacolors.dmi', loc = anchor, layer = LIGHTING_PRIMARY_LAYER + 5)
+				cover.plane = LIGHTING_PLANE
+				cover.blend_mode = BLEND_ADD
+				cover.invisibility = INVISIBILITY_LIGHTING
+				cover.color = feed.cabin_glow
+		if(!cover)
+			if(!vehicle.blocks_sight_from(here, target, driving))
+				continue
+			cover = image(icon = 'icons/effects/alphacolors.dmi', loc = anchor, layer = FOV_EFFECTS_LAYER)
+			cover.color = "#000000"
+			cover.plane = FULLSCREEN_PLANE
 		// Offsets from the frame, which carries its own art offset.
-		mask.pixel_x = (target.x - anchor.x) * world.icon_size - anchor.pixel_x
-		mask.pixel_y = (target.y - anchor.y) * world.icon_size - anchor.pixel_y
-		mask.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
-		mask.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-		ms13_vehicle_interior_masks += mask
+		cover.pixel_x = (target.x - anchor.x) * world.icon_size - anchor.pixel_x
+		cover.pixel_y = (target.y - anchor.y) * world.icon_size - anchor.pixel_y
+		cover.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+		cover.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		ms13_vehicle_interior_masks += cover
 	client.images += ms13_vehicle_interior_masks
+	refresh_ms13_heat_sight()
 
 /mob/Login()
 	. = ..()
@@ -936,6 +953,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	ms13_active_gunner_sight?.set_sight(src, FALSE)
 	set_ms13_vehicle_camera(null)
 	clear_ms13_vehicle_interior_mask()
+	ms13_heat_images = null
 	return ..()
 
 /mob/living/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)

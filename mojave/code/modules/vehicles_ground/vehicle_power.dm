@@ -81,14 +81,14 @@
 		driver.set_ms13_vehicle_camera(null)
 	update_interior_masks()
 
-/// The driver alone can see through a powered camera's hull edge. This is not an opening for NPCs.
-/datum/ms13_ground_vehicle/proc/camera_covers_edge(obj/structure/ms13_vehicle_frame/frame, exit_dir)
+/// The working camera whose field of view takes in target, if any. Only the driver sees through them; this is
+/// not an opening for NPCs.
+/datum/ms13_ground_vehicle/proc/camera_covering(turf/target)
 	if(!cameras_on || !has_electrical_power())
-		return FALSE
+		return
 	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera in parts)
-		if(camera.forward_offset == frame.forward_offset && camera.right_offset == frame.right_offset && camera.dir == exit_dir && camera.is_operational())
-			return TRUE
-	return FALSE
+		if(camera.is_operational() && camera.covers(target))
+			return camera
 
 /obj/structure/ms13_vehicle_part/battery
 	name = "vehicle battery"
@@ -208,10 +208,15 @@
 	equipment_icon = 'icons/obj/machines/camera.dmi'
 	on_state = "camera"
 	off_state = "camera_off"
-	/// Tiles the driver's view widens by, and shifts outward, while watching this feed.
+	/// Tiles the driver's view widens by while watching this feed, and how far out it is pushed.
 	var/view_bonus = 2
+	var/view_reach = 2
+	/// How wide it sees: tiles to either side for each tile ahead. 1 is a right angle.
+	var/field_of_view = 1
 	/// Screen tint while watching this feed.
 	var/view_colour
+	/// Light added to what it takes in, as the driver sees it from the cabin.
+	var/cabin_glow
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera/is_enabled()
 	return ..() && vehicle.cameras_on
@@ -225,7 +230,17 @@
 		exterior_image.pixel_y = dir == NORTH ? 32 : dir == SOUTH ? -32 : 0
 	var/mob/viewer = vehicle?.driver
 	if(viewer?.ms13_vehicle_camera == src)
-		viewer.client?.view_size.zoomOut(view_bonus, view_bonus, dir)
+		viewer.client?.view_size.zoomOut(view_bonus, view_reach, dir)
+
+/// Whether target lies in this camera's field of view: ahead of it, and no wider than field_of_view allows.
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/proc/covers(turf/target)
+	if(target.z != z)
+		return FALSE
+	var/dx = target.x - x
+	var/dy = target.y - y
+	var/ahead = dir == NORTH ? dy : dir == SOUTH ? -dy : dir == EAST ? dx : -dx
+	var/across = (dir & (NORTH|SOUTH)) ? dx : dy
+	return ahead > 0 && abs(across) <= ahead * field_of_view
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera/get_remote_view_fullscreens(mob/user)
 	user.overlay_fullscreen("remote_view", /atom/movable/screen/fullscreen/impaired, 1)
@@ -244,10 +259,66 @@
 	user.sight |= SEE_MOBS
 	user.lighting_alpha = min(user.lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
 
+/mob
+	/// Heat signatures, and mobs hidden, for a driver seeing through thermal cameras from the cabin.
+	var/list/ms13_heat_images
+	/// Sees mobs through walls; refresh_ms13_heat_sight() hides those outside a thermal camera's view.
+	var/ms13_heat_sight = FALSE
+
+/**
+ * A driver in the cabin sees heat only where a thermal camera looks. Mobs there glow and show through walls;
+ * mobs anywhere else stay hidden unless plainly in sight. Refreshes itself while any thermal camera works.
+ */
+/mob/proc/refresh_ms13_heat_sight()
+	if(client && length(ms13_heat_images))
+		client.images -= ms13_heat_images
+	ms13_heat_images = null
+	var/list/thermals = list()
+	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
+	if(client && vehicle?.driver == src && !ms13_vehicle_camera && !ms13_active_gunner_sight)
+		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal/camera in vehicle.parts)
+			if(camera.is_enabled())
+				thermals += camera
+	if(ms13_heat_sight != !!length(thermals))
+		ms13_heat_sight = !!length(thermals)
+		update_sight()
+	if(!length(thermals))
+		return
+	ms13_heat_images = list()
+	var/list/view_size = getviewsize(client.view)
+	var/reach = CEILING(max(view_size[1], view_size[2]) / 2, 1)
+	for(var/mob/living/other in range(reach, src))
+		if(other == src)
+			continue
+		var/warm = FALSE
+		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal/camera as anything in thermals)
+			if(camera.covers(get_turf(other)))
+				warm = TRUE
+				break
+		var/image/shown = image(loc = other)
+		if(warm)
+			shown.appearance = other.appearance
+			shown.plane = ABOVE_LIGHTING_PLANE
+			shown.color = "#ffb080"
+			shown.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+		else if(can_see(src, other, reach * 2))
+			continue
+		else
+			shown.override = TRUE
+		ms13_heat_images += shown
+	client.images += ms13_heat_images
+	addtimer(CALLBACK(src, PROC_REF(refresh_ms13_heat_sight)), 0.5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
+
+/mob/living/carbon/update_sight()
+	. = ..()
+	if(ms13_heat_sight)
+		sight |= SEE_MOBS
+
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision
 	name = "vehicle night vision camera"
 	desc = "An armored hull camera with a light-amplifying tube. It sees in the dark, in green."
 	view_colour = /datum/client_colour/glass_colour/green
+	cabin_glow = "#2f6a2f"
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision/update_remote_sight(mob/living/user)
 	user.see_in_dark = max(user.see_in_dark, 8)
@@ -257,6 +328,15 @@
 	name = "vehicle wide-angle camera"
 	desc = "An armored hull camera with a fisheye lens that takes in far more of its surroundings."
 	view_bonus = 5
+	view_reach = 5
+	field_of_view = 2
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom
+	name = "vehicle zoom camera"
+	desc = "An armored hull camera with a long telephoto lens. A narrow view, but it reaches far into the distance."
+	view_bonus = 3
+	view_reach = 10
+	field_of_view = 0.5
 
 /mob
 	/// The vehicle camera this mob watches instead of its cabin.
@@ -279,7 +359,8 @@
 		vehicle?.set_roof_visible(client, TRUE)
 		clear_ms13_vehicle_interior_mask()
 		reset_perspective(camera)
-		client.view_size.zoomOut(camera.view_bonus, camera.view_bonus, camera.dir)
+		client.view_size.zoomOut(camera.view_bonus, camera.view_reach, camera.dir)
+		refresh_ms13_heat_sight()
 		return
 	reset_perspective()
 	client.view_size.zoomIn()

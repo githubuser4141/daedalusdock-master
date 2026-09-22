@@ -35,18 +35,20 @@ use 25 units/shot; tank guns 50. Hand-operated machine guns do not need battery 
 M113 and armored truck constructors fit front lamps, a rear work lamp, and side/rear cameras.
 The jeep has a headlamp; Civ96 vehicles have paired front/rear lamps. Accessories are independently
 damageable exterior images, hidden from the cabin like existing wheels. Exterior lamps have no
-local toggle; each casts a directional beam the way it faces. The driver alone sees through the
-hull edge carrying an enabled, working camera; it does not make a physical window or expose
-occupants to NPC vision.
+local toggle; each casts a directional beam the way it faces.
 
 Cabin masks hang from the frame each occupant stands on, so they glide with the hull; they are only
 redrawn when the occupant changes tile, the vehicle turns, or a panel opens, closes or breaks.
 
-"Camera view" at the driver's controls steps the buckled driver's view through each working camera
-and back to the cabin. A feed widens the view and shifts it outward; `camera/wide` more so,
-`camera/thermal` shows mobs through cover, `camera/night_vision` sees in the dark. The M113 fits
-thermal (left), night vision (right) and wide (rear). Losing power, the camera switch, the camera
-or the seat returns the driver to the cabin.
+Each camera sees a cone ahead of it, `field_of_view` tiles to either side per tile ahead (1 is a
+right angle). From the cabin, the driver alone sees whatever a working camera's cone takes in; it
+is not a physical window and does not expose occupants to NPC vision. A camera's kind only applies
+inside its own cone: a `night_vision` camera lights its cone green, and a `thermal` camera shows
+the mobs in its cone glowing and through walls, while mobs elsewhere stay hidden unless plainly in
+sight. "Camera view" at the driver's controls steps the buckled driver's view through each working
+camera and back to the cabin, widened by `view_bonus` and pushed out by `view_reach`: `wide` takes in
+more, `zoom` reaches far ahead in a narrow cone. Losing power, the camera switch, the camera or the
+seat returns the driver to the cabin.
 
 Rail cars cannot be driven by hand. The route terminal at the front of the car shows a line map of the
 connected rails; pick a stop on the map or the list and the car runs there, either end first, turning

@@ -249,6 +249,9 @@
 	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Broken camera still revealed the outside.")
 	camera.repair_damage(camera.max_integrity)
 	TEST_ASSERT(!vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Repaired camera did not recover its view.")
+	// A camera takes in a cone ahead of it, not just its own hull edge.
+	var/turf/ahead = get_step(get_step(camera, camera.dir), camera.dir)
+	TEST_ASSERT(camera.covers(ahead) && camera.covers(get_step(ahead, turn(camera.dir, 90))) && !camera.covers(get_step(camera, turn(camera.dir, 180))), "Camera field of view is not a cone ahead of it.")
 	// The driver steps through every working feed, then back to the cabin.
 	var/obj/structure/chair/ms13_vehicle_seat/seat = locate() in get_turf(front)
 	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent, get_turf(front))
