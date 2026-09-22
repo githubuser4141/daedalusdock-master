@@ -14,9 +14,14 @@
 
 /obj/structure/ms13_rail/station
 	name = "rail stop"
-	desc = "A stopping point for automated trains. Its mapped name appears in the driver's destination menu."
+	desc = "A stopping point for automated trains. Route boards name it after the area it sits in."
 	color = "#ffcc33"
 	is_station = TRUE
+
+/// What route boards call this stop: the area it was mapped into.
+/obj/structure/ms13_rail/proc/stop_name()
+	var/area/stop_area = get_area(src)
+	return stop_area.name
 
 /obj/structure/ms13_rail/Initialize(mapload)
 	. = ..()
@@ -120,15 +125,9 @@
 	rail_route = null
 	return ..()
 
+/// Rail cars are never driven by hand; they only run routes picked at the controls.
 /datum/ms13_ground_vehicle/rail/handle_drive_input(direction)
-	rail_route = null
-	return ..()
-
-/datum/ms13_ground_vehicle/rail/apply_steering(new_dir)
-	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
-	if(!bogie || !ms13_rail_at(get_step(bogie, new_dir)))
-		return FALSE
-	return has_motive_power() && full_turn(new_dir)
+	return FALSE
 
 /datum/ms13_ground_vehicle/rail/do_move(direction, bypass_cooldown = FALSE)
 	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
@@ -166,28 +165,41 @@
 			queue += neighbor
 	return parents
 
-/datum/ms13_ground_vehicle/rail/proc/choose_destination(mob/living/user, obj/structure/chair/ms13_vehicle_seat/seat)
-	var/list/parents = find_rail_routes()
-	var/list/stops = list()
+/// Every stop on the line this car rides, given the parents from find_rail_routes().
+/datum/ms13_ground_vehicle/rail/proc/find_stops(list/parents)
+	. = list()
 	for(var/turf/location as anything in parents)
 		for(var/obj/structure/ms13_rail/rail in location)
-			if(rail.is_station && location != get_turf(rail_frame()))
-				stops["[rail.name] ([location.x], [location.y])"] = location
+			if(rail.is_station)
+				. += rail
+
+/datum/ms13_ground_vehicle/rail/proc/choose_destination(mob/living/user, obj/structure/chair/ms13_vehicle_seat/seat)
+	var/list/stops = list()
+	for(var/obj/structure/ms13_rail/stop as anything in find_stops(find_rail_routes()))
+		if(get_turf(stop) != get_turf(rail_frame()))
+			stops["[stop.stop_name()] ([stop.x], [stop.y])"] = get_turf(stop)
 	if(!length(stops))
 		to_chat(user, span_warning("No connected rail stops found."))
 		return
 	var/choice = input(user, "Select a connected stop. Clear space is needed around corners.", "Rail destination") as null|anything in stops
 	if(!choice || !seat.can_use_controls(user) || seat.parent_frame.vehicle != src)
 		return
-	// The vehicle may have moved while the menu was open.
-	parents = find_rail_routes()
-	var/turf/destination = stops[choice]
-	if(!parents[destination])
-		return
+	depart_for(stops[choice], user)
+
+/// Starts the engine and runs the line to destination. FALSE, with user told why, when it can't go.
+/datum/ms13_ground_vehicle/rail/proc/depart_for(turf/destination, mob/user)
+	// Searched afresh: the car may have moved since the stop was picked.
+	var/list/parents = find_rail_routes()
+	if(!parents[destination] || destination == get_turf(rail_frame()))
+		return FALSE
 	stop_motion()
 	set_ignition(TRUE)
-	if(!start_engine(user) || !has_motive_power())
-		return
+	if(!start_engine(user))
+		return FALSE
+	if(!has_motive_power())
+		if(user)
+			to_chat(user, span_warning("The drive won't engage. Check the wheels and gearbox."))
+		return FALSE
 	rail_route = list()
 	while(destination != get_turf(rail_frame()))
 		rail_route.Insert(1, destination)
@@ -196,6 +208,7 @@
 	speed = 1
 	travel_dir = dir
 	start_motion()
+	return TRUE
 
 /datum/ms13_ground_vehicle/rail/proc/stopping_distance()
 	return CEILING(speed / max(1, braking_power), 1)
@@ -217,11 +230,15 @@
 		stop_motion()
 		return
 	var/direction = get_dir(bogie, next)
-	if(direction != dir)
+	if(direction == dir || direction == turn(dir, 180))
+		// Either end can lead: backing up needs no turn.
+		travel_dir = direction
+	else
 		if(speed > max_turn_speed)
 			speed = max(max_turn_speed, speed - max(1, braking_power))
 		else if(world.time >= next_move_time)
-			if(!full_turn(direction))
+			// Swing whichever end leads onto the new line.
+			if(!full_turn(travel_dir == turn(dir, 180) ? turn(direction, 180) : direction))
 				stop_motion()
 				return
 		addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), gear_delay(speed))
@@ -230,7 +247,7 @@
 	var/straight = 0
 	var/turf/previous = get_turf(bogie)
 	for(var/turf/rail_tile as anything in rail_route)
-		if(get_dir(previous, rail_tile) != dir)
+		if(get_dir(previous, rail_tile) != travel_dir)
 			break
 		straight++
 		previous = rail_tile
@@ -241,7 +258,6 @@
 	else if(world.time >= next_acceleration_time)
 		speed = min(gear_count(), speed + 1)
 		next_acceleration_time = world.time + acceleration_delay
-	travel_dir = dir
 	. = ..()
 	if(rail_route && !length(rail_route))
 		stop_motion()
@@ -275,21 +291,32 @@
 					continue
 				if(vehicle.blocks_vehicle(blocker))
 					return INITIALIZE_HINT_QDEL
+	// Boarding is from the platform alongside: one door each side, and the row inside them kept clear.
+	var/door_row = round(car_length / 2)
+	var/lamp_column = round((car_width - 1) / 2)
 	for(var/back in 0 to car_length - 1)
 		for(var/right in 0 to car_width - 1)
 			var/obj/structure/ms13_vehicle_frame/frame = (!back && !right) ? src : add_segment(-back, right, "frame_steel", "roof_steel")
 			if(!back)
 				frame.spawn_wall(dir, "c_windshield", /obj/structure/window/ms13_vehicle_wall/shuttered)
 			if(back == car_length - 1)
-				frame.spawn_wall(turn(dir, 180), , /obj/structure/window/ms13_vehicle_wall/solid/door)
+				frame.spawn_wall(turn(dir, 180), , /obj/structure/window/ms13_vehicle_wall/solid)
 				frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
+			var/side_type = back == door_row ? /obj/structure/window/ms13_vehicle_wall/solid/door : /obj/structure/window/ms13_vehicle_wall/shuttered
+			var/side_art = back == door_row ? null : "c_window"
 			if(!right)
-				frame.spawn_wall(turn(dir, 90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered)
+				frame.spawn_wall(turn(dir, 90), side_art, side_type)
 			if(right == car_width - 1)
-				frame.spawn_wall(turn(dir, -90), "c_window", /obj/structure/window/ms13_vehicle_wall/shuttered)
-			var/obj/structure/chair/ms13_vehicle_seat/seat = frame.add_seat(0, "rail passenger seat")
+				frame.spawn_wall(turn(dir, -90), side_art, side_type)
+			if(!(back % 2) && right == lamp_column)
+				frame.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
 			if(frame == src)
-				seat.configure_driver_seat()
+				var/obj/structure/chair/ms13_vehicle_seat/driver_seat = frame.add_seat(0, "rail driver's seat")
+				driver_seat.configure_driver_seat()
+			else if(!back && right == car_width - 1)
+				frame.spawn_part(/obj/structure/ms13_vehicle_part/rail_terminal, 180)
+			else if(back != door_row)
+				frame.add_seat(0, "rail passenger seat")
 			if(!back || back == car_length - 1)
 				if(!right)
 					frame.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, 90)
@@ -298,5 +325,102 @@
 	spawn_part(/obj/structure/ms13_vehicle_part/engine)
 	spawn_part(/obj/structure/ms13_vehicle_part/gearbox/three_speed)
 	spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/large)
-	spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
 	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+
+/// The car's route board: a line map of the connected rails and their stops. Pick one and the car runs there.
+/obj/structure/ms13_vehicle_part/rail_terminal
+	name = "route terminal"
+	desc = "A RobCo transit terminal showing the line and its stops. It runs off the car's battery."
+	icon = 'mojave/icons/structure/terminals.dmi'
+	icon_state = "terminal"
+	pixel_y = 8
+	layer = BELOW_OBJ_LAYER
+	max_integrity = 100
+
+/obj/structure/ms13_vehicle_part/rail_terminal/proc/is_powered()
+	return is_operational() && vehicle?.battery?.is_operational() && vehicle.battery.cell?.charge > 0
+
+/obj/structure/ms13_vehicle_part/rail_terminal/update_icon_state()
+	icon_state = broken ? "terminal_ruined" : "terminal"
+	return ..()
+
+/obj/structure/ms13_vehicle_part/rail_terminal/update_overlays()
+	. = ..()
+	if(is_powered())
+		. += mutable_appearance(icon, "terminal_screen")
+		. += emissive_appearance(icon, "terminal_screen", alpha = 180)
+
+/obj/structure/ms13_vehicle_part/rail_terminal/atom_break(damage_flag)
+	. = ..()
+	broken = TRUE
+	update_appearance()
+
+/obj/structure/ms13_vehicle_part/rail_terminal/atom_fix()
+	. = ..()
+	broken = FALSE
+	update_appearance()
+
+/obj/structure/ms13_vehicle_part/rail_terminal/attack_hand(mob/living/user, list/modifiers)
+	if(user.combat_mode)
+		return ..()
+	ui_interact(user)
+	return TRUE
+
+/obj/structure/ms13_vehicle_part/rail_terminal/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "RailTerminal", name)
+		ui.open()
+
+/// Worked from inside the car only, like the driver's controls.
+/obj/structure/ms13_vehicle_part/rail_terminal/ui_status(mob/user, datum/ui_state/state)
+	if(!isobserver(user) && (get_ms13_ground_vehicle_at(user) != vehicle || (user in vehicle?.underneath)))
+		return UI_CLOSE
+	return ..()
+
+/obj/structure/ms13_vehicle_part/rail_terminal/ui_static_data(mob/user)
+	var/datum/ms13_ground_vehicle/rail/train = vehicle
+	if(!istype(train))
+		return list()
+	var/list/parents = train.find_rail_routes()
+	var/list/rails = list()
+	for(var/turf/location as anything in parents)
+		rails += list(list(location.x, location.y))
+	var/list/stops = list()
+	for(var/obj/structure/ms13_rail/stop as anything in train.find_stops(parents))
+		stops += list(list("ref" = REF(stop), "name" = stop.stop_name(), "x" = stop.x, "y" = stop.y))
+	return list("rails" = rails, "stops" = stops)
+
+/obj/structure/ms13_vehicle_part/rail_terminal/ui_data(mob/user)
+	var/datum/ms13_ground_vehicle/rail/train = vehicle
+	var/obj/structure/ms13_vehicle_frame/bogie = istype(train) ? train.rail_frame() : null
+	var/area/location = get_area(bogie)
+	var/obj/structure/ms13_rail/destination
+	if(length(train?.rail_route))
+		for(var/obj/structure/ms13_rail/rail in train.rail_route[length(train.rail_route)])
+			if(rail.is_station)
+				destination = rail
+	return list(
+		"powered" = is_powered(),
+		"moving" = !!train?.moving,
+		"train" = bogie ? list(bogie.x, bogie.y) : null,
+		"location" = location?.name,
+		"destination" = destination ? REF(destination) : null,
+	)
+
+/obj/structure/ms13_vehicle_part/rail_terminal/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	var/datum/ms13_ground_vehicle/rail/train = vehicle
+	if(!istype(train) || !is_powered())
+		return
+	switch(action)
+		if("depart")
+			var/obj/structure/ms13_rail/stop = locate(params["stop"])
+			if(istype(stop) && stop.is_station)
+				train.depart_for(get_turf(stop), usr)
+			return TRUE
+		if("halt")
+			train.stop_motion()
+			return TRUE

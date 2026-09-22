@@ -45,5 +45,11 @@ and back to the cabin. A feed widens the view and shifts it outward; `camera/wid
 thermal (left), night vision (right) and wide (rear). Losing power, the camera switch, the camera
 or the seat returns the driver to the cabin.
 
+Rail cars cannot be driven by hand. The route terminal at the front of the car shows a line map of the
+connected rails; pick a stop on the map or the list and the car runs there, either end first, turning
+only at corners. Stops are `/obj/structure/ms13_rail/station` rails, named after the area they sit in,
+so give each station its own named area. (The driver's "Rail destination" menu does the same for now.)
+Cars board through a door in each side at mid-length, with that row kept clear of seats.
+
 Regression checks: `ms13_vehicle_electrical`, `ms13_vehicle_obstacle_impact`, the existing ground
 vehicle tests and Civ96 assembly tests under `code/modules/unit_tests/`.

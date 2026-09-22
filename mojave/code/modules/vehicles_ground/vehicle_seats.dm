@@ -71,10 +71,14 @@
 /obj/structure/chair/ms13_vehicle_seat/proc/show_controls(mob/living/user)
 	while(can_use_controls(user))
 		var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
-		var/list/options = list("Drive" = 1, "Engine toggle ([vehicle.engine_running ? "on" : "off"])" = 2, "Ignition toggle ([vehicle.ignition ? "on" : "off"])" = 3, "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])" = 4, "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])" = 5, "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])" = 6, "Camera view ([user.ms13_vehicle_camera ? user.ms13_vehicle_camera.feed_name() : "cabin"])" = 13, "Horn" = 7, "Exit" = 8, "Unbuckle" = 9, "Stop" = 10, "Brakes mode ([vehicle.brakes_mode ? "on" : "off"])" = 11)
+		var/list/options = list("Drive" = 1, "Engine toggle ([vehicle.engine_running ? "on" : "off"])" = 2, "Ignition toggle ([vehicle.ignition ? "on" : "off"])" = 3, "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])" = 4, "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])" = 5, "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])" = 6, "Camera view ([user.ms13_vehicle_camera ? user.ms13_vehicle_camera.feed_name() : "cabin"])" = 13, "Horn" = 7, "Exit" = 8, "Unbuckle" = 9, "Stop" = 10)
 		var/battery_percent = vehicle.battery?.cell ? round(vehicle.battery.cell.percent()) : 0
 		if(istype(vehicle, /datum/ms13_ground_vehicle/rail))
+			// Rail cars only run routes to a stop.
+			options -= "Drive"
 			options["Rail destination"] = 12
+		else
+			options["Brakes mode ([vehicle.brakes_mode ? "on" : "off"])"] = 11
 		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nStop applies the brakes. Brakes mode moves slowly only while pressing a direction. Engine-off vehicles slow to a stop.", "Vehicle controls") as null|anything in options
 		if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
 			return

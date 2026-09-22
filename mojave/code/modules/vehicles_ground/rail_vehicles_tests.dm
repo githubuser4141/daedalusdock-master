@@ -82,8 +82,8 @@
 			allocate(/obj/structure/ms13_rail, rail_tile)
 	var/obj/structure/ms13_vehicle_frame/tram/tram = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(25, 35, test_z))
 	var/datum/ms13_ground_vehicle/rail/train = tram.vehicle
-	if(length(train.frames) != 8)
-		Fail("Tram is not 2x4.")
+	if(length(train.frames) != tram.car_length * tram.car_width)
+		Fail("Tram footprint does not match its car size.")
 	var/obj/structure/chair/ms13_vehicle_seat/driver_seat = locate() in get_turf(tram)
 	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent, get_turf(tram))
 	driver_seat.user_buckle_mob(driver, driver)
@@ -123,6 +123,23 @@
 		Fail("Autopilot failed a full E/S/W/N/E loop, cargo transport, or its final stop.")
 	if(train.fuel_tank.reagents.total_volume >= fuel_before)
 		Fail("Rail movement did not consume normal vehicle fuel.")
+	if(train.handle_drive_input(train.dir) || train.moving)
+		Fail("Train accepted manual driving.")
+	// A stop behind the car is reached tail-first, not by turning the car round.
+	var/heading = train.dir
+	var/obj/structure/ms13_vehicle_frame/bogie = train.rail_frame()
+	var/turf/behind = get_step(bogie, turn(heading, 180))
+	train.rail_route = list(behind)
+	train.moving = TRUE
+	train.speed = 1
+	for(var/tick in 1 to 5)
+		train.next_move_time = 0
+		train.movement_tick(train.movement_generation)
+		if(!train.moving)
+			break
+	if(train.dir != heading || get_turf(bogie) != behind)
+		Fail("Train turned round instead of backing up.")
+	train.stop_motion()
 	if(train.do_move(NORTH, TRUE))
 		Fail("Train drove off its guide rail.")
 	var/obj/structure/ms13_rail/removed = locate() in get_step(tram, EAST)
@@ -146,7 +163,7 @@
 	var/datum/ms13_ground_vehicle/rail/offset_vehicle = offset_car.vehicle
 	var/obj/structure/ms13_vehicle_frame/middle
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in offset_vehicle.frames)
-		if(frame.forward_offset == -1 && frame.right_offset == 1)
+		if(frame.forward_offset == -FLOOR((offset_car.car_length - 1) / 2, 1) && frame.right_offset == 1)
 			middle = frame
 	for(var/travelled in -1 to 3)
 		var/turf/rail_tile = locate(middle.x, middle.y - travelled, test_z)
@@ -161,6 +178,39 @@
 	if(offset_vehicle.do_move(turn(offset_vehicle.dir, 90), TRUE))
 		Fail("A car drove off the rail line sideways.")
 	clear_vehicle(offset_vehicle)
+	check_route_terminal(test_z)
+
+/// Boarding through the sides, a lit cabin, and a route terminal that lists stops by area and sends the car.
+/datum/unit_test/ms13_rail_vehicles/proc/check_route_terminal(test_z)
+	var/obj/structure/ms13_vehicle_frame/tram/commuter = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(15, 45, test_z))
+	var/datum/ms13_ground_vehicle/rail/line = commuter.vehicle
+	var/doors = 0
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/door/door in line.walls)
+		doors++
+		if(door.dir == line.dir || door.dir == turn(line.dir, 180))
+			Fail("A tram door opens off an end of the car.")
+	var/seats = 0
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in line.frames)
+		for(var/obj/structure/chair/ms13_vehicle_seat/seat in get_turf(frame))
+			seats++
+	var/lamps = 0
+	for(var/obj/structure/ms13_vehicle_part/interior_light/lamp in line.parts)
+		lamps++
+	if(doors != 2 || seats >= length(line.frames) || lamps < 2)
+		Fail("Tram lacks a door each side, fewer seats than tiles, or several cabin lamps.")
+	for(var/y in 40 to 45)
+		allocate(/obj/structure/ms13_rail, locate(15, y, test_z))
+	var/obj/structure/ms13_rail/stop = allocate(/obj/structure/ms13_rail/station, locate(15, 40, test_z))
+	var/obj/structure/ms13_vehicle_part/rail_terminal/terminal = locate() in line.parts
+	var/list/board = terminal?.ui_static_data()
+	var/list/listed = board?["stops"]
+	if(length(listed) != 1 || listed[1]["name"] != stop.stop_name() || length(board["rails"]) != 6)
+		Fail("Route terminal did not list the line and its stop by area.")
+	if(!line.depart_for(get_turf(stop)) || line.rail_route[length(line.rail_route)] != get_turf(stop))
+		Fail("The car did not set off for the chosen stop.")
+	if(terminal?.ui_data()["destination"] != REF(stop))
+		Fail("Route terminal did not show where the car is heading.")
+	clear_vehicle(line)
 
 /datum/unit_test/ms13_rail_vehicles/proc/clear_vehicle(datum/ms13_ground_vehicle/vehicle)
 	vehicle.stop_motion()

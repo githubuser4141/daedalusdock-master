@@ -75,7 +75,7 @@
 /datum/ms13_ground_vehicle/proc/update_electrical()
 	electrical_live = has_electrical_power()
 	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
-		if(istype(part, /obj/structure/ms13_vehicle_part/exterior_equipment) || istype(part, /obj/structure/ms13_vehicle_part/interior_light))
+		if(istype(part, /obj/structure/ms13_vehicle_part/exterior_equipment) || istype(part, /obj/structure/ms13_vehicle_part/interior_light) || istype(part, /obj/structure/ms13_vehicle_part/rail_terminal))
 			part.update_appearance()
 	if(driver?.ms13_vehicle_camera && !driver.ms13_vehicle_camera.is_enabled())
 		driver.set_ms13_vehicle_camera(null)
