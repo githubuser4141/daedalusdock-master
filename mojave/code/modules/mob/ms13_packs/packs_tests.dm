@@ -122,4 +122,19 @@
 /datum/unit_test/ms13_mob_packs/proc/dissolve_packs()
 	for(var/datum/ms13_pack/pack as anything in SSms13_packs.packs.Copy())
 		qdel(pack)
+
+/datum/unit_test/ms13_blind_fire_gives_up
+	name = "ROBOTS: Blind Fire Gives Up On A Hidden Target"
+
+/datum/unit_test/ms13_blind_fire_gives_up/Run()
+	var/mob/living/simple_animal/hostile/ms13/robot/protectron/robot = allocate(/mob/living/simple_animal/hostile/ms13/robot/protectron, run_loc_floor_bottom_left)
+	var/turf/far = locate(run_loc_floor_bottom_left.x + robot.blind_fire_los_range + 3, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/mob/living/carbon/human/consistent/quarry = allocate(/mob/living/carbon/human/consistent, far)
+	robot.GiveTarget(quarry)
+	robot.blind_fire_turf = far
+	robot.blind_fire_until = world.time - 1
+	if(robot.get_blind_fire_target(quarry))
+		Fail("Blind fire went on past its window.")
+	if(robot.target)
+		Fail("Blind fire ran out but kept the target, so the robot would find it again through walls.")
 #endif

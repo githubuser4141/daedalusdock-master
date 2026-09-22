@@ -29,6 +29,11 @@
 #define BB_MS13_COVER_TURF "ms13_cover_turf"
 /// Earliest world.time we'll go looking for cover again, so a bad pick can't be retried every tick.
 #define BB_MS13_NEXT_COVER_ATTEMPT "ms13_next_cover_attempt"
+/// world.time ms13_combat_awareness last saw the current target. Later subtrees in the same planning pass reuse it
+/// rather than tracing the same line again.
+#define BB_MS13_TARGET_SEEN_AT "ms13_target_seen_at"
+/// Earliest world.time suppressing fire looks around for a visible enemy again.
+#define BB_MS13_NEXT_THREAT_SCAN "ms13_next_threat_scan"
 
 /// How far these mobs bother resolving line of sight.
 #define MS13_AI_SIGHT_RANGE 9
@@ -43,6 +48,11 @@
 /// Cover we can't meaningfully shoot back from is just a corner to die in, so candidates have to keep at
 /// least this much outgoing shot quality (measured braced, since firing over your own cover is allowed).
 #define MS13_AI_MIN_RETURN_FIRE 0.6
+
+/// Whether the pawn sees target, reusing ms13_combat_awareness's check from this same planning pass if it made one.
+/// It clears a target it can't see, so a target still set after it ran this pass was seen.
+/proc/ms13_ai_sees(datum/ai_controller/controller, atom/target)
+	return controller.blackboard[BB_MS13_TARGET_SEEN_AT] == world.time || ms13_can_see(controller.pawn, target, MS13_AI_SIGHT_RANGE)
 
 /**
  * Picks somewhere near seeker that threat has a worse shot into.
@@ -63,8 +73,8 @@
 	var/current_threat_distance = get_dist_manhattan(seeker_turf, threat_turf)
 	var/threat_x = SIGN(threat_turf.x - seeker_turf.x)
 	var/threat_y = SIGN(threat_turf.y - seeker_turf.y)
-	var/best_score = INFINITY
-	var/turf/best_turf
+	/// Candidate turf -> estimated score, path-checked best first below.
+	var/list/candidates = list()
 	var/list/checked_turfs = list()
 
 	for(var/obj/obstacle in range(radius, seeker))
@@ -101,28 +111,26 @@
 			if(!needs_firing_angle && candidate_quality > current_quality - MS13_AI_COVER_IMPROVEMENT)
 				continue
 
-			// Prove the route now. Handing an unreachable destination to the movement behavior made it
-			// spend twenty failed attempts pressed against the first obstruction before it could think again.
-			// ponytail: this synchronously checks the small set of useful candidates; replace it with one
-			// multi-target search only if profiling shows large NPC groups spending materially on cover plans.
-			var/list/path = SSpathfinder.jps_pathfind_now(
-				seeker,
-				candidate,
-				radius * 2,
-				0,
-				seeker.ai_controller?.get_access(),
-				!HAS_TRAIT(seeker, TRAIT_FREE_FLOAT_MOVEMENT),
-			)
-			if(!length(path))
-				continue
+			// Once a tile is meaningfully protected, prefer the shortest route: estimated by distance here.
+			candidates[candidate] = get_dist(seeker_turf, candidate) + candidate_quality
 
-			// Once a tile is meaningfully protected, prefer the shortest complete route.
-			var/candidate_score = length(path) + candidate_quality
-			if(candidate_score < best_score)
-				best_score = candidate_score
-				best_turf = candidate
-
-	return best_turf
+	// Prove the route before committing. Handing an unreachable destination to the movement behavior made it
+	// spend twenty failed attempts pressed against the first obstruction before it could think again. Checking
+	// best-estimate first and stopping at the first reachable one takes one path search, not one per candidate.
+	// ponytail: the first reachable candidate by estimate, not by true path length; a detour can beat it.
+	sortTim(candidates, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
+	for(var/turf/candidate as anything in candidates)
+		var/list/path = SSpathfinder.jps_pathfind_now(
+			seeker,
+			candidate,
+			radius * 2,
+			0,
+			seeker.ai_controller?.get_access(),
+			!HAS_TRAIT(seeker, TRAIT_FREE_FLOAT_MOVEMENT),
+		)
+		if(length(path))
+			return candidate
+	return null
 
 /// Records where a target was last actually seen. Queues nothing itself - it only feeds the two below.
 /datum/ai_planning_subtree/ms13_combat_awareness
@@ -142,6 +150,7 @@
 		controller.clear_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 		return
 
+	controller.set_blackboard_key(BB_MS13_TARGET_SEEN_AT, world.time)
 	controller.set_blackboard_key(BB_MS13_LAST_KNOWN_TURF, get_turf(target))
 	controller.set_blackboard_key(BB_MS13_SUPPRESS_UNTIL, world.time + memory_duration)
 
@@ -149,6 +158,8 @@
 /datum/ai_planning_subtree/ms13_take_cover
 	/// Minimum gap between cover decisions - keeps a failed or unreachable pick from being retried forever.
 	var/cover_attempt_interval = 4 SECONDS
+	/// How often a mob already in good cover checks it still is.
+	var/cover_recheck_interval = 1.5 SECONDS
 
 /datum/ai_planning_subtree/ms13_take_cover/SelectBehaviors(datum/ai_controller/controller, delta_time)
 	. = ..()
@@ -159,14 +170,15 @@
 	var/mob/living/living_target = target
 	if(istype(living_target) && living_target.stat == DEAD)
 		return // A corpse cannot return fire; don't spend path searches taking cover from it.
-	// Already behind something that works - stay put and let the firing subtrees run instead.
-	if(ms13_shot_quality(target, pawn) < MS13_AI_EXPOSED_THRESHOLD && ms13_shot_quality(pawn, target, ignore_braced = TRUE) >= MS13_AI_MIN_RETURN_FIRE)
-		return
-
-	// Don't re-run the synchronous candidate/path search after every shot. Previously this cooldown was
-	// only started after a cover tile was found, so open ground made every planning pass search every
-	// nearby obstacle again; that was the source of the gunner's glacial stop-start behavior.
+	// Don't re-run the traces and the synchronous candidate/path search after every shot. Previously this cooldown
+	// was only started after a cover tile was found, so open ground made every planning pass search every nearby
+	// obstacle again; that was the source of the gunner's glacial stop-start behavior.
 	if(world.time < controller.blackboard[BB_MS13_NEXT_COVER_ATTEMPT])
+		return
+	// Already behind something that works - stay put and let the firing subtrees run instead. Check again
+	// shortly, in case the target moves to flank.
+	if(ms13_shot_quality(target, pawn) < MS13_AI_EXPOSED_THRESHOLD && ms13_shot_quality(pawn, target, ignore_braced = TRUE) >= MS13_AI_MIN_RETURN_FIRE)
+		controller.set_blackboard_key(BB_MS13_NEXT_COVER_ATTEMPT, world.time + cover_recheck_interval)
 		return
 	controller.set_blackboard_key(BB_MS13_NEXT_COVER_ATTEMPT, world.time + cover_attempt_interval)
 
@@ -217,15 +229,17 @@
 	if(!isliving(pawn))
 		return
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
-	if(!QDELETED(target) && ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+	if(!QDELETED(target) && ms13_ai_sees(controller, target))
 		return
 
 	// The blackboard target is usually already empty by the time we get here - the ranged attack subtree
 	// finishes planning whenever it has one - so checking only that would let us blaze away at a memory
 	// while the target stands in plain view. Ask the mob's own targeting rules whether anything is actually
-	// shootable right now instead, and leave it to the normal attack path if so.
+	// shootable right now instead, and leave it to the normal attack path if so. Every couple of seconds, not
+	// every pass: a look around with a sight trace per mob is the most expensive thing here.
 	var/datum/targeting_strategy/targeting = GET_TARGETING_STRATEGY(controller.blackboard[BB_TARGETING_STRATEGY])
-	if(targeting)
+	if(targeting && world.time >= controller.blackboard[BB_MS13_NEXT_THREAT_SCAN])
+		controller.set_blackboard_key(BB_MS13_NEXT_THREAT_SCAN, world.time + 2 SECONDS)
 		for(var/mob/living/candidate in view(MS13_AI_SIGHT_RANGE, pawn))
 			if(candidate == pawn)
 				continue
@@ -280,7 +294,7 @@
 	var/atom/target = controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	// Do not let the stock attack subtree consume planning while the target is out of sight. That leaves
 	// the remembered-position subtree below it free to suppress, investigate, and eventually forget them.
-	if(!isliving(pawn) || QDELETED(target) || !ms13_can_see(pawn, target, MS13_AI_SIGHT_RANGE))
+	if(!isliving(pawn) || QDELETED(target) || !ms13_ai_sees(controller, target))
 		return
 	return ..()
 

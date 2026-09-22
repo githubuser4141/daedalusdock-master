@@ -49,7 +49,9 @@
 		blind_fire_until = 0
 		blind_fire_turf = null
 		blind_fire_target_was_prone = FALSE
-		FindTarget(possible_targets = null, HasTargetsList = FALSE)
+		// Give up on it. Looking again would find it straight back (ListTargets() above keeps it in range) and
+		// start a fresh window at wherever it is now, tracking it through walls for as long as it stays close.
+		LoseTarget()
 		return null
 	return blind_fire_turf
 
