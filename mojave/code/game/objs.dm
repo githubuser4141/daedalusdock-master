@@ -29,3 +29,9 @@
 			                  acid = text2num(result["values"][ACID]))
 				log_admin("[key_name(usr)] modified the subarmor on [src] ([type]) to subarmor_flags: [subarmor.subarmor_flags], crushing: [subarmor.crushing], cutting: [subarmor.cutting], piercing: [subarmor.piercing], impaling: [subarmor.impaling], laser: [subarmor.laser], energy: [subarmor.energy], acid: [subarmor.acid]")
 				message_admins(span_notice("[key_name_admin(usr)] modified the subarmor on [src] ([type]) to subarmor_flags: [subarmor.subarmor_flags], crushing: [subarmor.crushing], cutting: [subarmor.cutting], piercing: [subarmor.piercing], impaling: [subarmor.impaling], laser: [subarmor.laser], energy: [subarmor.energy], acid: [subarmor.acid]"))
+
+/// Already burning away (its ash landing can set a bonfire off again first): nothing left to burn.
+/obj/fire_act(exposed_temperature, exposed_volume, turf/adjacent)
+	if(uses_integrity && atom_integrity <= 0)
+		return
+	return ..()
