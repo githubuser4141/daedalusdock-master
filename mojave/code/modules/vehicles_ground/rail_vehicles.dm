@@ -45,6 +45,7 @@
 	return ..()
 
 /datum/ms13_ground_vehicle/rail
+	speed_multiplier = 8
 	mass_per_frame = 1200
 	max_turn_speed = 1
 	fuel_per_tile = 0.1
@@ -306,7 +307,7 @@
 /obj/structure/ms13_vehicle_frame/tram
 	name = "small tram"
 	vehicle_controller_type = /datum/ms13_ground_vehicle/rail
-	var/car_length = 4
+	var/car_length = 6
 	var/car_width = 2
 
 /obj/structure/ms13_vehicle_frame/tram/train

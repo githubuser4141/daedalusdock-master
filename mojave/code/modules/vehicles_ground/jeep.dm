@@ -8,6 +8,7 @@
  */
 /datum/ms13_ground_vehicle/jeep
 	acceleration_delay = 0.5 SECONDS
+	speed_multiplier = 2
 	turn_delay = 2
 	max_turn_speed = 2
 	turn_speed_loss = 1

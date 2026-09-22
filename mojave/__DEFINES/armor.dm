@@ -25,9 +25,9 @@
 #define CLASS4_STAB 50
 #define CLASS5_STAB 65
 
-#define CLASS1_PIERCE 15 //Pierce will mostly just be used for bullets for now
-#define CLASS2_PIERCE 30
-#define CLASS3_PIERCE 50
+#define CLASS1_PIERCE 10 //Pierce will mostly just be used for bullets for now
+#define CLASS2_PIERCE 20
+#define CLASS3_PIERCE 40
 #define CLASS4_PIERCE 60
 #define CLASS5_PIERCE 75
 

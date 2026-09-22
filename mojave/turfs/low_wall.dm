@@ -8,7 +8,7 @@
 	icon_state = "low-0"
 	base_icon_state = "low"
 	frame = /obj/item/stack/sheet/ms13/scrap
-	max_integrity = 1000
+	max_integrity = 500
 	smoothing_flags = SMOOTH_BITMASK
 	smoothing_groups = SMOOTH_GROUP_MS13_LOW_WALL
 	canSmoothWith = SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WALL

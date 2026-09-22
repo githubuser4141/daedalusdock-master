@@ -1,3 +1,10 @@
+#define WALL_MATS_SCRAP list(/obj/item/stack/sheet/ms13/scrap = 3, /obj/item/stack/sheet/ms13/scrap_steel = 2)
+#define WALL_MATS_METAL list(/obj/item/stack/sheet/ms13/scrap = 2, /obj/item/stack/sheet/ms13/scrap_steel = 4)
+#define WALL_MATS_STEEL list(/obj/item/stack/sheet/ms13/scrap_parts = 2, /obj/item/stack/sheet/ms13/scrap_steel = 6)
+#define WALL_MATS_WOOD  list(/obj/item/stack/sheet/ms13/scrap_parts = 1, /obj/item/stack/sheet/ms13/wood/scrap_wood = 5)
+#define WALL_MATS_STEEL_REINF list(/obj/item/stack/sheet/ms13/scrap_parts = 2, /obj/item/stack/sheet/ms13/refined_steel = 3, /obj/item/stack/sheet/ms13/scrap_steel = 3)
+#define WALL_MATS_SUPER_REINF list(/obj/item/stack/sheet/ms13/scrap_parts = 3, /obj/item/stack/sheet/ms13/refined_steel = 6, /obj/item/stack/sheet/ms13/scrap_steel = 6)
+
 TYPEINFO_DEF(/turf/closed/wall/ms13)
 	default_armor = list(BLUNT = 50, PUNCTURE = 5, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
@@ -17,10 +24,11 @@ TYPEINFO_DEF(/turf/closed/wall/ms13)
 	canSmoothWith = SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WINDOW + SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_SHUTTERS_BLASTDOORS
 	var/weldable = FALSE
 	var/girder_type
-	var/sheet_type
+	var/list/sheet_type
 	var/sheet_amount = 2
 	max_integrity = 500
 	damage_deflection = 20
+	sheet_type = WALL_MATS_SCRAP
 
 /turf/closed/wall/ms13/try_decon(obj/item/I, mob/user, turf/T)
 	if(!weldable)
@@ -41,7 +49,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13)
 	return
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/metal) // Thin iron sheet wall
-	default_armor = list(BLUNT = 50, PUNCTURE = 5, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 10, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
 
 /turf/closed/wall/ms13/metal
 	bullet_damage_ratio = 1
@@ -51,6 +59,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/metal) // Thin iron sheet wall
 	frill_icon = 'mojave/icons/turf/walls/metal_frill.dmi'
 	max_integrity = 500
 	damage_deflection = 25
+	sheet_type = WALL_MATS_METAL
 
 /turf/closed/wall/ms13/metal/rust
 	bullet_damage_ratio = 1
@@ -71,6 +80,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/wood)
 	frill_icon = 'mojave/icons/turf/walls/wood_frill.dmi'
 	max_integrity = 200
 	damage_deflection = 20
+	sheet_type = WALL_MATS_WOOD
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/wood/fresh)
 	default_armor = list(BLUNT = 50, PUNCTURE = 15, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
@@ -90,6 +100,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/wood/fresh)
 	icon = 'mojave/icons/turf/walls/scrap.dmi'
 	frill_icon = 'mojave/icons/turf/walls/scrap_frill.dmi'
 	max_integrity = 400
+	sheet_type = WALL_MATS_SCRAP
 
 /turf/closed/wall/ms13/scrap/white
 	icon = 'mojave/icons/turf/walls/scrapwhite.dmi'
@@ -104,7 +115,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/wood/fresh)
 	frill_icon = 'mojave/icons/turf/walls/scrapblue_frill.dmi'
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/adobe)
-	default_armor = list(BLUNT = 50, PUNCTURE = 25, SLASH = 80, LASER = 75, ENERGY = 25, BOMB = 15, BIO = 100, FIRE = 50, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = 50, SLASH = 75, LASER = 75, ENERGY = 25, BOMB = 15, BIO = 100, FIRE = 50, ACID = 50)
 
 /turf/closed/wall/ms13/adobe
 	bullet_damage_ratio = 0.8
@@ -115,6 +126,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/adobe)
 	max_integrity = 400
 	damage_deflection = 15
 	bullet_damage_ratio = 0.9
+	sheet_type = list(/obj/item/stack/sheet/ms13/ceramic = 1)
 
 /turf/closed/wall/ms13/siding
 	bullet_damage_ratio = 1
@@ -220,6 +232,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/prison)
 	max_integrity = 800
 	damage_deflection = 30
 	bullet_damage_ratio = 0.5 // its sturdy
+	sheet_type = WALL_MATS_STEEL
 
 /turf/closed/wall/ms13/prison/Initialize()
 	. = ..()
@@ -269,6 +282,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/metal/reinforced)
 	frill_icon = 'mojave/icons/turf/walls/rmetal_frill.dmi'
 	max_integrity = 2000
 	damage_deflection = 40
+	sheet_type = WALL_MATS_STEEL_REINF
 
 /turf/closed/wall/ms13/metal/reinforced/industrial
 	desc = "A reinforced metal wall with some patches of rust."
@@ -302,6 +316,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/concrete)
 	desc = "A sewer wall. Gross."
 	icon = 'mojave/icons/turf/walls/sewer.dmi'
 	frill_icon = 'mojave/icons/turf/walls/sewer_frill.dmi'
+	sheet_type = WALL_MATS_STEEL
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/bunker)
 	default_armor = list(BLUNT = 65, PUNCTURE = 85, SLASH = 80, LASER = 75, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 75, ACID = 75)
@@ -313,6 +328,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/bunker)
 	frill_icon = 'mojave/icons/turf/walls/bunker_frill.dmi'
 	damage_deflection = 30
 	bullet_damage_ratio = 0.3
+	sheet_type = WALL_MATS_STEEL_REINF
 
 /turf/closed/indestructible/ms13/metal
 	name = "metal wall"
@@ -353,6 +369,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/vault)
 	max_integrity = 2000
 	damage_deflection = 35
 	bullet_damage_ratio = 0.2
+	sheet_type = WALL_MATS_STEEL_REINF
 
 /turf/closed/wall/ms13/vault/vent
 	name = "vent section"
@@ -385,6 +402,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/dungeon)
 	max_integrity = 4000
 	damage_deflection = 50
 	bullet_damage_ratio = 0.15
+	sheet_type = WALL_MATS_SUPER_REINF
 
 /turf/closed/wall/ms13/dungeon/Initialize()
 	. = ..()
@@ -501,3 +519,10 @@ TYPEINFO_DEF(/obj/structure/girder/ms13/bars)
 /obj/structure/girder/ms13/bars/Initialize()
 	. = ..()
 	AddElement(/datum/element/climbable, 3 SECONDS, climb_stun = 0)
+
+#undef WALL_MATS_SCRAP
+#undef WALL_MATS_METAL
+#undef WALL_MATS_STEEL
+#undef WALL_MATS_WOOD
+#undef WALL_MATS_STEEL_REINF
+#undef WALL_MATS_SUPER_REINF

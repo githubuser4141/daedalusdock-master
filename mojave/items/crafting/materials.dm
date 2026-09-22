@@ -471,6 +471,26 @@ GLOBAL_LIST_INIT(ms13cloth_recipes, list ( \
 	amount = 6
 
 
+/obj/item/stack/sheet/ms13/kevlar
+	name = "kevlar"
+	desc = "A strip of kevlar weave, looks undamaged."
+	singular_name = "kevlar strip"
+	icon_state = "kevlar"
+	merge_type = /obj/item/stack/sheet/ms13/kevlar
+	amount = 1
+	max_amount = 6
+	w_class = WEIGHT_CLASS_TINY
+
+/obj/item/stack/sheet/ms13/ball_plastic
+	name = "ballistic plastic"
+	desc = "A panel of toughened plastic, useful for lightweight armor."
+	singular_name = "hard panel"
+	icon_state = "armor_plastic"
+	merge_type = /obj/item/stack/sheet/ms13/kevlar
+	amount = 1
+	max_amount = 6
+	w_class = WEIGHT_CLASS_SMALL
+
 //Old Stuff Below, Be Warned//
 
 //COTTON//

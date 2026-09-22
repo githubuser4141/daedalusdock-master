@@ -14,6 +14,7 @@
 
 /datum/ms13_ground_vehicle/m113
 	acceleration_delay = 1.8 SECONDS
+	speed_multiplier = 1.5
 	turn_delay = 7
 	max_turn_speed = 1
 	turn_speed_loss = 1
