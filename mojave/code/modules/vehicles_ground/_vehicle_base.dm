@@ -801,6 +801,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		vehicle.set_ignition(FALSE)
 	GLOB.ms13_vehicle_roofs -= roof
 	for(var/client/viewer as anything in GLOB.clients)
+		if(viewer.mob?.ms13_mask_anchor == src)
+			viewer.mob.clear_ms13_vehicle_interior_mask()
 		viewer.images -= roof
 		viewer.images -= interior_light
 		viewer.images -= interior_light_block
@@ -877,6 +879,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Roofs are client images: outsiders see them, while somebody on a vehicle frame sees its cabin.
 /mob
 	var/list/ms13_vehicle_interior_masks
+	/// The frame the cabin masks hang from. They glide along with it, so riding straight needs no rebuild.
+	var/obj/structure/ms13_vehicle_frame/ms13_mask_anchor
+	/// The vehicle's facing when the masks were drawn; turning redraws them.
+	var/ms13_mask_dir
 	/// The held turret control currently replacing this mob's cabin view with an exterior gunsight.
 	var/obj/item/ms13_vehicle_turret_control/ms13_active_gunner_sight
 
@@ -884,6 +890,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(client && length(ms13_vehicle_interior_masks))
 		client.images -= ms13_vehicle_interior_masks
 	ms13_vehicle_interior_masks = null
+	ms13_mask_anchor = null
 
 /// Black out only exterior turfs whose ray from this occupant crosses closed solid hull.
 /mob/proc/update_ms13_vehicle_interior_mask()
@@ -893,18 +900,24 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
 	if(!vehicle || (src in vehicle.underneath))
 		return
+	var/turf/here = get_turf(src)
+	var/obj/structure/ms13_vehicle_frame/anchor = vehicle.get_frame_at(here)
+	ms13_mask_anchor = anchor
+	ms13_mask_dir = vehicle.dir
 	ms13_vehicle_interior_masks = list()
 	var/list/mask_view = getviewsize(client.view)
 	var/extended_view = "[mask_view[1] + 4]x[mask_view[2] + 4]"
 	// ponytail: rebuilds the visible mask plus a two-tile margin; cache rays if vehicle sizes grow.
 	for(var/turf/target in range(extended_view, src))
-		if(!vehicle.blocks_sight_from(get_turf(src), target, vehicle.driver == src))
+		if(!vehicle.blocks_sight_from(here, target, vehicle.driver == src))
 			continue
-		var/image/mask = image(icon = 'icons/effects/alphacolors.dmi', loc = target, layer = ABOVE_ALL_MOB_LAYER)
+		var/image/mask = image(icon = 'icons/effects/alphacolors.dmi', loc = anchor, layer = FOV_EFFECTS_LAYER)
 		mask.color = "#000000"
 		mask.plane = FULLSCREEN_PLANE
-		mask.layer = FOV_EFFECTS_LAYER
-		mask.appearance_flags = RESET_COLOR | RESET_TRANSFORM
+		// Offsets from the frame, which carries its own art offset.
+		mask.pixel_x = (target.x - anchor.x) * world.icon_size - anchor.pixel_x
+		mask.pixel_y = (target.y - anchor.y) * world.icon_size - anchor.pixel_y
+		mask.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 		mask.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 		ms13_vehicle_interior_masks += mask
 	client.images += ms13_vehicle_interior_masks
@@ -936,4 +949,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(old_vehicle != new_vehicle)
 		old_vehicle?.set_roof_visible(client, TRUE)
 		new_vehicle?.set_roof_visible(client, FALSE)
+	// Carried along on the same frame, facing the same way: the masks moved with it.
+	if(new_vehicle && new_vehicle == old_vehicle && ms13_mask_anchor && ms13_mask_dir == new_vehicle.dir && new_vehicle.get_frame_at(get_turf(src)) == ms13_mask_anchor)
+		return
 	update_ms13_vehicle_interior_mask()

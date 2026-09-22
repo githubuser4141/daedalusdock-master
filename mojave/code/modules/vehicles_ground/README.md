@@ -39,6 +39,9 @@ local toggle; each casts a directional beam the way it faces. The driver alone s
 hull edge carrying an enabled, working camera; it does not make a physical window or expose
 occupants to NPC vision.
 
+Cabin masks hang from the frame each occupant stands on, so they glide with the hull; they are only
+redrawn when the occupant changes tile, the vehicle turns, or a panel opens, closes or breaks.
+
 "Camera view" at the driver's controls steps the buckled driver's view through each working camera
 and back to the cabin. A feed widens the view and shifts it outward; `camera/wide` more so,
 `camera/thermal` shows mobs through cover, `camera/night_vision` sees in the dark. The M113 fits
