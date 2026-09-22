@@ -359,10 +359,14 @@
 		TEST_ASSERT(length(vehicle?.frames) > 1, "[variant] did not assemble.")
 		var/list/wanted = list()
 		var/plate_type
+		var/smoke_wanted = 0
 		if(istype(pivot, /obj/structure/ms13_vehicle_frame/civ96))
 			var/obj/structure/ms13_vehicle_frame/civ96/hull = pivot
-			for(var/mount in hull.cameras)
-				wanted += hull.cameras[mount]
+			for(var/mount in hull.equipment)
+				if(ispath(hull.equipment[mount], /obj/structure/ms13_vehicle_part/exterior_equipment/camera))
+					wanted += hull.equipment[mount]
+				else if(ispath(hull.equipment[mount], /obj/structure/ms13_vehicle_part/smoke_generator))
+					smoke_wanted++
 			plate_type = hull.addon_armor
 		else
 			var/obj/structure/ms13_vehicle_frame/m113/front_left/carrier = pivot
@@ -370,6 +374,11 @@
 				if(camera_type)
 					wanted += camera_type
 			plate_type = carrier.addon_armor
+			smoke_wanted = carrier.smoke_generator ? 1 : 0
+		var/smoke_fitted = 0
+		for(var/obj/structure/ms13_vehicle_part/smoke_generator/smoke in vehicle.parts)
+			smoke_fitted++
+		TEST_ASSERT_EQUAL(smoke_fitted, smoke_wanted, "[variant] did not fit its listed smoke generators.")
 		var/list/missing = wanted.Copy()
 		var/fitted = 0
 		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera in vehicle.parts)
@@ -422,7 +431,7 @@
 	TEST_ASSERT(front_left.vehicle, "Armored truck front-left tile did not build a vehicle controller.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.frames), 4, "Armored truck did not assemble all 4 frame tiles.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.walls), 8, "Armored truck did not assemble all 8 expected wall segments.")
-	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 15, "Armored truck did not assemble its drivetrain, battery, lighting, cameras and wheels.")
+	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 16, "Armored truck did not assemble its drivetrain, battery, lighting, cameras, wheels and welding set.")
 	front_left.vehicle.set_ignition(TRUE)
 	TEST_ASSERT(front_left.vehicle.start_engine(), "Truck engine failed to start.")
 	TEST_ASSERT(front_left.vehicle.has_motive_power(), "A complete, fueled truck did not have motive power.")
@@ -608,7 +617,7 @@
 			TEST_ASSERT(wall.layer < front_left.roof.layer, "An M113 bulkhead would show through the roof.")
 	TEST_ASSERT_EQUAL(exterior_walls, 14, "M113 did not assemble its complete outer hull.")
 	TEST_ASSERT_EQUAL(interior_walls, 6, "M113 did not assemble its bulkheads and access panels.")
-	TEST_ASSERT_EQUAL(length(vehicle.parts), 16, "M113 did not assemble its powerpack, battery, lighting, cameras and tracks.")
+	TEST_ASSERT_EQUAL(length(vehicle.parts), 17, "M113 did not assemble its powerpack, battery, lighting, cameras, tracks and welding set.")
 	vehicle.set_ignition(TRUE)
 	TEST_ASSERT(vehicle.start_engine(), "M113 engine failed to start.")
 	TEST_ASSERT(istype(vehicle.gearbox, /obj/structure/ms13_vehicle_part/gearbox/m113), "M113 did not receive its transmission.")

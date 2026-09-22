@@ -13,6 +13,7 @@
 
 
 /datum/ms13_ground_vehicle/m113
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 1.8 SECONDS
 	speed_multiplier = 1.5
 	turn_delay = 7
@@ -77,11 +78,12 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/m113)
 	default_armor = list(BLUNT = 50, PUNCTURE = 70, SLASH = 50, LASER = 75, ENERGY = 50, BOMB = 25, BIO = 100,  FIRE = 50, ACID = 50)
 /obj/structure/window/ms13_vehicle_wall/solid/door/m113
 	name = "M113 rear ramp"
-	desc = "The carrier's heavy rear access ramp. Click to open or close it."
+	desc = "The carrier's heavy rear access ramp, powered. Click to lower or raise it."
 	icon = 'mojave/icons/objects/vehicles_ground/apcparts.dmi'
 	icon_state = "m113_back_frame"
 	open_icon_state = "m113_back_frame"
 	max_integrity = 1000
+	powered = TRUE
 	/// How far the lowered ramp lies out past the hull, in pixels. Keeps it visible and clickable.
 	var/lowered_offset = 20
 
@@ -127,6 +129,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	var/rear_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera
 	/// Add-on armor bolted over the whole outer hull, or null.
 	var/addon_armor
+	var/smoke_generator
 
 /obj/structure/ms13_vehicle_frame/m113/front_left/night
 	name = "M113 armored personnel carrier (night vision)"
@@ -138,7 +141,8 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 
 /obj/structure/ms13_vehicle_frame/m113/front_left/a3
 	name = "M113A3 armored personnel carrier"
-	desc = "A modernised M113: ceramic add-on armor, a zoom camera up front, thermal cameras on both sides and a wide-angle camera behind."
+	desc = "A modernised M113: ceramic add-on armor, a zoom camera up front, thermal cameras on both sides, a wide-angle camera behind and a smoke generator."
+	smoke_generator = /obj/structure/ms13_vehicle_part/smoke_generator
 	front_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom
 	left_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal
 	right_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal
@@ -236,6 +240,9 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 		back.spawn_part(rear_camera, 180)
 	if(addon_armor)
 		vehicle.fit_addon_armor(addon_armor)
+	if(smoke_generator)
+		back_right.spawn_part(smoke_generator, 180)
+	middle_back.spawn_part(/obj/structure/ms13_vehicle_part/welding_rig)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right)

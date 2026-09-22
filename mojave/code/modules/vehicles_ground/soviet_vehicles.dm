@@ -35,8 +35,8 @@
 	var/plating_type = /obj/structure/window/ms13_vehicle_wall/solid/civ96
 	/// Built tiles by name, for furnish().
 	var/list/tiles
-	/// Cameras fitted, "tile:edge" = camera type.
-	var/list/cameras
+	/// Cameras and other equipment fitted, "tile:edge" = part type.
+	var/list/equipment
 	/// Add-on armor bolted over the whole outer hull, or null.
 	var/addon_armor
 
@@ -59,10 +59,10 @@
 			frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 		else if(frame.forward_offset == 1 - length(tile_rows))
 			frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
-	for(var/mount in cameras)
+	for(var/mount in equipment)
 		var/list/where = splittext(mount, ":")
 		var/obj/structure/ms13_vehicle_frame/frame = tiles[where[1]]
-		frame.spawn_part(cameras[mount], list("front" = 0, "left" = 90, "back" = 180, "right" = -90)[where[2]])
+		frame.spawn_part(equipment[mount], list("front" = 0, "left" = 90, "back" = 180, "right" = -90)[where[2]])
 	if(addon_armor)
 		vehicle.fit_addon_armor(addon_armor)
 	vehicle.update_interior_lighting()
@@ -192,6 +192,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/btr80
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 1.2 SECONDS
 	turn_delay = 5
 	max_turn_speed = 2
@@ -277,6 +278,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/mtlb
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 1.6 SECONDS
 	turn_delay = 6
 	max_turn_speed = 1
@@ -361,6 +363,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/bmd2
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 1.1 SECONDS
 	turn_delay = 5
 	max_turn_speed = 2
@@ -441,6 +444,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/t34
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 2 SECONDS
 	turn_delay = 8
 	max_turn_speed = 1
@@ -533,6 +537,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/is3
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 2.6 SECONDS
 	turn_delay = 10
 	max_turn_speed = 1
@@ -614,22 +619,22 @@
 	add_gear("back_left", "tracks_left_back")
 	add_gear("back_right", "tracks_right_back")
 
-// Variants: the same hulls with cameras and add-on armor fitted.
+// Variants: the same hulls with cameras, add-on armor and other equipment fitted.
 /obj/structure/ms13_vehicle_frame/civ96/btr80/btr82
 	name = "BTR-82A armored personnel carrier"
-	desc = "A modernised BTR-80: ceramic add-on armor, thermal and zoom cameras up front and a wide-angle camera behind."
-	cameras = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom, "back_left:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide)
+	desc = "A modernised BTR-80: ceramic add-on armor, thermal and zoom cameras up front, a wide-angle camera behind and a smoke generator."
+	equipment = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom, "back_left:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide, "back_right:back" = /obj/structure/ms13_vehicle_part/smoke_generator)
 	addon_armor = /obj/item/ms13_vehicle_armor/ceramic
 
 /obj/structure/ms13_vehicle_frame/civ96/mtlb/scout
 	name = "MT-LB scout tractor"
 	desc = "An MT-LB fitted out for scouting, with zoom and night vision cameras up front and a wide-angle camera behind."
-	cameras = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "back_left:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide)
+	equipment = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "back_left:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide)
 
 /obj/structure/ms13_vehicle_frame/civ96/bmd2/night
 	name = "BMD-2 airborne fighting vehicle (night vision)"
 	desc = "A BMD-2 with night vision cameras up front and a camera behind."
-	cameras = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "back_right:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera)
+	equipment = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "back_right:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera)
 
 /obj/structure/ms13_vehicle_frame/civ96/t34/uparmored
 	name = "T-34 medium tank (appliqué armor)"
@@ -638,13 +643,13 @@
 
 /obj/structure/ms13_vehicle_frame/civ96/t34/modernised
 	name = "T-34-85M medium tank"
-	desc = "A post-war modernised T-34 with a night vision camera for the driver and a wide-angle camera behind."
-	cameras = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "back:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide)
+	desc = "A post-war modernised T-34 with a night vision camera for the driver, a wide-angle camera behind and a smoke generator."
+	equipment = list("front_left:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, "back:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide, "back_right:back" = /obj/structure/ms13_vehicle_part/smoke_generator)
 
 /obj/structure/ms13_vehicle_frame/civ96/is3/modernised
 	name = "IS-3M heavy tank"
-	desc = "A modernised IS-3 with ceramic add-on armor, thermal and zoom cameras up front and a wide-angle camera behind."
-	cameras = list("front_middle:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom, "back:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide)
+	desc = "A modernised IS-3 with ceramic add-on armor, thermal and zoom cameras up front, a wide-angle camera behind and a smoke generator."
+	equipment = list("front_middle:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal, "front_right:front" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom, "back:back" = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide, "back_right:back" = /obj/structure/ms13_vehicle_part/smoke_generator)
 	addon_armor = /obj/item/ms13_vehicle_armor/ceramic
 
 #undef SEAT_FORWARD

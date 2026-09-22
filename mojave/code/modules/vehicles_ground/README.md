@@ -26,8 +26,10 @@ damage without explicit gibbing. They remain under the floor and cannot stand un
 dead basic/simple-animal NPCs skip damage processing entirely.
 Destroying a frame tile leaves ten scrap-steel sheets; administrative deletion does not create salvage.
 
-Each engine installation includes a non-dense battery housing at the pivot. It contains a standard
-high-capacity cell: screwdriver to remove, insert another cell to replace. Ignition enables the
+Each engine installation includes a non-dense battery housing at the pivot, holding the controller's
+`battery_cell`: screwdriver to remove, insert another cell to replace. Batteries come in sizes
+(`/obj/item/stock_parts/cell/ms13_vehicle`, 10000, the jeep's; `/bike` 2500; `/truck` 20000, trucks and
+armor; `/storage` 60000, rail cars and electric vehicles) and any fits any vehicle. Ignition enables the
 electrical bus; turning it off also stops the engine. Starting costs 100 cell charge. Running engines
 burn 0.01 fuel/second at idle plus the existing fuel-per-tile consumption, and charge 20 units/second.
 Instruments use 1 unit/second, each enabled cabin light/camera 1, each exterior lamp 2. Autocannons
@@ -58,8 +60,28 @@ hold passes to the panel, and a wrecked plate falls away.
 
 Variants set cameras and add-on armor on the same hulls. The M113 (`front_left`) has plain cameras;
 `/night` night vision, `/a3` ceramic armor with zoom and thermal cameras, `/uparmored` steel plate.
-Civ96 variants take `cameras` as `"tile:edge" = camera type` and `addon_armor`: `btr80/btr82`,
+Civ96 variants take `equipment` as `"tile:edge" = part type` and `addon_armor`: `btr80/btr82`,
 `mtlb/scout`, `bmd2/night`, `t34/uparmored`, `t34/modernised`, `is3/modernised`.
+
+Doors lock: right-click one from inside the vehicle to latch or unlatch it, and a locked door won't
+open by hand from either side. Power doors (`/obj/structure/window/ms13_vehicle_wall/solid/door/power`,
+any door with `powered`) are also worked from the driver's "Special actions": open (unlocking them),
+close, lock (shutting them first) and unlock, all at once, off the battery with the ignition on. Rail
+cars have power side doors; the M113's ramp is powered. Doors start unlocked. Batter a power door until
+it breaks (before it's destroyed) and its motor gives out: it springs open, unlocked, and stays jammed
+open until it's welded back into shape.
+
+"Special actions" also sets off a smoke generator (`/obj/structure/ms13_vehicle_part/smoke_generator`):
+with the engine running it burns 4 fuel into a thick screen out past the hull edge it faces, every 40
+seconds. The M113A3, BTR-82A, T-34-85M and IS-3M carry one. A welding set
+(`/obj/structure/ms13_vehicle_part/welding_rig`, in the M113 and armored truck) holds a torch on a
+5-tile hose: take it, weld, and let go to wind it back in; carried past the hose it's yanked back. It
+burns 25 battery charge per unit of welding fuel, with the ignition on. A roof solar panel
+(`/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel`) charges the battery under open sky,
+ignition on or off, by the brightness of the sunlight's colour: 4 a second at noon, about two thirds of
+that at sunrise and sunset, an eighth at dawn and dusk, next to nothing at midnight. Lamps and headlights
+are separate light and never charge it. These three, and the route terminal, fit themselves to a
+vehicle when mapped or spawned onto its floor; face them the way they should point.
 
 Rail cars cannot be driven by hand. The route terminal at the front of the car shows a line map of the
 connected rails; pick a stop on the map or the list and the car runs there, either end first, turning

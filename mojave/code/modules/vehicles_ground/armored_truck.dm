@@ -9,6 +9,7 @@
  * truck's facing, same as the jeep.
  */
 /datum/ms13_ground_vehicle/armored_truck
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	acceleration_delay = 1.2 SECONDS
 	turn_delay = 5
 	max_turn_speed = 1
@@ -97,6 +98,7 @@
 	back_right.spawn_part(/obj/structure/ms13_vehicle_part/fuel_tank/large)
 	// The cargo box is sealed hull, so it needs its own light.
 	back_right.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/welding_rig)
 	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 	back_left.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)

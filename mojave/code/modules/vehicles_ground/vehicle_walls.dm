@@ -398,12 +398,53 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 	var/open_icon_state = "c_thin"
 	var/closed_icon_state
 	var/opened = FALSE
+	/// Latched shut, so it won't open by hand. Right-click it from inside the vehicle to work the latch.
+	var/locked = FALSE
+	/// Also worked from the driver's controls, together with every other powered door aboard.
+	var/powered = FALSE
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/attack_hand(mob/living/user, list/modifiers)
 	if(user.combat_mode)
 		return ..()
+	if(locked)
+		balloon_alert(user, "locked!")
+		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 20, TRUE)
+		return TRUE
 	toggle(user)
 	return TRUE
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/attack_hand_secondary(mob/user, list/modifiers)
+	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
+	if(!vehicle || get_ms13_ground_vehicle_at(user) != vehicle || (user in vehicle.underneath))
+		return ..()
+	if(opened)
+		balloon_alert(user, "close it first!")
+	else
+		set_locked(!locked, user)
+	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
+
+/// A wrecked power door's motor gives out: it slides open, unlocked, and jams there until it's repaired.
+/obj/structure/window/ms13_vehicle_wall/solid/door/atom_break(damage_flag)
+	. = ..()
+	if(powered)
+		set_locked(FALSE)
+		open()
+
+/// Only a shut door locks. FALSE if nothing changed.
+/obj/structure/window/ms13_vehicle_wall/solid/door/proc/set_locked(lock, mob/user)
+	if(locked == lock || (lock && opened))
+		return FALSE
+	locked = lock
+	if(user)
+		balloon_alert(user, locked ? "locked" : "unlocked")
+	playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 40, TRUE)
+	return TRUE
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/examine(mob/user)
+	. = ..()
+	. += span_notice("It's [locked ? "locked" : "unlocked"]. Right-click it from inside to [locked ? "unlock" : "lock"] it.")
+	if(powered)
+		. += hull_broken ? span_warning("Its motor is wrecked, and it's jammed open.") : span_notice("The driver's controls open, close and lock it.")
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/proc/toggle(mob/user)
 	if(opened)
@@ -430,6 +471,10 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 /obj/structure/window/ms13_vehicle_wall/solid/door/proc/close(mob/user)
 	if(!opened)
 		return
+	if(powered && hull_broken)
+		if(user)
+			balloon_alert(user, "jammed open!")
+		return
 	opened = FALSE
 	set_density(TRUE)
 	blocks_vision = TRUE
@@ -442,6 +487,40 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/get_interior_icon_state()
 	return opened ? "c_thin" : interior_icon_state
+
+/// A powered sliding door. By hand it works like any door.
+/obj/structure/window/ms13_vehicle_wall/solid/door/power
+	name = "power door"
+	desc = "A powered sliding door. Click to open or close it."
+	powered = TRUE
+
+/// The powered doors aboard, which the driver's controls work together.
+/datum/ms13_ground_vehicle/proc/power_doors()
+	. = list()
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/door/door in walls)
+		if(door.powered)
+			. += door
+
+/// Works every powered door at once, off the battery: "open" unlocks them first, "lock" shuts them first.
+/datum/ms13_ground_vehicle/proc/work_power_doors(action, mob/user)
+	var/list/doors = power_doors()
+	if(!length(doors) || !use_battery(length(doors)))
+		if(user)
+			to_chat(user, span_warning("The doors don't answer. Check the ignition and the battery."))
+		return FALSE
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/door/door as anything in doors)
+		switch(action)
+			if("open")
+				door.set_locked(FALSE)
+				door.open()
+			if("close")
+				door.close()
+			if("lock")
+				door.close()
+				door.set_locked(TRUE)
+			if("unlock")
+				door.set_locked(FALSE)
+	return TRUE
 
 // Civ13 96x96 hull plating (soviet_vehicles.dm). The art is drawn centered on its tile and has damaged
 // counterparts under the same names.

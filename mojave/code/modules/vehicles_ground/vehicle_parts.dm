@@ -49,6 +49,27 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	var/relative_turn = 0
 	/// Client image used by parts such as wheels which should be visible outside but hidden in-cabin.
 	var/image/exterior_image
+	/// Mapped or spawned onto a vehicle's floor rather than built with it, it fits itself to that vehicle.
+	var/fits_itself = FALSE
+
+/obj/structure/ms13_vehicle_part/Initialize(mapload)
+	. = ..()
+	if(fits_itself)
+		return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/ms13_vehicle_part/LateInitialize()
+	if(vehicle)
+		return
+	var/obj/structure/ms13_vehicle_frame/frame = locate() in loc
+	if(!frame?.vehicle)
+		return
+	vehicle = frame.vehicle
+	forward_offset = frame.forward_offset
+	right_offset = frame.right_offset
+	relative_turn = (dir2angle(vehicle.dir) - dir2angle(dir) + 360) % 360
+	vehicle.parts |= src
+	configure_from_vehicle()
+	update_appearance()
 
 /obj/structure/ms13_vehicle_part/Destroy()
 	if(exterior_image)

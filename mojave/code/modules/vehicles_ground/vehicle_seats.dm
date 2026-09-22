@@ -79,6 +79,8 @@
 			options["Route terminal"] = 12
 		else
 			options["Brakes mode ([vehicle.brakes_mode ? "on" : "off"])"] = 11
+		if(length(vehicle.power_doors()) || (locate(/obj/structure/ms13_vehicle_part/smoke_generator) in vehicle.parts))
+			options["Special actions"] = 14
 		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nStop applies the brakes. Brakes mode moves slowly only while pressing a direction. Engine-off vehicles slow to a stop.", "Vehicle controls") as null|anything in options
 		if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
 			return
@@ -130,7 +132,32 @@
 					next_camera(user)
 				else
 					to_chat(user, span_warning("Sit in the driver's seat to watch the cameras."))
+			if(14)
+				show_special_actions(user, vehicle)
 		vehicle.update_electrical()
+
+/// The powered doors and their locks, and the smoke generator, where the vehicle has them.
+/obj/structure/chair/ms13_vehicle_seat/proc/show_special_actions(mob/living/user, datum/ms13_ground_vehicle/vehicle)
+	var/list/options = list()
+	var/list/doors = vehicle.power_doors()
+	if(length(doors))
+		var/any_open = FALSE
+		var/all_locked = TRUE
+		for(var/obj/structure/window/ms13_vehicle_wall/solid/door/door as anything in doors)
+			any_open ||= door.opened
+			all_locked &&= door.locked
+		options[any_open ? "Close doors" : "Open doors"] = any_open ? "close" : "open"
+		options[all_locked ? "Unlock doors" : "Lock doors"] = all_locked ? "unlock" : "lock"
+	var/obj/structure/ms13_vehicle_part/smoke_generator/smoke = locate() in vehicle.parts
+	if(smoke)
+		options["Smoke screen"] = "smoke"
+	var/choice = input(user, "Locking shuts the doors first; opening unlocks them.", "Special actions") as null|anything in options
+	if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
+		return
+	if(options[choice] == "smoke")
+		smoke.discharge(user)
+	else
+		vehicle.work_power_doors(options[choice], user)
 
 /// Steps the driver's view to the next working camera, and back to the cabin after the last.
 /obj/structure/chair/ms13_vehicle_seat/proc/next_camera(mob/living/user)

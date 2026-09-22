@@ -9,6 +9,8 @@
 	var/next_horn_time = 0
 	var/starter_cost = 100
 	var/alternator_rate = 20
+	/// The battery its battery is built with.
+	var/battery_cell = /obj/item/stock_parts/cell/ms13_vehicle
 	var/idle_fuel_rate = 0.01
 	var/electrical_live = FALSE
 
@@ -57,6 +59,9 @@
 			engine.consume_fuel(idle_fuel_rate * seconds_per_tick)
 			if(engine_running && battery?.is_operational())
 				battery.cell?.give(alternator_rate * seconds_per_tick)
+	if(battery?.is_operational() && battery.cell)
+		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel/panel in parts)
+			battery.cell.give(panel.output * panel.sunlight() * seconds_per_tick)
 	if(has_electrical_power())
 		var/load = 1 // Ignition/instruments.
 		for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
@@ -99,12 +104,10 @@
 	max_integrity = 100
 	var/obj/item/stock_parts/cell/cell
 
-/obj/structure/ms13_vehicle_part/battery/Initialize(mapload)
-	. = ..()
-	cell = new /obj/item/stock_parts/cell/high(src)
-
 /obj/structure/ms13_vehicle_part/battery/configure_from_vehicle()
 	vehicle.battery = src
+	if(!cell)
+		cell = new vehicle.battery_cell(src)
 	START_PROCESSING(SSobj, src)
 
 /obj/structure/ms13_vehicle_part/battery/process(seconds_per_tick)
@@ -151,6 +154,35 @@
 	if(user.transferItemToLoc(item, src))
 		cell = item
 		vehicle?.update_electrical()
+
+/// Vehicle batteries come in sizes. Any of them fits any vehicle's battery box, swapped like any cell.
+/obj/item/stock_parts/cell/ms13_vehicle
+	name = "car battery"
+	desc = "A lead-acid battery for a car's starter and lights."
+	icon_state = "hcell"
+	maxcharge = 10000
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/stock_parts/cell/ms13_vehicle/bike
+	name = "motorcycle battery"
+	desc = "A small lead-acid battery for a motorcycle."
+	icon_state = "cell"
+	maxcharge = 2500
+	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/stock_parts/cell/ms13_vehicle/truck
+	name = "truck battery"
+	desc = "A heavy lead-acid battery for a truck or an armored vehicle."
+	icon_state = "scell"
+	maxcharge = 20000
+	w_class = WEIGHT_CLASS_BULKY
+
+/obj/item/stock_parts/cell/ms13_vehicle/storage
+	name = "storage battery bank"
+	desc = "A crate of storage cells, big enough to drive an electric vehicle or run a rail car's doors and lights."
+	icon_state = "bscell"
+	maxcharge = 60000
+	w_class = WEIGHT_CLASS_HUGE
 
 /// Non-dense exterior accessories use the same per-client exterior images as wheels and turrets.
 /obj/structure/ms13_vehicle_part/exterior_equipment

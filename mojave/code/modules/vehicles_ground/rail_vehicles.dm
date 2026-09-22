@@ -69,6 +69,7 @@
 	return ..()
 
 /datum/ms13_ground_vehicle/rail
+	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/storage
 	speed_multiplier = 8
 	mass_per_frame = 1200
 	max_turn_speed = 1
@@ -399,7 +400,7 @@
 			if(back == car_length - 1)
 				frame.spawn_wall(turn(dir, 180), , /obj/structure/window/ms13_vehicle_wall/solid)
 				frame.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
-			var/side_type = back == door_row ? /obj/structure/window/ms13_vehicle_wall/solid/door : /obj/structure/window/ms13_vehicle_wall/shuttered
+			var/side_type = back == door_row ? /obj/structure/window/ms13_vehicle_wall/solid/door/power : /obj/structure/window/ms13_vehicle_wall/shuttered
 			var/side_art = back == door_row ? null : "c_window"
 			if(!right)
 				frame.spawn_wall(turn(dir, 90), side_art, side_type)
@@ -439,27 +440,9 @@
 	pixel_y = 8
 	layer = BELOW_OBJ_LAYER
 	max_integrity = 100
+	fits_itself = TRUE
 	/// z text -> board shift x, shift y and level (0 for where the car was), as last drawn by ui_static_data().
 	var/list/board_levels
-
-/obj/structure/ms13_vehicle_part/rail_terminal/Initialize(mapload)
-	. = ..()
-	return INITIALIZE_HINT_LATELOAD
-
-/// Spawned or mapped onto a rail car rather than built with it: fit itself to that car.
-/obj/structure/ms13_vehicle_part/rail_terminal/LateInitialize()
-	if(vehicle)
-		return
-	var/obj/structure/ms13_vehicle_frame/frame = locate() in loc
-	var/datum/ms13_ground_vehicle/rail/train = frame?.vehicle
-	if(!istype(train))
-		return
-	vehicle = train
-	forward_offset = frame.forward_offset
-	right_offset = frame.right_offset
-	relative_turn = (dir2angle(train.dir) - dir2angle(dir) + 360) % 360
-	train.parts |= src
-	update_appearance()
 
 /obj/structure/ms13_vehicle_part/rail_terminal/proc/is_powered()
 	return is_operational() && vehicle?.battery?.is_operational() && vehicle.battery.cell?.charge > 0
