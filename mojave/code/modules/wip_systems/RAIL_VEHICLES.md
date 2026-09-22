@@ -10,6 +10,7 @@ cable sprites as placeholders but are separate, destructible objects, not power 
 Place the `/station` subtype at stops, inside an area named for the station: stops are
 listed by their area's name. Part of the car must start on a rail. Use the route terminal
 (or "Route terminal" at the dashboard) and pick a stop; **Emergency stop** brakes to a halt.
+The front row is the driver's cabin, behind a bulkhead and cabin door.
 
 The controller finds a shortest connected rail route, speeds up smoothly, and brakes
 ahead of corners and the destination (`time_to_top_speed`, `time_to_stop`,

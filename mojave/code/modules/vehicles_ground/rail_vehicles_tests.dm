@@ -282,6 +282,8 @@
 	var/datum/ms13_ground_vehicle/rail/line = commuter.vehicle
 	var/doors = 0
 	for(var/obj/structure/window/ms13_vehicle_wall/solid/door/door in line.walls)
+		if(!door.exterior)
+			continue
 		doors++
 		if(door.dir == line.dir || door.dir == turn(line.dir, 180))
 			Fail("A tram door opens off an end of the car.")
@@ -298,6 +300,11 @@
 		allocate(/obj/structure/ms13_rail, locate(15, y, test_z))
 	var/obj/structure/ms13_rail/stop = allocate(/obj/structure/ms13_rail/station, locate(15, 40, test_z))
 	var/obj/structure/ms13_vehicle_part/rail_terminal/terminal = locate() in line.parts
+	// The front row is a cabin: the terminal can't be reached from the seats behind it.
+	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent, get_step(terminal, turn(line.dir, 180)))
+	var/mob/living/carbon/human/consistent/motorman = allocate(/mob/living/carbon/human/consistent, get_turf(commuter))
+	if(terminal.IsReachableBy(passenger) || !terminal.IsReachableBy(motorman))
+		Fail("The driver's cabin did not close the route terminal off from the passengers.")
 	var/list/board = terminal?.ui_static_data()
 	var/list/listed = board?["stops"]
 	if(length(listed) != 1 || listed[1]["name"] != stop.stop_name() || length(board["rails"]) != 6)

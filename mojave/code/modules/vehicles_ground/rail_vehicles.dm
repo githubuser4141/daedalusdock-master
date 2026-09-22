@@ -405,6 +405,12 @@
 				frame.spawn_wall(turn(dir, 90), side_art, side_type)
 			if(right == car_width - 1)
 				frame.spawn_wall(turn(dir, -90), side_art, side_type)
+			// The front row is the driver's cabin, closed off from the passengers but for its door.
+			if(!back)
+				if(right == lamp_column)
+					frame.add_bulkhead(180, "cabin door", /obj/structure/window/ms13_vehicle_wall/solid/door/interior)
+				else
+					frame.add_bulkhead(180, "cabin bulkhead")
 			if(!(back % 2) && right == lamp_column)
 				frame.spawn_part(/obj/structure/ms13_vehicle_part/interior_light)
 			if(frame == src)
@@ -412,7 +418,7 @@
 				driver_seat.configure_driver_seat()
 			else if(!back && right == car_width - 1)
 				frame.spawn_part(/obj/structure/ms13_vehicle_part/rail_terminal, 180)
-			else if(back != door_row)
+			else if(back && back != door_row)
 				frame.add_seat(0, "rail passenger seat")
 			if(!back || back == car_length - 1)
 				if(!right)

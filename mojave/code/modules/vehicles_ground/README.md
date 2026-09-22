@@ -66,8 +66,10 @@ connected rails; pick a stop on the map or the list and the car runs there, eith
 only at corners. Stops are `/obj/structure/ms13_rail/station` rails, named after the area they sit in,
 so give each station its own named area. "Route terminal" at the driver's controls opens the same
 screen. A terminal spawned or mapped onto a rail car fits itself to that car. Cars board through a
-door in each side at mid-length, with that row kept clear of seats. Lines run up and down levels over
-`/obj/structure/ms13_rail/ramp` inclines and over region edges; see `wip_systems/RAIL_VEHICLES.md`.
+door in each side at mid-length, with that row kept clear of seats. The front row is the driver's
+cabin, with the terminal, closed off from the passengers by a bulkhead and a cabin door. Lines run
+up and down levels over `/obj/structure/ms13_rail/ramp` inclines and over region edges; see
+`wip_systems/RAIL_VEHICLES.md`.
 
 On a route a car keeps a smooth speed rather than a gear: it reaches its top gear's speed over
 `time_to_top_speed`, and plans its braking to slow for corners and stop at the end on brakes that take
