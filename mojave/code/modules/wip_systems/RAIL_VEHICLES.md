@@ -1,21 +1,21 @@
 # Rail vehicles (WIP)
 
-Place `/obj/structure/ms13_vehicle_frame/tram` for a **2x4 tram**, or its `/train`
-subtype for a **2x6 train**. The placed frame is the front-left pivot; rotate it in
+Place `/obj/structure/ms13_vehicle_frame/tram` for a tram, or its `/train` subtype for
+a wider train (`car_length` x `car_width`). The placed frame is the front-left pivot; rotate it in
 the editor before placement and leave room behind it and to its right.
 
 Place `/obj/structure/ms13_rail` on each tile of the guide route. Cardinal neighbors
 connect automatically, including corners, loops and junctions. These use visible
 cable sprites as placeholders but are separate, destructible objects, not power wires.
-Place the `/station` subtype instead of a normal rail at stops and set its `name`.
-The pivot must start on a rail. Click the dashboard and select **Rail destination**.
-Select another destination for the return trip; **Stop** cancels automatic driving.
+Place the `/station` subtype at stops, inside an area named for the station: stops are
+listed by their area's name. Part of the car must start on a rail. Use the route terminal
+(or "Route terminal" at the dashboard) and pick a stop; **Emergency stop** brakes to a halt.
 
-The controller finds a shortest connected rail route and brakes before corners and
-the destination. `braking_power` is speed bands shed per movement tick. Motors,
-fuel, wheels, battery, hull damage, collisions and passengers are the ordinary
-vehicle systems. Destroyed rails or blocked turns halt the trip; select a destination
-again after clearing the obstruction. Manual driving also requires rails.
+The controller finds a shortest connected rail route, speeds up smoothly, and brakes
+ahead of corners and the destination (`time_to_top_speed`, `time_to_stop`,
+`braking_variance`). Motors, fuel, wheels, battery, hull damage, collisions and passengers
+are the ordinary vehicle systems. Destroyed rails or blocked turns halt the trip; pick a
+stop again after clearing the obstruction. Rail cars cannot be driven by hand.
 
 These are rigid cars, not articulated multi-car trains: the front-left pivot follows
 the guide rail and the rest of the hull uses the normal vehicle rotation. Leave a

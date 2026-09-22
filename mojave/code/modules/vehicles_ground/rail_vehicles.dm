@@ -50,8 +50,16 @@
 	fuel_per_tile = 0.1
 	acceleration_delay = 0.5 SECONDS
 	var/list/rail_route
-	/// Speed bands shed per movement tick; stopping distance is computed using the same rule.
-	var/braking_power = 1
+	/// Seconds from standing to top speed, and from top speed to a standstill on the brakes. Between them the
+	/// car speeds up and slows down smoothly rather than a whole gear at a time.
+	var/time_to_top_speed = 12 SECONDS
+	var/time_to_stop = 8 SECONDS
+	/// Brakes are never exact: each tile they bite up to this much harder or softer than planned.
+	var/braking_variance = 0.25
+	/// Speed along the line, in tiles per second.
+	var/velocity = 0
+	/// Emergency stop: brakes on hard, still following the line, until the car stands.
+	var/halting = FALSE
 	/// The frame riding the guide rail. The line can run under any part of the hull, not just the pivot.
 	var/obj/structure/ms13_vehicle_frame/rail_bogie
 
@@ -123,11 +131,35 @@
 
 /datum/ms13_ground_vehicle/rail/stop_motion()
 	rail_route = null
+	velocity = 0
+	halting = FALSE
 	return ..()
 
-/// Rail cars are never driven by hand; they only run routes picked at the controls.
+/// Rail cars are never driven by hand; they only run routes picked at the route terminal.
 /datum/ms13_ground_vehicle/rail/handle_drive_input(direction)
 	return FALSE
+
+/// On a route the brakes stop the car along the line instead of a gear at a time.
+/datum/ms13_ground_vehicle/rail/apply_brakes()
+	if(!rail_route)
+		return ..()
+	halting = TRUE
+
+/// Tiles per second in gear, as gear_delay() would drive it.
+/datum/ms13_ground_vehicle/rail/proc/gear_velocity(gear)
+	var/list/delays = gearbox?.gear_delays
+	return length(delays) ? 10 * max(speed_multiplier, 0.1) / delays[clamp(gear, 1, length(delays))] : 0
+
+/// The lowest gear fast enough for this speed, for collisions and turning.
+/datum/ms13_ground_vehicle/rail/proc/gear_for(tiles_per_second)
+	for(var/gear in 1 to gear_count())
+		if(tiles_per_second <= gear_velocity(gear) + 0.01)
+			return gear
+	return max(gear_count(), 1)
+
+/// On a route the car keeps its own smooth speed rather than a gear's.
+/datum/ms13_ground_vehicle/rail/gear_delay(gear)
+	return (rail_route && velocity > 0) ? 10 / velocity : ..()
 
 /datum/ms13_ground_vehicle/rail/do_move(direction, bypass_cooldown = FALSE)
 	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
@@ -173,19 +205,6 @@
 			if(rail.is_station)
 				. += rail
 
-/datum/ms13_ground_vehicle/rail/proc/choose_destination(mob/living/user, obj/structure/chair/ms13_vehicle_seat/seat)
-	var/list/stops = list()
-	for(var/obj/structure/ms13_rail/stop as anything in find_stops(find_rail_routes()))
-		if(get_turf(stop) != get_turf(rail_frame()))
-			stops["[stop.stop_name()] ([stop.x], [stop.y])"] = get_turf(stop)
-	if(!length(stops))
-		to_chat(user, span_warning("No connected rail stops found."))
-		return
-	var/choice = input(user, "Select a connected stop. Clear space is needed around corners.", "Rail destination") as null|anything in stops
-	if(!choice || !seat.can_use_controls(user) || seat.parent_frame.vehicle != src)
-		return
-	depart_for(stops[choice], user)
-
 /// Starts the engine and runs the line to destination. FALSE, with user told why, when it can't go.
 /datum/ms13_ground_vehicle/rail/proc/depart_for(turf/destination, mob/user)
 	// Searched afresh: the car may have moved since the stop was picked.
@@ -210,13 +229,10 @@
 	start_motion()
 	return TRUE
 
-/datum/ms13_ground_vehicle/rail/proc/stopping_distance()
-	return CEILING(speed / max(1, braking_power), 1)
-
 /datum/ms13_ground_vehicle/rail/movement_tick(generation)
 	if(!rail_route)
 		return ..()
-	if(generation != movement_generation || !moving || !speed)
+	if(generation != movement_generation || !moving)
 		return
 	if(!length(rail_route) || !has_motive_power())
 		stop_motion()
@@ -230,36 +246,60 @@
 		stop_motion()
 		return
 	var/direction = get_dir(bogie, next)
+	var/corner_velocity = gear_velocity(max_turn_speed)
 	if(direction == dir || direction == turn(dir, 180))
 		// Either end can lead: backing up needs no turn.
 		travel_dir = direction
 	else
-		if(speed > max_turn_speed)
-			speed = max(max_turn_speed, speed - max(1, braking_power))
-		else if(world.time >= next_move_time)
-			// Swing whichever end leads onto the new line.
-			if(!full_turn(travel_dir == turn(dir, 180) ? turn(direction, 180) : direction))
-				stop_motion()
-				return
+		// A corner: whatever is left above turning speed comes off here, then the leading end swings onto the new line.
+		if(velocity > corner_velocity)
+			velocity = corner_velocity
+			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
+		speed = gear_for(velocity)
+		if(world.time >= next_move_time && !full_turn(travel_dir == turn(dir, 180) ? turn(direction, 180) : direction))
+			stop_motion()
+			return
 		addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), gear_delay(speed))
 		return
-	// Brake before a corner or the final stop, using the same per-tile deceleration as movement.
+	var/top = gear_velocity(gear_count())
+	var/acceleration = top / max(time_to_top_speed / (1 SECONDS), 0.1)
+	var/deceleration = top / max(time_to_stop / (1 SECONDS), 0.1)
+	// How far the line runs straight ahead, looking only as far as the brakes could need.
 	var/straight = 0
 	var/turf/previous = get_turf(bogie)
+	var/look_ahead = CEILING(velocity ** 2 / (2 * deceleration), 1) + 2
 	for(var/turf/rail_tile as anything in rail_route)
 		if(get_dir(previous, rail_tile) != travel_dir)
 			break
 		straight++
 		previous = rail_tile
-		if(straight > gear_count() + 1)
+		if(straight > look_ahead)
 			break
-	if(straight <= stopping_distance())
-		speed = max(1, speed - max(1, braking_power))
-	else if(world.time >= next_acceleration_time)
-		speed = min(gear_count(), speed + 1)
-		next_acceleration_time = world.time + acceleration_delay
+	// The fastest the car may go and still slow, on the brakes it expects, to turning speed or a stop by the end.
+	var/end_velocity = straight >= length(rail_route) ? 0 : corner_velocity
+	var/allowed = halting ? 0 : sqrt(end_velocity ** 2 + 2 * deceleration * max(straight - 1, 0))
+	// Per tile moved, so speed changes with distance: v^2 shifts by twice the acceleration each tile.
+	if(velocity > allowed)
+		var/bite = (halting ? 1.5 : 1) * (1 + braking_variance * (rand() * 2 - 1))
+		velocity = sqrt(max(velocity ** 2 - 2 * deceleration * bite, 0))
+		if(world.time >= next_brake_time)
+			next_brake_time = world.time + brake_delay
+			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
+	else
+		velocity = min(sqrt(velocity ** 2 + 2 * acceleration), top, max(allowed, corner_velocity / 4))
+	// Brakes that bit too hard leave the car creeping the rest of the way in.
+	var/creep = gear_velocity(1) / 4
+	if(velocity < creep)
+		if(halting)
+			stop_motion()
+			return
+		velocity = creep
+	speed = gear_for(velocity)
 	. = ..()
 	if(rail_route && !length(rail_route))
+		// Brakes that bit too softly bring it in with a jolt.
+		if(velocity > creep * 2)
+			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
 		stop_motion()
 
 /// Rigid, ordinary vehicle formations; the front-left pivot follows the guide rail.
@@ -337,6 +377,25 @@
 	layer = BELOW_OBJ_LAYER
 	max_integrity = 100
 
+/obj/structure/ms13_vehicle_part/rail_terminal/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/// Spawned or mapped onto a rail car rather than built with it: fit itself to that car.
+/obj/structure/ms13_vehicle_part/rail_terminal/LateInitialize()
+	if(vehicle)
+		return
+	var/obj/structure/ms13_vehicle_frame/frame = locate() in loc
+	var/datum/ms13_ground_vehicle/rail/train = frame?.vehicle
+	if(!istype(train))
+		return
+	vehicle = train
+	forward_offset = frame.forward_offset
+	right_offset = frame.right_offset
+	relative_turn = (dir2angle(train.dir) - dir2angle(dir) + 360) % 360
+	train.parts |= src
+	update_appearance()
+
 /obj/structure/ms13_vehicle_part/rail_terminal/proc/is_powered()
 	return is_operational() && vehicle?.battery?.is_operational() && vehicle.battery.cell?.charge > 0
 
@@ -381,7 +440,7 @@
 /obj/structure/ms13_vehicle_part/rail_terminal/ui_static_data(mob/user)
 	var/datum/ms13_ground_vehicle/rail/train = vehicle
 	if(!istype(train))
-		return list()
+		return list("fitted" = FALSE, "rails" = list(), "stops" = list())
 	var/list/parents = train.find_rail_routes()
 	var/list/rails = list()
 	for(var/turf/location as anything in parents)
@@ -389,7 +448,7 @@
 	var/list/stops = list()
 	for(var/obj/structure/ms13_rail/stop as anything in train.find_stops(parents))
 		stops += list(list("ref" = REF(stop), "name" = stop.stop_name(), "x" = stop.x, "y" = stop.y))
-	return list("rails" = rails, "stops" = stops)
+	return list("fitted" = TRUE, "rails" = rails, "stops" = stops)
 
 /obj/structure/ms13_vehicle_part/rail_terminal/ui_data(mob/user)
 	var/datum/ms13_ground_vehicle/rail/train = vehicle
@@ -403,6 +462,7 @@
 	return list(
 		"powered" = is_powered(),
 		"moving" = !!train?.moving,
+		"halting" = !!train?.halting,
 		"train" = bogie ? list(bogie.x, bogie.y) : null,
 		"location" = location?.name,
 		"destination" = destination ? REF(destination) : null,
@@ -422,5 +482,5 @@
 				train.depart_for(get_turf(stop), usr)
 			return TRUE
 		if("halt")
-			train.stop_motion()
+			train.apply_brakes()
 			return TRUE

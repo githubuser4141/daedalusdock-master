@@ -54,8 +54,15 @@ seat returns the driver to the cabin.
 Rail cars cannot be driven by hand. The route terminal at the front of the car shows a line map of the
 connected rails; pick a stop on the map or the list and the car runs there, either end first, turning
 only at corners. Stops are `/obj/structure/ms13_rail/station` rails, named after the area they sit in,
-so give each station its own named area. (The driver's "Rail destination" menu does the same for now.)
-Cars board through a door in each side at mid-length, with that row kept clear of seats.
+so give each station its own named area. "Route terminal" at the driver's controls opens the same
+screen. A terminal spawned or mapped onto a rail car fits itself to that car. Cars board through a
+door in each side at mid-length, with that row kept clear of seats.
+
+On a route a car keeps a smooth speed rather than a gear: it reaches its top gear's speed over
+`time_to_top_speed`, and plans its braking to slow for corners and stop at the end on brakes that take
+`time_to_stop` from top speed. The brakes bite up to `braking_variance` harder or softer than planned
+each tile, so it may creep the last tiles in or stop with a jolt. The emergency stop brakes harder,
+still along the line.
 
 Soviet armed vehicles come with stocked racks: 30mm boxes, 7.62 boxes, or mixed shell crates for the
 tanks. Load a gun by using ammunition on the gunner's seat; any round of the gun's caliber loads, and

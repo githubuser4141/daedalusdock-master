@@ -21,6 +21,8 @@ type Stop = {
 
 type Data = {
   destination: string | null;
+  fitted: boolean;
+  halting: boolean;
   location: string | null;
   moving: boolean;
   powered: boolean;
@@ -53,7 +55,9 @@ type BoardProps = {
 
 const Board = (props: BoardProps) => {
   const { data, picked, onPick } = props;
-  const { rails, stops, train, destination } = data;
+  const { train, destination } = data;
+  const rails = data.rails || [];
+  const stops = data.stops || [];
   if (!rails.length) {
     return <NoticeBox>This car is not sitting on a rail line.</NoticeBox>;
   }
@@ -173,7 +177,9 @@ const Legend = () => (
 
 export const RailTerminal = (props) => {
   const { act, data } = useBackend<Data>();
-  const { stops, powered, moving, train, location, destination } = data;
+  const { fitted, halting, moving, powered, train, location, destination } =
+    data;
+  const stops = data.stops || [];
   const [picked, setPicked] = useState<string | null>(null);
 
   const here = stops.find((stop) => isHere(stop, train));
@@ -182,7 +188,9 @@ export const RailTerminal = (props) => {
   const sorted = [...stops].sort((a, b) => a.name.localeCompare(b.name));
 
   let status = 'Not on the line';
-  if (moving && heading) {
+  if (halting) {
+    status = 'Braking to a stop';
+  } else if (moving && heading) {
     status = `On the way to ${heading.name}`;
   } else if (moving) {
     status = 'Moving';
@@ -195,7 +203,13 @@ export const RailTerminal = (props) => {
   return (
     <Window theme="retro-dark" width={780} height={500}>
       <Window.Content>
-        {!powered && (
+        {!fitted && (
+          <Dimmer fontSize="16px">
+            <Icon name="unlink" mr={1} />
+            Not fitted to a rail car. Build or place it on one.
+          </Dimmer>
+        )}
+        {!!fitted && !powered && (
           <Dimmer fontSize="16px">
             <Icon name="car-battery" mr={1} />
             No power. Check the car&apos;s battery.
@@ -271,7 +285,7 @@ export const RailTerminal = (props) => {
                   textAlign="center"
                   icon="hand-paper"
                   color="caution"
-                  disabled={!moving}
+                  disabled={!moving || halting}
                   onClick={() => act('halt')}
                 >
                   Emergency stop

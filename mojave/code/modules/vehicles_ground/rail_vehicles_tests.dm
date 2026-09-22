@@ -179,6 +179,7 @@
 		Fail("A car drove off the rail line sideways.")
 	clear_vehicle(offset_vehicle)
 	check_route_terminal(test_z)
+	check_smooth_running(test_z)
 
 /// Boarding through the sides, a lit cabin, and a route terminal that lists stops by area and sends the car.
 /datum/unit_test/ms13_rail_vehicles/proc/check_route_terminal(test_z)
@@ -210,6 +211,57 @@
 		Fail("The car did not set off for the chosen stop.")
 	if(terminal?.ui_data()["destination"] != REF(stop))
 		Fail("Route terminal did not show where the car is heading.")
+	// A terminal spawned onto a car fits itself to it; one standing alone says so rather than failing.
+	var/obj/structure/ms13_vehicle_part/rail_terminal/spare = allocate(/obj/structure/ms13_vehicle_part/rail_terminal, get_turf(commuter))
+	if(spare.vehicle != line || !(spare in line.parts))
+		Fail("A route terminal placed on a car did not fit itself to it.")
+	var/obj/structure/ms13_vehicle_part/rail_terminal/loose = allocate(/obj/structure/ms13_vehicle_part/rail_terminal, locate(50, 20, test_z))
+	var/list/loose_board = loose.ui_static_data()
+	if(loose_board["fitted"] || !islist(loose_board["rails"]) || !islist(loose_board["stops"]))
+		Fail("A loose route terminal sent no usable board.")
+	clear_vehicle(line)
+
+/// A long straight run: the car gathers speed gradually, brakes ahead of its stop, and an emergency stop still
+/// brakes along the line rather than stopping dead.
+/datum/unit_test/ms13_rail_vehicles/proc/check_smooth_running(test_z)
+	for(var/y in 15 to 45)
+		allocate(/obj/structure/ms13_rail, locate(12, y, test_z))
+	var/obj/structure/ms13_rail/stop = allocate(/obj/structure/ms13_rail/station, locate(12, 15, test_z))
+	var/obj/structure/ms13_vehicle_frame/tram/runner = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(12, 45, test_z))
+	var/datum/ms13_ground_vehicle/rail/line = runner.vehicle
+	if(!line.depart_for(get_turf(stop)))
+		Fail("The car would not set off on a straight run.")
+		clear_vehicle(line)
+		return
+	var/list/speeds = list(line.velocity)
+	for(var/tick in 1 to 60)
+		if(!line.moving)
+			break
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+		if(line.moving)
+			speeds += line.velocity
+	var/top = max(speeds)
+	if(line.moving || get_turf(line.rail_frame()) != get_turf(stop))
+		Fail("The car did not run in to its stop.")
+	if(length(speeds) < 5 || speeds[1] >= speeds[4] || speeds[1] > top / 2)
+		Fail("The car did not gather speed gradually.")
+	if(speeds[length(speeds)] >= top)
+		Fail("The car did not brake before its stop.")
+	line.depart_for(locate(12, 45, test_z))
+	for(var/tick in 1 to 6)
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	line.apply_brakes()
+	if(!line.moving || !line.halting)
+		Fail("The emergency stop halted the car dead instead of braking.")
+	for(var/tick in 1 to 30)
+		if(!line.moving)
+			break
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	if(line.moving || line.halting || get_turf(line.rail_frame()) == locate(12, 45, test_z))
+		Fail("The emergency stop did not bring the car to a standstill short of its destination.")
 	clear_vehicle(line)
 
 /datum/unit_test/ms13_rail_vehicles/proc/clear_vehicle(datum/ms13_ground_vehicle/vehicle)

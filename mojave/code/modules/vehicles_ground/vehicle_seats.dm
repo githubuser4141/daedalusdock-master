@@ -76,7 +76,7 @@
 		if(istype(vehicle, /datum/ms13_ground_vehicle/rail))
 			// Rail cars only run routes to a stop.
 			options -= "Drive"
-			options["Rail destination"] = 12
+			options["Route terminal"] = 12
 		else
 			options["Brakes mode ([vehicle.brakes_mode ? "on" : "off"])"] = 11
 		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nStop applies the brakes. Brakes mode moves slowly only while pressing a direction. Engine-off vehicles slow to a stop.", "Vehicle controls") as null|anything in options
@@ -119,8 +119,12 @@
 				vehicle.brakes_mode = !vehicle.brakes_mode
 				vehicle.apply_brakes()
 			if(12)
-				var/datum/ms13_ground_vehicle/rail/train = vehicle
-				train.choose_destination(user, src)
+				var/obj/structure/ms13_vehicle_part/rail_terminal/terminal = locate() in vehicle.parts
+				if(terminal)
+					terminal.ui_interact(user)
+				else
+					to_chat(user, span_warning("This car has no route terminal."))
+				return
 			if(13)
 				if(user.buckled == src)
 					next_camera(user)

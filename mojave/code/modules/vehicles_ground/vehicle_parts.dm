@@ -81,7 +81,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	part.right_offset = right_offset
 	part.relative_turn = relative_turn
 	part.setDir(turn(vehicle.dir, relative_turn))
-	vehicle.parts += part
+	vehicle.parts |= part
 	part.configure_from_vehicle()
 	vehicle.update_interior_lighting()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
