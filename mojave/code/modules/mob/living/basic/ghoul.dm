@@ -75,7 +75,10 @@
 /datum/ai_controller/basic_controller/ms13/ProcessBehaviorSelection(delta_time)
 	var/atom/current_target = blackboard[BB_BASIC_MOB_CURRENT_TARGET]
 	var/mob/living/current_mob = current_target
-	if((!current_target || QDELETED(current_target) || (istype(current_mob) && current_mob.stat == DEAD)) && COOLDOWN_FINISHED(src, living_threat_scan))
+	var/mob/living/living_pawn = pawn
+	// Pack followers take the leader's target instead (mojave/code/modules/mob/ms13_packs/packs.dm).
+	var/follower = istype(living_pawn) && living_pawn.ms13_pack?.follows(living_pawn)
+	if(!follower && (!current_target || QDELETED(current_target) || (istype(current_mob) && current_mob.stat == DEAD)) && COOLDOWN_FINISHED(src, living_threat_scan))
 		COOLDOWN_START(src, living_threat_scan, 2 SECONDS)
 		var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
 		var/list/threats = hearers(9, pawn) + visible_hostile_machines(pawn, 9)

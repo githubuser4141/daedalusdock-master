@@ -39,6 +39,9 @@
 		return A
 	if(!blind_fire_until)
 		blind_fire_turf = get_turf(target)
+		// A pack follower fires where its leader called, roughly (mojave/code/modules/mob/ms13_packs/packs.dm).
+		if(ms13_pack?.follows(src))
+			blind_fire_turf = pick(RANGE_TURFS(1, blind_fire_turf))
 		blind_fire_until = world.time + blind_fire_duration
 		var/mob/living/living_target = isliving(target) ? target : null
 		blind_fire_target_was_prone = living_target && living_target.body_position == LYING_DOWN
