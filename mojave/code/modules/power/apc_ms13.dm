@@ -14,6 +14,10 @@
 	can_have_lock = TRUE
 	/// Runs off pre-war grid power that somehow still works: powered with nothing wired to it.
 	var/always_powered = FALSE
+	/// Browned out: held off until then, rather than blinking on and off every tick while the line is short.
+	var/brownout_until = 0
+	/// Already took a surge of plant voltage: its bulbs are gone, only the box itself is left to burn out.
+	var/surged = FALSE
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 
@@ -54,6 +58,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 		failure_timer--
 		force_update = TRUE
 		return
+	if(!always_powered && terminal?.powernet && suffer_grid(terminal.powernet))
+		return
 
 	lastused_light = APC_CHANNEL_IS_ON(lighting) ? area.power_usage[AREA_USAGE_LIGHT] + area.power_usage[AREA_USAGE_STATIC_LIGHT] : 0
 	lastused_equip = APC_CHANNEL_IS_ON(equipment) ? area.power_usage[AREA_USAGE_EQUIP] + area.power_usage[AREA_USAGE_STATIC_EQUIP] : 0
@@ -86,10 +92,46 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 		queue_icon_update()
 		update()
 
-/// Is real current currently reaching this box? Real wiring by default - fed by whatever's
-/// add_avail()-ing onto the powernet its terminal is connected to (a fusion_generator, normally).
+/// Is enough current reaching this box? Real wiring by default - fed by whatever's add_avail()-ing onto the powernet
+/// its terminal is connected to (a fusion_generator or a substation). It needs enough to spare for its own draw, after
+/// whatever else on the line drew first; short of that it browns out for a while.
 /obj/machinery/power/apc/ms13/proc/has_incoming_power()
-	return always_powered || !!avail(0)
+	if(always_powered)
+		return TRUE
+	if(world.time < brownout_until)
+		return FALSE
+	if(surplus() >= max(lastused_total, 1))
+		return TRUE
+	if(avail(0))
+		brownout_until = world.time + 6 SECONDS
+	return FALSE
+
+/**
+ * What the line does to a box on it (mojave/code/modules/power/grid.dm). Plant voltage blows its lights and can burn it
+ * out; a rippling supply flickers them, and a bad ripple pops bulbs. TRUE if it burnt the box out.
+ */
+/obj/machinery/power/apc/ms13/proc/suffer_grid(datum/powernet/line)
+	if(line.ms13_voltage >= MS13_VOLTAGE_HIGH)
+		if(!surged)
+			surged = TRUE
+			visible_message(span_danger("[src] bangs and sparks as plant voltage surges through it!"))
+			do_sparks(3, TRUE, src)
+			INVOKE_ASYNC(src, PROC_REF(break_lights))
+		if(prob(25))
+			set_broken()
+			return TRUE
+		return FALSE
+	surged = FALSE
+	if(!line.ms13_ripple || !prob(line.ms13_ripple * 40))
+		return FALSE
+	for(var/obj/machinery/light/lamp as anything in INSTANCES_OF(/obj/machinery/light))
+		if(get_area(lamp) != area)
+			continue
+		if(line.ms13_ripple > 0.3 && prob((line.ms13_ripple - 0.3) * 50))
+			lamp.break_light_tube()
+		else
+			lamp.flicker()
+	return FALSE
 
 /// A fusebox that just works, with no generator or cabling.
 /obj/machinery/power/apc/ms13/always_on

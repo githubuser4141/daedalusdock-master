@@ -36,6 +36,10 @@
 	var/fuel_per_core = 1 HOURS / 10
 	/// 0-100. Output scales with it, and a badly worn generator can break down.
 	var/condition = 100
+	/// What it puts on its cable: house generators feed utility boxes directly, plant ones need a substation.
+	var/voltage = MS13_VOLTAGE_LOW
+	/// How far a sound generator's output swings each tick, 0-1; wear loosens it further. 0 runs dead steady.
+	var/steady_ripple = 0
 	/// Condition lost per second of running.
 	var/wear_rate = 0.002
 	/// Condition a single weld restores.
@@ -87,7 +91,8 @@
 		visible_message(span_warning("[src] shudders and grinds to a halt!"))
 		set_generator_state(GENERATOR_BROKEN)
 		return
-	add_avail(power_gen * (0.5 + condition / 200))
+	var/ripple = steady_ripple && steady_ripple + 0.4 * (1 - condition / 100)
+	add_avail(power_gen * (0.5 + condition / 200) * (1 + ripple * (rand() * 2 - 1)), ripple)
 
 /// Keeps the generator on the powernet of the cable knot under it, however that network was rebuilt or rewired.
 /obj/machinery/ms13/fusion_generator/proc/ensure_connection()
@@ -110,10 +115,12 @@
 	powernet = null
 	return TRUE
 
-/obj/machinery/ms13/fusion_generator/proc/add_avail(amount)
+/obj/machinery/ms13/fusion_generator/proc/add_avail(amount, ripple = 0)
 	if(!powernet)
 		return FALSE
 	powernet.newavail += amount
+	powernet.ms13_new_voltage = max(powernet.ms13_new_voltage, voltage)
+	powernet.ms13_new_ripple = max(powernet.ms13_new_ripple, ripple)
 	return TRUE
 
 /obj/machinery/ms13/fusion_generator/update_icon_state()
@@ -174,16 +181,9 @@
 	if(condition >= 100 && generator_state != GENERATOR_BROKEN)
 		to_chat(user, span_notice("[src] doesn't need repairs."))
 		return TRUE
-	var/obj/item/stack/sheet/ms13/scrap_parts/repair_parts = user.is_holding_item_of_type(/obj/item/stack/sheet/ms13/scrap_parts)
-	if(!repair_parts)
-		to_chat(user, span_warning("You need scrap parts in your other hand to repair [src]."))
-		return TRUE
-	if(!tool.use_tool(src, user, 5 SECONDS, volume = 50))
-		return TRUE
-	if(!repair_parts.use(1))
+	if(!weld_repair(user, tool))
 		return TRUE
 	condition = min(condition + repair_amount, 100)
-	user.visible_message(span_notice("[user] patches up [src]."), span_notice("You patch up [src]."))
 	if(generator_state == GENERATOR_BROKEN)
 		set_generator_state(GENERATOR_OFF) // repaired, but still needs to be switched on
 	return TRUE
@@ -200,17 +200,20 @@
 	anchored = TRUE
 	density = TRUE
 	max_integrity = 5000
-	flags_1 = INDESTRUCTIBLE
+	/// Damaged this far it breaks down rather than being destroyed; see atom_break() in grid.dm.
+	integrity_failure = 0.25
 	var/zap_flags = ZAP_MOB_DAMAGE | ZAP_MOB_STUN
 
-/obj/machinery/ms13/substation/Bump(atom/movable/bumped_atom)
+/obj/machinery/ms13/substation/BumpedBy(atom/movable/bumped_atom)
 	. = ..()
-	tesla_zap(src, 3, 100, zap_flags)
+	if(is_live())
+		tesla_zap(src, 3, 100, zap_flags)
 
 /obj/machinery/ms13/substation/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration)
 	. = ..()
 	do_sparks(1, FALSE, src)
-	tesla_zap(src, 5, 200, zap_flags)
+	if(is_live())
+		tesla_zap(src, 5, 200, zap_flags)
 
 /obj/machinery/ms13/substation/rusty
 	icon_state = "substation_rust"
