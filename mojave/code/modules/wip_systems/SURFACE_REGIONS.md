@@ -49,6 +49,7 @@ may occupy the arrival footprint. The whole vehicle lands beyond the transition 
 long trucks do not bounce back. Speed, heading, drift, driver/gunner seats, cargo, component
 integrity, ammunition, battery, lights and engine state are retained. A crossing consumes
 one normal movement step of fuel. All four blank neighbors load with Mammoth's config.
+Rail lines cross the same way: run the rail onto the crossing line on both maps, lined up.
 
 ## Dodgy crossings (WIP)
 

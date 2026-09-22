@@ -12,7 +12,11 @@ import {
 } from '../components';
 import { Window } from '../layouts';
 
+/** Board x, y and level: 0 is the car's level when the board was drawn, above and below count up and down. */
+type Spot = [number, number, number];
+
 type Stop = {
+  level: number;
   name: string;
   ref: string;
   x: number;
@@ -23,12 +27,13 @@ type Data = {
   destination: string | null;
   fitted: boolean;
   halting: boolean;
+  links: [...Spot, ...Spot][];
   location: string | null;
   moving: boolean;
   powered: boolean;
-  rails: [number, number][];
+  rails: Spot[];
   stops: Stop[];
-  train: [number, number] | null;
+  train: Spot | null;
 };
 
 /** Board drawing units along its longest side; markers and text are sized in these. */
@@ -45,7 +50,14 @@ const COLORS = {
 };
 
 const isHere = (stop: Stop, train: Data['train']) =>
-  !!train && stop.x === train[0] && stop.y === train[1];
+  !!train &&
+  stop.x === train[0] &&
+  stop.y === train[1] &&
+  stop.level === train[2];
+
+/** Line on the car's own level is solid; on others it is dashed and dimmer. */
+const lineStyle = (level: number) =>
+  level ? { strokeDasharray: '10 8', opacity: 0.55 } : {};
 
 type BoardProps = {
   data: Data;
@@ -74,17 +86,28 @@ const Board = (props: BoardProps) => {
   // North is up on the board.
   const py = (y: number) => (maxY - y) * scale;
 
-  // One path joining every pair of neighbouring rails.
-  const laid = new Set(rails.map(([x, y]) => `${x},${y}`));
-  let line = '';
-  for (const [x, y] of rails) {
-    if (laid.has(`${x + 1},${y}`)) {
+  // One path per level, joining every pair of neighbouring rails on it.
+  const laid = new Set(rails.map((spot) => spot.join()));
+  const lines: Record<number, string> = {};
+  for (const [x, y, level] of rails) {
+    let line = lines[level] || '';
+    if (laid.has([x + 1, y, level].join())) {
       line += `M${px(x)} ${py(y)}H${px(x + 1)}`;
     }
-    if (laid.has(`${x},${y + 1}`)) {
+    if (laid.has([x, y + 1, level].join())) {
       line += `M${px(x)} ${py(y)}V${py(y + 1)}`;
     }
+    lines[level] = line;
   }
+  // Inclines up and down, and region crossings, joining the levels.
+  let joins = '';
+  for (const [x1, y1, , x2, y2] of data.links || []) {
+    joins += `M${px(x1)} ${py(y1)}L${px(x2)} ${py(y2)}`;
+  }
+  // Farthest levels first, so the car's own is drawn on top.
+  const levels = Object.keys(lines)
+    .map(Number)
+    .sort((a, b) => Math.abs(b) - Math.abs(a));
 
   return (
     <svg
@@ -94,12 +117,24 @@ const Board = (props: BoardProps) => {
       preserveAspectRatio="xMidYMid meet"
       style={{ background: COLORS.ground, borderRadius: '4px' }}
     >
+      {levels.map((level) => (
+        <path
+          key={level}
+          d={lines[level]}
+          stroke={COLORS.rail}
+          strokeWidth={6}
+          strokeLinecap="round"
+          fill="none"
+          {...lineStyle(level)}
+        />
+      ))}
       <path
-        d={line}
+        d={joins}
         stroke={COLORS.rail}
         strokeWidth={6}
         strokeLinecap="round"
         fill="none"
+        strokeDasharray="3 7"
       />
       {stops.map((stop) => {
         const chosen = stop.ref === (picked ?? destination);
@@ -113,7 +148,11 @@ const Board = (props: BoardProps) => {
             onClick={() => onPick(stop.ref)}
             style={{ cursor: 'pointer' }}
           >
-            <title>{stop.name}</title>
+            <title>
+              {stop.name}
+              {stop.level > 0 && ' (level above)'}
+              {stop.level < 0 && ' (level below)'}
+            </title>
             <circle
               cx={x}
               cy={y}
@@ -161,7 +200,7 @@ const Board = (props: BoardProps) => {
   );
 };
 
-const Legend = () => (
+const Legend = (props: { levels: boolean }) => (
   <Stack justify="center" fontSize="11px">
     <Stack.Item>
       <Icon name="circle" color={COLORS.stop} /> Stop
@@ -172,6 +211,11 @@ const Legend = () => (
     <Stack.Item>
       <Icon name="dot-circle" color={COLORS.train} /> This car
     </Stack.Item>
+    {props.levels && (
+      <Stack.Item>
+        <Icon name="ellipsis-h" color={COLORS.rail} /> Line on another level
+      </Stack.Item>
+    )}
   </Stack>
 );
 
@@ -223,7 +267,7 @@ export const RailTerminal = (props) => {
                   <Board data={data} picked={picked} onPick={setPicked} />
                 </Stack.Item>
                 <Stack.Item>
-                  <Legend />
+                  <Legend levels={(data.rails || []).some((spot) => spot[2])} />
                 </Stack.Item>
               </Stack>
             </Section>

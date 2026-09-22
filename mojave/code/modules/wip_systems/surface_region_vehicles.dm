@@ -28,19 +28,15 @@
 	var/destination_z = SSmapping.ms13_surface_links["[pivot.z]"]["[direction]"]
 	if(!destination_z)
 		return FALSE
-	var/list/manifest = get_manifest()
-	var/list/movers = get_all_parts() | manifest
 	var/min_x = world.maxx
 	var/min_y = world.maxy
 	var/max_x = 1
 	var/max_y = 1
-	for(var/atom/movable/mover as anything in movers)
-		if(!isturf(mover.loc) || mover.z != pivot.z)
-			return FALSE
-		min_x = min(min_x, mover.x)
-		min_y = min(min_y, mover.y)
-		max_x = max(max_x, mover.x)
-		max_y = max(max_y, mover.y)
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		min_x = min(min_x, frame.x)
+		min_y = min(min_y, frame.y)
+		max_x = max(max_x, frame.x)
+		max_y = max(max_y, frame.y)
 	var/offset_x = 0
 	var/offset_y = 0
 	switch(direction)
@@ -52,6 +48,21 @@
 			offset_x = bounds[1] + TRANSITIONEDGE + 1 - min_x
 		if(WEST)
 			offset_x = bounds[3] - TRANSITIONEDGE - 1 - max_x
+	if(!translate_hull(offset_x, offset_y, destination_z, bypass_cooldown))
+		return FALSE
+	// Hazard damage happens after a completed crossing, never halfway through moving the hull.
+	for(var/obj/structure/ms13_dodgy_crossing/hazard as anything in hazards)
+		if(!QDELETED(pivot))
+			hazard.damage_vehicle(src)
+	return TRUE
+
+/// Moves the whole hull, everyone aboard and their cargo by an offset onto destination_z in one go, or nothing at all.
+/datum/ms13_ground_vehicle/proc/translate_hull(offset_x, offset_y, destination_z, bypass_cooldown)
+	var/list/manifest = get_manifest()
+	var/list/movers = get_all_parts() | manifest
+	for(var/atom/movable/mover as anything in movers)
+		if(!isturf(mover.loc) || mover.z != pivot.z)
+			return FALSE
 	// Preflight every destination before touching any component or passenger.
 	var/list/destinations = list()
 	var/list/sights = list()
@@ -90,10 +101,6 @@
 			control.update_sight()
 	alert_watchers()
 	crush_mines()
-	// Hazard damage happens after a completed crossing, never halfway through moving the hull.
-	for(var/obj/structure/ms13_dodgy_crossing/hazard as anything in hazards)
-		if(!QDELETED(pivot))
-			hazard.damage_vehicle(src)
 	return TRUE
 
 /// WIP opt-in road hazard. Place on a crossing line, not an arbitrary remote zone.

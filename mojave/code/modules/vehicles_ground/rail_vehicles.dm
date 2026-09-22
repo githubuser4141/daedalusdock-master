@@ -18,6 +18,30 @@
 	color = "#ffcc33"
 	is_station = TRUE
 
+/// Takes the line up or down a level. Map one on each level on the same tile, facing opposite ways: a car running
+/// onto either one the way it faces comes out on the other level, just past the other one.
+/obj/structure/ms13_rail/ramp
+	name = "rail incline"
+	desc = "The line climbs or drops a level here."
+	icon = 'icons/obj/stairs.dmi'
+	icon_state = "stairs"
+	color = "#bbbbbb"
+
+/// The first tile past the incline facing back at this one, a level up or down. Null if there's no such incline.
+/obj/structure/ms13_rail/ramp/proc/far_end()
+	for(var/turf/level in list(GetAbove(src), GetBelow(src)))
+		for(var/obj/structure/ms13_rail/ramp/partner in level)
+			if(partner.dir == turn(dir, 180))
+				return get_step(level, dir)
+
+/// Where a car running onto gate the given way comes out, if that takes it to another level or region.
+/proc/ms13_rail_link(turf/gate, direction)
+	for(var/obj/structure/ms13_rail/ramp/ramp in gate)
+		if(ramp.dir == direction)
+			return ramp.far_end()
+	if(SSmapping.ms13_surface_edge(gate) == direction)
+		return SSmapping.ms13_surface_destination(gate, direction)
+
 /// What route boards call this stop: the area it was mapped into.
 /obj/structure/ms13_rail/proc/stop_name()
 	var/area/stop_area = get_area(src)
@@ -38,7 +62,7 @@
 	for(var/direction in GLOB.cardinals)
 		var/obj/structure/ms13_rail/neighbor = locate() in get_step(src, direction)
 		if(neighbor && !QDELETED(neighbor))
-			. += mutable_appearance(icon, "[direction]")
+			. += mutable_appearance('icons/obj/power_cond/cable.dmi', "[direction]")
 
 /obj/structure/ms13_rail/Destroy()
 	refresh_connections()
@@ -166,17 +190,43 @@
 	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
 	if(!bogie || !ms13_rail_at(get_step(bogie, direction)))
 		return FALSE
-	// Region transfer relocates the whole hull further than one rail tile; not a supported rail link yet.
-	if(SSmapping.ms13_surface_links["[pivot.z]"])
-		for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
-			if(SSmapping.ms13_surface_edge(get_step(frame, direction)))
-				return FALSE
-	. = ..()
+	. = climb_incline(direction, bypass_cooldown)
+	if(isnull(.))
+		. = ..()
 	if(. && length(rail_route))
-		if(get_turf(rail_frame()) == rail_route[1])
-			rail_route.Cut(1, 2)
+		// An incline or a region's edge carries the car on down the line: pick the route up where it came out.
+		var/reached = rail_route.Find(get_turf(rail_frame()))
+		if(reached)
+			rail_route.Cut(1, reached + 1)
 		else
 			stop_motion()
+
+/// Null for an ordinary step. At an incline the car comes out whole on the other level, its tail on the tile past
+/// the far incline and the rest strung out ahead the way it was going, or stays put if anything there is in the way.
+/datum/ms13_ground_vehicle/rail/proc/climb_incline(direction, bypass_cooldown)
+	var/turf/far_end
+	var/obj/structure/ms13_vehicle_frame/leading
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		for(var/obj/structure/ms13_rail/ramp/ramp in get_step(frame, direction))
+			if(ramp.dir == direction)
+				far_end = ramp.far_end()
+		if(far_end)
+			leading = frame
+			break
+	if(!far_end)
+		return null
+	if(!bypass_cooldown && world.time < next_move_time)
+		return FALSE
+	if(!can_move(direction))
+		return FALSE
+	var/turf/ahead = get_step(leading, direction)
+	var/step_x = ahead.x - leading.x
+	var/step_y = ahead.y - leading.y
+	var/tail = INFINITY
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		tail = min(tail, frame.x * step_x + frame.y * step_y)
+	var/lead = leading.x * step_x + leading.y * step_y - tail
+	return translate_hull(far_end.x + lead * step_x - leading.x, far_end.y + lead * step_y - leading.y, far_end.z, bypass_cooldown)
 
 /// One bounded breadth-first search when selecting a destination, never a world scan each tick.
 /datum/ms13_ground_vehicle/rail/proc/find_rail_routes()
@@ -196,6 +246,11 @@
 				continue
 			parents[neighbor] = current
 			queue += neighbor
+			// Onto an incline or a region's crossing line: the line carries on at the far end.
+			var/turf/far_end = ms13_rail_link(neighbor, direction)
+			if(far_end && !parents[far_end] && ms13_rail_at(far_end))
+				parents[far_end] = neighbor
+				queue += far_end
 	return parents
 
 /// Every stop on the line this car rides, given the parents from find_rail_routes().
@@ -270,7 +325,8 @@
 	var/turf/previous = get_turf(bogie)
 	var/look_ahead = CEILING(velocity ** 2 / (2 * deceleration), 1) + 2
 	for(var/turf/rail_tile as anything in rail_route)
-		if(get_dir(previous, rail_tile) != travel_dir)
+		// Onto another level or region the line runs straight on.
+		if(rail_tile.z == previous.z && get_dir(previous, rail_tile) != travel_dir)
 			break
 		straight++
 		previous = rail_tile
@@ -377,6 +433,8 @@
 	pixel_y = 8
 	layer = BELOW_OBJ_LAYER
 	max_integrity = 100
+	/// z text -> board shift x, shift y and level (0 for where the car was), as last drawn by ui_static_data().
+	var/list/board_levels
 
 /obj/structure/ms13_vehicle_part/rail_terminal/Initialize(mapload)
 	. = ..()
@@ -441,15 +499,36 @@
 /obj/structure/ms13_vehicle_part/rail_terminal/ui_static_data(mob/user)
 	var/datum/ms13_ground_vehicle/rail/train = vehicle
 	if(!istype(train))
-		return list("fitted" = FALSE, "rails" = list(), "stops" = list())
+		return list("fitted" = FALSE, "rails" = list(), "links" = list(), "stops" = list())
 	var/list/parents = train.find_rail_routes()
+	board_levels = list()
 	var/list/rails = list()
+	var/list/links = list()
 	for(var/turf/location as anything in parents)
-		rails += list(list(location.x, location.y))
+		var/turf/parent = parents[location]
+		if(!board_levels["[location.z]"])
+			// Drawn joined on where the line left the last level: over an incline a level up or down, past a
+			// region's edge straight on from where it was crossed.
+			var/list/from = board_levels["[parent.z]"] || list(0, 0, 0)
+			var/turf/joined = get_step(parent, get_dir(parents[parent], parent)) || parent
+			var/level = from[3]
+			if(parent.z != location.z && (locate(/obj/structure/ms13_rail/ramp) in parent))
+				level += location.z > parent.z ? 1 : -1
+			board_levels["[location.z]"] = list(from[1] + joined.x - location.x, from[2] + joined.y - location.y, level)
+		var/list/spot = board_spot(location)
+		rails += list(spot)
+		if(parent.z != location.z)
+			links += list(board_spot(parent) + spot)
 	var/list/stops = list()
 	for(var/obj/structure/ms13_rail/stop as anything in train.find_stops(parents))
-		stops += list(list("ref" = REF(stop), "name" = stop.stop_name(), "x" = stop.x, "y" = stop.y))
-	return list("fitted" = TRUE, "rails" = rails, "stops" = stops)
+		var/list/spot = board_spot(get_turf(stop))
+		stops += list(list("ref" = REF(stop), "name" = stop.stop_name(), "x" = spot[1], "y" = spot[2], "level" = spot[3]))
+	return list("fitted" = TRUE, "rails" = rails, "links" = links, "stops" = stops)
+
+/// Where a tile of line sits on the board last drawn: x, y and level. Null if it isn't on it.
+/obj/structure/ms13_vehicle_part/rail_terminal/proc/board_spot(turf/location)
+	var/list/level = location && board_levels?["[location.z]"]
+	return level && list(location.x + level[1], location.y + level[2], level[3])
 
 /obj/structure/ms13_vehicle_part/rail_terminal/ui_data(mob/user)
 	var/datum/ms13_ground_vehicle/rail/train = vehicle
@@ -464,7 +543,7 @@
 		"powered" = is_powered(),
 		"moving" = !!train?.moving,
 		"halting" = !!train?.halting,
-		"train" = bogie ? list(bogie.x, bogie.y) : null,
+		"train" = board_spot(get_turf(bogie)),
 		"location" = location?.name,
 		"destination" = destination ? REF(destination) : null,
 	)

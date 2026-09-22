@@ -21,9 +21,24 @@ These are rigid cars, not articulated multi-car trains: the front-left pivot fol
 the guide rail and the rest of the hull uses the normal vehicle rotation. Leave a
 clear turning apron around each bend (at least the full car length in each direction).
 Do not lay tracks through tight doorways or expect the rear wheels to follow a curved
-rail individually. Searches are capped at 4096 expanded tiles. Cross-region rail links
-and automatic junction reservations/signalling are not implemented; keep each route
-on one z-level, away from region boundaries. Other trains are physical obstacles.
+rail individually. Searches are capped at 4096 expanded tiles. Automatic junction
+reservations/signalling are not implemented. Other trains are physical obstacles.
+
+## Up and down a level
+
+Place `/obj/structure/ms13_rail/ramp` (a rail incline) on each level on the same tile, facing
+opposite ways: the lower one faces the way the line climbs, the upper one the way it drops.
+Run the lower line up to its incline, and start the upper line on the tile past the upper
+incline. A car running onto either incline the way it faces comes out whole on the other level,
+its tail on the first tile past the far incline, so leave a car's length of clear line there.
+The approach must be as wide as the car. If anything blocks the far end, the car stops short.
+
+## Across a region's edge
+
+Run the line onto the crossing line (the eighth tile from the map edge) on both maps, lined
+up, as for any other vehicle crossing (see `SURFACE_REGIONS.md`). The car comes out whole
+beyond the far map's transition strip and runs on. Stops in other regions and on other levels
+show on the route board: the region beyond is drawn past its edge, and other levels dashed.
 
 Vehicle impacts estimate mass using `mass_per_frame * frame count`. Speed increases
 the ability to displace another vehicle; brakes double shove resistance. A successful
@@ -51,4 +66,5 @@ band; this is an arcade model, not kilograms/metres-per-second rigid-body physic
 
 Regression check: `/datum/unit_test/ms13_rail_vehicles` covers shoves, blocked/heavy
 targets, exact-width corridors in all four orientations, stacked windows/low walls,
-mounting failures, connected routes, a full four-turn loop, cargo, fuel and stopping.
+mounting failures, connected routes, a full four-turn loop, cargo, fuel and stopping,
+and a car running up and down an incline and both ways over a region's edge.

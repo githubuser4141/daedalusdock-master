@@ -180,6 +180,101 @@
 	clear_vehicle(offset_vehicle)
 	check_route_terminal(test_z)
 	check_smooth_running(test_z)
+	check_crossings()
+
+/// Sends the car to stop and runs it there. TRUE if it came to a stand on the stop.
+/datum/unit_test/ms13_rail_vehicles/proc/run_line(datum/ms13_ground_vehicle/rail/line, obj/structure/ms13_rail/stop)
+	if(!line.depart_for(get_turf(stop)))
+		return FALSE
+	for(var/tick in 1 to 120)
+		if(!line.moving)
+			break
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	return !line.moving && get_turf(line.rail_frame()) == get_turf(stop)
+
+/// A line up an incline to the level above, and one over a region's edge: the car runs each both ways, whole and
+/// with its load, and a blocked far end keeps it where it is.
+/datum/unit_test/ms13_rail_vehicles/proc/check_crossings()
+	var/datum/space_level/lower_level = SSmapping.add_new_zlevel("Rail incline lower", list(ZTRAIT_UP = 1))
+	var/datum/space_level/upper_level = SSmapping.add_new_zlevel("Rail incline upper", list(ZTRAIT_DOWN = -1))
+	var/lower = lower_level.z_value
+	var/upper = upper_level.z_value
+	if(!GetAbove(locate(20, 20, lower)) || GetAbove(locate(20, 20, lower)) != locate(20, 20, upper))
+		Fail("Could not stack two test levels.")
+		return
+	for(var/level in list(lower, upper))
+		for(var/turf/ground in block(locate(15, 5, level), locate(45, 50, level)))
+			ground.ChangeTurf(/turf/open/floor/plating)
+	// The lower line climbs to y = 31, and the upper one runs on from y = 32.
+	var/obj/structure/ms13_rail/low_stop = allocate(/obj/structure/ms13_rail/station, locate(20, 14, lower))
+	for(var/y in 15 to 30)
+		allocate(/obj/structure/ms13_rail, locate(20, y, lower))
+	var/obj/structure/ms13_rail/ramp/incline = allocate(/obj/structure/ms13_rail/ramp, locate(20, 31, lower))
+	incline.setDir(NORTH)
+	incline = allocate(/obj/structure/ms13_rail/ramp, locate(20, 31, upper))
+	incline.setDir(SOUTH)
+	for(var/y in 32 to 43)
+		allocate(/obj/structure/ms13_rail, locate(20, y, upper))
+	var/obj/structure/ms13_rail/high_stop = allocate(/obj/structure/ms13_rail/station, locate(20, 44, upper))
+	var/obj/structure/ms13_vehicle_frame/tram/car = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(20, 20, lower))
+	var/datum/ms13_ground_vehicle/rail/line = car.vehicle
+	var/obj/item/cargo = allocate(/obj/item, get_turf(car))
+	var/mob/living/carbon/human/consistent/rider = allocate(/mob/living/carbon/human/consistent, get_step(car, NORTH))
+	var/obj/structure/blocker = allocate(/obj/structure, locate(20, 34, upper))
+	blocker.density = TRUE
+	run_line(line, high_stop)
+	for(var/atom/movable/aboard as anything in line.get_all_parts() | line.get_manifest())
+		if(aboard.z != lower)
+			Fail("The car came out through something blocking the far end of the incline.")
+			break
+	qdel(blocker)
+	if(!run_line(line, high_stop) || car.z != upper || cargo.z != upper || rider.z != upper || get_ms13_ground_vehicle_at(rider) != line)
+		Fail("The car did not climb the incline to the upper stop with its passenger and cargo.")
+	for(var/atom/movable/part as anything in line.get_all_parts())
+		if(part.z != car.z)
+			Fail("The car was split between levels.")
+			break
+	var/obj/structure/ms13_vehicle_part/rail_terminal/terminal = locate() in line.parts
+	var/list/board = terminal.ui_static_data()
+	var/list/below
+	for(var/list/listed as anything in board["stops"])
+		if(listed["ref"] == REF(low_stop))
+			below = listed
+	if(!below || below["level"] != -1 || below["x"] != low_stop.x || below["y"] != low_stop.y || length(board["links"]) != 1)
+		Fail("The route board did not draw the lower line a level down, in place, joined at the incline.")
+	if(!run_line(line, low_stop) || car.z != lower || cargo.z != lower || rider.z != lower)
+		Fail("The car did not run back down the incline to the lower stop.")
+	clear_vehicle(line)
+	// Over a region's north edge: the lower line runs onto its crossing line and the region beyond picks up on its own.
+	var/list/saved_links = SSmapping.ms13_surface_links
+	var/list/saved_bounds = SSmapping.ms13_surface_bounds
+	SSmapping.ms13_surface_links = list()
+	SSmapping.ms13_surface_bounds = list(10, 10, 50, 50)
+	SSmapping.ms13_link_surface_region(lower, upper, NORTH)
+	var/obj/structure/ms13_rail/home = allocate(/obj/structure/ms13_rail/station, locate(40, 24, lower))
+	for(var/y in 25 to 43)
+		allocate(/obj/structure/ms13_rail, locate(40, y, lower))
+	for(var/y in 17 to 29)
+		allocate(/obj/structure/ms13_rail, locate(40, y, upper))
+	var/obj/structure/ms13_rail/away = allocate(/obj/structure/ms13_rail/station, locate(40, 30, upper))
+	car = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(40, 28, lower))
+	line = car.vehicle
+	terminal = locate() in line.parts
+	board = terminal.ui_static_data()
+	var/list/beyond
+	for(var/list/listed as anything in board["stops"])
+		if(listed["ref"] == REF(away))
+			beyond = listed
+	if(!beyond || beyond["level"] != 0 || beyond["x"] != 40 || beyond["y"] <= 43)
+		Fail("The route board did not draw the region beyond straight on past its edge.")
+	if(!run_line(line, away) || car.z != upper)
+		Fail("The car did not cross the region's edge to the stop beyond.")
+	if(!run_line(line, home) || car.z != lower)
+		Fail("The car did not cross back over the region's edge.")
+	clear_vehicle(line)
+	SSmapping.ms13_surface_links = saved_links
+	SSmapping.ms13_surface_bounds = saved_bounds
 
 /// Boarding through the sides, a lit cabin, and a route terminal that lists stops by area and sends the car.
 /datum/unit_test/ms13_rail_vehicles/proc/check_route_terminal(test_z)
