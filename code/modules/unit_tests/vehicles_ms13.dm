@@ -312,6 +312,78 @@
 		vehicle.brake_step()
 	TEST_ASSERT(!vehicle.moving && !vehicle.speed && !vehicle.braking, "Braking down from speed did not bring the vehicle to a stop.")
 
+/datum/unit_test/ms13_vehicle_addon_armor
+	name = "VEHICLES: Add-On Armor Takes Hits First"
+
+/datum/unit_test/ms13_vehicle_addon_armor/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/m113/front_left/carrier = new(spot)
+	var/obj/structure/window/ms13_vehicle_wall/solid/panel
+	for(var/obj/structure/window/ms13_vehicle_wall/solid/wall in carrier.vehicle.walls)
+		if(wall.exterior)
+			panel = wall
+			break
+	TEST_ASSERT(panel, "No outer hull panel to plate.")
+	var/obj/projectile/bullet/ms13/a50MG/round = allocate(/obj/projectile/bullet/ms13/a50MG)
+	var/bare_stopping = panel.get_bullet_stopping_power(round)
+	var/obj/item/ms13_vehicle_armor/ceramic/plate = allocate(/obj/item/ms13_vehicle_armor/ceramic)
+	panel.fit_addon(plate)
+	TEST_ASSERT(panel.get_bullet_stopping_power(round) > bare_stopping, "Add-on armor did not add to the panel's stopping power.")
+	var/panel_before = panel.get_integrity()
+	var/plate_before = plate.get_integrity()
+	panel.take_damage(50, BRUTE, BLUNT, FALSE)
+	TEST_ASSERT(plate.get_integrity() < plate_before, "Add-on armor did not take the hit.")
+	TEST_ASSERT_EQUAL(panel.get_integrity(), panel_before, "The hull took a hit its add-on armor could hold.")
+	panel.take_damage(1000, BRUTE, BLUNT, FALSE)
+	TEST_ASSERT(QDELETED(plate) && !panel.addon, "Wrecked add-on armor stayed on the panel.")
+	TEST_ASSERT(panel.get_integrity() < panel_before, "Nothing of a hit too big for the add-on armor reached the hull.")
+
+/datum/unit_test/ms13_vehicle_variants
+	name = "VEHICLES: Variants Fit Their Cameras And Add-On Armor"
+
+/datum/unit_test/ms13_vehicle_variants/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	for(var/variant in list(
+		/obj/structure/ms13_vehicle_frame/m113/front_left/night,
+		/obj/structure/ms13_vehicle_frame/m113/front_left/a3,
+		/obj/structure/ms13_vehicle_frame/m113/front_left/uparmored,
+		/obj/structure/ms13_vehicle_frame/civ96/btr80/btr82,
+		/obj/structure/ms13_vehicle_frame/civ96/mtlb/scout,
+		/obj/structure/ms13_vehicle_frame/civ96/bmd2/night,
+		/obj/structure/ms13_vehicle_frame/civ96/t34/uparmored,
+		/obj/structure/ms13_vehicle_frame/civ96/t34/modernised,
+		/obj/structure/ms13_vehicle_frame/civ96/is3/modernised,
+	))
+		var/obj/structure/ms13_vehicle_frame/pivot = new variant(spot)
+		var/datum/ms13_ground_vehicle/vehicle = pivot.vehicle
+		TEST_ASSERT(length(vehicle?.frames) > 1, "[variant] did not assemble.")
+		var/list/wanted = list()
+		var/plate_type
+		if(istype(pivot, /obj/structure/ms13_vehicle_frame/civ96))
+			var/obj/structure/ms13_vehicle_frame/civ96/hull = pivot
+			for(var/mount in hull.cameras)
+				wanted += hull.cameras[mount]
+			plate_type = hull.addon_armor
+		else
+			var/obj/structure/ms13_vehicle_frame/m113/front_left/carrier = pivot
+			for(var/camera_type in list(carrier.front_camera, carrier.left_camera, carrier.right_camera, carrier.rear_camera))
+				if(camera_type)
+					wanted += camera_type
+			plate_type = carrier.addon_armor
+		var/list/missing = wanted.Copy()
+		var/fitted = 0
+		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera in vehicle.parts)
+			missing -= camera.type
+			fitted++
+		TEST_ASSERT(!length(missing) && fitted == length(wanted), "[variant] did not fit exactly its listed cameras.")
+		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls)
+			if(wall.exterior)
+				TEST_ASSERT(plate_type ? istype(wall.addon, plate_type) : !wall.addon, "[variant] [wall] has the wrong add-on armor.")
+		for(var/atom/movable/thing as anything in (vehicle.get_all_parts() | vehicle.get_manifest()))
+			qdel(thing)
+		for(var/obj/item/ms13_vehicle_armor/plate in range(8, spot))
+			qdel(plate)
+
 /datum/unit_test/ms13_vehicle_obstacle_impact
 	name = "VEHICLES: Ramming Damages Obstacles And Contact Armor"
 

@@ -51,6 +51,16 @@ camera and back to the cabin, widened by `view_bonus` and pushed out by `view_re
 more, `zoom` reaches far ahead in a narrow cone. Losing power, the camera switch, the camera or the
 seat returns the driver to the cabin.
 
+Add-on armor (`/obj/item/ms13_vehicle_armor`, steel appliqué, and `/ceramic`) bolts over an outer hull
+panel: use it on the panel, and a crowbar prises it off. A round has to get through the plate and
+then the panel. Every hit lands on the plate first, with the plate's own armor; only what it cannot
+hold passes to the panel, and a wrecked plate falls away.
+
+Variants set cameras and add-on armor on the same hulls. The M113 (`front_left`) has plain cameras;
+`/night` night vision, `/a3` ceramic armor with zoom and thermal cameras, `/uparmored` steel plate.
+Civ96 variants take `cameras` as `"tile:edge" = camera type` and `addon_armor`: `btr80/btr82`,
+`mtlb/scout`, `bmd2/night`, `t34/uparmored`, `t34/modernised`, `is3/modernised`.
+
 Rail cars cannot be driven by hand. The route terminal at the front of the car shows a line map of the
 connected rails; pick a stop on the map or the list and the car runs there, either end first, turning
 only at corners. Stops are `/obj/structure/ms13_rail/station` rails, named after the area they sit in,

@@ -63,6 +63,84 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 /obj/structure/window/ms13_vehicle_wall/proc/blocks_sight()
 	return blocks_vision && !hull_broken
 
+/obj/structure/window/ms13_vehicle_wall
+	/// Add-on armor bolted over this panel. It takes each hit first; see take_damage().
+	var/obj/item/ms13_vehicle_armor/addon
+
+/// A round has to get through the plate and then the panel.
+/obj/structure/window/ms13_vehicle_wall/get_bullet_stopping_power(obj/projectile/P)
+	. = ..()
+	if(addon)
+		. += addon.get_bullet_stopping_power(P)
+
+/// The plate takes the hit, with its own armor; only what it cannot hold goes through to the panel beneath.
+/obj/structure/window/ms13_vehicle_wall/take_damage(damage_amount, damage_type = BRUTE, damage_flag = NONE, sound_effect = TRUE, attack_dir, armor_penetration = 0, allow_break = TRUE)
+	if(!addon || damage_amount <= 0)
+		return ..()
+	var/obj/item/ms13_vehicle_armor/plate = addon
+	var/plate_left = plate.get_integrity()
+	plate.resolving_bullet_hit = resolving_bullet_hit
+	var/dealt = plate.take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
+	if(!QDELETED(plate))
+		plate.resolving_bullet_hit = FALSE
+	if(dealt <= plate_left)
+		return
+	return ..(damage_amount * (dealt - plate_left) / dealt, damage_type, damage_flag, FALSE, attack_dir, armor_penetration, allow_break)
+
+/obj/structure/window/ms13_vehicle_wall/attackby(obj/item/used_item, mob/user, params)
+	if(!istype(used_item, /obj/item/ms13_vehicle_armor))
+		return ..()
+	if(!exterior)
+		balloon_alert(user, "not an outer panel!")
+		return TRUE
+	if(addon)
+		balloon_alert(user, "already plated!")
+		return TRUE
+	balloon_alert(user, "bolting on the plate...")
+	if(!do_after(user, src, 5 SECONDS) || addon || !user.transferItemToLoc(used_item, src))
+		return TRUE
+	fit_addon(used_item)
+	playsound(src, 'sound/items/ratchet.ogg', 50, TRUE)
+	return TRUE
+
+/obj/structure/window/ms13_vehicle_wall/crowbar_act(mob/living/user, obj/item/tool)
+	if(!addon)
+		return ..()
+	var/obj/item/ms13_vehicle_armor/plate = addon
+	if(!tool.use_tool(src, user, 5 SECONDS, volume = 50) || addon != plate)
+		return TRUE
+	remove_addon()
+	plate.forceMove(user.drop_location())
+	return TRUE
+
+/obj/structure/window/ms13_vehicle_wall/examine(mob/user)
+	. = ..()
+	if(addon)
+		. += span_notice("[addon] is bolted over it, [round(addon.get_integrity_percentage())]% intact. A crowbar prises it off.")
+
+/obj/structure/window/ms13_vehicle_wall/proc/fit_addon(obj/item/ms13_vehicle_armor/plate)
+	addon = plate
+	plate.mounted_on = src
+	if(plate.loc != src)
+		plate.forceMove(src)
+	update_appearance()
+
+/obj/structure/window/ms13_vehicle_wall/proc/remove_addon()
+	if(addon?.mounted_on == src)
+		addon.mounted_on = null
+	addon = null
+	update_appearance()
+
+/// The plate as it shows on the hull: a slab standing a few pixels proud of the panel.
+/obj/structure/window/ms13_vehicle_wall/proc/addon_appearance(shift_x = 0, shift_y = 0)
+	var/mutable_appearance/plate = mutable_appearance('mojave/icons/objects/vehicles_ground/vehicleparts.dmi', "c_armoredwall")
+	plate.dir = dir
+	plate.color = addon.plate_color
+	plate.appearance_flags = RESET_COLOR | RESET_ALPHA
+	plate.pixel_x = (dir == EAST ? 3 : dir == WEST ? -3 : 0) + shift_x
+	plate.pixel_y = (dir == NORTH ? 3 : dir == SOUTH ? -3 : 0) + shift_y
+	return plate
+
 /obj/structure/window/ms13_vehicle_wall/proc/blocks_light()
 	return (blocks_vision || light_proof) && !hull_broken
 
@@ -117,6 +195,8 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 
 /obj/structure/window/ms13_vehicle_wall/update_overlays()
 	. = ..()
+	if(addon && !exterior_image)
+		. += addon_appearance()
 	if(hull_broken && !has_broken_art())
 		var/mutable_appearance/damage = mutable_appearance(broken_icon, broken_fallback_state, layer)
 		damage.dir = dir
@@ -166,6 +246,41 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	exterior_image.pixel_y = exterior_pixel_y
 	exterior_image.color = color
 	exterior_image.alpha = alpha
+	// The image carries the hull art's own offset; the plate sits on the panel regardless.
+	exterior_image.overlays = addon ? list(addon_appearance(-exterior_pixel_x, -exterior_pixel_y)) : list()
+
+TYPEINFO_DEF(/obj/item/ms13_vehicle_armor)
+	default_armor = list(BLUNT = 60, PUNCTURE = 80, SLASH = 60, LASER = 40, ENERGY = 30, BOMB = 40, BIO = 100, FIRE = 60, ACID = 40)
+/// Add-on armor for a vehicle hull. Use it on an outer hull panel to bolt it on; a crowbar prises it off again.
+/obj/item/ms13_vehicle_armor
+	name = "steel appliqué plate"
+	desc = "A slab of armor plate cut to bolt over a vehicle's hull. It takes each hit before the panel beneath it. Use it on an outer hull panel to fit it."
+	icon = 'mojave/icons/objects/materials.dmi'
+	icon_state = "sheet-scrap_3"
+	w_class = WEIGHT_CLASS_HUGE
+	max_integrity = 600
+	/// Tint of the plate where it sits on the hull.
+	var/plate_color = "#5d5d58"
+	var/obj/structure/window/ms13_vehicle_wall/mounted_on
+
+/obj/item/ms13_vehicle_armor/Destroy()
+	mounted_on?.remove_addon()
+	return ..()
+
+TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
+	default_armor = list(BLUNT = 40, PUNCTURE = 160, SLASH = 70, LASER = 70, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 80, ACID = 60)
+/// Hard against shot, brittle against blows.
+/obj/item/ms13_vehicle_armor/ceramic
+	name = "ceramic add-on armor module"
+	desc = "Ceramic tiles in a composite backing, made to bolt over a hull. Very hard against shot, but blows shatter it. Use it on an outer hull panel to fit it."
+	max_integrity = 400
+	plate_color = "#b3a47f"
+
+/// Bolts plate_type over every outer hull panel, as a factory up-armor kit would.
+/datum/ms13_ground_vehicle/proc/fit_addon_armor(plate_type)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+		if(wall.exterior && !wall.addon)
+			wall.fit_addon(new plate_type(wall))
 
 /proc/ms13_icon_has_state(icon_file, state)
 	return state in icon_states_cached(icon_file)
@@ -180,6 +295,10 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 
 /obj/structure/window/ms13_vehicle_wall/Destroy()
 	destroy_mounted_equipment()
+	if(addon)
+		var/obj/item/ms13_vehicle_armor/plate = addon
+		remove_addon()
+		plate.forceMove(drop_location())
 	var/datum/ms13_ground_vehicle/vehicle = parent_frame?.vehicle
 	if(exterior_image)
 		GLOB.ms13_vehicle_exterior_part_images -= exterior_image

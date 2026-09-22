@@ -119,6 +119,35 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 
 /// The only map-placeable M113 object; children use the parent segment type to avoid reassembly.
 /obj/structure/ms13_vehicle_frame/m113/front_left
+	/// Camera types on the front, left, right and rear hull; null leaves that side without one.
+	var/front_camera
+	var/left_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera
+	var/right_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera
+	var/rear_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera
+	/// Add-on armor bolted over the whole outer hull, or null.
+	var/addon_armor
+
+/obj/structure/ms13_vehicle_frame/m113/front_left/night
+	name = "M113 armored personnel carrier (night vision)"
+	desc = "A tracked armored personnel carrier fitted for night work: night vision cameras front and sides, a wide-angle camera behind."
+	front_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision
+	left_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision
+	right_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision
+	rear_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide
+
+/obj/structure/ms13_vehicle_frame/m113/front_left/a3
+	name = "M113A3 armored personnel carrier"
+	desc = "A modernised M113: ceramic add-on armor, a zoom camera up front, thermal cameras on both sides and a wide-angle camera behind."
+	front_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/zoom
+	left_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal
+	right_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal
+	rear_camera = /obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide
+	addon_armor = /obj/item/ms13_vehicle_armor/ceramic
+
+/obj/structure/ms13_vehicle_frame/m113/front_left/uparmored
+	name = "M113 armored personnel carrier (appliqué armor)"
+	desc = "An M113 with steel appliqué plate bolted over its hull."
+	addon_armor = /obj/item/ms13_vehicle_armor
 
 /obj/structure/ms13_vehicle_frame/m113/front_left/Initialize(mapload)
 	. = ..()
@@ -196,9 +225,16 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
 	back.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light, 180)
-	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal, 90)
-	front_right.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision, -90)
-	back.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide, 180)
+	if(front_camera)
+		front_middle.spawn_part(front_camera)
+	if(left_camera)
+		spawn_part(left_camera, 90)
+	if(right_camera)
+		front_right.spawn_part(right_camera, -90)
+	if(rear_camera)
+		back.spawn_part(rear_camera, 180)
+	if(addon_armor)
+		vehicle.fit_addon_armor(addon_armor)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track)
 	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right)
