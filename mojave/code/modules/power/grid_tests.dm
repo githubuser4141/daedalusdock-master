@@ -176,4 +176,10 @@
 	lamp.connect_to_network()
 	if(lamp.powernet != house_side)
 		Fail("A lamp mid-line didn't join the house line.")
+	// A rail feeder beside the end of the line, its wires reaching over, joins it too.
+	var/obj/machinery/power/ms13_rail_feeder/feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(x0 + 5, y0, z0))
+	feeder.setDir(WEST)
+	feeder.connect_to_network()
+	if(feeder.powernet != house_side)
+		Fail("A rail feeder beside a cable's end didn't join its line.")
 #endif

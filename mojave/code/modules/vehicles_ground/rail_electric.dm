@@ -7,7 +7,8 @@
  * costs nothing. Its lights, doors and route terminal run off the line too; it has no engine, fuel or battery.
  */
 
-/// Puts power from the cable knot beneath it onto the rail line it sits on. It only joins the two.
+/// Puts power from a cable onto the rail line it sits on: the cable knotted under it, or on the tile beside it its wires
+/// reach to. It only joins the two.
 /obj/machinery/power/ms13_rail_feeder
 	name = "rail feeder"
 	desc = "A heavy junction box that puts power from the cable beneath it onto the guide rail."
@@ -19,9 +20,42 @@
 	use_power = NO_POWER_USE
 	processing_flags = NONE
 
+/obj/machinery/power/ms13_rail_feeder/Initialize(mapload)
+	. = ..()
+	// A cable beside it isn't found when round start builds the networks, so it looks once they're built.
+	addtimer(CALLBACK(src, PROC_REF(connect_to_network)), 0)
+
+/obj/machinery/power/ms13_rail_feeder/connect_to_network()
+	var/datum/powernet/old_net = powernet
+	var/turf/here = get_turf(src)
+	var/obj/structure/cable/node = here?.get_cable_node()
+	if(!node?.powernet)
+		for(var/direction in list(dir) + GLOB.cardinals)
+			var/turf/beside = get_step(src, direction)
+			node = beside?.get_cable_node()
+			if(node?.powernet)
+				break
+	if(!node?.powernet)
+		return FALSE
+	node.powernet.add_machine(src)
+	if(powernet != old_net)
+		SEND_SIGNAL(src, COMSIG_MS13_LINE_POWER_CHANGED, powernet.avail > 0)
+	return TRUE
+
+/obj/machinery/power/ms13_rail_feeder/disconnect_from_network()
+	. = ..()
+	SEND_SIGNAL(src, COMSIG_MS13_LINE_POWER_CHANGED, FALSE)
+
 /obj/machinery/power/ms13_rail_feeder/examine(mob/user)
 	. = ..()
-	. += span_notice(powernet?.avail > 0 ? "The line is live." : "The line is dead.")
+	if(!ms13_rail_at(get_turf(src)))
+		. += span_warning("It isn't on a rail, so it powers no line.")
+	if(!powernet)
+		. += span_warning("It isn't wired: it needs a cable knot on its own tile or the one beside it.")
+	else if(powernet.avail > 0)
+		. += span_notice("The line is live, with [display_power(surplus())] to spare.")
+	else
+		. += span_notice("The cable it's wired to is dead.")
 
 /// A guide rail set into the floor: it works like any other, but can't be seen. It suits a door's track.
 /obj/structure/ms13_rail/hidden
@@ -35,6 +69,7 @@
 
 /datum/ms13_ground_vehicle/rail/electric
 	fuel_per_tile = 0
+	thrust_sound = 'mojave/sound/ms13machines/generator_on.ogg'
 	/// Watts the traction motor draws from the line while the car moves.
 	var/traction_draw = 20000
 	/// Feeders on the line, found with the route search.
@@ -43,14 +78,44 @@
 	var/drew_power = FALSE
 	/// SSmachines.times_fired when it last drew it.
 	var/power_cycle = -1
+	/// The line was live when last heard from.
+	var/line_live = FALSE
 
 /datum/ms13_ground_vehicle/rail/electric/find_rail_routes()
 	. = ..()
+	for(var/obj/machinery/power/ms13_rail_feeder/old_feeder as anything in feeders)
+		UnregisterSignal(old_feeder, list(COMSIG_MS13_LINE_POWER_CHANGED, COMSIG_PARENT_QDELETING))
 	feeders = list()
 	for(var/turf/location as anything in .)
 		var/obj/machinery/power/ms13_rail_feeder/feeder = locate() in location
 		if(feeder)
+			// Picks up a cable laid or rewired since the networks were last built.
+			feeder.connect_to_network()
 			feeders += feeder
+			RegisterSignal(feeder, COMSIG_MS13_LINE_POWER_CHANGED, PROC_REF(on_line_power_changed))
+			RegisterSignal(feeder, COMSIG_PARENT_QDELETING, PROC_REF(on_feeder_deleted))
+
+/datum/ms13_ground_vehicle/rail/electric/proc/on_feeder_deleted(obj/machinery/power/ms13_rail_feeder/feeder)
+	SIGNAL_HANDLER
+	feeders -= feeder
+
+/// The line went live or dead. Live, the car switches itself on: ignition, lights and motor.
+/datum/ms13_ground_vehicle/rail/electric/proc/on_line_power_changed(obj/machinery/power/ms13_rail_feeder/feeder, live)
+	SIGNAL_HANDLER
+	if(!line_power())
+		if(line_live)
+			line_live = FALSE
+			// Said while the terminal still has the power to say it.
+			update_electrical()
+			playsound(pivot, 'mojave/sound/ms13machines/generator_off.ogg', 40, TRUE)
+		return
+	if(!line_live)
+		line_live = TRUE
+		INVOKE_ASYNC(src, PROC_REF(announce), "Line power on.")
+	interior_lights_on = TRUE
+	exterior_lights_on = TRUE
+	engine_running = TRUE
+	set_ignition(TRUE)
 
 /// A feeder on the line whose powernet has at least draw watts to spare, if any.
 /datum/ms13_ground_vehicle/rail/electric/proc/line_power(draw = 1)
@@ -71,6 +136,9 @@
 	return drew_power
 
 // ponytail: the lights, doors and terminal come off the line without adding to its load; only traction is metered.
+/datum/ms13_ground_vehicle/rail/electric/has_power_to_go()
+	return !!line_power(traction_draw)
+
 /datum/ms13_ground_vehicle/rail/electric/has_electrical_power()
 	return ignition && !!line_power()
 
@@ -85,7 +153,7 @@
 		return FALSE
 	if(!line_power(traction_draw))
 		if(user)
-			to_chat(user, span_warning("There's no power on the line."))
+			to_chat(user, span_warning(line_power() ? "There isn't enough power on the line: the motor needs [display_power(traction_draw)] to spare." : "There's no power on the line. Check the rail feeder is on the line and wired to a live cable."))
 		return FALSE
 	engine_running = TRUE
 	return TRUE
@@ -94,9 +162,9 @@
 /datum/ms13_ground_vehicle/rail/electric/drive_turning()
 	return engine_running
 
-// Out of power, it brakes to a stop along the line rather than stopping dead.
+// It draws power only while the motor pulls. Out of power, it brakes to a stop along the line rather than stopping dead.
 /datum/ms13_ground_vehicle/rail/electric/movement_tick(generation)
-	if(rail_route && !halting && generation == movement_generation && moving && !draw_traction())
+	if(rail_route && thrusting && !halting && generation == movement_generation && moving && !draw_traction())
 		apply_brakes()
 	return ..()
 
@@ -184,6 +252,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 	ram_damage_base = 2
 	ram_damage_per_speed = 0
 	running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_tracks
+	thrust_sound = 'mojave/sound/ms13machines/doorblast_open.ogg'
 
 /datum/ms13_ground_vehicle/rail/electric/blast_door/can_run_over(mob/living/victim)
 	return FALSE

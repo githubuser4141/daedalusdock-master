@@ -88,6 +88,9 @@
 	var/halting = FALSE
 	/// The frame riding the guide rail. The line can run under any part of the hull, not just the pivot.
 	var/obj/structure/ms13_vehicle_frame/rail_bogie
+	/// Coasting from top speed, the drive pulls again below this share of it, after about coast_tiles tiles.
+	var/coast_resume = 0.85
+	var/coast_tiles = 20
 
 /proc/ms13_rail_at(turf/location)
 	return location ? (locate(/obj/structure/ms13_rail) in location) : null
@@ -156,10 +159,15 @@
 	return TRUE
 
 /datum/ms13_ground_vehicle/rail/stop_motion()
+	var/stopped_short = length(rail_route)
 	rail_route = null
 	velocity = 0
 	halting = FALSE
-	return ..()
+	thrusting = FALSE
+	. = ..()
+	// On service, a trip that ends short of its stop is tried again shortly.
+	if(automated && stopped_short)
+		next_leg_in(10 SECONDS)
 
 /// Rail cars are never driven by hand; they only run routes picked at the route terminal.
 /datum/ms13_ground_vehicle/rail/handle_drive_input(direction)
@@ -283,6 +291,7 @@
 	brakes_mode = FALSE
 	speed = 1
 	travel_dir = dir
+	set_thrusting(TRUE)
 	start_motion()
 	return TRUE
 
@@ -336,15 +345,42 @@
 	// The fastest the car may go and still slow, on the brakes it expects, to turning speed or a stop by the end.
 	var/end_velocity = straight >= length(rail_route) ? 0 : corner_velocity
 	var/allowed = halting ? 0 : sqrt(end_velocity ** 2 + 2 * deceleration * max(straight - 1, 0))
+	// Another car on the line ahead: slow to stop a tile short of it. On service, a car asks it to move on.
+	var/gap = gap_to_car_ahead(max(look_ahead, MS13_RAIL_PING_RANGE))
+	if(!isnull(gap))
+		if(automated && gap <= MS13_RAIL_PING_RANGE)
+			ping_car_ahead()
+		if(gap <= 1)
+			// Right behind it: wait, and carry on once it's gone.
+			if(!held_up)
+				held_up = TRUE
+				announce("Holding: there's a car on the line ahead.")
+			velocity = 0
+			set_thrusting(FALSE)
+			addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), MS13_RAIL_WAIT_INTERVAL)
+			return
+		allowed = min(allowed, sqrt(2 * deceleration * (gap - 1)))
+	if(held_up)
+		held_up = FALSE
+		announce("The line is clear. Proceeding.")
 	// Per tile moved, so speed changes with distance: v^2 shifts by twice the acceleration each tile.
 	if(velocity > allowed)
+		set_thrusting(FALSE)
 		var/bite = (halting ? 1.5 : 1) * (1 + braking_variance * (rand() * 2 - 1))
 		velocity = sqrt(max(velocity ** 2 - 2 * deceleration * bite, 0))
 		if(world.time >= next_brake_time)
 			next_brake_time = world.time + brake_delay
 			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
 	else
-		velocity = min(sqrt(velocity ** 2 + 2 * acceleration), top, max(allowed, corner_velocity / 4))
+		// At top speed the drive stops pulling and the car coasts, losing speed over coast_tiles, until it pulls again.
+		if(velocity >= top - 0.01)
+			set_thrusting(FALSE)
+		else if(velocity < top * coast_resume)
+			set_thrusting(TRUE)
+		if(thrusting)
+			velocity = min(sqrt(velocity ** 2 + 2 * acceleration), top, max(allowed, corner_velocity / 4))
+		else
+			velocity = min(sqrt(max(velocity ** 2 - top ** 2 * (1 - coast_resume ** 2) / coast_tiles, 0)), max(allowed, corner_velocity / 4))
 	// Brakes that bit too hard leave the car creeping the rest of the way in.
 	var/creep = gear_velocity(1) / 4
 	if(velocity < creep)
@@ -359,6 +395,7 @@
 		if(velocity > creep * 2)
 			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
 		stop_motion()
+		arrived()
 
 /// Rigid, ordinary vehicle formations; the front-left pivot follows the guide rail.
 /obj/structure/ms13_vehicle_frame/tram
@@ -432,6 +469,7 @@
 				if(right == car_width - 1)
 					frame.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/wheel, -90)
 	spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/light)
+	GLOB.ms13_rail_cars += src
 
 /// Diesel: an engine, its gearbox and a tank. Electric cars take a traction motor instead (rail_electric.dm).
 /obj/structure/ms13_vehicle_frame/tram/proc/fit_drivetrain()
@@ -549,6 +587,7 @@
 		"train" = board_spot(get_turf(bogie)),
 		"location" = location?.name,
 		"destination" = destination ? REF(destination) : null,
+		"automated" = !!train?.automated,
 	)
 
 /obj/structure/ms13_vehicle_part/rail_terminal/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -562,8 +601,15 @@
 		if("depart")
 			var/obj/structure/ms13_rail/stop = locate(params["stop"])
 			if(istype(stop) && stop.is_station)
-				train.depart_for(get_turf(stop), usr)
+				train.set_automated(FALSE)
+				if(train.depart_for(get_turf(stop), usr))
+					train.announce("Departing for [stop.stop_name()].")
 			return TRUE
 		if("halt")
+			train.set_automated(FALSE)
 			train.apply_brakes()
+			train.announce("Emergency stop.")
+			return TRUE
+		if("automate")
+			train.set_automated(!train.automated)
 			return TRUE

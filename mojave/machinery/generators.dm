@@ -22,7 +22,7 @@
 	icon_state = "generator_on"
 	anchored = TRUE
 	density = TRUE
-	max_integrity = 5000
+	max_integrity = 50000
 	flags_1 = INDESTRUCTIBLE
 	use_power = NO_POWER_USE
 	/// Mapper-set starting state: GENERATOR_ON, GENERATOR_OFF or GENERATOR_BROKEN.

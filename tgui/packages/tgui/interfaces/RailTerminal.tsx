@@ -24,6 +24,7 @@ type Stop = {
 };
 
 type Data = {
+  automated: boolean;
   destination: string | null;
   fitted: boolean;
   halting: boolean;
@@ -284,8 +285,16 @@ const Legend = (props: { levels: boolean }) => (
 
 export const RailTerminal = (props) => {
   const { act, data } = useBackend<Data>();
-  const { fitted, halting, moving, powered, train, location, destination } =
-    data;
+  const {
+    automated,
+    fitted,
+    halting,
+    moving,
+    powered,
+    train,
+    location,
+    destination,
+  } = data;
   const stops = data.stops || [];
   const [picked, setPicked] = useState<string | null>(null);
 
@@ -297,6 +306,10 @@ export const RailTerminal = (props) => {
   let status = 'Not on the line';
   if (halting) {
     status = 'Braking to a stop';
+  } else if (automated && moving && heading) {
+    status = `On service to ${heading.name}`;
+  } else if (automated && here) {
+    status = `On service, calling at ${here.name}`;
   } else if (moving && heading) {
     status = `On the way to ${heading.name}`;
   } else if (moving) {
@@ -397,6 +410,18 @@ export const RailTerminal = (props) => {
                   onClick={() => act('halt')}
                 >
                   Emergency stop
+                </Button>
+                <Button
+                  fluid
+                  textAlign="center"
+                  icon="sync"
+                  selected={automated}
+                  tooltip="Calls at every stop on the line in turn, waiting at each with the doors open."
+                  onClick={() => act('automate')}
+                >
+                  {automated
+                    ? 'Automatic service: on'
+                    : 'Automatic service: off'}
                 </Button>
               </Stack.Item>
             </Stack>

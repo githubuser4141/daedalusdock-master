@@ -183,6 +183,111 @@
 	check_equipment(test_z)
 	check_crossings()
 	check_electric()
+	check_service()
+
+/// A line down x with stops at y = 12, 27 and 40, on a fresh level.
+/datum/unit_test/ms13_rail_vehicles/proc/lay_service_line(x, z)
+	for(var/y in 12 to 40)
+		allocate((y in list(12, 27, 40)) ? /obj/structure/ms13_rail/station : /obj/structure/ms13_rail, locate(x, y, z))
+
+/// Automatic service calls at every stop in turn; a call button brings an idle car; a car on service catching up with a
+/// standing one gets it to move on and waits for it; and a car at top speed coasts.
+/datum/unit_test/ms13_rail_vehicles/proc/check_service()
+	var/datum/space_level/level = SSmapping.add_new_zlevel("Rail service test", list())
+	var/z = level.z_value
+	for(var/turf/ground in block(locate(10, 5, z), locate(45, 50, z)))
+		ground.ChangeTurf(/turf/open/floor/plating)
+	lay_service_line(20, z)
+	var/turf/south = locate(20, 12, z)
+	var/turf/middle = locate(20, 27, z)
+	var/turf/north = locate(20, 40, z)
+	// Standing with its bogie at y = 33: the middle stop is nearest, then the north one, then the south one.
+	var/obj/structure/ms13_vehicle_frame/tram/car = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(20, 31, z))
+	var/datum/ms13_ground_vehicle/rail/line = car.vehicle
+	var/list/doors = line.power_doors()
+	var/obj/structure/window/ms13_vehicle_wall/solid/door/door = doors[1]
+	line.set_automated(TRUE)
+	var/list/called = list()
+	for(var/leg in 1 to 4)
+		line.run_next_leg()
+		if(!line.pending_destination)
+			Fail("A car on service did not warn before setting off.")
+			break
+		line.finish_departure()
+		if(door.opened)
+			Fail("A car on service set off with its doors open.")
+		var/turf/stop = get_turf(line.service_stop)
+		if(!run_to_stand(line, stop))
+			Fail("A car on service did not reach its stop.")
+			break
+		called += "[stop.y]"
+		if(!door.opened || !line.service_timer)
+			Fail("A car on service did not open its doors and wait at the stop.")
+	if(jointext(called, ",") != "[middle.y],[north.y],[south.y],[middle.y]")
+		Fail("A car on service called at [jointext(called, ",")], not the nearest stop it hadn't each time, then over again.")
+	line.set_automated(FALSE)
+	// A call button by the north stop brings the idle car there.
+	var/obj/structure/ms13_rail_call_button/button = allocate(/obj/structure/ms13_rail_call_button, locate(22, 40, z))
+	var/mob/living/carbon/human/consistent/passenger = allocate(/mob/living/carbon/human/consistent, locate(23, 40, z))
+	button.attack_hand(passenger)
+	if(line.pending_destination != north)
+		Fail("A call button did not call the idle car to its stop.")
+	line.finish_departure()
+	if(!run_to_stand(line, north))
+		Fail("A called car did not come to the stop.")
+	// At top speed the drive stops pulling and the car coasts, then pulls again once it has slowed.
+	line.speed_multiplier = 1
+	line.depart_for(south)
+	var/top = line.gear_velocity(line.gear_count())
+	line.velocity = top
+	line.next_move_time = 0
+	line.movement_tick(line.movement_generation)
+	if(line.thrusting)
+		Fail("A car at top speed kept pulling instead of coasting.")
+	var/coasting = line.velocity
+	line.next_move_time = 0
+	line.movement_tick(line.movement_generation)
+	if(line.velocity >= coasting)
+		Fail("A coasting car did not slow.")
+	line.velocity = top * 0.8
+	line.next_move_time = 0
+	line.movement_tick(line.movement_generation)
+	if(!line.thrusting)
+		Fail("A car well below top speed did not pull again.")
+	clear_vehicle(line)
+
+	// Two cars on one line: one standing at the middle stop, one on service coming from the north.
+	lay_service_line(35, z)
+	var/turf/second_middle = locate(35, 27, z)
+	var/obj/structure/ms13_vehicle_frame/tram/standing_car = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(35, 25, z))
+	var/obj/structure/ms13_vehicle_frame/tram/service_car = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(35, 38, z))
+	var/datum/ms13_ground_vehicle/rail/standing = standing_car.vehicle
+	var/datum/ms13_ground_vehicle/rail/service = service_car.vehicle
+	service.set_automated(TRUE)
+	service.run_next_leg()
+	service.finish_departure()
+	var/asked = FALSE
+	for(var/tick in 1 to 200)
+		if(standing.pending_destination)
+			asked = TRUE
+			standing.finish_departure()
+		if(service.moving)
+			service.next_move_time = 0
+			service.movement_tick(service.movement_generation)
+		if(standing.moving)
+			standing.next_move_time = 0
+			standing.movement_tick(standing.movement_generation)
+		if(!service.moving)
+			break
+	if(!asked)
+		Fail("A car on service did not ask a standing car ahead to move on.")
+	if(service.moving || get_turf(service.rail_frame()) != second_middle)
+		Fail("A car on service gave up behind a car that moved on, instead of reaching its stop.")
+	if(get_turf(standing.rail_frame()) == second_middle || service.held_up)
+		Fail("The standing car did not move on, or the car behind is still holding.")
+	service.set_automated(FALSE)
+	clear_vehicle(service)
+	clear_vehicle(standing)
 
 /// Runs line to stop, one tile at a time. TRUE if it came to a stand on the stop.
 /datum/unit_test/ms13_rail_vehicles/proc/run_to_stand(datum/ms13_ground_vehicle/rail/line, turf/stop)
@@ -215,6 +320,18 @@
 		Fail("An electric car didn't find the feeder on its line.")
 	if(line.depart_for(stop))
 		Fail("An electric car set off on a dead line.")
+	// The line going live switches the car on by itself: ignition, lights and motor. Going dead, it goes dark.
+	line.ignition = FALSE
+	line.engine_running = FALSE
+	line.exterior_lights_on = FALSE
+	net.newavail = 1000000
+	net.reset()
+	if(!line.ignition || !line.engine_running || !line.exterior_lights_on || !line.has_electrical_power())
+		Fail("An electric car did not switch itself on when its line went live.")
+	net.newavail = 0
+	net.reset()
+	if(line.has_electrical_power())
+		Fail("An electric car kept its power when its line went dead.")
 	net.avail = 1000000
 	if(!line.depart_for(stop))
 		Fail("An electric car would not set off on a live line.")

@@ -15,6 +15,8 @@
  * its own reset(); only generators, substations, capacitors and utility boxes do anything each tick.
  */
 /datum/powernet
+	/// Whether it had power last cycle.
+	var/ms13_was_live = FALSE
 	/// Highest voltage fed in: what machines see this tick, and what is being fed for the next, like avail and newavail.
 	var/ms13_voltage = MS13_VOLTAGE_NONE
 	var/ms13_new_voltage = MS13_VOLTAGE_NONE
@@ -32,7 +34,13 @@
 	ms13_new_voltage = MS13_VOLTAGE_NONE
 	ms13_ripple = ms13_new_ripple
 	ms13_new_ripple = 0
-	return ..()
+	. = ..()
+	// Rail feeders hear when their line goes live or dead, and only then, so a steady line costs nothing.
+	var/live = avail > 0
+	if(live != ms13_was_live)
+		ms13_was_live = live
+		for(var/obj/machinery/power/ms13_rail_feeder/feeder in nodes)
+			SEND_SIGNAL(feeder, COMSIG_MS13_LINE_POWER_CHANGED, live)
 
 /// The powernet of the cable knotted on target, if any.
 /proc/ms13_cable_net_at(turf/target)
@@ -48,7 +56,11 @@
 	if((locate(/obj/machinery/power) in my_turf) || (locate(/obj/machinery/ms13/fusion_generator) in my_turf) || (locate(/obj/machinery/ms13/substation) in my_turf))
 		return TRUE
 	for(var/direction in GLOB.cardinals)
-		for(var/obj/machinery/ms13/substation/facing in get_step(my_turf, direction))
+		var/turf/beside = get_step(my_turf, direction)
+		// A rail feeder takes power from a knot beside it, too.
+		if(locate(/obj/machinery/power/ms13_rail_feeder) in beside)
+			return TRUE
+		for(var/obj/machinery/ms13/substation/facing in beside)
 			if(facing.dir == turn(direction, 180))
 				return TRUE
 	return FALSE
