@@ -225,10 +225,17 @@
 	on_state = "floor"
 	off_state = "floor-burned"
 	power_draw = 2
+	// A beam cast ahead along the lamp's facing; overlay lights cap their range at 6.
+	light_system = OVERLAY_LIGHT_DIRECTIONAL
+	light_outer_range = 6
+	light_power = 1
+	light_color = "#ffe8c0"
+	light_on = FALSE
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/light/is_enabled()
 	return ..() && vehicle.exterior_lights_on
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/light/update_icon_state()
 	. = ..()
-	set_light(l_outer_range = is_enabled() ? 5 : 0, l_inner_range = 1, l_power = 1, l_color = "#ffe8c0")
+	// Overlay lights only switch off through light_on; a zero range still glows.
+	set_light_on(is_enabled())

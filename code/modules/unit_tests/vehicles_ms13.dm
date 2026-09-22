@@ -230,7 +230,11 @@
 	TEST_ASSERT(vehicle.battery.cell.charge < charge_before, "Powered equipment did not drain battery.")
 	vehicle.exterior_lights_on = TRUE
 	vehicle.update_electrical()
-	TEST_ASSERT(light.is_enabled() && light.light_outer_range > 0 && light.light_power == 1, "Exterior lighting switch did not illuminate lamps.")
+	TEST_ASSERT(light.is_enabled() && light.light_on && light.light_outer_range > 0 && light.light_power == 1, "Exterior lighting switch did not illuminate lamps.")
+	var/datum/component/overlay_lighting/beam = light.GetComponent(/datum/component/overlay_lighting)
+	for(var/facing in list(turn(light.dir, 90), turn(light.dir, 180), light.dir))
+		light.setDir(facing)
+		TEST_ASSERT(beam?.directional && beam.current_direction == facing, "Exterior lamp did not cast its beam the way it faces.")
 	var/turf/camera_turf = get_turf(camera)
 	var/turf/outside = get_step(camera, camera.dir)
 	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside), "Camera created a physical window for passengers/NPCs.")
@@ -244,7 +248,7 @@
 	TEST_ASSERT(!vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Repaired camera did not recover its view.")
 	vehicle.battery.cell.charge = 1
 	vehicle.process_power(2)
-	TEST_ASSERT(!vehicle.has_electrical_power() && !dome.is_lit() && !light.light_outer_range, "Drained battery left lighting powered.")
+	TEST_ASSERT(!vehicle.has_electrical_power() && !dome.is_lit() && !light.light_on, "Drained battery left lighting powered.")
 	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Empty battery left camera vision active.")
 	TEST_ASSERT(!vehicle.start_engine(), "Empty battery started engine.")
 	vehicle.battery.cell.give(1000)
