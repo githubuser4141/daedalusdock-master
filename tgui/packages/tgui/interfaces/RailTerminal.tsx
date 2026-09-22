@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { CSSProperties, useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
 import {
@@ -36,10 +36,10 @@ type Data = {
   train: Spot | null;
 };
 
-/** Board drawing units along its longest side; markers and text are sized in these. */
-const BOARD = 600;
-/** Tiles of margin around the line. */
-const PAD = 4;
+/** Pixels kept clear around the line, so markers and labels at its ends stay on the board. */
+const MARGIN = 32;
+/** Most pixels a tile may take, so a short line isn't blown up to fill the board. */
+const MAX_TILE = 24;
 
 const COLORS = {
   ground: '#1b1206',
@@ -57,7 +57,7 @@ const isHere = (stop: Stop, train: Data['train']) =>
 
 /** Line on the car's own level is solid; on others it is dashed and dimmer. */
 const lineStyle = (level: number) =>
-  level ? { strokeDasharray: '10 8', opacity: 0.55 } : {};
+  level ? { strokeDasharray: '8 6', opacity: 0.55 } : {};
 
 type BoardProps = {
   data: Data;
@@ -65,28 +65,35 @@ type BoardProps = {
   picked: string | null;
 };
 
-const Board = (props: BoardProps) => {
-  const { data, picked, onPick } = props;
-  const { train, destination } = data;
-  const rails = data.rails || [];
-  const stops = data.stops || [];
-  if (!rails.length) {
-    return <NoticeBox>This car is not sitting on a rail line.</NoticeBox>;
+/** Fits the line to a board of this size, north up, and draws its paths: one per level, and the joins between. */
+const drawLine = (
+  rails: Spot[],
+  links: Data['links'],
+  width: number,
+  height: number,
+) => {
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  for (const [x, y] of rails) {
+    minX = Math.min(minX, x);
+    maxX = Math.max(maxX, x);
+    minY = Math.min(minY, y);
+    maxY = Math.max(maxY, y);
   }
-  const xs = rails.map((rail) => rail[0]);
-  const ys = rails.map((rail) => rail[1]);
-  const minX = Math.min(...xs) - PAD;
-  const maxX = Math.max(...xs) + PAD;
-  const minY = Math.min(...ys) - PAD;
-  const maxY = Math.max(...ys) + PAD;
-  const scale = BOARD / Math.max(maxX - minX, maxY - minY);
-  const width = (maxX - minX) * scale;
-  const height = (maxY - minY) * scale;
-  const px = (x: number) => (x - minX) * scale;
-  // North is up on the board.
-  const py = (y: number) => (maxY - y) * scale;
-
-  // One path per level, joining every pair of neighbouring rails on it.
+  const scale = Math.max(
+    Math.min(
+      (width - 2 * MARGIN) / Math.max(maxX - minX, 1),
+      (height - 2 * MARGIN) / Math.max(maxY - minY, 1),
+      MAX_TILE,
+    ),
+    0.01,
+  );
+  const left = (width - (maxX - minX) * scale) / 2;
+  const top = (height - (maxY - minY) * scale) / 2;
+  const px = (x: number) => left + (x - minX) * scale;
+  const py = (y: number) => top + (maxY - y) * scale;
   const laid = new Set(rails.map((spot) => spot.join()));
   const lines: Record<number, string> = {};
   for (const [x, y, level] of rails) {
@@ -99,109 +106,165 @@ const Board = (props: BoardProps) => {
     }
     lines[level] = line;
   }
-  // Inclines up and down, and region crossings, joining the levels.
+  // Inclines up and down, and region crossings.
   let joins = '';
-  for (const [x1, y1, , x2, y2] of data.links || []) {
+  for (const [x1, y1, , x2, y2] of links) {
     joins += `M${px(x1)} ${py(y1)}L${px(x2)} ${py(y2)}`;
   }
   // Farthest levels first, so the car's own is drawn on top.
   const levels = Object.keys(lines)
     .map(Number)
     .sort((a, b) => Math.abs(b) - Math.abs(a));
+  return { px, py, lines, joins, levels };
+};
+
+/**
+ * The line map, drawn in pixels to fit whatever room its (relatively positioned) parent gives it, so markers and
+ * labels keep their size in a small window. It measures that room itself: an SVG left to size itself grows to its
+ * picture's shape, and a long thin line pushes it off the board.
+ */
+const Board = (props: BoardProps) => {
+  const { data, picked, onPick } = props;
+  const { train, destination } = data;
+  const rails = data.rails || [];
+  const stops = data.stops || [];
+  const box = useRef<HTMLDivElement>(null);
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    const measure = () =>
+      box.current &&
+      setSize({
+        width: box.current.clientWidth,
+        height: box.current.clientHeight,
+      });
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+  const { width, height } = size;
+  const filled: CSSProperties = {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+  };
+  // The rails never change while the board is open; only the car moves across them.
+  const drawing = useMemo(
+    () =>
+      rails.length && width && height
+        ? drawLine(rails, data.links || [], width, height)
+        : null,
+    [rails, data.links, width, height],
+  );
+  if (!drawing) {
+    return (
+      <div ref={box} style={filled}>
+        {!rails.length && (
+          <NoticeBox>This car is not sitting on a rail line.</NoticeBox>
+        )}
+      </div>
+    );
+  }
+  const { px, py, lines, joins, levels } = drawing;
 
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      width="100%"
-      height="100%"
-      preserveAspectRatio="xMidYMid meet"
-      style={{ background: COLORS.ground, borderRadius: '4px' }}
-    >
-      {levels.map((level) => (
+    <div ref={box} style={filled}>
+      <svg
+        width={width}
+        height={height}
+        style={{
+          display: 'block',
+          background: COLORS.ground,
+          borderRadius: '4px',
+        }}
+      >
+        {levels.map((level) => (
+          <path
+            key={level}
+            d={lines[level]}
+            stroke={COLORS.rail}
+            strokeWidth={4}
+            strokeLinecap="round"
+            fill="none"
+            {...lineStyle(level)}
+          />
+        ))}
         <path
-          key={level}
-          d={lines[level]}
+          d={joins}
           stroke={COLORS.rail}
-          strokeWidth={6}
+          strokeWidth={4}
           strokeLinecap="round"
           fill="none"
-          {...lineStyle(level)}
+          strokeDasharray="2 6"
         />
-      ))}
-      <path
-        d={joins}
-        stroke={COLORS.rail}
-        strokeWidth={6}
-        strokeLinecap="round"
-        fill="none"
-        strokeDasharray="3 7"
-      />
-      {stops.map((stop) => {
-        const chosen = stop.ref === (picked ?? destination);
-        const x = px(stop.x);
-        const y = py(stop.y);
-        // Labels near the right edge go on the left, so they stay on the board.
-        const leftLabel = x > width * 0.7;
-        return (
-          <g
-            key={stop.ref}
-            onClick={() => onPick(stop.ref)}
-            style={{ cursor: 'pointer' }}
-          >
-            <title>
-              {stop.name}
-              {stop.level > 0 && ' (level above)'}
-              {stop.level < 0 && ' (level below)'}
-            </title>
-            <circle
-              cx={x}
-              cy={y}
-              r={chosen ? 13 : 9}
-              fill={chosen ? COLORS.picked : COLORS.stop}
-              stroke={COLORS.ground}
-              strokeWidth={4}
-            />
-            <text
-              x={leftLabel ? x - 18 : x + 18}
-              y={y + 6}
-              textAnchor={leftLabel ? 'end' : 'start'}
-              fontSize={18}
-              fontWeight={chosen ? 'bold' : 'normal'}
-              fill={chosen ? COLORS.picked : COLORS.stop}
-              stroke={COLORS.ground}
-              strokeWidth={5}
-              paintOrder="stroke"
+        {stops.map((stop) => {
+          const chosen = stop.ref === (picked ?? destination);
+          const x = px(stop.x);
+          const y = py(stop.y);
+          // Labels near the right edge go on the left, so they stay on the board.
+          const leftLabel = x > width * 0.7;
+          return (
+            <g
+              key={stop.ref}
+              onClick={() => onPick(stop.ref)}
+              style={{ cursor: 'pointer' }}
             >
-              {stop.name}
-            </text>
+              <title>
+                {stop.name}
+                {stop.level > 0 && ' (level above)'}
+                {stop.level < 0 && ' (level below)'}
+              </title>
+              <circle
+                cx={x}
+                cy={y}
+                r={chosen ? 9 : 6}
+                fill={chosen ? COLORS.picked : COLORS.stop}
+                stroke={COLORS.ground}
+                strokeWidth={3}
+              />
+              <text
+                x={leftLabel ? x - 12 : x + 12}
+                y={y + 4}
+                textAnchor={leftLabel ? 'end' : 'start'}
+                fontSize={13}
+                fontWeight={chosen ? 'bold' : 'normal'}
+                fill={chosen ? COLORS.picked : COLORS.stop}
+                stroke={COLORS.ground}
+                strokeWidth={4}
+                paintOrder="stroke"
+              >
+                {stop.name}
+              </text>
+            </g>
+          );
+        })}
+        {train && (
+          <g>
+            <title>This car</title>
+            <circle
+              cx={px(train[0])}
+              cy={py(train[1])}
+              r={11}
+              fill="none"
+              stroke={COLORS.train}
+              strokeWidth={3}
+            />
+            <circle
+              cx={px(train[0])}
+              cy={py(train[1])}
+              r={4}
+              fill={COLORS.train}
+            />
           </g>
-        );
-      })}
-      {train && (
-        <g>
-          <title>This car</title>
-          <circle
-            cx={px(train[0])}
-            cy={py(train[1])}
-            r={16}
-            fill="none"
-            stroke={COLORS.train}
-            strokeWidth={4}
-          />
-          <circle
-            cx={px(train[0])}
-            cy={py(train[1])}
-            r={7}
-            fill={COLORS.train}
-          />
-        </g>
-      )}
-    </svg>
+        )}
+      </svg>
+    </div>
   );
 };
 
 const Legend = (props: { levels: boolean }) => (
-  <Stack justify="center" fontSize="11px">
+  <Stack justify="center" wrap fontSize="11px">
     <Stack.Item>
       <Icon name="circle" color={COLORS.stop} /> Stop
     </Stack.Item>
@@ -263,7 +326,7 @@ export const RailTerminal = (props) => {
           <Stack.Item grow>
             <Section fill title="Line map">
               <Stack vertical fill>
-                <Stack.Item grow>
+                <Stack.Item grow position="relative">
                   <Board data={data} picked={picked} onPick={setPicked} />
                 </Stack.Item>
                 <Stack.Item>
@@ -272,7 +335,7 @@ export const RailTerminal = (props) => {
               </Stack>
             </Section>
           </Stack.Item>
-          <Stack.Item basis="250px">
+          <Stack.Item basis="32%" minWidth="150px" maxWidth="260px">
             <Stack vertical fill>
               <Stack.Item>
                 <Section title="Status">
@@ -315,6 +378,7 @@ export const RailTerminal = (props) => {
               <Stack.Item>
                 <Button
                   fluid
+                  ellipsis
                   textAlign="center"
                   fontSize="14px"
                   icon="play"
