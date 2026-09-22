@@ -441,21 +441,119 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/vehicle_autocannon)
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	bulletTipType = BULLET_SHARP
 
+/// Tank gun shells. The plain shell is solid armor-piercing shot; the kinds below it change what the shell is
+/// made of, how fast it flies and what it carries, and the existing bullet and shaped-charge code do the rest.
+/obj/projectile/bullet/cannonball/ms13_vehicle
+	/// Explosive filler, as explosion() ranges: devastation, heavy, light, flash. Null for solid shot.
+	var/list/blast
+	/// Shaped-charge warhead, as ms13_fire_shaped_charge_jet() takes it. No jet while jet_damage is 0.
+	var/jet_damage = 0
+	var/jet_penetration = 0
+	var/jet_range = 0
+	var/jet_fragments = 0
+	var/jet_hardness = 1
+	var/jet_mass = 2
+	var/detonated = FALSE
+
+/obj/projectile/bullet/cannonball/ms13_vehicle/on_hit(atom/target, blocked = FALSE, pierce_hit)
+	. = ..()
+	if(detonated || !(blast || jet_damage))
+		return
+	detonated = TRUE
+	// Bursts where the shell is, outside whatever it struck.
+	var/turf/burst = get_turf(src)
+	if(blast)
+		explosion(burst, devastation_range = blast[1], heavy_impact_range = blast[2], light_impact_range = blast[3], flash_range = blast[4], explosion_cause = src)
+	if(jet_damage)
+		// The jet forms a tile back, the warhead's standoff, so it crosses whatever set off the fuse.
+		var/turf/standoff = get_step(burst, turn(angle2dir(Angle), 180)) || burst
+		ms13_fire_shaped_charge_jet(standoff, Angle, jet_damage, jet_penetration, jet_range, jet_fragments, firer, jet_hardness, jet_mass)
+
+/// Warheads go off on the first thing they meet.
+/obj/projectile/bullet/cannonball/ms13_vehicle/can_overpenetrate(atom/target)
+	return !blast && !jet_damage && ..()
+
 TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/medium)
 	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/cannonball/ms13_vehicle/medium
-	name = "76mm tank shell"
+	name = "76mm AP shell"
 	damage = 400
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	bulletTipType = BULLET_SHARP
 
+/// Thin-walled and blunt: it breaks up on armor, and the burst does the work.
+/obj/projectile/bullet/cannonball/ms13_vehicle/medium/he
+	name = "76mm HE shell"
+	damage = 150
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
+	bulletTipType = BULLET_ROUNDED
+	projectile_piercing = NONE
+	blast = list(0, 1, 3, 2)
+
+/// Slow in flight. The shell itself is only the fuse: its shaped charge drives a jet through the armor.
+/obj/projectile/bullet/cannonball/ms13_vehicle/medium/heat
+	name = "76mm HEAT shell"
+	damage = 0
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
+	bulletTipType = BULLET_FLAT
+	projectile_piercing = NONE
+	blast = list(0, 0, 1, 1)
+	jet_damage = 800
+	jet_penetration = 300
+	jet_range = 6
+	jet_fragments = 6
+	jet_hardness = 3
+	jet_mass = 3
+
+/// A light, very fast dart: less to it than a full shot, but it arrives fast enough to cut the thickest armor.
+/obj/projectile/bullet/cannonball/ms13_vehicle/medium/sabot
+	name = "76mm sabot dart"
+	damage = 360
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN
+	bulletTipType = BULLET_ULTRASHARP
+	bullet_mass = 2
+
 TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	default_armor = GIANT_CAL_RIFLE
 /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
-	name = "122mm tank shell"
+	name = "122mm AP shell"
 	damage = 800
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_INSANE
 	bulletTipType = BULLET_SHARP
+
+/obj/projectile/bullet/cannonball/ms13_vehicle/heavy/he
+	name = "122mm HE shell"
+	damage = 300
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
+	bulletTipType = BULLET_ROUNDED
+	projectile_piercing = NONE
+	blast = list(1, 2, 4, 3)
+
+/obj/projectile/bullet/cannonball/ms13_vehicle/heavy/heat
+	name = "122mm HEAT shell"
+	damage = 0
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_MAGNUM
+	bulletTipType = BULLET_FLAT
+	projectile_piercing = NONE
+	blast = list(0, 0, 2, 2)
+	jet_damage = 1400
+	jet_penetration = 450
+	jet_range = 8
+	jet_fragments = 8
+	jet_hardness = 3
+	jet_mass = 4
+
+/obj/projectile/bullet/cannonball/ms13_vehicle/heavy/sabot
+	name = "122mm sabot dart"
+	damage = 720
+	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN
+	bulletTipType = BULLET_ULTRASHARP
+	bullet_mass = 2
+
+/// Canister shot: a can of heavy balls that bursts at the muzzle, like buckshot the size of a fist.
+/obj/projectile/bullet/pellet/ms13/buckshot/canister
+	name = "canister ball"
+	damage = 45
 
 /obj/item/ammo_casing/ms13/vehicle_autocannon
 	name = "30mm autocannon shell casing"
@@ -465,17 +563,61 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	projectile_type = /obj/projectile/bullet/ms13/vehicle_autocannon
 
 /obj/item/ammo_casing/ms13/vehicle_shell
-	name = "76mm tank shell casing"
-	desc = "A complete 76mm tank shell."
+	name = "76mm AP shell"
+	desc = "A complete 76mm armor-piercing tank shell."
 	caliber = "76mm"
 	icon_state = "50bmg_casing"
 	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium
 
+/obj/item/ammo_casing/ms13/vehicle_shell/he
+	name = "76mm HE shell"
+	desc = "A complete 76mm high-explosive tank shell, for soft targets and cover."
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium/he
+
+/obj/item/ammo_casing/ms13/vehicle_shell/heat
+	name = "76mm HEAT shell"
+	desc = "A complete 76mm shaped-charge tank shell. Slow, but it cuts armor."
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium/heat
+
+/obj/item/ammo_casing/ms13/vehicle_shell/sabot
+	name = "76mm sabot shell"
+	desc = "A complete 76mm discarding-sabot tank shell. A fast dart for the heaviest armor."
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium/sabot
+
+/obj/item/ammo_casing/ms13/vehicle_shell/canister
+	name = "76mm canister shell"
+	desc = "A complete 76mm canister shell. It turns the gun into an enormous shotgun."
+	projectile_type = /obj/projectile/bullet/pellet/ms13/buckshot/canister
+	pellets = 16
+	variance = 30
+
 /obj/item/ammo_casing/ms13/vehicle_shell/heavy
-	name = "122mm tank shell casing"
-	desc = "A complete 122mm tank shell."
+	name = "122mm AP shell"
+	desc = "A complete 122mm armor-piercing tank shell."
 	caliber = "122mm"
 	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
+
+/obj/item/ammo_casing/ms13/vehicle_shell/heavy/he
+	name = "122mm HE shell"
+	desc = "A complete 122mm high-explosive tank shell, for soft targets and cover."
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy/he
+
+/obj/item/ammo_casing/ms13/vehicle_shell/heavy/heat
+	name = "122mm HEAT shell"
+	desc = "A complete 122mm shaped-charge tank shell. Slow, but it cuts armor."
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy/heat
+
+/obj/item/ammo_casing/ms13/vehicle_shell/heavy/sabot
+	name = "122mm sabot shell"
+	desc = "A complete 122mm discarding-sabot tank shell. A fast dart for the heaviest armor."
+	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy/sabot
+
+/obj/item/ammo_casing/ms13/vehicle_shell/heavy/canister
+	name = "122mm canister shell"
+	desc = "A complete 122mm canister shell. It turns the gun into an enormous shotgun."
+	projectile_type = /obj/projectile/bullet/pellet/ms13/buckshot/canister
+	pellets = 30
+	variance = 35
 
 /obj/item/ammo_box/ms13/vehicle_autocannon
 	name = "30mm ammunition box"
@@ -487,20 +629,60 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	w_class = WEIGHT_CLASS_BULKY
 
 /obj/item/ammo_box/ms13/vehicle_shell
-	name = "76mm shell crate"
-	desc = "A reinforced crate containing 76mm tank shells."
+	name = "76mm AP shell crate"
+	desc = "A reinforced crate of 76mm armor-piercing tank shells. Use it on a gunner's seat to load the gun."
 	icon_state = "box50"
 	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell
 	caliber = "76mm"
 	max_ammo = 4
 	w_class = WEIGHT_CLASS_BULKY
 
+/obj/item/ammo_box/ms13/vehicle_shell/he
+	name = "76mm HE shell crate"
+	desc = "A reinforced crate of 76mm high-explosive tank shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/he
+
+/obj/item/ammo_box/ms13/vehicle_shell/heat
+	name = "76mm HEAT shell crate"
+	desc = "A reinforced crate of 76mm shaped-charge tank shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heat
+
+/obj/item/ammo_box/ms13/vehicle_shell/sabot
+	name = "76mm sabot shell crate"
+	desc = "A reinforced crate of 76mm discarding-sabot tank shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/sabot
+
+/obj/item/ammo_box/ms13/vehicle_shell/canister
+	name = "76mm canister shell crate"
+	desc = "A reinforced crate of 76mm canister shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/canister
+
 /obj/item/ammo_box/ms13/vehicle_shell/heavy
-	name = "122mm shell crate"
-	desc = "A reinforced crate containing 122mm tank shells."
+	name = "122mm AP shell crate"
+	desc = "A reinforced crate of 122mm armor-piercing tank shells. Use it on a gunner's seat to load the gun."
 	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy
 	caliber = "122mm"
 	max_ammo = 2
+
+/obj/item/ammo_box/ms13/vehicle_shell/heavy/he
+	name = "122mm HE shell crate"
+	desc = "A reinforced crate of 122mm high-explosive tank shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy/he
+
+/obj/item/ammo_box/ms13/vehicle_shell/heavy/heat
+	name = "122mm HEAT shell crate"
+	desc = "A reinforced crate of 122mm shaped-charge tank shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy/heat
+
+/obj/item/ammo_box/ms13/vehicle_shell/heavy/sabot
+	name = "122mm sabot shell crate"
+	desc = "A reinforced crate of 122mm discarding-sabot tank shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy/sabot
+
+/obj/item/ammo_box/ms13/vehicle_shell/heavy/canister
+	name = "122mm canister shell crate"
+	desc = "A reinforced crate of 122mm canister shells. Use it on a gunner's seat to load the gun."
+	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy/canister
 
 /**
  * A turret seen from above. Both ring and turret top are exterior-only, like the roof, so the art does not
@@ -519,17 +701,30 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	var/shift_right = 0
 	var/shift_forward = 0
 	var/obj/structure/chair/ms13_vehicle_seat/gunner_seat
-	var/projectile_type
-	var/ammo_type
+	/// The mount's standard round. Any round of the same caliber loads.
+	var/obj/item/ammo_casing/ammo_type
 	var/weapon_name = "unarmed mount"
 	var/fire_sound
 	var/fire_sound_volume = 75
 	var/fire_delay = 1 SECONDS
 	var/max_ammo = 0
+	/// Rounds loaded, of every kind.
 	var/ammo = 0
+	/// Rounds loaded, by casing type.
+	var/list/loaded_rounds
+	/// The kind of round in the breech, fired next.
+	var/obj/item/ammo_casing/selected_round
 	var/next_fire_time = 0
 	/// Hand-operated machine guns need no electricity; powered heavy mounts do.
 	var/shot_power_cost = 0
+
+/obj/structure/ms13_vehicle_part/turret/Initialize(mapload)
+	. = ..()
+	loaded_rounds = list()
+	// Mounts come loaded with their standard round.
+	if(ammo && ammo_type)
+		loaded_rounds[ammo_type] = ammo
+		selected_round = ammo_type
 
 /obj/structure/ms13_vehicle_part/turret/Destroy()
 	if(gunner_seat)
@@ -540,7 +735,22 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 
 /obj/structure/ms13_vehicle_part/turret/examine(mob/user)
 	. = ..()
-	. += span_notice("Its [weapon_name] has [ammo]/[max_ammo] rounds loaded.")
+	. += ammo_report()
+
+/// What is loaded, for examine text.
+/obj/structure/ms13_vehicle_part/turret/proc/ammo_report()
+	. = list(span_notice("Its [weapon_name] has [ammo]/[max_ammo] rounds loaded. Load it by using ammunition on the gunner's seat."))
+	for(var/obj/item/ammo_casing/round_type as anything in loaded_rounds)
+		. += span_notice("[round_type == selected_round ? "In the breech: " : ""][loaded_rounds[round_type]] x [initial(round_type.name)]")
+
+/// Puts the next kind of loaded round in the breech.
+/obj/structure/ms13_vehicle_part/turret/proc/cycle_round(mob/user)
+	if(length(loaded_rounds) < 2)
+		balloon_alert(user, length(loaded_rounds) ? "only one kind loaded" : "nothing loaded!")
+		return
+	var/index = loaded_rounds.Find(selected_round)
+	selected_round = loaded_rounds[index % length(loaded_rounds) + 1]
+	balloon_alert(user, "[initial(selected_round.name)] ([loaded_rounds[selected_round]])")
 
 /obj/structure/ms13_vehicle_part/turret/attackby(obj/item/used_item, mob/user, params)
 	if(!istype(used_item, /obj/item/ammo_box))
@@ -556,9 +766,12 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	var/loaded = 0
 	while(ammo < max_ammo && ammo_box.ammo_count(FALSE))
 		var/obj/item/ammo_casing/round = ammo_box.get_round(FALSE)
-		if(!istype(round, ammo_type))
+		if(round.caliber != initial(ammo_type.caliber) || !round.loaded_projectile)
 			ammo_box.give_round(round)
 			break
+		// The round just loaded is the one in the breech.
+		selected_round = round.type
+		loaded_rounds[round.type] += 1
 		qdel(round)
 		ammo++
 		loaded++
@@ -588,7 +801,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	return muzzle
 
 /obj/structure/ms13_vehicle_part/turret/proc/fire_at(atom/target, mob/living/user, list/modifiers)
-	if(!projectile_type || !is_operational() || !gunner_seat || user.buckled != gunner_seat || !(user in gunner_seat.buckled_mobs) || user.incapacitated())
+	if(!ammo_type || !is_operational() || !gunner_seat || user.buckled != gunner_seat || !(user in gunner_seat.buckled_mobs) || user.incapacitated())
 		return FALSE
 	if(shot_power_cost && (!vehicle?.has_electrical_power() || vehicle.battery.cell.charge < shot_power_cost))
 		balloon_alert(user, "mount has no power!")
@@ -598,7 +811,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 		return FALSE
 	if(world.time < next_fire_time)
 		return FALSE
-	if(ammo <= 0)
+	if(!length(loaded_rounds))
 		balloon_alert(user, "[weapon_name] is empty!")
 		playsound(src, 'sound/weapons/gun/general/dry_fire.ogg', 30, TRUE)
 		next_fire_time = world.time + 5
@@ -607,25 +820,39 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	var/turf/muzzle = get_muzzle_turf(dir)
 	if(!muzzle)
 		return FALSE
-	var/obj/projectile/shot = new projectile_type
-	shot.firer = user
-	shot.fired_from = src
-	if(!shot.preparePixelProjectile(target, muzzle, modifiers))
-		qdel(shot)
-		return FALSE
-	if(shot_power_cost && !vehicle.use_battery(shot_power_cost))
-		qdel(shot)
+	if(!loaded_rounds[selected_round])
+		selected_round = loaded_rounds[1]
+	var/obj/item/ammo_casing/round_type = selected_round
+	// Canister rounds burst into a spread of pellets at the muzzle; everything else is one shot.
+	var/pellets = initial(round_type.pellets)
+	var/spread = initial(round_type.variance)
+	var/projectile_path = initial(round_type.projectile_type)
+	var/list/shots = list()
+	for(var/pellet in 1 to pellets)
+		var/obj/projectile/shot = new projectile_path
+		shot.firer = user
+		shot.fired_from = src
+		if(!shot.preparePixelProjectile(target, muzzle, modifiers, pellets > 1 ? rand(-spread, spread) / 2 : 0))
+			qdel(shot)
+			continue
+		shots += shot
+	if(!length(shots) || (shot_power_cost && !vehicle.use_battery(shot_power_cost)))
+		QDEL_LIST(shots)
 		return FALSE
 	ammo--
+	loaded_rounds[round_type] -= 1
+	if(!loaded_rounds[round_type])
+		loaded_rounds -= round_type
+		selected_round = length(loaded_rounds) ? loaded_rounds[1] : null
 	next_fire_time = world.time + fire_delay
 	playsound(src, fire_sound, fire_sound_volume, TRUE)
-	shot.fire()
+	for(var/obj/projectile/shot as anything in shots)
+		shot.fire()
 	return TRUE
 
 /obj/structure/ms13_vehicle_part/turret/machine_gun
 	weapon_name = "7.62mm machine gun"
-	projectile_type = /obj/projectile/bullet/ms13/a762/fmj
-	ammo_type = /obj/item/ammo_casing/ms13/a762
+	ammo_type = /obj/item/ammo_casing/ms13/a762/fmj
 	fire_sound = 'mojave/sound/ms13vehicles/DP28.ogg'
 	fire_delay = 2
 	max_ammo = 100
@@ -639,7 +866,6 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 
 /obj/structure/ms13_vehicle_part/turret/autocannon/btr80
 	weapon_name = "Shipunov 2A72 30mm autocannon"
-	projectile_type = /obj/projectile/bullet/ms13/vehicle_autocannon
 	ammo_type = /obj/item/ammo_casing/ms13/vehicle_autocannon
 	fire_sound = 'mojave/sound/ms13vehicles/2a72.ogg'
 	fire_delay = 4
@@ -648,7 +874,6 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 
 /obj/structure/ms13_vehicle_part/turret/autocannon/bmd2
 	weapon_name = "Shipunov 2A42 30mm autocannon"
-	projectile_type = /obj/projectile/bullet/ms13/vehicle_autocannon
 	ammo_type = /obj/item/ammo_casing/ms13/vehicle_autocannon
 	fire_sound = 'mojave/sound/ms13vehicles/30mm.ogg'
 	fire_delay = 3
@@ -657,7 +882,6 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 
 /obj/structure/ms13_vehicle_part/turret/tank/medium
 	weapon_name = "76mm tank cannon"
-	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/medium
 	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell
 	fire_sound = 'mojave/sound/ms13vehicles/artillery_outgoing.ogg'
 	fire_sound_volume = 100
@@ -667,7 +891,6 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 
 /obj/structure/ms13_vehicle_part/turret/tank/heavy
 	weapon_name = "122mm tank cannon"
-	projectile_type = /obj/projectile/bullet/cannonball/ms13_vehicle/heavy
 	ammo_type = /obj/item/ammo_casing/ms13/vehicle_shell/heavy
 	fire_sound = 'mojave/sound/ms13vehicles/artillery_outgoing.ogg'
 	fire_sound_volume = 100
@@ -726,3 +949,9 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 /obj/structure/ms13_vehicle_part/stowage/Initialize(mapload)
 	. = ..()
 	create_storage(max_slots = slots, max_specific_storage = WEIGHT_CLASS_BULKY, max_total_storage = slots * WEIGHT_CLASS_BULKY)
+
+/// Fills the rack from loadout: item type = how many.
+/obj/structure/ms13_vehicle_part/stowage/proc/stock(list/loadout)
+	for(var/item_type in loadout)
+		for(var/count in 1 to loadout[item_type])
+			new item_type(src)

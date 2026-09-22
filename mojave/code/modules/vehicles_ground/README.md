@@ -51,5 +51,12 @@ only at corners. Stops are `/obj/structure/ms13_rail/station` rails, named after
 so give each station its own named area. (The driver's "Rail destination" menu does the same for now.)
 Cars board through a door in each side at mid-length, with that row kept clear of seats.
 
+Soviet armed vehicles come with stocked racks: 30mm boxes, 7.62 boxes, or mixed shell crates for the
+tanks. Load a gun by using ammunition on the gunner's seat; any round of the gun's caliber loads, and
+the last kind loaded goes in the breech. Alt-click the turret controls to switch kinds. Tank shells
+come as AP, HE (bursts on contact), HEAT (slow; on contact its shaped charge fires the same jet as
+crafted charges and anti-armor bombs), sabot (a fast dart for the heaviest armor) and canister (a spread
+of heavy balls), for both the 76mm and 122mm guns.
+
 Regression checks: `ms13_vehicle_electrical`, `ms13_vehicle_obstacle_impact`, the existing ground
 vehicle tests and Civ96 assembly tests under `code/modules/unit_tests/`.

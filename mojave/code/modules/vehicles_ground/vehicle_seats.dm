@@ -181,6 +181,11 @@
 		return operated_turret.attackby(used_item, user, params)
 	return ..()
 
+/obj/structure/chair/ms13_vehicle_seat/examine(mob/user)
+	. = ..()
+	if(operated_turret)
+		. += operated_turret.ammo_report()
+
 /obj/structure/chair/ms13_vehicle_seat/relaymove(mob/living/user, direction)
 	if(!is_driver_seat || !parent_frame?.vehicle || !(user in buckled_mobs))
 		return ..()
@@ -194,7 +199,7 @@
 /// An abstract held trigger, following the existing deployable-turret control pattern.
 /obj/item/ms13_vehicle_turret_control
 	name = "vehicle turret controls"
-	desc = "Aim at a target and fire. Use the controls in hand to toggle the directional exterior gunsight."
+	desc = "Aim at a target and fire. Use the controls in hand to toggle the directional exterior gunsight; alt-click them to switch the kind of round in the breech."
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "offhand"
 	w_class = WEIGHT_CLASS_HUGE
@@ -222,6 +227,16 @@
 
 /obj/item/ms13_vehicle_turret_control/CanItemAutoclick()
 	return TRUE
+
+/obj/item/ms13_vehicle_turret_control/examine(mob/user)
+	. = ..()
+	if(turret)
+		. += turret.ammo_report()
+
+/obj/item/ms13_vehicle_turret_control/AltClick(mob/user)
+	. = ..()
+	if(turret && user.buckled == turret.gunner_seat && user.is_holding(src))
+		turret.cycle_round(user)
 
 /obj/item/ms13_vehicle_turret_control/attack_self(mob/living/user)
 	if(!turret || user.buckled != turret.gunner_seat || !user.is_holding(src))

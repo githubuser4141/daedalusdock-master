@@ -165,11 +165,18 @@
 		fragment.preparePixelProjectile(fragment_target, origin)
 		fragment.fire(fragment_angle)
 
-/// Shared delivery path for crafted charges, rockets, and hostile-mob attacks.
+/// Shared delivery path for crafted charges, rockets, tank shells, and hostile-mob attacks.
 /proc/ms13_fire_shaped_charge_jet(turf/origin, firing_angle, jet_damage = 50, jet_penetration = 150, coherent_range = 5, fragment_count = 4, atom/movable/source, jet_hardness = 1, jet_mass = 2, jet_ductility = 0.5)
 	if(!origin)
 		return
 	var/turf/target = get_ranged_target_turf(origin, angle2dir(firing_angle), max(2, coherent_range + 1))
+	var/obj/projectile/bullet/ms13/shaped_charge_jet/jet = ms13_make_shaped_charge_jet(origin, jet_damage, jet_penetration, coherent_range, fragment_count, source, jet_hardness, jet_mass, jet_ductility)
+	jet.preparePixelProjectile(target, origin)
+	jet.fire(firing_angle)
+	return jet
+
+/// The jet ms13_fire_shaped_charge_jet() fires, set up but not yet fired.
+/proc/ms13_make_shaped_charge_jet(turf/origin, jet_damage = 50, jet_penetration = 150, coherent_range = 5, fragment_count = 4, atom/movable/source, jet_hardness = 1, jet_mass = 2, jet_ductility = 0.5)
 	var/obj/projectile/bullet/ms13/shaped_charge_jet/jet = new(origin)
 	jet.damage = jet_damage
 	jet.armor_penetration = jet_penetration
@@ -182,8 +189,6 @@
 	jet.setArmor(jet.returnArmor().setRating(puncture = clamp(round(50 * jet_hardness), 10, 150)))
 	jet.firer = source
 	jet.fired_from = source
-	jet.preparePixelProjectile(target, origin)
-	jet.fire(firing_angle)
 	return jet
 
 /obj/item/grenade/c4/ms13/shaped

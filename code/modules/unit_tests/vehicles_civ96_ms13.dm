@@ -55,8 +55,16 @@
 	TEST_ASSERT_EQUAL(drivers, 1, "[vehicle_type] needs exactly one driver's seat.")
 	TEST_ASSERT(gunner_seat, "[vehicle_type] turret is not linked to a gunner's seat.")
 	TEST_ASSERT_EQUAL(turret.gunner_seat, gunner_seat, "[vehicle_type] gunner seat link is only one-way.")
-	TEST_ASSERT(turret.projectile_type && turret.ammo_type && turret.fire_sound, "[vehicle_type] turret is missing part of its weapon configuration.")
+	TEST_ASSERT(turret.ammo_type && turret.fire_sound, "[vehicle_type] turret is missing part of its weapon configuration.")
 	TEST_ASSERT(turret.ammo > 0 && turret.ammo <= turret.max_ammo, "[vehicle_type] turret did not start with a valid ammunition load.")
+	// Its racks come stocked with rounds its own gun takes.
+	var/obj/item/ammo_casing/standard = turret.ammo_type
+	var/stocked = 0
+	for(var/obj/structure/ms13_vehicle_part/stowage/rack in vehicle.parts)
+		for(var/obj/item/ammo_box/box in rack)
+			stocked += box.ammo_count()
+			TEST_ASSERT_EQUAL(box.caliber, initial(standard.caliber), "[vehicle_type] stows [box], which its gun can't fire.")
+	TEST_ASSERT(stocked, "[vehicle_type] racks came empty.")
 
 	// One representative live shot covers the shared controls and fire path used by every profile.
 	if(istype(pivot, /obj/structure/ms13_vehicle_frame/civ96/btr80))
@@ -84,6 +92,20 @@
 		gunner_seat.unbuckle_mob(gunner, TRUE)
 		TEST_ASSERT(!gunner_seat.turret_control, "The turret controls remained after the gunner unbuckled.")
 
+	// Any shell of the gun's caliber loads through the gunner's seat, and the last one loaded fires next.
+	if(istype(pivot, /obj/structure/ms13_vehicle_frame/civ96/t34))
+		var/mob/living/carbon/human/consistent/loader = allocate(/mob/living/carbon/human/consistent, get_turf(gunner_seat))
+		turret.ammo = 0
+		turret.loaded_rounds.Cut()
+		gunner_seat.attackby(allocate(/obj/item/ammo_box/ms13/vehicle_shell/heavy), loader)
+		TEST_ASSERT(!turret.ammo, "The 76mm gun took 122mm shells.")
+		gunner_seat.attackby(allocate(/obj/item/ammo_box/ms13/vehicle_shell/he), loader)
+		gunner_seat.attackby(allocate(/obj/item/ammo_box/ms13/vehicle_shell/canister), loader)
+		TEST_ASSERT_EQUAL(turret.ammo, 8, "Shell crates did not load through the gunner's seat.")
+		TEST_ASSERT_EQUAL(turret.selected_round, /obj/item/ammo_casing/ms13/vehicle_shell/canister, "The last shell loaded is not the one in the breech.")
+		turret.cycle_round(loader)
+		TEST_ASSERT_EQUAL(turret.selected_round, /obj/item/ammo_casing/ms13/vehicle_shell/he, "Switching shells did not reach the other kind loaded.")
+
 	var/obj/projectile/bullet/ms13/a50MG/heavy = allocate(/obj/projectile/bullet/ms13/a50MG)
 	var/list/every_round = list()
 	if(tank_armor)
@@ -109,6 +131,18 @@
 
 	if(tank_armor)
 		var/obj/structure/window/ms13_vehicle_wall/solid/panel = locate(/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank) in vehicle.walls
+		// Against its own plate, sabot and the HEAT jet beat solid shot, and HE barely scratches it.
+		var/solid_shot = initial(standard.projectile_type)
+		var/list/margin = list()
+		for(var/kind in list("", "/he", "/sabot"))
+			var/obj/projectile/shell = allocate(text2path("[solid_shot][kind]"))
+			margin[kind] = shell.get_penetration_power() - panel.get_bullet_stopping_power(shell)
+		var/obj/projectile/bullet/cannonball/ms13_vehicle/heat = allocate(text2path("[solid_shot]/heat"))
+		var/obj/projectile/jet = ms13_make_shaped_charge_jet(get_turf(heat), heat.jet_damage, heat.jet_penetration, heat.jet_range, heat.jet_fragments, null, heat.jet_hardness, heat.jet_mass)
+		margin["/heat"] = jet.get_penetration_power() - panel.get_bullet_stopping_power(jet)
+		qdel(jet)
+		TEST_ASSERT(!heat.damage && !heat.can_overpenetrate(panel), "[vehicle_type] HEAT shell hits with more than its fuse.")
+		TEST_ASSERT(margin["/sabot"] > margin[""] && margin["/heat"] > margin[""] && margin[""] > margin["/he"], "[vehicle_type] shell kinds don't rank sabot/HEAT over AP over HE against tank armor.")
 		TEST_ASSERT(panel.get_bullet_damage_share(heavy, 1) > 0, "[vehicle_type] armor can't be worn down by a .50 BMG at all.")
 		panel.update_integrity(panel.max_integrity * 0.2)
 		TEST_ASSERT(panel.get_bullet_transfer_fraction(heavy) < 1, "A .50 BMG could not get through a holed [vehicle_type] panel.")

@@ -142,6 +142,12 @@
 	turret.gunner_seat = seat
 	return turret
 
+/// A stowage rack on tile, filled from loadout: item type = how many.
+/obj/structure/ms13_vehicle_frame/civ96/proc/add_stowage(tile, list/loadout)
+	var/obj/structure/ms13_vehicle_part/stowage/rack = add_part(tile, /obj/structure/ms13_vehicle_part/stowage)
+	rack.stock(loadout)
+	return rack
+
 /obj/structure/ms13_vehicle_frame/civ96/proc/add_seat_at(tile, relative_dir, seat_name, seat_icon_state = "commanders_seat")
 	var/obj/structure/ms13_vehicle_frame/frame = tiles[tile]
 	return frame.add_seat(relative_dir, seat_name, seat_icon_state)
@@ -232,7 +238,7 @@
 /obj/structure/ms13_vehicle_frame/civ96/btr80/furnish()
 	add_driver_seat("front_left")
 	add_seat_at("front_right", SEAT_FORWARD, "commander's seat")
-	add_part("front_right", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("front_right", list(/obj/item/ammo_box/ms13/vehicle_autocannon = 3))
 	add_gunner_station("middle_front_right", "btr80", -16, 0, "BTR-80 turret", /obj/structure/ms13_vehicle_part/turret/autocannon/btr80)
 	add_seat_at("middle_front_left", SEAT_FACING_RIGHT, "troop seat")
 	add_seat_at("middle_back_left", SEAT_FACING_RIGHT, "troop seat")
@@ -319,7 +325,7 @@
 	add_panel("middle_front_right", EDGE_LEFT, "engine access panel")
 	add_part("middle_front_right", /obj/structure/ms13_vehicle_part/engine/mtlb)
 	add_part("middle_front_right", /obj/structure/ms13_vehicle_part/gearbox/mtlb)
-	add_part("middle_front_left", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("middle_front_left", list(/obj/item/ammo_box/ms13/a762 = 4))
 
 	add_seat_at("middle_back_left", SEAT_FACING_RIGHT, "troop seat")
 	add_seat_at("middle_back_right", SEAT_FACING_LEFT, "troop seat")
@@ -397,7 +403,7 @@
 /obj/structure/ms13_vehicle_frame/civ96/bmd2/furnish()
 	add_driver_seat("front_right")
 	add_seat_at("front_left", SEAT_FORWARD, "bow gunner's seat")
-	add_part("front_left", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("front_left", list(/obj/item/ammo_box/ms13/vehicle_autocannon = 3))
 	add_gunner_station("middle_right", "bmd2", -16, 16, "BMD-2 turret", /obj/structure/ms13_vehicle_part/turret/autocannon/bmd2)
 	add_seat_at("middle_left", SEAT_FORWARD, "commander's seat")
 	add_part("middle_left", /obj/structure/ms13_vehicle_part/interior_light)
@@ -484,13 +490,13 @@
 
 /obj/structure/ms13_vehicle_frame/civ96/t34/furnish()
 	add_driver_seat("front_left")
-	add_part("front_middle", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("front_middle", list(/obj/item/ammo_box/ms13/vehicle_shell = 2))
 	add_seat_at("front_right", SEAT_FORWARD, "bow gunner's seat")
 	add_gunner_station("middle_front", "t34", 0, 0, "T-34 turret", /obj/structure/ms13_vehicle_part/turret/tank/medium)
-	add_part("middle_front_left", /obj/structure/ms13_vehicle_part/stowage)
-	add_part("middle_front_right", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("middle_front_left", list(/obj/item/ammo_box/ms13/vehicle_shell/he = 2))
+	add_stowage("middle_front_right", list(/obj/item/ammo_box/ms13/vehicle_shell/he = 1, /obj/item/ammo_box/ms13/vehicle_shell/heat = 1))
 	add_seat_at("middle_back", SEAT_FORWARD, "loader's seat")
-	add_part("middle_back", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("middle_back", list(/obj/item/ammo_box/ms13/vehicle_shell/sabot = 1, /obj/item/ammo_box/ms13/vehicle_shell/canister = 1))
 	add_part("middle_back", /obj/structure/ms13_vehicle_part/interior_light)
 
 	add_panel("back_left", EDGE_FRONT, "fuel tank access panel")
@@ -575,16 +581,16 @@
 
 /obj/structure/ms13_vehicle_frame/civ96/is3/furnish()
 	add_driver_seat("front_middle")
-	add_part("front_left", /obj/structure/ms13_vehicle_part/stowage)
-	add_part("front_right", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("front_left", list(/obj/item/ammo_box/ms13/vehicle_shell/heavy = 2))
+	add_stowage("front_right", list(/obj/item/ammo_box/ms13/vehicle_shell/heavy/he = 2))
 	add_gunner_station("middle_front", "is3", 0, -16, "IS-3 turret", /obj/structure/ms13_vehicle_part/turret/tank/heavy)
-	add_part("middle_front_left", /obj/structure/ms13_vehicle_part/stowage)
-	add_part("middle_front_right", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("middle_front_left", list(/obj/item/ammo_box/ms13/vehicle_shell/heavy/he = 2))
+	add_stowage("middle_front_right", list(/obj/item/ammo_box/ms13/vehicle_shell/heavy/heat = 2))
 	add_seat_at("middle", SEAT_FORWARD, "commander's seat")
 	add_part("middle", /obj/structure/ms13_vehicle_part/interior_light)
 	add_seat_at("middle_back", SEAT_FORWARD, "loader's seat")
-	add_part("middle_back_left", /obj/structure/ms13_vehicle_part/stowage)
-	add_part("middle_back_right", /obj/structure/ms13_vehicle_part/stowage)
+	add_stowage("middle_back_left", list(/obj/item/ammo_box/ms13/vehicle_shell/heavy/sabot = 1, /obj/item/ammo_box/ms13/vehicle_shell/heavy/canister = 1))
+	add_stowage("middle_back_right", list(/obj/item/ammo_box/ms13/vehicle_shell/heavy/he = 1, /obj/item/ammo_box/ms13/vehicle_shell/heavy = 1))
 
 	add_panel("back_left", EDGE_FRONT, "fuel tank access panel")
 	add_panel("back", EDGE_FRONT, "engine access panel")
