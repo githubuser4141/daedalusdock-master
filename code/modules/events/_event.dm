@@ -141,7 +141,7 @@
 //Provides ghosts a follow link to an atom if possible
 //Only called once.
 /datum/round_event/proc/announce_to_ghosts(atom/atom_of_interest)
-	if(control.alert_observers)
+	if(control?.alert_observers)
 		if (atom_of_interest)
 			notify_ghosts("[control.name] has an object of interest: [atom_of_interest]!", source=atom_of_interest, action=NOTIFY_ORBIT, header="Something's Interesting!")
 	return
