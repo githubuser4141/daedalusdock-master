@@ -926,6 +926,9 @@ INITIALIZE_IMMEDIATE(/obj/effect/mapping_helpers/no_lava)
 	var/obj/machinery/power/smes/smes_on_myturf = locate() in my_turf
 	for(var/cardinal in GLOB.cardinals)
 		var/turf/step_turf = get_step(my_turf, cardinal)
+		// MOJAVE EDIT: never across a substation, which keeps its plant and house sides apart (mojave/code/modules/power/grid.dm).
+		if(ms13_grid_divides(my_turf, cardinal))
+			continue
 		for(var/obj/structure/cable/smart_cable/cable_spawner in step_turf)
 			if((connect_to_same_color && cable_spawner.connect_to_same_color) && (color != cable_spawner.color))
 				continue

@@ -143,4 +143,37 @@
 /datum/unit_test/ms13_power_grid/proc/lay_knot(turf/tile, toward)
 	var/obj/structure/cable/knot = allocate(/obj/structure/cable, tile)
 	knot.set_directions(GLOB.real_dirs_to_cable_dirs["[toward]"])
+
+/// Smart cables mapped straight through a plant: they stop at a substation, and leave a knot for a lamp mid-line.
+/datum/unit_test/ms13_smart_cables
+	name = "POWER: Smart Cables Wire The Grid"
+
+/datum/unit_test/ms13_smart_cables/Run()
+	var/x0 = run_loc_floor_bottom_left.x + 1
+	var/y0 = run_loc_floor_bottom_left.y + 1
+	var/z0 = run_loc_floor_bottom_left.z
+	// Plant cable, substation facing east, the tile it faces, a lamp on the line, the line's end. Built as the map loads.
+	SSatoms.map_loader_begin(REF(src))
+	var/list/built = list()
+	for(var/offset in 0 to 4)
+		built += new /obj/structure/cable/smart_cable(locate(x0 + offset, y0, z0))
+	var/obj/machinery/ms13/substation/substation = new(locate(x0 + 1, y0, z0))
+	substation.setDir(EAST)
+	var/obj/machinery/power/ms13/streetlamp/lamp = new(locate(x0 + 3, y0, z0))
+	built += substation
+	built += lamp
+	SSatoms.map_loader_stop(REF(src))
+	SSatoms.InitializeAtoms(built)
+	allocated += built
+	var/datum/powernet/plant_side = ms13_cable_net_at(locate(x0 + 1, y0, z0))
+	var/datum/powernet/house_side = ms13_cable_net_at(locate(x0 + 2, y0, z0))
+	if(!plant_side || !house_side || plant_side == house_side)
+		Fail("Smart cables ran straight across the substation, or left it no knot on either side.")
+	if(ms13_cable_net_at(locate(x0, y0, z0)) != plant_side)
+		Fail("Smart cables did not join the plant line.")
+	if(ms13_cable_net_at(locate(x0 + 3, y0, z0)) != house_side)
+		Fail("A smart cable running under a lamp left it no knot on the house line.")
+	lamp.connect_to_network()
+	if(lamp.powernet != house_side)
+		Fail("A lamp mid-line didn't join the house line.")
 #endif

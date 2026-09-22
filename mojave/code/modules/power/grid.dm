@@ -39,6 +39,31 @@
 	var/obj/structure/cable/node = target?.get_cable_node()
 	return node?.powernet
 
+/// Smart cables (the mapping helper) leave a knot mid-line wherever a grid machine takes power: under any power machine,
+/// generator or substation, and on the tile a substation or capacitor faces.
+/obj/structure/cable/smart_cable/knot_desirable()
+	if(..())
+		return TRUE
+	var/turf/my_turf = loc
+	if((locate(/obj/machinery/power) in my_turf) || (locate(/obj/machinery/ms13/fusion_generator) in my_turf) || (locate(/obj/machinery/ms13/substation) in my_turf))
+		return TRUE
+	for(var/direction in GLOB.cardinals)
+		for(var/obj/machinery/ms13/substation/facing in get_step(my_turf, direction))
+			if(facing.dir == turn(direction, 180))
+				return TRUE
+	return FALSE
+
+/// Whether a smart cable on here must stop short of the next tile along direction: that would join the plant side
+/// under a substation to the house side it faces, making them one network.
+/proc/ms13_grid_divides(turf/here, direction)
+	for(var/obj/machinery/ms13/substation/substation in here)
+		if(substation.dir == direction && !istype(substation, /obj/machinery/ms13/substation/discharge))
+			return TRUE
+	for(var/obj/machinery/ms13/substation/substation in get_step(here, direction))
+		if(substation.dir == turn(direction, 180) && !istype(substation, /obj/machinery/ms13/substation/discharge))
+			return TRUE
+	return FALSE
+
 /// Round start builds every powernet once, after all atoms exist (SSmachines.makepowernets()). Merging each mapped cable
 /// into its neighbours' networks first is thrown away, and costs more the bigger the grid, so it waits for that.
 /obj/structure/cable/mapping_init()
