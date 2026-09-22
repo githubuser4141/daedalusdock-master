@@ -376,6 +376,7 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 /obj/projectile/beam/ms13/laser/sentrybot
 	damage = 8
+	debris_chance = 20
 	subtractible_armour_penetration = 32
 	//wound_bonus = 18
 	//bare_wound_bonus 10
@@ -587,6 +588,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/sentry)
 	damage = SMALL_RIFLE_DAMAGE
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RIFLE_VFAST
 	bulletTipType = BULLET_SHARP
+	debris_chance = 20
 
 /datum/action/cooldown/railgun
 	name = "Fire a railgun"

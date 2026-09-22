@@ -24,11 +24,9 @@
 /obj/bullet_act(obj/projectile/P)
 	. = ..()
 	playsound(src, P.hitsound, 50, TRUE)
-	var/damage
+	// MOJAVE EDIT: no "[src] is hit by [P]!" message; under automatic fire it floods the chat.
 	if(!QDELETED(src)) //Bullet on_hit effect might have already destroyed this object
-		damage = take_damage(P.damage, P.damage_type, P.armor_flag, 0, turn(P.dir, 180), P.armor_penetration)
-	if(P.suppressed != SUPPRESSED_VERY)
-		visible_message(span_danger("[src] is hit by \a [P][damage ? "" : ", without leaving a mark"]!"), null, null, COMBAT_MESSAGE_RANGE)
+		take_damage(P.damage, P.damage_type, P.armor_flag, 0, turn(P.dir, 180), P.armor_penetration)
 
 /obj/attack_hulk(mob/living/carbon/human/user)
 	..()

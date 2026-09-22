@@ -105,6 +105,7 @@ code/__DEFINES/icon_smoothing.dm,
 code/modules/grab/grab_living.dm,
 code/controllers/subsystem/ai_controllers.dm,
 code/modules/unit_tests/cover_ms13.dm,
+code/game/objects/obj_defense.dm,
 
 
 */
