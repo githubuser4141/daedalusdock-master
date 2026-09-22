@@ -249,6 +249,33 @@
 	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Broken camera still revealed the outside.")
 	camera.repair_damage(camera.max_integrity)
 	TEST_ASSERT(!vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Repaired camera did not recover its view.")
+	// The driver steps through every working feed, then back to the cabin.
+	var/obj/structure/chair/ms13_vehicle_seat/seat = locate() in get_turf(front)
+	var/mob/living/carbon/human/consistent/driver = allocate(/mob/living/carbon/human/consistent, get_turf(front))
+	seat.user_buckle_mob(driver, driver)
+	var/list/feeds = list()
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/feed in vehicle.parts)
+		feeds += feed
+	TEST_ASSERT(length(feeds) > 1, "Truck has too few cameras to cycle.")
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/feed as anything in feeds)
+		seat.next_camera(driver)
+		TEST_ASSERT_EQUAL(driver.ms13_vehicle_camera, feed, "Camera view skipped a working camera.")
+	seat.next_camera(driver)
+	TEST_ASSERT(!driver.ms13_vehicle_camera, "Camera view did not cycle back to the cabin.")
+	seat.next_camera(driver)
+	vehicle.cameras_on = FALSE
+	vehicle.update_electrical()
+	TEST_ASSERT(!driver.ms13_vehicle_camera, "Switching the cameras off left the driver on a dead feed.")
+	vehicle.cameras_on = TRUE
+	vehicle.update_electrical()
+	seat.next_camera(driver)
+	seat.user_unbuckle_mob(driver, driver)
+	TEST_ASSERT(!driver.ms13_vehicle_camera, "Leaving the driver's seat kept the camera feed.")
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal/thermal = front.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal)
+	driver.sight = NONE
+	thermal.update_remote_sight(driver)
+	TEST_ASSERT(driver.sight & SEE_MOBS, "Thermal camera did not show warm bodies.")
+	qdel(thermal)
 	vehicle.battery.cell.charge = 1
 	vehicle.process_power(2)
 	TEST_ASSERT(!vehicle.has_electrical_power() && !dome.is_lit() && !light.light_on, "Drained battery left lighting powered.")

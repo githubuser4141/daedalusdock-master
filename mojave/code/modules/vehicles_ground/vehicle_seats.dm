@@ -71,14 +71,14 @@
 /obj/structure/chair/ms13_vehicle_seat/proc/show_controls(mob/living/user)
 	while(can_use_controls(user))
 		var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
-		var/list/options = list("Drive", "Engine toggle ([vehicle.engine_running ? "on" : "off"])", "Ignition toggle ([vehicle.ignition ? "on" : "off"])", "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])", "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])", "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])", "Horn", "Exit", "Unbuckle", "Stop", "Brakes mode ([vehicle.brakes_mode ? "on" : "off"])")
+		var/list/options = list("Drive" = 1, "Engine toggle ([vehicle.engine_running ? "on" : "off"])" = 2, "Ignition toggle ([vehicle.ignition ? "on" : "off"])" = 3, "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])" = 4, "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])" = 5, "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])" = 6, "Camera view ([user.ms13_vehicle_camera ? user.ms13_vehicle_camera.feed_name() : "cabin"])" = 13, "Horn" = 7, "Exit" = 8, "Unbuckle" = 9, "Stop" = 10, "Brakes mode ([vehicle.brakes_mode ? "on" : "off"])" = 11)
 		var/battery_percent = vehicle.battery?.cell ? round(vehicle.battery.cell.percent()) : 0
 		if(istype(vehicle, /datum/ms13_ground_vehicle/rail))
-			options += "Rail destination"
+			options["Rail destination"] = 12
 		var/choice = input(user, "Battery: [battery_percent]% | Speed band: [vehicle.speed]\nStop applies the brakes. Brakes mode moves slowly only while pressing a direction. Engine-off vehicles slow to a stop.", "Vehicle controls") as null|anything in options
 		if(!choice || !can_use_controls(user) || parent_frame.vehicle != vehicle)
 			return
-		switch(options.Find(choice))
+		switch(options[choice])
 			if(1)
 				if(length(buckled_mobs) && !(user in buckled_mobs))
 					to_chat(user, span_warning("The driver's seat is occupied."))
@@ -117,7 +117,23 @@
 			if(12)
 				var/datum/ms13_ground_vehicle/rail/train = vehicle
 				train.choose_destination(user, src)
+			if(13)
+				if(user.buckled == src)
+					next_camera(user)
+				else
+					to_chat(user, span_warning("Sit in the driver's seat to watch the cameras."))
 		vehicle.update_electrical()
+
+/// Steps the driver's view to the next working camera, and back to the cabin after the last.
+/obj/structure/chair/ms13_vehicle_seat/proc/next_camera(mob/living/user)
+	var/list/feeds = list()
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera in parent_frame.vehicle.parts)
+		if(camera.is_enabled())
+			feeds += camera
+	if(!length(feeds))
+		to_chat(user, span_warning("No working cameras. Check the camera switch and the battery."))
+	var/index = feeds.Find(user.ms13_vehicle_camera)
+	user.set_ms13_vehicle_camera(index < length(feeds) ? feeds[index + 1] : null)
 
 /obj/structure/chair/ms13_vehicle_seat/Destroy()
 	if(operated_turret?.gunner_seat == src)
@@ -150,6 +166,7 @@
 /obj/structure/chair/ms13_vehicle_seat/post_unbuckle_mob(mob/living/M)
 	. = ..()
 	REMOVE_TRAIT(M, TRAIT_CANNOT_BE_UNBUCKLED, BUCKLED_TRAIT)
+	M.set_ms13_vehicle_camera(null)
 	if(is_driver_seat && parent_frame?.vehicle?.driver == M)
 		parent_frame.vehicle.driver = null
 		M.update_ms13_vehicle_interior_mask()

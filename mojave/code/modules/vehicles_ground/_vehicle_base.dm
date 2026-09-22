@@ -888,7 +888,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// Black out only exterior turfs whose ray from this occupant crosses closed solid hull.
 /mob/proc/update_ms13_vehicle_interior_mask()
 	clear_ms13_vehicle_interior_mask()
-	if(!client || ms13_active_gunner_sight)
+	if(!client || ms13_active_gunner_sight || ms13_vehicle_camera)
 		return
 	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
 	if(!vehicle || (src in vehicle.underneath))
@@ -921,6 +921,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /mob/Logout()
 	ms13_active_gunner_sight?.set_sight(src, FALSE)
+	set_ms13_vehicle_camera(null)
 	clear_ms13_vehicle_interior_mask()
 	return ..()
 

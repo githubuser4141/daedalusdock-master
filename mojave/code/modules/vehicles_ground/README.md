@@ -35,9 +35,15 @@ use 25 units/shot; tank guns 50. Hand-operated machine guns do not need battery 
 M113 and armored truck constructors fit front lamps, a rear work lamp, and side/rear cameras.
 The jeep has a headlamp; Civ96 vehicles have paired front/rear lamps. Accessories are independently
 damageable exterior images, hidden from the cabin like existing wheels. Exterior lamps have no
-local toggle. The driver alone sees through the hull edge carrying an enabled, working camera;
-it does not make a physical window or expose occupants to NPC vision. Cameras do not add x-ray
-vision through terrain or increase the client's view distance.
+local toggle; each casts a directional beam the way it faces. The driver alone sees through the
+hull edge carrying an enabled, working camera; it does not make a physical window or expose
+occupants to NPC vision.
+
+"Camera view" at the driver's controls steps the buckled driver's view through each working camera
+and back to the cabin. A feed widens the view and shifts it outward; `camera/wide` more so,
+`camera/thermal` shows mobs through cover, `camera/night_vision` sees in the dark. The M113 fits
+thermal (left), night vision (right) and wide (rear). Losing power, the camera switch, the camera
+or the seat returns the driver to the cabin.
 
 Regression checks: `ms13_vehicle_electrical`, `ms13_vehicle_obstacle_impact`, the existing ground
 vehicle tests and Civ96 assembly tests under `code/modules/unit_tests/`.

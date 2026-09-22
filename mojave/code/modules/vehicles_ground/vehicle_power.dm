@@ -77,6 +77,8 @@
 	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
 		if(istype(part, /obj/structure/ms13_vehicle_part/exterior_equipment) || istype(part, /obj/structure/ms13_vehicle_part/interior_light))
 			part.update_appearance()
+	if(driver?.ms13_vehicle_camera && !driver.ms13_vehicle_camera.is_enabled())
+		driver.set_ms13_vehicle_camera(null)
 	update_interior_masks()
 
 /// The driver alone can see through a powered camera's hull edge. This is not an opening for NPCs.
@@ -206,6 +208,10 @@
 	equipment_icon = 'icons/obj/machines/camera.dmi'
 	on_state = "camera"
 	off_state = "camera_off"
+	/// Tiles the driver's view widens by, and shifts outward, while watching this feed.
+	var/view_bonus = 2
+	/// Screen tint while watching this feed.
+	var/view_colour
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera/is_enabled()
 	return ..() && vehicle.cameras_on
@@ -217,6 +223,72 @@
 		exterior_image.dir = turn(dir, 180)
 		exterior_image.pixel_x = dir == EAST ? 32 : dir == WEST ? -32 : 0
 		exterior_image.pixel_y = dir == NORTH ? 32 : dir == SOUTH ? -32 : 0
+	var/mob/viewer = vehicle?.driver
+	if(viewer?.ms13_vehicle_camera == src)
+		viewer.client?.view_size.zoomOut(view_bonus, view_bonus, dir)
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/get_remote_view_fullscreens(mob/user)
+	user.overlay_fullscreen("remote_view", /atom/movable/screen/fullscreen/impaired, 1)
+
+/// Names the feed by the hull side it watches, as the driver sees it.
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/proc/feed_name()
+	var/side = dir == vehicle.dir ? "front" : dir == turn(vehicle.dir, 180) ? "rear" : dir == turn(vehicle.dir, 90) ? "left" : "right"
+	return "[name], [side]"
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal
+	name = "vehicle thermal camera"
+	desc = "An armored hull camera with a thermal imager. Warm bodies show through cover."
+	view_colour = /datum/client_colour/glass_colour/orange
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/thermal/update_remote_sight(mob/living/user)
+	user.sight |= SEE_MOBS
+	user.lighting_alpha = min(user.lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_VISIBLE)
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision
+	name = "vehicle night vision camera"
+	desc = "An armored hull camera with a light-amplifying tube. It sees in the dark, in green."
+	view_colour = /datum/client_colour/glass_colour/green
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/night_vision/update_remote_sight(mob/living/user)
+	user.see_in_dark = max(user.see_in_dark, 8)
+	user.lighting_alpha = min(user.lighting_alpha, LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE)
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/camera/wide
+	name = "vehicle wide-angle camera"
+	desc = "An armored hull camera with a fisheye lens that takes in far more of its surroundings."
+	view_bonus = 5
+
+/mob
+	/// The vehicle camera this mob watches instead of its cabin.
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/ms13_vehicle_camera
+
+/// Watches a vehicle camera's feed instead of the cabin; null returns to the cabin.
+/mob/proc/set_ms13_vehicle_camera(obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera)
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/old_camera = ms13_vehicle_camera
+	if(old_camera == camera)
+		return
+	ms13_vehicle_camera = camera
+	if(old_camera?.view_colour)
+		remove_client_colour(old_camera.view_colour)
+	if(camera?.view_colour)
+		add_client_colour(camera.view_colour)
+	if(!client)
+		return
+	var/datum/ms13_ground_vehicle/vehicle = get_ms13_ground_vehicle_at(src)
+	if(camera)
+		vehicle?.set_roof_visible(client, TRUE)
+		clear_ms13_vehicle_interior_mask()
+		reset_perspective(camera)
+		client.view_size.zoomOut(camera.view_bonus, camera.view_bonus, camera.dir)
+		return
+	reset_perspective()
+	client.view_size.zoomIn()
+	vehicle?.set_roof_visible(client, FALSE)
+	update_ms13_vehicle_interior_mask()
+
+/mob/living/reset_perspective(atom/new_eye)
+	// Riding in a moving vehicle resets the eye every tile; stay on the feed.
+	return ..(new_eye || ms13_vehicle_camera)
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/light
 	name = "vehicle exterior light"
