@@ -209,6 +209,8 @@
 	GLOB.simple_animals[AIStatus] -= src
 	if (LAZYLEN(SSnpcpool.currentrun))
 		SSnpcpool.currentrun -= src
+	// MOJAVE EDIT: the idle pool's run can yield part-way too, and would come back to a deleted mob.
+	SSidlenpcpool.currentrun -= src
 
 	if(nest)
 		nest.spawned_mobs -= src
