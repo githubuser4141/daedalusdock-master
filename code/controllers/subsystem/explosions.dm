@@ -556,6 +556,9 @@ SUBSYSTEM_DEF(explosions)
 
 		if (length(T.contents))
 			for (var/atom/movable/AM as anything in T)
+				// MOJAVE EDIT: something already hit here (a vehicle's frame) can take things on the tile with it.
+				if (QDELETED(AM))
+					continue
 				// MOJAVE EDIT: simple animals opt out of simulation, not explosion damage.
 				if (AM.simulated || isliving(AM))
 					if (cabin_power != turf_power && vehicle.is_sheltered(AM)) // MOJAVE EDIT
