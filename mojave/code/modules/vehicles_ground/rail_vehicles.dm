@@ -532,12 +532,10 @@
 
 /obj/structure/ms13_vehicle_part/rail_terminal/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	update_appearance()
 
 /obj/structure/ms13_vehicle_part/rail_terminal/atom_fix()
 	. = ..()
-	broken = FALSE
 	update_appearance()
 
 /obj/structure/ms13_vehicle_part/rail_terminal/attack_hand(mob/living/user, list/modifiers)

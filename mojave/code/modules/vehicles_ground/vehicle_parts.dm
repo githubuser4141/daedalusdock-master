@@ -51,6 +51,12 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	var/image/exterior_image
 	/// Mapped or spawned onto a vehicle's floor rather than built with it, it fits itself to that vehicle.
 	var/fits_itself = FALSE
+	/// Comes stocked the first time it's fitted: fuel in a tank, a battery in its box. One made by hand comes empty.
+	var/stock_on_fit = TRUE
+	/// A wrench takes it off whole, to bolt on again elsewhere (vehicle_kits.dm).
+	var/removable = TRUE
+	/// How long bolting it on or off takes.
+	var/fitting_time = 3 SECONDS
 
 /obj/structure/ms13_vehicle_part/Initialize(mapload)
 	. = ..()
@@ -61,15 +67,8 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	if(vehicle)
 		return
 	var/obj/structure/ms13_vehicle_frame/frame = locate() in loc
-	if(!frame?.vehicle)
-		return
-	vehicle = frame.vehicle
-	forward_offset = frame.forward_offset
-	right_offset = frame.right_offset
-	relative_turn = (dir2angle(vehicle.dir) - dir2angle(dir) + 360) % 360
-	vehicle.parts |= src
-	configure_from_vehicle()
-	update_appearance()
+	if(frame?.vehicle)
+		fit_to(frame, dir)
 
 /obj/structure/ms13_vehicle_part/Destroy()
 	if(exterior_image)
@@ -77,11 +76,50 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 		for(var/client/viewer as anything in GLOB.clients)
 			viewer.images -= exterior_image
 		exterior_image = null
-	if(vehicle?.engine == src)
-		vehicle.engine = null
+	detach()
+	return ..()
+
+/// Fits it to frame, facing facing, as if it had been built with the vehicle.
+/obj/structure/ms13_vehicle_part/proc/fit_to(obj/structure/ms13_vehicle_frame/frame, facing)
+	forceMove(get_turf(frame))
+	vehicle = frame.vehicle
+	forward_offset = frame.forward_offset
+	right_offset = frame.right_offset
+	// dir2angle() increases clockwise, while turn() increases counter-clockwise.
+	relative_turn = (dir2angle(vehicle.dir) - dir2angle(facing) + 360) % 360
+	setDir(facing)
+	vehicle.parts |= src
+	configure_from_vehicle()
+	stock_on_fit = FALSE
+	update_appearance()
+	vehicle.update_interior_lighting()
+	// Those aboard see the cabin, not its outside.
+	for(var/obj/structure/ms13_vehicle_frame/aboard as anything in vehicle.frames)
+		for(var/mob/living/passenger in get_turf(aboard))
+			if(passenger.client)
+				vehicle.set_roof_visible(passenger.client, FALSE)
+
+/// Takes it off its vehicle whole. Destroy() does this too.
+/obj/structure/ms13_vehicle_part/proc/detach()
 	vehicle?.parts -= src
 	vehicle = null
-	return ..()
+
+/obj/structure/ms13_vehicle_part/wrench_act(mob/living/user, obj/item/tool)
+	if(!vehicle || !removable)
+		return
+	if(vehicle.moving)
+		balloon_alert(user, "it's moving!")
+		return ITEM_INTERACT_BLOCKING
+	balloon_alert(user, "unbolting...")
+	if(!tool.use_tool(src, user, fitting_time, volume = 50) || !vehicle)
+		return ITEM_INTERACT_BLOCKING
+	detach()
+	user.put_in_hands(new /obj/item/ms13_vehicle_part_kit(drop_location(), src))
+	return ITEM_INTERACT_SUCCESS
+
+/// What it looks like off its vehicle: list(icon, icon_state).
+/obj/structure/ms13_vehicle_part/proc/loose_art()
+	return list(icon, icon_state)
 
 /obj/structure/ms13_vehicle_part/setDir(new_dir)
 	. = ..()
@@ -91,24 +129,21 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/proc/is_operational()
 	return !QDELETED(src) && !broken && get_integrity() > 0
 
+/obj/structure/ms13_vehicle_part/atom_break(damage_flag)
+	. = ..()
+	broken = TRUE
+
+/obj/structure/ms13_vehicle_part/atom_fix()
+	. = ..()
+	broken = FALSE
+
 /obj/structure/ms13_vehicle_part/proc/set_moving(is_moving)
 	return
 
 /// Mounts a part on this frame using a direction relative to the vehicle's current facing.
 /obj/structure/ms13_vehicle_frame/proc/spawn_part(part_type, relative_turn = 0)
 	var/obj/structure/ms13_vehicle_part/part = new part_type(get_turf(src))
-	part.vehicle = vehicle
-	part.forward_offset = forward_offset
-	part.right_offset = right_offset
-	part.relative_turn = relative_turn
-	part.setDir(turn(vehicle.dir, relative_turn))
-	vehicle.parts |= part
-	part.configure_from_vehicle()
-	vehicle.update_interior_lighting()
-	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
-		for(var/mob/living/passenger in get_turf(frame))
-			if(passenger.client)
-				vehicle.set_roof_visible(passenger.client, FALSE)
+	part.fit_to(src, turn(vehicle.dir, relative_turn))
 	return part
 
 /obj/structure/ms13_vehicle_part/proc/configure_from_vehicle()
@@ -146,6 +181,9 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/running_gear/configure_from_vehicle()
 	modify_max_integrity(vehicle.running_gear_integrity)
 
+/obj/structure/ms13_vehicle_part/running_gear/loose_art()
+	return list(icon, stationary_icon_state)
+
 /obj/structure/ms13_vehicle_part/running_gear/setDir(new_dir)
 	. = ..()
 	if(exterior_image)
@@ -158,13 +196,11 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 
 /obj/structure/ms13_vehicle_part/running_gear/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	exterior_image.icon = broken_icon || icon
 	exterior_image.icon_state = broken_icon_state
 
 /obj/structure/ms13_vehicle_part/running_gear/atom_fix()
 	. = ..()
-	broken = FALSE
 	exterior_image.icon = icon
 	set_moving(vehicle?.moving)
 
@@ -184,10 +220,22 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	moving_icon_state = "m113_tracks_end_left_m"
 	broken_icon_state = "m113_tracks_end_left_broken"
 
-/obj/structure/ms13_vehicle_part/running_gear/track/right
-	stationary_icon_state = "m113_tracks_end_right"
-	moving_icon_state = "m113_tracks_end_right_m"
-	broken_icon_state = "m113_tracks_end_right_broken"
+/// One assembly fits either side. Seen from the way it faces, it takes the end art of the side of the hull it's on.
+/obj/structure/ms13_vehicle_part/running_gear/track/configure_from_vehicle()
+	. = ..()
+	var/min_right = INFINITY
+	var/max_right = -INFINITY
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
+		min_right = min(min_right, frame.right_offset)
+		max_right = max(max_right, frame.right_offset)
+	var/on_right = right_offset * 2 > min_right + max_right
+	if(relative_turn == 180)
+		on_right = !on_right
+	var/side = on_right ? "right" : "left"
+	stationary_icon_state = "m113_tracks_end_[side]"
+	moving_icon_state = "m113_tracks_end_[side]_m"
+	broken_icon_state = "m113_tracks_end_[side]_broken"
+	exterior_image.icon_state = broken ? broken_icon_state : stationary_icon_state
 
 /** The engine burns fuel drawn from the vehicle's fuel tank part. */
 /obj/structure/ms13_vehicle_part/engine
@@ -196,20 +244,28 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	icon_state = "carengine_static"
 	layer = OBJ_LAYER
 	max_integrity = 200
+	fitting_time = 8 SECONDS
 	var/static_icon_state = "carengine_static"
 	var/running_icon_state = "carengine_on"
 	var/broken_icon_state = "carengine_broken"
 	var/datum/looping_sound/ms13/vehicle_engine/soundloop
 
 /obj/structure/ms13_vehicle_part/engine/Destroy()
-	vehicle?.stop_engine()
 	QDEL_NULL(soundloop)
+	return ..()
+
+/obj/structure/ms13_vehicle_part/engine/detach()
+	if(vehicle?.engine == src)
+		vehicle.stop_engine()
+		vehicle.engine = null
 	return ..()
 
 /obj/structure/ms13_vehicle_part/engine/configure_from_vehicle()
 	modify_max_integrity(vehicle.engine_integrity)
 	vehicle.engine = src
-	soundloop = new(src)
+	soundloop ||= new(src)
+	if(!stock_on_fit)
+		return
 	// All layouts use this shared mount path; keep the walk-over battery at the driver's end.
 	if(!vehicle.battery)
 		vehicle.pivot.spawn_part(/obj/structure/ms13_vehicle_part/battery)
@@ -237,14 +293,12 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 
 /obj/structure/ms13_vehicle_part/engine/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	vehicle?.stop_engine()
 	icon_state = broken_icon_state
 	soundloop?.stop()
 
 /obj/structure/ms13_vehicle_part/engine/atom_fix()
 	. = ..()
-	broken = FALSE
 	set_moving(vehicle?.moving)
 
 /**
@@ -265,7 +319,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/gearbox/configure_from_vehicle()
 	vehicle.gearbox = src
 
-/obj/structure/ms13_vehicle_part/gearbox/Destroy()
+/obj/structure/ms13_vehicle_part/gearbox/detach()
 	if(vehicle?.gearbox == src)
 		vehicle.gearbox = null
 	return ..()
@@ -277,14 +331,6 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	if(get_integrity() < max_integrity * worn_threshold)
 		return max(length(gear_delays) - 1, 1)
 	return length(gear_delays)
-
-/obj/structure/ms13_vehicle_part/gearbox/atom_break(damage_flag)
-	. = ..()
-	broken = TRUE
-
-/obj/structure/ms13_vehicle_part/gearbox/atom_fix()
-	. = ..()
-	broken = FALSE
 
 /obj/structure/ms13_vehicle_part/gearbox/examine(mob/user)
 	. = ..()
@@ -318,11 +364,13 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	var/leak_per_tile = 0.5
 
 /obj/structure/ms13_vehicle_part/fuel_tank/configure_from_vehicle()
-	create_reagents(capacity, OPENCONTAINER)
-	reagents.add_reagent(/datum/reagent/fuel, capacity)
+	if(!reagents)
+		create_reagents(capacity, OPENCONTAINER)
+	if(stock_on_fit)
+		reagents.add_reagent(/datum/reagent/fuel, capacity)
 	vehicle.fuel_tank = src
 
-/obj/structure/ms13_vehicle_part/fuel_tank/Destroy()
+/obj/structure/ms13_vehicle_part/fuel_tank/detach()
 	if(vehicle?.fuel_tank == src)
 		vehicle.fuel_tank = null
 	return ..()
@@ -347,12 +395,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 
 /obj/structure/ms13_vehicle_part/fuel_tank/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	visible_message(span_warning("[src] is punctured and starts leaking fuel!"))
-
-/obj/structure/ms13_vehicle_part/fuel_tank/atom_fix()
-	. = ..()
-	broken = FALSE
 
 /obj/structure/ms13_vehicle_part/fuel_tank/examine(mob/user)
 	. = ..()
@@ -420,17 +463,15 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 
 /obj/structure/ms13_vehicle_part/interior_light/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	update_appearance()
 	vehicle?.update_interior_lighting()
 
 /obj/structure/ms13_vehicle_part/interior_light/atom_fix()
 	. = ..()
-	broken = FALSE
 	update_appearance()
 	vehicle?.update_interior_lighting()
 
-/obj/structure/ms13_vehicle_part/interior_light/Destroy()
+/obj/structure/ms13_vehicle_part/interior_light/detach()
 	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
 	. = ..()
 	old_vehicle?.update_interior_lighting()
@@ -451,6 +492,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	broken_icon = 'mojave/icons/objects/vehicles_ground/civ_hulls96_damaged.dmi'
 	pixel_x = -32
 	pixel_y = -32
+
+/// Off the hull, it's just a wheel.
+/obj/structure/ms13_vehicle_part/running_gear/civ96/loose_art()
+	return list('mojave/icons/objects/vehicles_ground/vehicleparts.dmi', "wheel_t_dark")
 
 /// art: normal state; moving art is "[art]_m". broken_art is looked up in broken_icon and falls back to a tint.
 /obj/structure/ms13_vehicle_part/running_gear/civ96/proc/set_art(art, broken_art, paint)
@@ -731,6 +776,8 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	icon_state = "none"
 	layer = ABOVE_ALL_MOB_LAYER + 0.02
 	max_integrity = 1000
+	// Built into the hull. A machine gun mount (vehicle_kits.dm) is the kind fitted by hand.
+	removable = FALSE
 	var/turret_icon = 'mojave/icons/objects/vehicles_ground/civ_turrets.dmi'
 	var/turret_art
 	var/paint

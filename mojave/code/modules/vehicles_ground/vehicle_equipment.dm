@@ -26,6 +26,10 @@
 	QDEL_NULL(torch)
 	return ..()
 
+/obj/structure/ms13_vehicle_part/welding_rig/detach()
+	torch?.wind_in()
+	return ..()
+
 /obj/structure/ms13_vehicle_part/welding_rig/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
 	if(.)
@@ -287,7 +291,11 @@
 /obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/Initialize(mapload)
 	. = ..()
 	create_reagents(capacity, OPENCONTAINER)
-	reagents.add_reagent(/datum/reagent/fuel, capacity)
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/configure_from_vehicle()
+	. = ..()
+	if(stock_on_fit)
+		reagents.add_reagent(/datum/reagent/fuel, capacity)
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/atom_break(damage_flag)
 	. = ..()

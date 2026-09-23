@@ -907,13 +907,19 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// wall_type lets callers mount a solid/door variant instead of the default see-through one.
 /obj/structure/ms13_vehicle_frame/proc/spawn_wall(wall_dir, icon_state_override, wall_type = /obj/structure/window/ms13_vehicle_wall)
 	var/obj/structure/window/ms13_vehicle_wall/wall = new wall_type(get_turf(src), wall_dir)
+	if(icon_state_override)
+		wall.icon_state = icon_state_override
+	return mount_wall(wall, wall_dir)
+
+/// Fits wall on this frame's edge facing wall_dir: a new one, or one taken off a vehicle.
+/obj/structure/ms13_vehicle_frame/proc/mount_wall(obj/structure/window/ms13_vehicle_wall/wall, wall_dir)
+	wall.forceMove(get_turf(src))
+	wall.setDir(wall_dir)
 	wall.parent_frame = src
 	wall.forward_offset = forward_offset
 	wall.right_offset = right_offset
 	// dir2angle() increases clockwise, while turn() increases counter-clockwise.
 	wall.relative_turn = (dir2angle(vehicle.dir) - dir2angle(wall_dir) + 360) % 360
-	if(icon_state_override)
-		wall.icon_state = icon_state_override
 	wall.finish_mount()
 	vehicle.walls += wall
 	vehicle.update_interior_lighting()

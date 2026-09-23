@@ -128,7 +128,7 @@
 
 /obj/structure/ms13_vehicle_part/battery/configure_from_vehicle()
 	vehicle.battery = src
-	if(!cell)
+	if(!cell && stock_on_fit)
 		cell = new vehicle.battery_cell(src)
 	update_appearance()
 	START_PROCESSING(SSobj, src)
@@ -143,23 +143,25 @@
 	vehicle?.process_power(seconds_per_tick)
 
 /obj/structure/ms13_vehicle_part/battery/Destroy()
-	STOP_PROCESSING(SSobj, src)
-	if(vehicle?.battery == src)
-		vehicle.battery = null
-		vehicle.stop_engine()
-		vehicle.update_electrical()
 	QDEL_NULL(cell)
 	return ..()
 
+/obj/structure/ms13_vehicle_part/battery/detach()
+	STOP_PROCESSING(SSobj, src)
+	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
+	. = ..()
+	if(old_vehicle?.battery == src)
+		old_vehicle.battery = null
+		old_vehicle.stop_engine()
+		old_vehicle.update_electrical()
+
 /obj/structure/ms13_vehicle_part/battery/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	vehicle?.stop_engine()
 	vehicle?.update_electrical()
 
 /obj/structure/ms13_vehicle_part/battery/atom_fix()
 	. = ..()
-	broken = FALSE
 	vehicle?.update_electrical()
 
 /obj/structure/ms13_vehicle_part/battery/examine(mob/user)
@@ -303,18 +305,19 @@
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/atom_break(damage_flag)
 	. = ..()
-	broken = TRUE
 	vehicle?.update_electrical()
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/atom_fix()
 	. = ..()
-	broken = FALSE
 	vehicle?.update_electrical()
 
-/obj/structure/ms13_vehicle_part/exterior_equipment/Destroy()
+/obj/structure/ms13_vehicle_part/exterior_equipment/detach()
 	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
 	. = ..()
 	old_vehicle?.update_electrical()
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/loose_art()
+	return list(equipment_icon, off_state)
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/camera
 	name = "vehicle exterior camera"

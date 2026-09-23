@@ -246,6 +246,6 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/m113)
 	middle_back.spawn_part(/obj/structure/ms13_vehicle_part/welding_rig)
 
 	spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track)
-	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right)
-	back_left.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track/right, 180)
+	front_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track)
+	back_left.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track, 180)
 	back_right.spawn_part(/obj/structure/ms13_vehicle_part/running_gear/track, 180)

@@ -367,7 +367,8 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 	var/closed_icon_state = "c_armoredwall"
 
 /obj/structure/window/ms13_vehicle_wall/shuttered/finish_mount()
-	open_icon_state = icon_state
+	// Remounted, it keeps the art it was first fitted with.
+	open_icon_state ||= icon_state
 
 /obj/structure/window/ms13_vehicle_wall/shuttered/attack_hand(mob/living/user, list/modifiers)
 	if(user.combat_mode)
@@ -453,7 +454,7 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 		open(user)
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/finish_mount()
-	closed_icon_state = icon_state
+	closed_icon_state ||= icon_state
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/proc/open(mob/user)
 	if(opened)
