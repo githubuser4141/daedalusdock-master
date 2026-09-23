@@ -586,7 +586,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barrel/quadruple)
 		"<span class='notice'>You start to break \the [src].</span>", \
 		"<span class='hear'>You hear splitting wood.</span>")
 	tool.play_tool_sound(src)
-	if(do_after(user, 4 SECONDS * tool.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 4 SECONDS * tool.toolspeed, interaction_key = DOAFTER_SOURCE_DECON))
 		playsound(src.loc, 'mojave/sound/ms13effects/wood_deconstruction.ogg', 50, TRUE)
 		user.visible_message("<span class='notice'>[user] pries \the [src] into pieces.</span>", \
 			"<span class='notice'>You pry \the [src] into pieces.</span>", \
@@ -658,7 +658,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash)
 	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	to_chat(user, span_notice("You begin salvaging through the pile for a paper."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(15))
 			user.visible_message(span_notice("[user] successfully recovers paper from the [src]."), \
 				span_notice("You recover some paper from the [src]"))
@@ -702,7 +702,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/books)
 	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	to_chat(user, span_notice("You begin salvaging through the books for some paper."))
-	if(do_after(user, 8 SECONDS, src))
+	if(do_after(user, src, 8 SECONDS))
 		if(prob(35))
 			user.visible_message(span_notice("[user] successfully recovers paper from [src]."), \
 				span_notice("You recover some paper from [src]"))
@@ -745,7 +745,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/books/piles)
 	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	to_chat(user, span_notice("You begin salvaging through the [src]."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(20))
 			user.visible_message(span_notice("[user] successfully recovers paper from the [src]."), \
 				span_notice("You recover some paper from the [src]"))
@@ -770,7 +770,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/bricks)
 	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	to_chat(user, span_notice("You begin salvaging through the rubble for some bricks."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(20))
 			user.visible_message(span_notice("[user] begins to sift through the [src] for usable bricks."), \
 				span_notice("You begin to dig through the [src] for usable bricks."))
@@ -794,7 +794,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/bricks)
 		return
 	user.visible_message(span_notice("[user] begins to sift through the [src] for usable pieces."), \
 		span_notice("You begin to dig through the [src] for some wood."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(90)) // It's... scrap wood already.
 			user.visible_message(span_notice("[user] gathers up the [src]."), \
 				span_notice("You gather up all the [src]."))
@@ -825,7 +825,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/bricks)
 		return
 	user.visible_message(span_notice("[user] begins to search through the [src] for usable materials."), \
 		span_notice("You begin to search through [src] for some materials."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(35))
 			user.visible_message(span_notice("[user] gathers up materials from the [src]."), \
 				span_notice("You gather up some materials from [src]."))
@@ -852,7 +852,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/food/glass)
 		return
 	user.visible_message(span_notice("[user] begins to search through [src] for usable materials."), \
 		span_notice("You begin to search through [src] for some materials."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(40))
 			user.visible_message(span_notice("[user] gathers up materials from the [src]."), \
 				span_notice("You gather up some materials from [src]."))
@@ -880,7 +880,7 @@ TYPEINFO_DEF(/obj/structure/ms13/trash/food/glass)
 		return
 	user.visible_message(span_notice("[user] begins to search through [src] for usable materials."), \
 		span_notice("You begin to search through [src] for some materials."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(35))
 			user.visible_message(span_notice("[user] gathers up materials from [src]."), \
 				span_notice("You gather up some materials from [src]."))
@@ -916,7 +916,7 @@ TYPEINFO_DEF(/obj/structure/ms13/glass/cans)
 		return
 	user.visible_message(span_notice("[user] begins to search through the [src] for usable materials."), \
 		span_notice("You begin to search through [src] for some materials."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(35))
 			user.visible_message(span_notice("[user] gathers up materials from the [src]."), \
 				span_notice("You gather up some materials from [src]."))
@@ -940,7 +940,7 @@ TYPEINFO_DEF(/obj/structure/ms13/glass/cans)
 		return
 	user.visible_message(span_notice("[user] begins to search through [src] for usable materials."), \
 		span_notice("You begin to search through [src] for some materials."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(35))
 			user.visible_message(span_notice("[user] gathers up materials from [src]."), \
 				span_notice("You gather up some materials from [src]."))
@@ -968,7 +968,7 @@ TYPEINFO_DEF(/obj/structure/ms13/glass/cans)
 		return
 	user.visible_message(span_notice("[user] begins to search through [src] for usable materials."), \
 		span_notice("You begin to search through [src] for some materials."))
-	if(do_after(user, 5 SECONDS, src))
+	if(do_after(user, src, 5 SECONDS))
 		if(prob(35))
 			user.visible_message(span_notice("[user] gathers up materials from [src]."), \
 				span_notice("You gather up some materials from [src]."))

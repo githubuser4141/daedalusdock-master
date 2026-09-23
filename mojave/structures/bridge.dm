@@ -88,7 +88,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bridge)
 			if(stackamount < 2)
 				to_chat(user, span_notice("You do not have enough [I] to repair [src]!"))
 			else
-				if(do_after(user, 3 SECONDS, target = src))
+				if(do_after(user, src, 3 SECONDS))
 					user.visible_message(span_warning("[user] repairs [src]."),\
 							span_notice("You use 2 [I] to repair [src].")) // for "wood planks"
 					S.use(2)
@@ -97,7 +97,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bridge)
 			if(stackamount < 4)
 				to_chat(user, span_notice("You do not have enough [I] to repair [src]!"))
 			else
-				if(do_after(user, 3 SECONDS, target = src))
+				if(do_after(user, src, 3 SECONDS))
 					user.visible_message(span_warning("[user] repairs [src]."),\
 							span_notice("You use 4 pieces of [I] to repair [src]."))  // for "scrap wood"
 					S.use(4)

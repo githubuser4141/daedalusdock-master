@@ -35,7 +35,7 @@
 	use_sound = 'mojave/sound/ms13items/stimpak_inject.ogg'
 
 /obj/item/reagent_containers/hypospray/medipen/ms13/attack(mob/living/M, mob/user)
-	if(do_after(user, 0.65 SECONDS))
+	if(do_after(user, time = 0.65 SECONDS))
 		inject(M, user)
 
 /obj/item/reagent_containers/hypospray/medipen/ms13/attack_self(mob/user/)
@@ -44,7 +44,7 @@
 	// canUseTopic now takes a single bitflag arg instead of positional booleans; NO_TK -> USE_IGNORE_TK, FLOOR_OKAY -> USE_RESTING
 	if(!user.canUseTopic(src, USE_CLOSE|USE_IGNORE_TK|USE_RESTING))
 		return
-	if(do_after(user, 0.65 SECONDS))
+	if(do_after(user, time = 0.65 SECONDS))
 		inject(user)
 		update_icon_state()
 

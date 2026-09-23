@@ -356,7 +356,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 			to_chat(user, span_warning("This module power armor is already in power armor!"))
 			return
 		playsound(src, 'mojave/sound/ms13effects/crafting/wrenchturn.ogg', 25, TRUE)
-		if(do_after(user, 5 SECONDS, target = user) && user.transferItemToLoc(I, src))
+		if(do_after(user, user, 5 SECONDS) && user.transferItemToLoc(I, src))
 			module_armor[PA.zone] = PA
 			if(PA.zone == BODY_ZONE_HEAD)
 				helmettype = PA:type_helmet

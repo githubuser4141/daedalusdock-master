@@ -57,7 +57,7 @@
 		return
 	if(!breaking)
 		breaking = TRUE
-		if(do_after(C, 5, interaction_key = DOAFTER_SOURCE_WINDOWBASH))
+		if(do_after(C, time = 5, interaction_key = DOAFTER_SOURCE_WINDOWBASH))
 			if(C.gloves && armor.blunt < 50) // AI EDIT: armor.melee -> armor.blunt (DD's /datum/armor has no "melee" category, blunt is the closest match for a bare-handed bash)
 				visible_message(span_warning("[C] bashes against the [src], cracking it!"))
 				take_damage(15, BRUTE, BLUNT)
@@ -126,7 +126,7 @@ TYPEINFO_DEF(/obj/structure/window/reinforced/fulltile/ms13)
 		return
 	if(!breaking)
 		breaking = TRUE
-		if(do_after(C, 5, interaction_key = DOAFTER_SOURCE_WINDOWBASH))
+		if(do_after(C, time = 5, interaction_key = DOAFTER_SOURCE_WINDOWBASH))
 			visible_message(span_warning("[C] bashes against the [src] with their bare arm, seemingly only hurting themselves!"))
 			take_damage(5, BRUTE, BLUNT)
 			update_appearance()

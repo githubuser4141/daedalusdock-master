@@ -90,7 +90,7 @@ TYPEINFO_DEF(/obj/structure/ms13/drying_rack)
 /obj/structure/ms13/drying_rack/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/restraints/handcuffs/ms13/rope) && !has_rope)
 		playsound(user, 'mojave/sound/ms13effects/hogtie.ogg', 90)
-		if(do_after(user, 10 SECONDS))
+		if(do_after(user, time = 10 SECONDS))
 			playsound(user, 'mojave/sound/ms13effects/hogtie.ogg', 90)
 			has_rope = TRUE
 			update_appearance()

@@ -39,7 +39,7 @@
 			else if(H.hairstyle in GLOB.hairstyles_long_list)
 				new_hair = tgui_input_list(usr, "What hair style do you want?", "Hair style choice", GLOB.hairstyles_long_list)
 		if(new_hair)
-			if(do_after(user, 4 SECONDS, src))
+			if(do_after(user, src, 4 SECONDS))
 				H.hairstyle = new_hair
 				H.update_hair()
 				return
@@ -50,7 +50,7 @@
 			else
 				new_facial_hair = tgui_input_list(usr, "What facial hair style do you want?", "Facial hair style choice", GLOB.facial_hairstyles_list)
 		if(new_facial_hair)
-			if(do_after(user, 4 SECONDS, src))
+			if(do_after(user, src, 4 SECONDS))
 				H.facial_hairstyle = new_facial_hair
 				H.update_hair()
 				return

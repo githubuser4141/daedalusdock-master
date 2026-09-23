@@ -162,7 +162,7 @@
 		for(var/datum/reagent/R in reagents.reagent_list)
 			if(istype(R, /datum/reagent/consumable/ethanol/ms13))
 				var/datum/reagent/consumable/ethanol/henny = R
-				if(henny.volume >= 50 && henny.boozepwr >= 40 && do_after(user, 1 SECONDS, user, interaction_key = DOAFTER_SOURCE_CRAFTING))
+				if(henny.volume >= 50 && henny.boozepwr >= 40 && do_after(user, user, 1 SECONDS, interaction_key = DOAFTER_SOURCE_CRAFTING))
 					user.visible_message(span_notice("[user] inserts a piece of cloth into [src], creating a molotov cocktail."), span_notice("You insert a piece of cloth into [src], creating a molotov cocktail."))
 					var/obj/item/grenade/ms13/molotov/M = new /obj/item/grenade/ms13/molotov(loc)
 					M.extra_POWER = round(henny.boozepwr / 35)

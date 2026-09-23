@@ -68,7 +68,7 @@
 		to_chat(user, span_warning("[src] is empty!"))
 		return
 
-	else if(do_after(user, 0.65 SECONDS))
+	else if(do_after(user, time = 0.65 SECONDS))
 		inhale(affected_mob, user)
 
 ///Handles all inhaling checks, inhaling and logging.

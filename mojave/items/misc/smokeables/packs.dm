@@ -93,7 +93,7 @@
 		add_overlay(image(icon, icon_state = inserted_overlay.icon_state))
 
 /obj/item/storage/fancy/ms13/cigarettes/attack_self(mob/living/user)
-	if(do_after(user, 0.5 SECONDS, src))
+	if(do_after(user, src, 0.5 SECONDS))
 		. = ..()
 		if(!is_open)
 			playsound(user, 'mojave/sound/ms13effects/smokeables/packopen.ogg', 100)

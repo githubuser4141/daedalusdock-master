@@ -62,7 +62,7 @@
 
 /obj/structure/bonfire/ms13/campfire/attack_hand_secondary(mob/living/carbon/user, list/modifiers)
 	. = ..()
-	if(do_after(user, 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_FIREKICK))
+	if(do_after(user, time = 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_FIREKICK))
 		if(HAS_TRAIT(user, TRAIT_IN_POWERARMOUR))
 			user.visible_message( \
 				"[user] stomps on the [src].", \
@@ -147,7 +147,7 @@
 /obj/structure/bonfire/ms13/fire_barrel/attackby(obj/item/used_item, mob/living/user, params)
 	if(istype(used_item, /obj/item/stack/sheet/ms13/scrap) && !grill)
 		var/obj/item/stack/sheet/ms13/scrap/scrap = used_item
-		if(do_after(user, 4 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_ADDGRILL))
+		if(do_after(user, src, 4 SECONDS, interaction_key = DOAFTER_SOURCE_ADDGRILL))
 			grill = TRUE
 			to_chat(user, span_notice("You add a grill to \the [src]."))
 			add_overlay("barrel_grill")

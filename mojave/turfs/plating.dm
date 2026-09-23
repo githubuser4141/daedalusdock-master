@@ -128,7 +128,7 @@
 	if(!.)
 		if(W.tool_behaviour == TOOL_SHOVEL)
 			to_chat(user, span_notice("You start digging the outlines of a grave."))
-			if(do_after(user, 4 SECONDS * W.toolspeed, target = src))
+			if(do_after(user, src, 4 SECONDS * W.toolspeed))
 				user.visible_message(span_notice("[user] dug out the outlines of a grave."),
 										span_notice("You dug out the outlines of a grave."))
 				new /obj/structure/closet/ms13/grave(src)
@@ -221,7 +221,7 @@
 	if(!.)
 		if(W.tool_behaviour == TOOL_SHOVEL)
 			to_chat(user, span_notice("You start digging the outlines of a grave."))
-			if(do_after(user, 4 SECONDS * W.toolspeed, target = src))
+			if(do_after(user, src, 4 SECONDS * W.toolspeed))
 				user.visible_message(span_notice("[user] dug out the outlines of a grave."),
 										span_notice("You dug out the outlines of a grave."))
 				new /obj/structure/closet/ms13/grave(src)
@@ -561,7 +561,7 @@
 		user.balloon_alert_to_viewers("breaking the [src]", "breaking the [src]")
 		playsound(get_turf(src), 'mojave/sound/ms13effects/icebreakshort.ogg', 100, FALSE, FALSE)
 		breaking = TRUE
-		if(do_after(user, 5 SECONDS, interaction_key = DOAFTER_SOURCE_BREAKICE))
+		if(do_after(user, time = 5 SECONDS, interaction_key = DOAFTER_SOURCE_BREAKICE))
 			to_chat(user, span_notice("You break away the ice."))
 			switch(crack_state)
 				if(1)
@@ -690,7 +690,7 @@ GLOBAL_VAR(FishPopNextCalc)
 			return
 
 		to_chat(user, "<span class='notice'>You start fishing...</span>")
-		if(do_after(user, 40 SECONDS * W.toolspeed, interaction_key = DOAFTER_SOURCE_FISHING))
+		if(do_after(user, time = 40 SECONDS * W.toolspeed, interaction_key = DOAFTER_SOURCE_FISHING))
 			if(!can_fish(user))
 				return TRUE
 			to_chat(user, "<span class='notice'>You reel in your catch.</span>")

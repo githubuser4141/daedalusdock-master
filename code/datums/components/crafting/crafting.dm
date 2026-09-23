@@ -225,9 +225,6 @@
 				// If we are a mob, check we still have desired traits (if any)
 				if(R.trait && crafting_mob.mind && !HAS_TRAIT(crafting_mob.mind, R.trait))
 					return ", missing trait"
-				//If we're a mob we'll try a do_after; non mobs will instead instantly construct the item
-				if(!do_after(a, R.time, target = a))
-					return "."
 			// MOJAVE EDIT - CRAFTING BENCHES END
 			//If we're a mob we'll try a do_after; non mobs will instead instantly construct the item
 			if(ismob(a) && !do_after(a, time = R.time, timed_action_flags = DO_PUBLIC))

@@ -85,7 +85,7 @@
 		return
 	loc.visible_message(span_warning("[usr] begins attaching [src] to [target]..."), span_warning("You begin attaching [src] to [target]."))
 	balloon_alert_to_viewers("[usr] begins attaching [src] to [target]...", "You begin attaching [src] to [target].")
-	if(do_after(usr, 1 SECONDS, target))
+	if(do_after(usr, target, 1 SECONDS))
 		usr.visible_message(span_warning("[usr] attaches [src] to [target]."), span_notice("You attach [src] to [target]."))
 		balloon_alert_to_viewers("[usr] attaches [src] to [target].", "You attach [src] to [target].")
 		log_combat(usr, target, "attached", src, "containing: ([reagents.get_reagent_log_string()])")

@@ -147,7 +147,7 @@
 			to_chat(user, span_notice("[src] is already completely dug out."))
 		else
 			to_chat(user, span_notice("You start digging with \the [W]."))
-			if(do_after(user, 4 SECONDS * W.toolspeed, target = src))
+			if(do_after(user, src, 4 SECONDS * W.toolspeed))
 				user.visible_message(span_notice("[user] removes some soil with \the [W] and set it aside."),
 											span_notice("You remove some soil with \the [W] and set it aside."),
 											span_hear("You hear soil crumbling."))
@@ -179,7 +179,7 @@
 	if(tool.tool_behaviour == TOOL_SHOVEL)
 		if(dirt_level == 0)
 			to_chat(user, span_notice("You start leveling the ground with \the [tool]."))
-			if(do_after(user, 3 SECONDS * tool.toolspeed, target = src))
+			if(do_after(user, src, 3 SECONDS * tool.toolspeed))
 				user.visible_message(span_notice("[user] levels the ground with \the [tool]."),
 											span_notice("You level the ground with \the [tool]."))
 				deconstruct(TRUE)
@@ -190,7 +190,7 @@
 			if(dirt_level == dug_level && !can_close(user))
 				return  // Stop here if there is something in the way
 			to_chat(user, span_notice("You start filling [src] with \the [tool]."))
-			if(do_after(user, 3 SECONDS * tool.toolspeed, target = src))
+			if(do_after(user, src, 3 SECONDS * tool.toolspeed))
 				user.visible_message(span_notice("[user] fills [src] with some soil using \the [tool]."),
 											span_notice("You fill [src] with some soil using \the [tool]."),
 											span_hear("You hear soil crumbling."))
@@ -267,7 +267,7 @@
 		user.visible_message(span_warning("The soil of [src] begins to rumble!"), \
 			span_notice("You struggle and start digging your way out upwards... (this will take about [DisplayTimeText(abs(dirt_level - dug_level) * breakout_time)].)"), \
 			span_hear("You hear soil rumbling."))
-		if(do_after(user,(abs(dirt_level - dug_level) * breakout_time), target = src))
+		if(do_after(user, src, (abs(dirt_level - dug_level) * breakout_time)))
 			// Checking after a while whether there is a point of resisting anymore and whether the user is capable of resisting
 			if(!user || user.stat != CONSCIOUS || user.loc != src || opened)
 				return
@@ -336,7 +336,7 @@
 		var/input = tgui_input_text(user, "What do you want to engrave?", "Inscription", max_length = 200, multiline = TRUE)
 		if(user.canUseTopic(src, USE_CLOSE) && input)
 			user.visible_message(span_notice("[user] starts carving [src]."), span_notice("You start carving [src]."))
-			if(do_after(user, 15 SECONDS * W.toolspeed, target = src))
+			if(do_after(user, src, 15 SECONDS * W.toolspeed))
 				user.visible_message(span_notice("[user] carved an inscription on [src]."), span_notice("You carved an inscription on [src]."))
 				inscription = input
 	else

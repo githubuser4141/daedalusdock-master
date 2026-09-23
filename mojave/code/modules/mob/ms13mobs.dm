@@ -180,7 +180,7 @@
 	if(is_type_in_list(O, food_type))
 		user.visible_message("<span class='notice'>[user] hand-feeds [O] to [src].</span>", "<span class='notice'>You hand-feed [O] to [src].</span>")
 		qdel(O)
-		if(do_after(user, 3 SECONDS, target = src))
+		if(do_after(user, src, 3 SECONDS))
 			if (prob(tame_chance)) //note: lack of feedback message is deliberate, keep them guessing!
 				tame = TRUE
 				tamed(user)
@@ -205,7 +205,7 @@
 				user.visible_message("<span class='notice'>The [src] rejects the [O] they dont seem to be hungry right now.</span>")
 /*		if(baggable == TRUE)
 			if(istype(O, /obj/item/storage/ms13/sack) && !bagged)
-				if(tame && do_after(user,55,target=src))
+				if(tame && do_after(user, src, 55))
 					playsound(get_turf(src), "rustle", 50, TRUE)
 					user.visible_message("<span class='notice'>You manage to put [O] on [src], allowing them to store heavy goods.</span>")
 					qdel(O)
@@ -389,7 +389,7 @@
 	if(is_type_in_list(O, food_type))
 		user.visible_message("<span class='notice'>[user] hand-feeds [O] to [src].</span>", "<span class='notice'>You hand-feed [O] to [src].</span>")
 		qdel(O)
-		if(do_after(user, 3 SECONDS, target = src))
+		if(do_after(user, src, 3 SECONDS))
 			if (prob(tame_chance)) //note: lack of feedback message is deliberate, keep them guessing!
 				tame = TRUE
 				tamed(user)
@@ -414,7 +414,7 @@
 				user.visible_message("<span class='notice'>The [src] rejects the [O] they dont seem to be hungry right now.</span>")
 		/*if(baggable == TRUE)
 			if(istype(O, /obj/item/storage/ms13/sack) && !bagged)
-				if(tame && do_after(user,55,target=src))
+				if(tame && do_after(user, src, 55))
 					playsound(get_turf(src), "rustle", 50, TRUE)
 					user.visible_message("<span class='notice'>You manage to put [O] on [src], allowing them to store heavy goods.</span>")
 					qdel(O)
@@ -595,7 +595,7 @@
 	if(is_type_in_list(O, food_type))
 		user.visible_message("<span class='notice'>[user] hand-feeds [O] to [src].</span>", "<span class='notice'>You hand-feed [O] to [src].</span>")
 		qdel(O)
-		if(do_after(user, 3 SECONDS, target = src))
+		if(do_after(user, src, 3 SECONDS))
 			if (prob(tame_chance)) //note: lack of feedback message is deliberate, keep them guessing!
 				tame = TRUE
 				tamed(user)
@@ -620,7 +620,7 @@
 				user.visible_message("<span class='notice'>The [src] rejects the [O] they dont seem to be hungry right now.</span>")
 		/*if(baggable == TRUE)
 			if(istype(O, /obj/item/storage/ms13/sack) && !bagged)
-				if(tame && do_after(user,55,target=src))
+				if(tame && do_after(user, src, 55))
 					playsound(get_turf(src), "rustle", 50, TRUE)
 					user.visible_message("<span class='notice'>You manage to put [O] on [src], allowing them to store heavy goods.</span>")
 					qdel(O)

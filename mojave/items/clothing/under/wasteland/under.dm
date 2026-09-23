@@ -25,7 +25,7 @@
 	if(!istype(W, repairable_by))
 		if(W.tool_behaviour == TOOL_KNIFE)
 			user.show_message(span_notice("You begin shredding [src]."), MSG_VISUAL)
-			if(do_after(user, 4.5 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_CLOTHSHRED))
+			if(do_after(user, src, 4.5 SECONDS, interaction_key = DOAFTER_SOURCE_CLOTHSHRED))
 				user.show_message(span_notice("You get cloth and thread from [src]!"), MSG_VISUAL)
 				new /obj/item/stack/sheet/ms13/thread(user.loc)
 				new /obj/item/stack/sheet/ms13/cloth(user.loc, 2)
@@ -47,7 +47,7 @@
 				to_chat(user, span_warning("You require 3 [cloth_repair.name] to repair [src]."))
 				return TRUE
 			to_chat(user, span_notice("You begin fixing the damage to [src] with [cloth_repair]..."))
-			if(!do_after(user, 3.5 SECONDS, src) || !cloth_repair.use(3))
+			if(!do_after(user, src, 3.5 SECONDS) || !cloth_repair.use(3))
 				return TRUE
 			repair(user, params)
 			return TRUE
@@ -467,7 +467,7 @@
 		"[user] begins to tear the chains off of \the [src].", \
 		span_notice("You begin tearing the chains off \the [src]"),
 		span_hear("You hear cloth moving around with chains rattling."))
-	if(do_after(user, 2.5 SECONDS))
+	if(do_after(user, time = 2.5 SECONDS))
 		user.visible_message( \
 			"[user] finishes tearing the chains off of \the [src].", \
 			span_notice("You finish tearing the chains off \the [src]"),

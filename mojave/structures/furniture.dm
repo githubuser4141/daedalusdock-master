@@ -29,7 +29,7 @@ TYPEINFO_DEF(/obj/structure/ms13/tv)
 		return TRUE
 	..()
 	weapon.play_tool_sound(src)
-	if(do_after(user, 15 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 15 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		deconstruct(disassembled = TRUE)
 		return TRUE
 
@@ -166,7 +166,7 @@ TYPEINFO_DEF(/obj/structure/ms13/pay_phone)
 		return TRUE
 	..()
 	weapon.play_tool_sound(src)
-	if(do_after(user, 15 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 15 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		deconstruct(disassembled = TRUE)
 		return TRUE
 
@@ -219,7 +219,7 @@ TYPEINFO_DEF(/obj/structure/ms13/pay_phone)
 		return TRUE
 	..()
 	weapon.play_tool_sound(src)
-	if(do_after(user, 8 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 8 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		deconstruct(disassembled = TRUE)
 		return TRUE
 
@@ -476,7 +476,7 @@ TYPEINFO_DEF(/obj/structure/filingcabinet/ms13)
 		return TRUE
 	..()
 	weapon.play_tool_sound(src)
-	if(do_after(user, 30 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 30 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		deconstruct(disassembled = TRUE)
 		return TRUE
 
@@ -570,7 +570,7 @@ TYPEINFO_DEF(/obj/structure/ms13/deli)
 		return TRUE
 	..()
 	weapon.play_tool_sound(src)
-	if(do_after(user, 12 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 12 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		deconstruct(disassembled = TRUE)
 		return TRUE
 
@@ -613,7 +613,7 @@ TYPEINFO_DEF(/obj/structure/ms13/fruit_empty)
 /obj/structure/ms13/fruit_empty/attackby(obj/item/W, mob/user, params)
 	if(W.sharpness & SHARP_AXE)
 		user.show_message(span_notice("You begin chopping \the [src] into scraps of wood!"), MSG_VISUAL)
-		if(do_after(user, 10 SECONDS * W.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_MAKEPLANKS))
+		if(do_after(user, src, 10 SECONDS * W.toolspeed, interaction_key = DOAFTER_SOURCE_MAKEPLANKS))
 			user.show_message(span_notice("You make wood scraps out of \the [src]!"), MSG_VISUAL)
 			new /obj/item/stack/sheet/ms13/wood/scrap_wood(loc, 4)
 			qdel(src)

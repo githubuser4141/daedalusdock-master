@@ -42,7 +42,7 @@
 	if(istype(filling, /obj/item/ms13/dried))
 		if(!A.doobie_filling_1 || !A.doobie_filling_2)
 			playsound(user, 'mojave/sound/ms13effects/smokeables/drycrunch.ogg', 100)
-			if(do_after(user, 5 SECONDS))
+			if(do_after(user, time = 5 SECONDS))
 				playsound(user, 'mojave/sound/ms13effects/smokeables/drycrunch.ogg', 100)
 				to_chat(user, "<span class='notice'>You crumple up [filling] into [target].</span>")
 				if(!user.transferItemToLoc(filling, target))
@@ -91,7 +91,7 @@
 	if(!A.doobie_filling_1 && !A.doobie_filling_2)
 		return COMPONENT_CANCEL_ATTACK_CHAIN
 	to_chat(user, "<span class='notice'>You begin to remove the fillings from [target].</span>")
-	if(do_after(user, 3 SECONDS))
+	if(do_after(user, time = 3 SECONDS))
 		target.cut_overlays()
 		if(A.doobie_filling_1)
 			A.doobie_filling_1 = null
@@ -116,7 +116,7 @@
 	else
 		playsound(user, 'mojave/sound/ms13effects/smokeables/cigroll.ogg', 100)
 		to_chat(user, "<span class='notice'>You begin to roll up [target] now packed with filling.</span>")
-		if(do_after(user, rolling_time))
+		if(do_after(user, time = rolling_time))
 			var/obj/item/ms13/cigarette/custom/finished_product
 			var/obj/item/ms13/dried/D = A.doobie_filling_1
 			var/obj/item/ms13/dried/F = A.doobie_filling_2

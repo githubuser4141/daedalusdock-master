@@ -39,7 +39,7 @@
 	. = ..()
 	if(!toggled)
 		to_chat(user, span_notice("You begin to extend the rod fully."))
-		if(do_after(user, 2.5 SECONDS, interaction_key = DOAFTER_SOURCE_TELESCOPICROD))
+		if(do_after(user, time = 2.5 SECONDS, interaction_key = DOAFTER_SOURCE_TELESCOPICROD))
 			icon_state = extended_icon
 			inhand_icon_state = icon_state
 			desc = "[initial(desc)] It is currently extended."
@@ -51,7 +51,7 @@
 			//grid_height = 32
 	else
 		to_chat(user, span_notice("You begin to collapse the rod."))
-		if(do_after(user, 2.5 SECONDS, interaction_key = DOAFTER_SOURCE_TELESCOPICROD))
+		if(do_after(user, time = 2.5 SECONDS, interaction_key = DOAFTER_SOURCE_TELESCOPICROD))
 			icon_state = (initial(icon_state))
 			inhand_icon_state = icon_state
 			desc = "[initial(desc)] It is currently collapsed."

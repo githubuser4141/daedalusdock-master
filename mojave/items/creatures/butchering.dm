@@ -30,7 +30,7 @@
 /obj/item/ms13/hide/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_KNIFE)
 		user.show_message(span_notice("You begin turning [src] into leather."), MSG_VISUAL)
-		if(do_after(user, 15 SECONDS * W.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_LEATHER))
+		if(do_after(user, src, 15 SECONDS * W.toolspeed, interaction_key = DOAFTER_SOURCE_LEATHER))
 			user.show_message(span_notice("You make leather out of [src]!"), MSG_VISUAL)
 			new /obj/item/stack/sheet/ms13/leather(user.loc, 1 * leather_amount)
 			qdel(src)

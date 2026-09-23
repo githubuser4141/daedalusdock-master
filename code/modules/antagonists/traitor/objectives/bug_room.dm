@@ -142,7 +142,7 @@
 	if(!istype(current_area, target_area_type))
 		balloon_alert(user, "you can't deploy this here!")
 		return
-	if(!do_after(user, deploy_time, src))
+	if(!do_after(user, src, deploy_time))
 		return
 	var/obj/structure/traitor_bug/new_bug = new(location)
 	transfer_evidence_to(new_bug)
@@ -161,7 +161,7 @@
 			to_chat(user, span_warning("You are unable to plant that there."))
 			return ITEM_INTERACT_BLOCKING
 
-	if(!do_after(user, deploy_time, src))
+	if(!do_after(user, src, deploy_time))
 		return ITEM_INTERACT_BLOCKING
 
 	if(planted_on)

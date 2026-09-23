@@ -25,7 +25,7 @@ GLOBAL_VAR_INIT(fscpassword, generate_password())
 //
 /obj/item/paper/ms13/wash(clean_types, mob/living/user, obj/structure/S)
 	to_chat(user, "<span class='notice'>You start drying and working the [name].</span>")
-	if(do_after(user, 10 SECONDS, S))
+	if(do_after(user, S, 10 SECONDS))
 		var/obj/I = new /obj/item/ms13/rolling_paper(S.loc)
 		to_chat(user, "<span class='notice'>You process the [name] into [I] making it thinner and cleaner than before.</span>")
 		qdel(src)

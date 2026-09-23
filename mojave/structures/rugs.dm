@@ -38,7 +38,7 @@
 	. = ..()
 	if(get_dist(src, user)<2)
 		to_chat(usr, "<span class='warning'>[pick(remarks)]</span>")
-		if(do_after(user, (rolltime), target = src))
+		if(do_after(user, src, (rolltime)))
 			usr.visible_message("<span class='notice'>[usr] rolls and grabs \the [src.name].</span>", "<span class='notice'>You grab \the [src.name].</span>")
 			var/obj/item/C = new item_rug(loc)
 			usr.put_in_hands(C)

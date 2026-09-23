@@ -47,7 +47,7 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 		var/radial_result = part_to_zone[show_radial_menu(user, src, radial_options, require_near = TRUE, tooltips = TRUE)]
 		var/hand = user.get_empty_held_index_for_side(LEFT_HANDS) || user.get_empty_held_index_for_side(RIGHT_HANDS)
 
-		if(radial_result && do_after(user, 5 SECONDS, target = user))
+		if(radial_result && do_after(user, user, 5 SECONDS))
 			var/obj/item/ms13/pa_module/PA = modules[radial_result]
 			if(!user.put_in_hand(PA, hand))
 				PA.forceMove(user.loc)

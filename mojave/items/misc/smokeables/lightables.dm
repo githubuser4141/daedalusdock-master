@@ -119,7 +119,7 @@
 		to_chat(user, "<span class='notice'>There are no matches left in the box.</span>")
 
 /obj/item/storage/box/matches/ms13/attack_self(mob/user)
-	if(do_after(user, 0.5 SECONDS, src))
+	if(do_after(user, src, 0.5 SECONDS))
 		if(!is_open)
 			playsound(src, 'mojave/sound/ms13effects/matchboxopen.ogg', 200)
 			is_open = TRUE

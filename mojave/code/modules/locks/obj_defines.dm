@@ -101,7 +101,7 @@
 				var/choice = tgui_input_list(user, "What do you wish to do to the lock?", "Lock Adjustment", choices)
 				switch(choice)
 					if("Lock It")
-						if(do_after(user, 0.5 SECONDS))
+						if(do_after(user, time = 0.5 SECONDS))
 							to_chat(user, span_notice("You shut and clasp the [lock.name]."))
 							lock.item_lock_locked = TRUE
 							AddElement(/datum/element/lockpickable, lock.lock_difficulty)

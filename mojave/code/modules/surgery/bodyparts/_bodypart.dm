@@ -16,7 +16,7 @@
 			playsound(loc, 'sound/weapons/slice.ogg', 50, TRUE, -1)
 			user.visible_message(span_warning("[user] begins to tear open [src]."),\
 				span_notice("You begin to tear open [src]..."))
-			if(do_after(user, FLOOR(butchering_component.speed, 1), target = src))
+			if(do_after(user, src, FLOOR(butchering_component.speed, 1)))
 				drop_organs(user, TRUE)
 				visible_message(span_warning("\The [src] spills it's organs out."))
 				playsound(src, 'mojave/sound/ms13gore/flesh1.ogg', 65, FALSE)
@@ -27,7 +27,7 @@
 			return
 		user.visible_message(span_warning("[user] begins to butcher [src]..."),\
 				span_notice("You begin to butcher [src]..."))
-		if(do_after(user, FLOOR(butchering_component.speed, 1), target = src))
+		if(do_after(user, src, FLOOR(butchering_component.speed, 1)))
 			user.visible_message(span_warning("[user] butchers [src]."),\
 					span_notice("You butcher [src]."))
 			playsound(src, 'mojave/sound/ms13gore/flesh2.ogg', 65, FALSE)

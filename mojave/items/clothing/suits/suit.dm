@@ -933,7 +933,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/ms13/drylander/chief)
 		"[user] begins to irreversibly ruin \the [src].", \
 		span_danger("You begin pillaging the chains off \the [src], forever stealing a part of it."),
 		span_hear("You hear cloth moving around with chains rattling."))
-	if(do_after(user, 5 SECONDS))
+	if(do_after(user, time = 5 SECONDS))
 		user.visible_message( \
 			"[user] finishes tearing the chains off of \the [src].", \
 			span_notice("You finish tearing the chains off \the [src]. Destroying the style."),

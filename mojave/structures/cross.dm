@@ -78,7 +78,7 @@ TYPEINFO_DEF(/obj/structure/kitchenspike/ms13/cross)
 				"[user] tries to pull [M] free of the [src]!",\
 				"<span class='notice'>[user.name] is trying to pull you off the [src], opening up fresh wounds!</span>",\
 				"<span class='italics'>You hear rope being unraveled.</span>")
-			if(!do_after(user, 300, target = src))
+			if(!do_after(user, src, 300))
 				if(M && M.buckled)
 					M.visible_message(\
 					"[user] fails to free [M]!",\
@@ -91,7 +91,7 @@ TYPEINFO_DEF(/obj/structure/kitchenspike/ms13/cross)
 			"<span class='notice'>You struggle to break free from the [src], exacerbating your wounds! (Stay still for two minutes.)</span>",\
 			"<span class='italics'>You hear violent scraping and struggling.</span>")
 			M.adjustBruteLoss(20)
-			if(!do_after(M, 5 MINUTES, target = src))
+			if(!do_after(M, src, 5 MINUTES))
 				if(M && M.buckled)
 					to_chat(M, "<span class='warning'>You fail to free yourself!</span>")
 				return

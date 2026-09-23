@@ -32,7 +32,7 @@ TYPEINFO_DEF(/obj/structure/ms13/bars)
 /obj/structure/ms13/bars/attackby(obj/item/W, mob/user, params)
 	if(W.tool_behaviour == TOOL_SAW)
 		user.show_message(span_notice("You begin sawing through the bars."), MSG_VISUAL)
-		if(do_after(user, 45 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+		if(do_after(user, src, 45 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 			user.show_message(span_notice("You saw through the bars!"), MSG_VISUAL)
 			deconstruct()
 			return TRUE
@@ -874,7 +874,7 @@ TYPEINFO_DEF(/obj/structure/railing/ms13/wood)
 		"<span class='notice'>You start to break \the [src].</span>", \
 		"<span class='hear'>You hear splitting wood.</span>")
 	tool.play_tool_sound(src)
-	if(do_after(user, 10 SECONDS * tool.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 10 SECONDS * tool.toolspeed, interaction_key = DOAFTER_SOURCE_DECON))
 		playsound(src.loc, 'mojave/sound/ms13effects/wood_deconstruction.ogg', 50, TRUE)
 		user.visible_message("<span class='notice'>[user] pries \the [src] into pieces.</span>", \
 			"<span class='notice'>You pry \the [src] into pieces.</span>", \
@@ -948,7 +948,7 @@ TYPEINFO_DEF(/obj/structure/ms13/barricade)
 		"<span class='notice'>You start to break \the [src].</span>", \
 		"<span class='hear'>You hear splitting wood.</span>")
 	tool.play_tool_sound(src)
-	if(do_after(user, 6 SECONDS * tool.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 6 SECONDS * tool.toolspeed, interaction_key = DOAFTER_SOURCE_DECON))
 		playsound(src.loc, 'mojave/sound/ms13effects/wood_deconstruction.ogg', 50, TRUE)
 		user.visible_message("<span class='notice'>[user] pries \the [src] into pieces.</span>", \
 			"<span class='notice'>You pry \the [src] into pieces.</span>", \

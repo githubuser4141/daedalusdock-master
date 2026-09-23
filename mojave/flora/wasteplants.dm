@@ -66,7 +66,7 @@
 /obj/structure/flora/ms13/forage/attackby(obj/item/W, mob/user, params)
 	if(!harvested && needs_sharp_harvest && W.sharpness) // AI EDIT: get_sharpness() isn't a proc in DD - sharpness is a plain bitflag var, checked directly
 		user.visible_message("<span class='notice'>[user] starts to harvest from [src] with [W].</span>","<span class='notice'>You begin to harvest from [src] with [W].</span>")
-		if(do_after(user, harvest_time, target = src))
+		if(do_after(user, src, harvest_time))
 			harvest(user)
 	else
 		return ..()
@@ -77,7 +77,7 @@
 		return
 	if(!harvested && !needs_sharp_harvest)
 		user.visible_message("<span class='notice'>[user] starts to harvest from [src].</span>","<span class='notice'>You begin to harvest from [src].</span>")
-		if(do_after(user, harvest_time, target = src))
+		if(do_after(user, src, harvest_time))
 			harvest(user)
 
 /obj/structure/flora/ms13/forage/brocflower
@@ -428,7 +428,7 @@
 			if(W.hitsound)
 				playsound(get_turf(src), 'mojave/sound/ms13effects/wood_cutting.ogg', 80, FALSE, FALSE)
 				user.visible_message("<span class='notice'>[user] begins to cut down [src] with [W].</span>","<span class='notice'>You begin to cut down [src] with [W].</span>", "<span class='hear'>You hear the sound of chopping.</span>")
-				if(do_after(user, 30 SECONDS * W.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_CHOPTREE))
+				if(do_after(user, src, 30 SECONDS * W.toolspeed, interaction_key = DOAFTER_SOURCE_CHOPTREE))
 					user.visible_message("<span class='notice'>[user] fells [src] with the [W].</span>","<span class='notice'>You fell [src] with the [W].</span>", "<span class='hear'>You hear the sound of a tree falling.</span>")
 					playsound(get_turf(src), 'sound/effects/meteorimpact.ogg', 80, FALSE, FALSE)
 					user.log_message("cut down [src] at [AREACOORD(src)]", LOG_ATTACK)

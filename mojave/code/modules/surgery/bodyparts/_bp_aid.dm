@@ -28,7 +28,7 @@
 		var/mob/living/carbon/C = usr
 		var/self = (C == bodypart.owner)
 		C.visible_message("<span class='notice'>[C] begins removing [name] from [self ? "[bodypart.owner.p_their(TRUE)]" : "[bodypart.owner]'s" ] [bodypart.name]...</span>", "<span class='notice'>You begin to remove [name] from [self ? "your" : "[bodypart.owner]'s"] [bodypart.name]...</span>")
-		if(!do_after(C, (self ? SELF_AID_REMOVE_DELAY : OTHER_AID_REMOVE_DELAY), target=bodypart.owner))
+		if(!do_after(C, bodypart.owner, (self ? SELF_AID_REMOVE_DELAY : OTHER_AID_REMOVE_DELAY)))
 			return
 		if(QDELETED(src))
 			return

@@ -120,13 +120,13 @@
 		to_chat(user, span_warning("[src] is currently in use."))
 		return
 	if(closed)
-		if(do_after(user, 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+		if(do_after(user, time = 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
 			to_chat(user, span_notice("You open [src]."))
 			playsound(src, 'mojave/sound/ms13effects/furniture/washer_open.ogg', 50)
 			icon_state = "[initial(icon_state)]_open"
 			closed = FALSE
 	else
-		if(do_after(user, 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+		if(do_after(user, time = 0.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
 			to_chat(user, span_notice("You close [src]."))
 			playsound(src, 'mojave/sound/ms13effects/furniture/washer_close.ogg', 50)
 			icon_state = "[initial(icon_state)]"
@@ -273,7 +273,7 @@
 		return
 	if(!obj_connected)
 		playsound(src, 'mojave/sound/ms13effects/chain_jostle.ogg', 25, TRUE)
-		if(do_after(user, 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST))
+		if(do_after(user, time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST))
 			obj_connected = locate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor) in loc
 			if(istype(obj_connected))
 				var/icon/chains = new(icon, "chains")
@@ -284,7 +284,7 @@
 			obj_connected = null
 	else
 		playsound(src, 'mojave/sound/ms13effects/chain_jostle.ogg', 25, TRUE)
-		if(do_after(user, 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST))
+		if(do_after(user, time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST))
 			cut_overlays()
 			obj_connected.link_to = null
 			obj_connected = null

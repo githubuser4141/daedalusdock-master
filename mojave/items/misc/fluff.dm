@@ -43,7 +43,7 @@
 
 /obj/item/ms13/fluff/typewriter/wrench_act_secondary(mob/living/user, obj/item/weapon)
 	user.show_message(span_notice("You begin disassembling \the [src]."), MSG_VISUAL)
-	if(do_after(user, 8 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 8 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		var/drop_location = user.drop_location()
 		user.show_message(span_notice("You disassemble \the [src] into scrap."), MSG_VISUAL)
 		new /obj/item/stack/sheet/ms13/scrap(drop_location, 3)
@@ -78,7 +78,7 @@
 
 /obj/item/ms13/fluff/microscope/screwdriver_act_secondary(mob/living/user, obj/item/weapon)
 	user.show_message(span_notice("You begin disassembling \the [src] into scrap."), MSG_VISUAL)
-	if(do_after(user, 8 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 8 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		var/drop_location = user.drop_location()
 		user.show_message(span_notice("You disassemble \the [src] into scrap and parts."), MSG_VISUAL)
 		new /obj/item/stack/sheet/ms13/glass(drop_location, 3)
@@ -170,7 +170,7 @@
 
 /obj/item/ms13/fluff/alarmclock/screwdriver_act_secondary(mob/living/user, obj/item/weapon)
 	user.show_message(span_notice("You begin disassembling \the [src] into scrap."), MSG_VISUAL)
-	if(do_after(user, 8 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 8 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		var/drop_location = user.drop_location()
 		user.show_message(span_notice("You disassemble \the [src] into scrap and parts."), MSG_VISUAL)
 		new /obj/item/stack/sheet/ms13/glass(drop_location, 1)
@@ -209,7 +209,7 @@
 
 /obj/item/ms13/fluff/trifoldflag/screwdriver_act_secondary(mob/living/user, obj/item/weapon)
 	user.show_message(span_notice("You begin disassembling \the [src] into scrap."), MSG_VISUAL)
-	if(do_after(user, 8 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 8 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 		var/drop_location = user.drop_location()
 		user.show_message(span_notice("You disassemble \the [src] into scrap and parts."), MSG_VISUAL)
 		new /obj/item/stack/sheet/ms13/cloth(drop_location, 3)

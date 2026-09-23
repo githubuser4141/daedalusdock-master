@@ -251,7 +251,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		to_chat(M, span_warning("The [name] is locked."))
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
-	if(do_after(M, 1 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+	if(do_after(M, time = 1 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
 		try_to_activate_door(M)
 
 /obj/machinery/door/unpowered/ms13/attackby(obj/item/I, mob/living/M, params)
@@ -289,7 +289,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		to_chat(M, span_warning("The [name] is locked."))
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
-	if(!(I.item_flags & NOBLUDGEON || LOCKING_ITEM) && !(M.combat_mode) && do_after(M, 1.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+	if(!(I.item_flags & NOBLUDGEON || LOCKING_ITEM) && !(M.combat_mode) && do_after(M, time = 1.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
 		open = TRUE
 		try_to_activate_door(M)
 		return TRUE

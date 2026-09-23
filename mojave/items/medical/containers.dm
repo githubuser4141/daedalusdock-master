@@ -20,7 +20,7 @@
 
 /obj/item/reagent_containers/ms13/flask/AltClick(mob/user)
 	. = ..()
-	if(do_after(user, 0.75 SECONDS))
+	if(do_after(user, time = 0.75 SECONDS))
 		if(!spillable)
 			spillable = TRUE
 			playsound(src, "mojave/sound/ms13effects/bottle_open.ogg", 35, TRUE, 2)

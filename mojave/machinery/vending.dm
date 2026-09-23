@@ -38,7 +38,7 @@
 		to_chat(user, span_notice("You start rumamging your hand around in [src] flap, trying to get something out!</span>"))
 		tell_em = TRUE
 		playsound(src, 'mojave/sound/ms13effects/vending_rattle.ogg', 100, TRUE)
-	if(do_after(user, 16 SECONDS, src))
+	if(do_after(user, src, 16 SECONDS))
 		tell_em = FALSE
 		playsound(src, 'mojave/sound/ms13effects/vending_rattle.ogg', 100, TRUE)
 		var/obj/item/vend_loot

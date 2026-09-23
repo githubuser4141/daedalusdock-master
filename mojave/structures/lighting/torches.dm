@@ -24,7 +24,7 @@
 		return
 /*	if(!burning) re-add later
 		user.visible_message("<span class='notice'>[user] starts to pull [src] free from the ground....</span>", "<span class='notice'>You start to pull [src] free from the ground...</span>")
-		if(do_after(user, 2 SECONDS, target = src))
+		if(do_after(user, src, 2 SECONDS))
 			to_chat("<span class='notice'>You pull [src] free from the ground.</span>")
 			var/torch = new /obj/item/flashlight/flare/torch/ms13
 			user.put_in_hands(torch)

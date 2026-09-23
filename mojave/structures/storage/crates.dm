@@ -68,7 +68,7 @@
 		"<span class='notice'>You start to break \the [src] open.</span>", \
 		"<span class='hear'>You hear splitting wood.</span>")
 	tool.play_tool_sound(src)
-	if(do_after(user, 10 SECONDS * tool.toolspeed, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+	if(do_after(user, src, 10 SECONDS * tool.toolspeed, interaction_key = DOAFTER_SOURCE_DECON))
 		playsound(src.loc, 'mojave/sound/ms13effects/wood_deconstruction.ogg', 50, TRUE)
 		user.visible_message("<span class='notice'>[user] pries \the [src] open.</span>", \
 			"<span class='notice'>You pry open \the [src].</span>", \

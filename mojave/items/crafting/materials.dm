@@ -49,7 +49,7 @@
 			to_chat(user, span_warning("You need at least [ms13_breakdown_cost] [input_stack.singular_name][ms13_breakdown_cost == 1 ? "" : "s"] to break that down."))
 			return FALSE
 	user.visible_message(span_notice("[user] starts breaking down [src] at [workbench]."), span_notice("You start breaking down [src] at [workbench]."))
-	if(!do_after(user, ms13_breakdown_time, target = workbench, display = src) || QDELETED(src))
+	if(!do_after(user, workbench, ms13_breakdown_time, display = src) || QDELETED(src))
 		return FALSE
 	var/turf/drop_turf = get_turf(workbench)
 	var/list/breakdown_results = ms13_breakdown_result
@@ -321,7 +321,7 @@ GLOBAL_LIST_INIT(log_recipes, list ( \
 			user.show_message(span_notice("You can only chop one log at a time!"), MSG_VISUAL)
 			return
 		user.show_message(span_notice("You begin chopping \the [src] into wood planks!"), MSG_VISUAL)
-		if(do_after(user, 4 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_MAKEPLANKS))
+		if(do_after(user, src, 4 SECONDS, interaction_key = DOAFTER_SOURCE_MAKEPLANKS))
 			user.show_message(span_notice("You make wood planks out of \the [src]!"), MSG_VISUAL)
 			new /obj/item/stack/sheet/ms13/wood/plank/two(user.loc)
 			qdel(src)

@@ -105,7 +105,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit)
 		if(L.status)
 			to_chat(user, span_warning("This bulb is too damaged to use as a replacement!"))
 			return
-		if(do_after(user, 5 SECONDS, src))
+		if(do_after(user, src, 5 SECONDS))
 			qdel(I)
 			helmet = new helmettype(src)
 			to_chat(user, span_notice("You have successfully repaired [src]'s helmet."))

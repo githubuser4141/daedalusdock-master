@@ -97,7 +97,7 @@
 		return
 
 	if(I.tool_behaviour == TOOL_KNIFE)
-		if(do_after(user, 10 SECONDS, target = src, interaction_key = DOAFTER_SOURCE_DECON))
+		if(do_after(user, src, 10 SECONDS, interaction_key = DOAFTER_SOURCE_DECON))
 			new /obj/item/stack/sheet/ms13/cloth(I.drop_location(), 5)
 			user.visible_message(span_notice("[user] cuts [src] into pieces of cloth with [I]."), \
 				span_notice("You cut [src] into pieces of cloth with [I]."), \
@@ -227,7 +227,7 @@
 	user.visible_message(span_notice("[user] begins tearing apart [src]"), \
 		span_notice("You tear begin to tear [src] into shreds."), \
 		span_hear("You hear paper crinkling."))
-	if(do_after(user, 1 SECONDS))
+	if(do_after(user, time = 1 SECONDS))
 		user.visible_message(span_notice("[user] shreds [src] into pieces."), \
 			span_notice("You tear [src] into shreds."), \
 			span_hear("You hear paper tearing."))
