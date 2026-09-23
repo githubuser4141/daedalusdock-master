@@ -84,7 +84,7 @@
 /datum/ms13_ground_vehicle/rail/electric/find_rail_routes()
 	. = ..()
 	for(var/obj/machinery/power/ms13_rail_feeder/old_feeder as anything in feeders)
-		UnregisterSignal(old_feeder, list(COMSIG_MS13_LINE_POWER_CHANGED, COMSIG_PARENT_QDELETING))
+		UnregisterSignal(old_feeder, COMSIG_MS13_LINE_POWER_CHANGED)
 	feeders = list()
 	for(var/turf/location as anything in .)
 		var/obj/machinery/power/ms13_rail_feeder/feeder = locate() in location
@@ -93,15 +93,13 @@
 			feeder.connect_to_network()
 			feeders += feeder
 			RegisterSignal(feeder, COMSIG_MS13_LINE_POWER_CHANGED, PROC_REF(on_line_power_changed))
-			RegisterSignal(feeder, COMSIG_PARENT_QDELETING, PROC_REF(on_feeder_deleted))
-
-/datum/ms13_ground_vehicle/rail/electric/proc/on_feeder_deleted(obj/machinery/power/ms13_rail_feeder/feeder)
-	SIGNAL_HANDLER
-	feeders -= feeder
 
 /// The line went live or dead. Live, the car switches itself on: ignition, lights and motor.
 /datum/ms13_ground_vehicle/rail/electric/proc/on_line_power_changed(obj/machinery/power/ms13_rail_feeder/feeder, live)
 	SIGNAL_HANDLER
+	// A feeder being deleted comes off its cable, and says so here.
+	if(QDELETED(feeder))
+		feeders -= feeder
 	if(!line_power())
 		if(line_live)
 			line_live = FALSE
