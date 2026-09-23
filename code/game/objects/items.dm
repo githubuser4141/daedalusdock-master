@@ -2005,6 +2005,8 @@ DEFINE_INTERACTABLE(/obj/item)
 	if(wielded)
 		. = wielded_hitsound
 	. ||= hitsound
+	if(islist(.)) // MOJAVE EDIT: several to pick from, like get_misssound()
+		. = pick(.)
 
 /// Leave evidence of a user on a target
 /obj/item/proc/leave_evidence(mob/user, atom/target)

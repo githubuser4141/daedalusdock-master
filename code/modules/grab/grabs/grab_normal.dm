@@ -325,8 +325,9 @@
 
 	user.visible_message(span_danger("\The [user] cut \the [affecting]'s [BP.tendon_name] with \the [W]!"))
 
-	if(W.hitsound)
-		playsound(affecting.loc, W.hitsound, 50, 1, -1)
+	var/cut_sound = W.get_hitsound() // MOJAVE EDIT: was W.hitsound, which can be a list
+	if(cut_sound)
+		playsound(affecting.loc, cut_sound, 50, 1, -1)
 
 	COOLDOWN_START(G, action_cd, action_cooldown)
 

@@ -109,6 +109,7 @@ code/game/objects/obj_defense.dm,
 code/modules/mapping/mapping_helpers.dm,
 code/modules/mob/living/carbon/carbon_defense.dm,
 code/game/objects/items/melee/misc.dm,
+code/modules/grab/grabs/grab_normal.dm,
 
 
 */
