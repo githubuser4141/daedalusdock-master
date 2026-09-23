@@ -115,6 +115,8 @@
 	if(tmp_sound && should_play_sound(user, intentional) && !TIMER_COOLDOWN_CHECK(user, type))
 		TIMER_COOLDOWN_START(user, type, audio_cooldown)
 		playsound(user, tmp_sound, 50, vary, frequency = get_frequency(user))
+		if(carries_far) //MOJAVE EDIT: loud emotes carry, mojave/code/game/distant_sound.dm
+			playsound_distant(user, tmp_sound, 50)
 
 	var/user_turf = get_turf(user)
 	if (user.client)

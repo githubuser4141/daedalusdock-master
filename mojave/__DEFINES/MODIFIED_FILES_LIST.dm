@@ -113,6 +113,7 @@ code/modules/grab/grabs/grab_normal.dm,
 code/game/turfs/open/openspace.dm,
 code/__DEFINES/_span.dm,
 code/modules/mob/living/living_fov.dm,
+code/datums/emotes.dm,
 
 
 */
