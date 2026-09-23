@@ -333,3 +333,283 @@
 	for(var/obj/item/loose in get_step(src, dir))
 		if(!loose.anchored && loose.w_class <= WEIGHT_CLASS_NORMAL)
 			atom_storage.attempt_insert(loose, override = TRUE)
+
+/**
+ * A screen in the cabin showing the vehicle's cameras one at a time, in a window of its own: whoever watches it keeps
+ * their own view as well. With a remote viewing module fitted, right-click it to look out through the camera instead, and
+ * look about everything the vehicle's cameras take in, as with an advanced camera console.
+ */
+/obj/structure/ms13_vehicle_part/camera_console
+	name = "vehicle camera console"
+	desc = "A screen showing the vehicle's cameras, one at a time. It runs off the vehicle's power."
+	icon = 'mojave/icons/structure/terminals.dmi'
+	icon_state = "terminal"
+	pixel_y = 8
+	layer = BELOW_OBJ_LAYER
+	max_integrity = 100
+	fits_itself = TRUE
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/active_camera
+	var/atom/movable/screen/map_view/byondui/camera/cam_screen
+	/// Watching it, in its window.
+	var/list/watchers
+	/// A remote viewing module is fitted: right-click to look out through the cameras.
+	var/remote_viewing = FALSE
+	/// Looking out through the cameras: each one, and their eye.
+	var/list/lookers
+
+/obj/structure/ms13_vehicle_part/camera_console/Initialize(mapload)
+	. = ..()
+	cam_screen = new
+	// A map name has to start and end with a letter.
+	cam_screen.generate_view("ms13_vehicle_cameras_[REF(src)]_map")
+
+/obj/structure/ms13_vehicle_part/camera_console/Destroy()
+	QDEL_NULL(cam_screen)
+	return ..()
+
+/obj/structure/ms13_vehicle_part/camera_console/detach()
+	for(var/mob/living/looker as anything in lookers)
+		stop_looking(looker)
+	set_camera(null)
+	return ..()
+
+/obj/structure/ms13_vehicle_part/camera_console/proc/is_powered()
+	return is_operational() && vehicle?.has_electrical_power()
+
+/obj/structure/ms13_vehicle_part/camera_console/update_overlays()
+	. = ..()
+	if(is_powered())
+		. += mutable_appearance(icon, "terminal_screen")
+		. += emissive_appearance(icon, "terminal_screen", alpha = 180)
+
+/// Power came or went: dark, it shows nothing and nobody looks out through it.
+/obj/structure/ms13_vehicle_part/camera_console/proc/power_changed()
+	update_appearance()
+	if(!is_powered())
+		for(var/mob/living/looker as anything in lookers)
+			stop_looking(looker)
+	show_feed()
+
+/obj/structure/ms13_vehicle_part/camera_console/attack_hand(mob/living/user, list/modifiers)
+	if(user.combat_mode)
+		return ..()
+	ui_interact(user)
+	return TRUE
+
+/obj/structure/ms13_vehicle_part/camera_console/attack_hand_secondary(mob/living/user, list/modifiers)
+	if(!remote_viewing)
+		balloon_alert(user, "no remote viewing module!")
+	else if(LAZYACCESS(lookers, user))
+		stop_looking(user)
+	else
+		start_looking(user)
+	return SECONDARY_ATTACK_CANCEL_ATTACK_CHAIN
+
+/obj/structure/ms13_vehicle_part/camera_console/attackby(obj/item/used_item, mob/user, params)
+	if(!istype(used_item, /obj/item/ms13_remote_viewing_module))
+		return ..()
+	if(remote_viewing)
+		balloon_alert(user, "already fitted!")
+		return TRUE
+	qdel(used_item)
+	remote_viewing = TRUE
+	balloon_alert(user, "remote viewing fitted")
+	playsound(src, 'sound/items/screwdriver.ogg', 40, TRUE)
+	return TRUE
+
+/obj/structure/ms13_vehicle_part/camera_console/examine(mob/user)
+	. = ..()
+	. += span_notice(remote_viewing ? "A remote viewing module is fitted: right-click it to look out through the cameras." : "A remote viewing module would let you look out through the cameras.")
+
+/// Worked from inside the vehicle only.
+/obj/structure/ms13_vehicle_part/camera_console/ui_status(mob/user, datum/ui_state/state)
+	if(!isobserver(user) && (get_ms13_ground_vehicle_at(user) != vehicle || (user in vehicle?.underneath)))
+		return UI_CLOSE
+	return ..()
+
+/obj/structure/ms13_vehicle_part/camera_console/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(ui)
+		return
+	ui = new(user, src, "CameraConsole", name)
+	ui.open()
+	cam_screen.render_to_tgui(user.client, ui.window)
+	LAZYOR(watchers, user)
+	show_feed()
+
+/obj/structure/ms13_vehicle_part/camera_console/ui_close(mob/user)
+	. = ..()
+	cam_screen?.hide_from_client(user.client)
+	LAZYREMOVE(watchers, user)
+	if(!LAZYLEN(watchers) && !LAZYLEN(lookers))
+		set_camera(null)
+
+/obj/structure/ms13_vehicle_part/camera_console/ui_static_data(mob/user)
+	var/list/data = list()
+	data["mapRef"] = cam_screen.assigned_map
+	data["cameras"] = list()
+	for(var/feed in cameras())
+		data["cameras"] += list(list("name" = feed))
+	return data
+
+/obj/structure/ms13_vehicle_part/camera_console/ui_data(mob/user)
+	var/list/data = list()
+	data["activeCamera"] = active_camera ? list("name" = feed_name_of(active_camera)) : null
+	return data
+
+/obj/structure/ms13_vehicle_part/camera_console/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(. || action != "switch_camera")
+		return
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera = cameras()[params["name"]]
+	if(!camera)
+		return
+	set_camera(camera)
+	playsound(src, get_sfx(SFX_TERMINAL_TYPE), 25, FALSE)
+	return TRUE
+
+/// The vehicle's cameras by name: which side each watches, told apart where two watch the same side.
+/obj/structure/ms13_vehicle_part/camera_console/proc/cameras()
+	. = list()
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera in vehicle?.parts)
+		var/feed = camera.feed_name()
+		var/count = 1
+		while(.[feed])
+			feed = "[camera.feed_name()] ([++count])"
+		.[feed] = camera
+
+/obj/structure/ms13_vehicle_part/camera_console/proc/feed_name_of(obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera)
+	var/list/named = cameras()
+	for(var/feed in named)
+		if(named[feed] == camera)
+			return feed
+
+/obj/structure/ms13_vehicle_part/camera_console/proc/set_camera(obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera)
+	if(active_camera)
+		UnregisterSignal(active_camera, list(COMSIG_MOVABLE_MOVED, COMSIG_ATOM_DIR_CHANGE, COMSIG_PARENT_QDELETING))
+	active_camera = camera
+	if(camera)
+		RegisterSignal(camera, COMSIG_MOVABLE_MOVED, PROC_REF(on_camera_moved))
+		RegisterSignal(camera, COMSIG_ATOM_DIR_CHANGE, PROC_REF(on_camera_turned))
+		RegisterSignal(camera, COMSIG_PARENT_QDELETING, PROC_REF(on_camera_deleted))
+	for(var/mob/living/looker as anything in lookers)
+		var/obj/effect/abstract/ms13_vehicle_camera_eye/eye = lookers[looker]
+		eye.forceMove(get_step(camera || src, camera?.dir || dir))
+	show_feed()
+
+/// The vehicle drove on: the feed moves with it, and so does each eye looking out through it.
+/obj/structure/ms13_vehicle_part/camera_console/proc/on_camera_moved(atom/movable/camera, atom/old_loc)
+	SIGNAL_HANDLER
+	var/turf/was = get_turf(old_loc)
+	var/turf/now = get_turf(camera)
+	for(var/mob/living/looker as anything in lookers)
+		var/atom/movable/eye = lookers[looker]
+		var/turf/eye_turf = get_turf(eye)
+		var/turf/carried = was && now && eye_turf ? locate(eye_turf.x + now.x - was.x, eye_turf.y + now.y - was.y, now.z) : null
+		eye.forceMove(carried || get_step(camera, camera.dir))
+	show_feed()
+
+/// The vehicle turned: each eye goes back to the view straight out of the camera.
+/obj/structure/ms13_vehicle_part/camera_console/proc/on_camera_turned(atom/movable/camera, old_dir, new_dir)
+	SIGNAL_HANDLER
+	for(var/mob/living/looker as anything in lookers)
+		var/atom/movable/eye = lookers[looker]
+		eye.forceMove(get_step(camera, new_dir))
+	show_feed()
+
+/obj/structure/ms13_vehicle_part/camera_console/proc/on_camera_deleted()
+	SIGNAL_HANDLER
+	set_camera(null)
+
+/obj/structure/ms13_vehicle_part/camera_console/proc/show_feed()
+	var/list/seen = feed_turfs()
+	if(!length(seen))
+		cam_screen?.show_camera_static()
+		return
+	var/list/bbox = get_bbox_of_atoms(seen)
+	cam_screen.show_camera(seen, bbox[3] - bbox[1] + 1, bbox[4] - bbox[2] + 1)
+
+/// What the active camera takes in, or nothing without power.
+/obj/structure/ms13_vehicle_part/camera_console/proc/feed_turfs()
+	. = list()
+	if(!is_powered() || !active_camera?.is_enabled())
+		return
+	var/turf/outside = get_step(active_camera, active_camera.dir)
+	for(var/turf/seen in view(7 + active_camera.view_reach, outside))
+		if(active_camera.covers(seen))
+			. += seen
+
+/// Looks out through the active camera, in place of the user's own eyes. Their movement keys look about.
+/obj/structure/ms13_vehicle_part/camera_console/proc/start_looking(mob/living/user)
+	if(!remote_viewing || LAZYACCESS(lookers, user))
+		return FALSE
+	if(!length(feed_turfs()))
+		balloon_alert(user, "no feed!")
+		return FALSE
+	var/obj/effect/abstract/ms13_vehicle_camera_eye/eye = new(get_step(active_camera, active_camera.dir))
+	eye.console = src
+	eye.stop_action = new(src)
+	eye.stop_action.Grant(user)
+	LAZYSET(lookers, user, eye)
+	user.remote_control = eye
+	user.ms13_camera_eye = eye
+	user.reset_perspective(eye)
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_looker_moved))
+	return TRUE
+
+/obj/structure/ms13_vehicle_part/camera_console/proc/stop_looking(mob/living/user)
+	var/obj/effect/abstract/ms13_vehicle_camera_eye/eye = LAZYACCESS(lookers, user)
+	if(!eye)
+		return
+	LAZYREMOVE(lookers, user)
+	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+	if(user.remote_control == eye)
+		user.remote_control = null
+	user.ms13_camera_eye = null
+	user.reset_perspective()
+	qdel(eye)
+	if(!LAZYLEN(watchers) && !LAZYLEN(lookers))
+		set_camera(null)
+
+/// Out of the vehicle, they're no longer looking.
+/obj/structure/ms13_vehicle_part/camera_console/proc/on_looker_moved(mob/living/looker)
+	SIGNAL_HANDLER
+	if(get_ms13_ground_vehicle_at(looker) != vehicle)
+		stop_looking(looker)
+
+/// Where someone at a vehicle camera console looks from. It goes only where the vehicle's working cameras see.
+/obj/effect/abstract/ms13_vehicle_camera_eye
+	name = "camera view"
+	var/obj/structure/ms13_vehicle_part/camera_console/console
+	var/datum/action/innate/ms13_stop_looking/stop_action
+
+/obj/effect/abstract/ms13_vehicle_camera_eye/Destroy()
+	QDEL_NULL(stop_action)
+	console = null
+	return ..()
+
+/obj/effect/abstract/ms13_vehicle_camera_eye/relaymove(mob/living/user, direction)
+	var/turf/next = get_step(src, direction)
+	if(next && console?.vehicle?.camera_covering(next))
+		forceMove(next)
+
+/// Thermal and night vision cameras show as they do on the driver's display.
+/obj/effect/abstract/ms13_vehicle_camera_eye/update_remote_sight(mob/living/user)
+	return console?.active_camera?.update_remote_sight(user)
+
+/datum/action/innate/ms13_stop_looking
+	name = "Stop Looking"
+	button_icon = 'icons/mob/actions/actions_silicon.dmi'
+	button_icon_state = "camera_off"
+
+/datum/action/innate/ms13_stop_looking/Activate()
+	var/obj/structure/ms13_vehicle_part/camera_console/console = target
+	console?.stop_looking(owner)
+
+/// Fitted to a vehicle camera console, it lets the console's user look out through the vehicle's cameras.
+/obj/item/ms13_remote_viewing_module
+	name = "remote viewing module"
+	desc = "A circuit board for a vehicle camera console. Fitted, it lets whoever works the console look out through the vehicle's cameras, and about everything they take in."
+	icon = 'icons/obj/module.dmi'
+	icon_state = "cpuboard_adv"
+	w_class = WEIGHT_CLASS_SMALL

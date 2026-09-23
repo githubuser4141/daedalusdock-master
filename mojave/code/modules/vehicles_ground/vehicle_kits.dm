@@ -521,6 +521,9 @@
 /obj/item/ms13_vehicle_part_kit/route_terminal
 	part_type = /obj/structure/ms13_vehicle_part/rail_terminal
 
+/obj/item/ms13_vehicle_part_kit/camera_console
+	part_type = /obj/structure/ms13_vehicle_part/camera_console
+
 /**
  * Leaves the vehicle for dead: each part gone or broken at random, the tanks drained, the battery flat, the racks
  * emptied and the hull holed. Everything can be repaired or replaced to drive it again.
@@ -1037,6 +1040,24 @@
 	reqs = list(/obj/item/stack/sheet/ms13/ceramic = 6, /obj/item/stack/sheet/ms13/refined_steel = 3, /obj/item/stack/sheet/ms13/kevlar = 2)
 	category = CAT_VEHICLES
 	crafting_interface = CRAFTING_BENCH_ARMTAILOR
+
+/datum/crafting_recipe/ms13_vehicle_camera_console
+	name = "vehicle camera console"
+	result = /obj/item/ms13_vehicle_part_kit/camera_console
+	time = 30 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/circuits = 2, /obj/item/stack/sheet/ms13/scrap_electronics = 4, /obj/item/stack/sheet/ms13/glass = 2, /obj/item/stack/sheet/ms13/refined_steel = 1)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_ELECTRIC
+
+/datum/crafting_recipe/ms13_remote_viewing_module
+	name = "remote viewing module"
+	result = /obj/item/ms13_remote_viewing_module
+	time = 30 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/circuits = 4, /obj/item/stack/sheet/ms13/scrap_electronics = 4, /obj/item/stack/sheet/ms13/refined_gold = 1)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_ELECTRIC
 
 #ifdef UNIT_TESTS
 /// A vehicle built up from one floor frame: floor, hull, seats and parts, then driven. A wrench takes a part or a panel

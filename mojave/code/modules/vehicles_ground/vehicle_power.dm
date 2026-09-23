@@ -119,6 +119,8 @@
 			part.update_appearance()
 	if(driver?.ms13_vehicle_camera && !driver.ms13_vehicle_camera.is_enabled())
 		driver.set_ms13_vehicle_camera(null)
+	for(var/obj/structure/ms13_vehicle_part/camera_console/console in parts)
+		console.power_changed()
 	update_interior_masks()
 
 /// The working camera whose field of view takes in target, if any. Only the driver sees through them; this is
@@ -474,6 +476,8 @@
 /mob
 	/// The vehicle camera this mob watches instead of its cabin.
 	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/ms13_vehicle_camera
+	/// Looking out through a vehicle's cameras from its camera console, from here.
+	var/obj/effect/abstract/ms13_vehicle_camera_eye/ms13_camera_eye
 
 /// Watches a vehicle camera's feed instead of the cabin; null returns to the cabin.
 /mob/proc/set_ms13_vehicle_camera(obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera)
@@ -502,7 +506,7 @@
 
 /mob/living/reset_perspective(atom/new_eye)
 	// Riding in a moving vehicle resets the eye every tile; stay on the feed.
-	return ..(new_eye || ms13_vehicle_camera)
+	return ..(new_eye || ms13_vehicle_camera || ms13_camera_eye)
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/light
 	name = "vehicle exterior light"

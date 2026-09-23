@@ -1006,6 +1006,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /mob/Logout()
 	ms13_active_gunner_sight?.set_sight(src, FALSE)
 	set_ms13_vehicle_camera(null)
+	ms13_camera_eye?.console?.stop_looking(src)
 	clear_ms13_vehicle_interior_mask()
 	ms13_heat_images = null
 	return ..()

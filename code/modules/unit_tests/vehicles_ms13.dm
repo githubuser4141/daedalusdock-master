@@ -292,6 +292,42 @@
 	vehicle.battery.update_integrity(vehicle.battery.max_integrity * 0.1)
 	TEST_ASSERT(!vehicle.engine_running && !vehicle.has_electrical_power(), "Broken battery left the electrical system powered.")
 
+/// A camera console shows only what its camera takes in, and only with power. Fitted for remote viewing, its user looks out
+/// through the camera and about what the vehicle's cameras cover, and no further.
+/datum/unit_test/ms13_vehicle_camera_console
+	name = "VEHICLES: Camera Console Shows Its Camera, And Looks Out Through It"
+
+/datum/unit_test/ms13_vehicle_camera_console/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/armored_truck_front_left/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	var/obj/structure/ms13_vehicle_part/camera_console/console = front.spawn_part(/obj/structure/ms13_vehicle_part/camera_console)
+	var/list/cameras = console.cameras()
+	TEST_ASSERT(length(cameras), "A camera console listed none of its vehicle's cameras.")
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera = cameras[cameras[1]]
+	console.set_camera(camera)
+	TEST_ASSERT(!length(console.feed_turfs()), "A camera console showed a feed with the ignition off.")
+	vehicle.set_ignition(TRUE)
+	var/list/seen = console.feed_turfs()
+	TEST_ASSERT(length(seen), "A powered camera console showed nothing of its camera.")
+	for(var/turf/shown as anything in seen)
+		TEST_ASSERT(camera.covers(shown), "A camera console showed what its camera doesn't take in.")
+	var/mob/living/carbon/human/consistent/operator = allocate(/mob/living/carbon/human/consistent, spot)
+	TEST_ASSERT(!console.start_looking(operator), "A camera console without remote viewing let its user look out.")
+	console.remote_viewing = TRUE
+	TEST_ASSERT(console.start_looking(operator), "A camera console with remote viewing didn't let its user look out.")
+	var/obj/effect/abstract/ms13_vehicle_camera_eye/eye = operator.remote_control
+	TEST_ASSERT(istype(eye) && operator.ms13_camera_eye == eye, "Looking out through a camera didn't give its user an eye.")
+	var/turf/behind = get_step(get_step(camera, turn(camera.dir, 180)), turn(camera.dir, 180))
+	eye.forceMove(get_step(camera, camera.dir))
+	var/turf/start = get_turf(eye)
+	eye.relaymove(operator, get_dir(start, behind))
+	TEST_ASSERT(vehicle.camera_covering(get_turf(eye)), "A camera eye looked where no camera sees.")
+	eye.relaymove(operator, camera.dir)
+	TEST_ASSERT(get_turf(eye) == get_step(start, camera.dir), "A camera eye didn't look further out along its camera.")
+	console.stop_looking(operator)
+	TEST_ASSERT(!operator.remote_control && !operator.ms13_camera_eye && QDELETED(eye), "Stopping looking out left its user an eye.")
+
 /// The alternator charges the battery off the engine, external tanks feed the fuel tank, a freezer and a recharge station
 /// run off spare charge, and a scoop sweeps up what the vehicle drives at.
 /datum/unit_test/ms13_vehicle_appliances
