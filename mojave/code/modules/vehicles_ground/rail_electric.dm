@@ -117,10 +117,11 @@
 	engine_running = TRUE
 	set_ignition(TRUE)
 
-/// A feeder on the line whose powernet has at least draw watts to spare, if any.
-/datum/ms13_ground_vehicle/rail/electric/proc/line_power(draw = 1)
+/// A feeder on a live line, if any. Given a draw, one whose powernet has that many watts to spare.
+/datum/ms13_ground_vehicle/rail/electric/proc/line_power(draw)
 	for(var/obj/machinery/power/ms13_rail_feeder/feeder as anything in feeders)
-		if(!QDELETED(feeder) && feeder.surplus() >= draw)
+		// Spare power comes and goes through a power cycle as loads take it; whether the line is live doesn't.
+		if(!QDELETED(feeder) && (draw ? feeder.surplus() >= draw : feeder.powernet?.avail > 0))
 			return feeder
 
 /// Takes this power cycle's traction load off the line, once a cycle. FALSE if the line can't carry it.

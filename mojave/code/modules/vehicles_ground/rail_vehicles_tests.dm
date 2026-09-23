@@ -341,6 +341,10 @@
 	net.reset()
 	if(!line.ignition || !line.engine_running || !line.exterior_lights_on || !line.has_electrical_power())
 		Fail("An electric car did not switch itself on when its line went live.")
+	net.load = net.avail
+	if(!line.has_standby_power() || !line.has_electrical_power())
+		Fail("An electric car went dark on a live line with no power to spare.")
+	net.load = 0
 	net.newavail = 0
 	net.reset()
 	if(line.has_electrical_power())
