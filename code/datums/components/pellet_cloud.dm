@@ -302,6 +302,8 @@
 		if(isbodypart(target))
 			hit_part = target
 			target = hit_part.owner
+			if(!target) // MOJAVE EDIT: the limb came off
+				continue
 
 		var/limb_hit_text = ""
 		if(hit_part)
