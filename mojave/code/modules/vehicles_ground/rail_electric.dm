@@ -151,8 +151,12 @@
 	if(QDELETED(pivot))
 		return FALSE
 	if(!line_power(traction_draw))
+		var/reason = line_power() ? "There isn't enough power on the line: the motor needs [display_power(traction_draw)] to spare." : "There's no power on the line. Check the rail feeder is on the line and wired to a live cable."
+		// On service there's nobody at the terminal, so it says why over the speaker.
 		if(user)
-			to_chat(user, span_warning(line_power() ? "There isn't enough power on the line: the motor needs [display_power(traction_draw)] to spare." : "There's no power on the line. Check the rail feeder is on the line and wired to a live cable."))
+			to_chat(user, span_warning(reason))
+		else
+			announce(reason)
 		return FALSE
 	engine_running = TRUE
 	return TRUE
