@@ -70,6 +70,7 @@
 
 /datum/ms13_ground_vehicle/rail
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/storage
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	speed_multiplier = 8
 	mass_per_frame = 1200
 	max_turn_speed = 1

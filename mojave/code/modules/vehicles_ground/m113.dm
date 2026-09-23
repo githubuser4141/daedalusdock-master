@@ -14,6 +14,7 @@
 
 /datum/ms13_ground_vehicle/m113
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.8 SECONDS
 	speed_multiplier = 1.5
 	turn_delay = 7

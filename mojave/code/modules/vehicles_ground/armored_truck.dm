@@ -10,6 +10,7 @@
  */
 /datum/ms13_ground_vehicle/armored_truck
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.2 SECONDS
 	turn_delay = 5
 	max_turn_speed = 1

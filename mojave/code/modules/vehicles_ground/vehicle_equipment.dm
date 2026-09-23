@@ -1,6 +1,8 @@
 /**
- * Equipment a vehicle can carry beyond what drives it: a welding set, a smoke generator and a roof solar panel.
- * Each is fitted at assembly, or mapped/spawned onto a vehicle's floor to fit itself there.
+ * Equipment a vehicle can carry beyond what drives it: a welding set, a smoke generator, a roof solar panel, freezers, a
+ * recharge station, external fuel tanks and a scoop. Each is fitted at assembly, or mapped/spawned onto a vehicle's floor
+ * to fit itself there. The freezers and recharge station run off the battery with the ignition off, until it's flat
+ * unless a low-voltage cut-out is fitted.
  */
 
 /// A welding set bolted into the vehicle, its torch on a hose. The arc runs off the vehicle's battery.
@@ -191,3 +193,135 @@
 /obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel/examine(mob/user)
 	. = ..()
 	. += span_notice("It's catching [round(sunlight() * 100)]% of full sun.")
+
+/// A chest freezer on the battery. While it has power, organs kept in it don't decay.
+/obj/structure/ms13_vehicle_part/stowage/freezer
+	name = "vehicle chest freezer"
+	desc = "A chest freezer wired to the vehicle's battery. Organs kept in it don't decay while it runs, ignition on or off, until the battery's flat."
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	icon_state = "vp_ap_chest_freezer"
+	max_integrity = 120
+	fits_itself = TRUE
+	slots = 12
+	/// Charge a second it draws while running.
+	var/power_draw = 3
+	var/cold = FALSE
+
+/// Runs off the battery for a while, if the battery can spare it.
+/obj/structure/ms13_vehicle_part/stowage/freezer/proc/chill(seconds_per_tick)
+	var/now_cold = is_operational() && vehicle?.use_spare_charge(power_draw * seconds_per_tick)
+	if(cold == now_cold)
+		return
+	cold = now_cold
+	for(var/obj/item/organ/organ in src)
+		set_frozen(organ, cold)
+
+/obj/structure/ms13_vehicle_part/stowage/freezer/proc/set_frozen(obj/item/organ/organ, frozen)
+	if(frozen)
+		organ.organ_flags |= ORGAN_FROZEN
+	else
+		organ.organ_flags &= ~ORGAN_FROZEN
+
+/obj/structure/ms13_vehicle_part/stowage/freezer/Entered(atom/movable/arrived, atom/old_loc, list/atom/old_locs)
+	. = ..()
+	if(isorgan(arrived))
+		set_frozen(arrived, cold)
+
+/obj/structure/ms13_vehicle_part/stowage/freezer/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(isorgan(gone))
+		set_frozen(gone, FALSE)
+
+/obj/structure/ms13_vehicle_part/stowage/freezer/examine(mob/user)
+	. = ..()
+	. += span_notice(cold ? "It's running cold." : "It isn't running.")
+
+/obj/structure/ms13_vehicle_part/stowage/freezer/mini
+	name = "vehicle minifreezer"
+	desc = "A small freezer box wired to the vehicle's battery. Organs kept in it don't decay while it runs, ignition on or off, until the battery's flat."
+	icon_state = "vp_minifreezer_#0"
+	max_integrity = 80
+	slots = 4
+	max_item_size = WEIGHT_CLASS_NORMAL
+	power_draw = 1
+
+/// Charges anything put in it that runs on a cell, off the battery.
+/obj/structure/ms13_vehicle_part/stowage/recharge_station
+	name = "vehicle recharge station"
+	desc = "A charging rack wired to the vehicle's battery. Cells, and anything put in it that runs on one, charge off the battery, ignition on or off, until the battery's flat."
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	icon_state = "vp_recharge_station_#0"
+	max_integrity = 80
+	fits_itself = TRUE
+	slots = 4
+	max_item_size = WEIGHT_CLASS_NORMAL
+	/// Charge a second it gives each thing in it.
+	var/charge_rate = 50
+
+/obj/structure/ms13_vehicle_part/stowage/recharge_station/proc/recharge(seconds_per_tick)
+	if(!is_operational())
+		return
+	for(var/obj/item/thing in src)
+		var/obj/item/stock_parts/cell/cell = thing.get_cell()
+		var/amount = cell ? min(charge_rate * seconds_per_tick, cell.maxcharge - cell.charge) : 0
+		if(amount <= 0)
+			continue
+		if(!vehicle?.use_spare_charge(amount))
+			return
+		cell.give(amount)
+		thing.update_appearance()
+
+/// A spare tank strapped to the outside of the hull. It feeds the vehicle's own tank as that's drawn down.
+/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank
+	name = "external fuel tank"
+	desc = "A spare fuel tank strapped to the outside of the hull. It feeds the vehicle's own tank as that's drawn down. Pour fuel in to fill it."
+	equipment_icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	rotated_art = "vp_external_tank"
+	on_state = "vp_external_tank_#0"
+	off_state = "vp_external_tank_#0"
+	power_draw = 0
+	max_integrity = 80
+	fits_itself = TRUE
+	var/capacity = 60
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/Initialize(mapload)
+	. = ..()
+	create_reagents(capacity, OPENCONTAINER)
+	reagents.add_reagent(/datum/reagent/fuel, capacity)
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/atom_break(damage_flag)
+	. = ..()
+	if(reagents.total_volume)
+		visible_message(span_warning("[src] is punctured and its fuel pours out!"))
+		reagents.clear_reagents()
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/examine(mob/user)
+	. = ..()
+	. += span_notice("It holds [round(reagents.get_reagent_amount(/datum/reagent/fuel), 0.1)]/[reagents.maximum_volume] units of fuel.")
+	if(broken)
+		. += span_warning("It is punctured.")
+
+/// Slung low off the edge of the hull, it sweeps small loose things up off the ground it faces as the vehicle drives.
+/obj/structure/ms13_vehicle_part/exterior_equipment/scoop
+	name = "vehicle scoop"
+	desc = "A scoop slung low off the edge of the hull. As the vehicle drives, it sweeps small loose things off the ground it faces into its hopper. Click it to empty it."
+	equipment_icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	rotated_art = "vp_vehicle_scoop"
+	on_state = "vp_vehicle_scoop_#0"
+	off_state = "vp_vehicle_scoop_#0"
+	power_draw = 0
+	max_integrity = 80
+	fits_itself = TRUE
+	var/slots = 10
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/scoop/Initialize(mapload)
+	. = ..()
+	create_storage(max_slots = slots, max_specific_storage = WEIGHT_CLASS_NORMAL, max_total_storage = slots * WEIGHT_CLASS_NORMAL)
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/scoop/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(!vehicle?.moving || !is_operational())
+		return
+	for(var/obj/item/loose in get_step(src, dir))
+		if(!loose.anchored && loose.w_class <= WEIGHT_CLASS_NORMAL)
+			atom_storage.attempt_insert(loose, override = TRUE)

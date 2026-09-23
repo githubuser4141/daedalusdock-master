@@ -193,6 +193,7 @@
 
 /datum/ms13_ground_vehicle/btr80
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.2 SECONDS
 	turn_delay = 5
 	max_turn_speed = 2
@@ -279,6 +280,7 @@
 
 /datum/ms13_ground_vehicle/mtlb
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.6 SECONDS
 	turn_delay = 6
 	max_turn_speed = 1
@@ -364,6 +366,7 @@
 
 /datum/ms13_ground_vehicle/bmd2
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.1 SECONDS
 	turn_delay = 5
 	max_turn_speed = 2
@@ -445,6 +448,7 @@
 
 /datum/ms13_ground_vehicle/t34
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 2 SECONDS
 	turn_delay = 8
 	max_turn_speed = 1
@@ -538,6 +542,7 @@
 
 /datum/ms13_ground_vehicle/is3
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
+	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 2.6 SECONDS
 	turn_delay = 10
 	max_turn_speed = 1

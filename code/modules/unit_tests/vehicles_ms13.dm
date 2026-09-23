@@ -10,7 +10,7 @@
 	TEST_ASSERT_EQUAL(length(front.vehicle.frames), 2, "Jeep did not assemble both frame tiles.")
 	// Front tile: front/left/right (3). Back tile: left/right (2) - its rear stays open as the entrance.
 	TEST_ASSERT_EQUAL(length(front.vehicle.walls), 5, "Jeep did not assemble all 5 expected wall segments.")
-	TEST_ASSERT_EQUAL(length(front.vehicle.parts), 9, "Jeep did not assemble its drivetrain, battery, headlight and wheels.")
+	TEST_ASSERT_EQUAL(length(front.vehicle.parts), 10, "Jeep did not assemble its drivetrain, battery, alternator, headlight and wheels.")
 	front.vehicle.set_ignition(TRUE)
 	TEST_ASSERT(front.vehicle.start_engine(), "Jeep engine failed to start.")
 	TEST_ASSERT(front.vehicle.has_motive_power(), "A complete, fueled jeep did not have motive power.")
@@ -292,6 +292,62 @@
 	vehicle.battery.update_integrity(vehicle.battery.max_integrity * 0.1)
 	TEST_ASSERT(!vehicle.engine_running && !vehicle.has_electrical_power(), "Broken battery left the electrical system powered.")
 
+/// The alternator charges the battery off the engine, external tanks feed the fuel tank, a freezer and a recharge station
+/// run off spare charge, and a scoop sweeps up what the vehicle drives at.
+/datum/unit_test/ms13_vehicle_appliances
+	name = "VEHICLES: Alternator, External Tanks, Freezers, Recharge Station And Scoop"
+
+/datum/unit_test/ms13_vehicle_appliances/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	var/obj/structure/ms13_vehicle_part/alternator/alternator = locate() in vehicle.parts
+	TEST_ASSERT(alternator, "The engine was fitted without an alternator.")
+	vehicle.set_ignition(TRUE)
+	TEST_ASSERT(vehicle.start_engine(), "The jeep's engine didn't start.")
+	var/charge_before = vehicle.battery.cell.charge
+	vehicle.process_power(2)
+	TEST_ASSERT(vehicle.battery.cell.charge > charge_before, "A running engine's alternator didn't charge the battery.")
+	alternator.update_integrity(alternator.max_integrity * 0.1)
+	charge_before = vehicle.battery.cell.charge
+	vehicle.process_power(2)
+	TEST_ASSERT(vehicle.battery.cell.charge < charge_before, "A burnt-out alternator still charged the battery.")
+	vehicle.stop_engine()
+
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/spare = front.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank)
+	vehicle.fuel_tank.reagents.clear_reagents()
+	TEST_ASSERT(vehicle.fuel_tank.has_fuel() && vehicle.fuel_tank.reagents.total_volume == spare.capacity && !spare.reagents.total_volume, "An external tank didn't feed the empty fuel tank.")
+
+	var/obj/structure/ms13_vehicle_part/stowage/freezer/freezer = front.spawn_part(/obj/structure/ms13_vehicle_part/stowage/freezer)
+	var/obj/item/organ/heart/heart = new(freezer)
+	vehicle.process_power(2)
+	TEST_ASSERT(freezer.cold && (heart.organ_flags & ORGAN_FROZEN), "A running freezer didn't keep an organ frozen.")
+	heart.forceMove(spot)
+	TEST_ASSERT(!(heart.organ_flags & ORGAN_FROZEN), "An organ taken out of a freezer stayed frozen.")
+	heart.forceMove(freezer)
+	// It runs the battery flat, unless a low-voltage cut-out saves the starter's charge.
+	vehicle.battery.cell.charge = vehicle.starter_cost
+	vehicle.process_power(2)
+	TEST_ASSERT(freezer.cold && vehicle.battery.cell.charge < vehicle.starter_cost, "A freezer stopped short of running the battery flat with no cut-out.")
+	front.spawn_part(/obj/structure/ms13_vehicle_part/battery_cutout)
+	vehicle.battery.cell.charge = vehicle.starter_cost
+	vehicle.process_power(2)
+	TEST_ASSERT(!freezer.cold && !(heart.organ_flags & ORGAN_FROZEN), "A freezer ran the battery down past a cut-out.")
+	vehicle.battery.cell.give(vehicle.battery.cell.maxcharge)
+
+	var/obj/structure/ms13_vehicle_part/stowage/recharge_station/station = front.spawn_part(/obj/structure/ms13_vehicle_part/stowage/recharge_station)
+	var/obj/item/stock_parts/cell/flat = new(station)
+	flat.charge = 0
+	vehicle.process_power(2)
+	TEST_ASSERT(flat.charge > 0, "A recharge station didn't charge a cell in it.")
+
+	var/obj/structure/ms13_vehicle_part/exterior_equipment/scoop/scoop = front.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/scoop)
+	var/obj/item/litter = new /obj/item/stock_parts/cell(get_step(get_step(front, vehicle.dir), vehicle.dir))
+	vehicle.moving = TRUE
+	vehicle.do_move(vehicle.dir, TRUE)
+	vehicle.moving = FALSE
+	TEST_ASSERT_EQUAL(litter.loc, scoop, "A scoop didn't sweep up what the vehicle drove at.")
+
 /datum/unit_test/ms13_vehicle_braking
 	name = "VEHICLES: Braking From Speed Takes Time"
 
@@ -433,7 +489,7 @@
 	TEST_ASSERT(front_left.vehicle, "Armored truck front-left tile did not build a vehicle controller.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.frames), 4, "Armored truck did not assemble all 4 frame tiles.")
 	TEST_ASSERT_EQUAL(length(front_left.vehicle.walls), 8, "Armored truck did not assemble all 8 expected wall segments.")
-	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 16, "Armored truck did not assemble its drivetrain, battery, lighting, cameras, wheels and welding set.")
+	TEST_ASSERT_EQUAL(length(front_left.vehicle.parts), 17, "Armored truck did not assemble its drivetrain, battery, alternator, lighting, cameras, wheels and welding set.")
 	front_left.vehicle.set_ignition(TRUE)
 	TEST_ASSERT(front_left.vehicle.start_engine(), "Truck engine failed to start.")
 	TEST_ASSERT(front_left.vehicle.has_motive_power(), "A complete, fueled truck did not have motive power.")
@@ -619,7 +675,7 @@
 			TEST_ASSERT(wall.layer < front_left.roof.layer, "An M113 bulkhead would show through the roof.")
 	TEST_ASSERT_EQUAL(exterior_walls, 14, "M113 did not assemble its complete outer hull.")
 	TEST_ASSERT_EQUAL(interior_walls, 6, "M113 did not assemble its bulkheads and access panels.")
-	TEST_ASSERT_EQUAL(length(vehicle.parts), 17, "M113 did not assemble its powerpack, battery, lighting, cameras, tracks and welding set.")
+	TEST_ASSERT_EQUAL(length(vehicle.parts), 18, "M113 did not assemble its powerpack, battery, alternator, lighting, cameras, tracks and welding set.")
 	vehicle.set_ignition(TRUE)
 	TEST_ASSERT(vehicle.start_engine(), "M113 engine failed to start.")
 	TEST_ASSERT(istype(vehicle.gearbox, /obj/structure/ms13_vehicle_part/gearbox/m113), "M113 did not receive its transmission.")

@@ -213,6 +213,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	// All layouts use this shared mount path; keep the walk-over battery at the driver's end.
 	if(!vehicle.battery)
 		vehicle.pivot.spawn_part(/obj/structure/ms13_vehicle_part/battery)
+	// The alternator is belted to the engine, on its tile.
+	var/obj/structure/ms13_vehicle_frame/engine_bay = locate() in loc
+	if(engine_bay && !(locate(/obj/structure/ms13_vehicle_part/alternator) in vehicle.parts))
+		engine_bay.spawn_part(vehicle.alternator_type)
 
 /obj/structure/ms13_vehicle_part/engine/proc/consume_fuel(amount)
 	if(vehicle?.engine_running && is_operational())
@@ -324,10 +328,22 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	return ..()
 
 /obj/structure/ms13_vehicle_part/fuel_tank/proc/has_fuel()
+	if(!reagents?.has_reagent(/datum/reagent/fuel))
+		top_up()
 	return reagents?.has_reagent(/datum/reagent/fuel)
 
 /obj/structure/ms13_vehicle_part/fuel_tank/proc/draw_fuel(amount)
 	reagents?.remove_reagent(/datum/reagent/fuel, broken ? amount + leak_per_tile : amount)
+	top_up()
+
+/// Refills from the vehicle's external tanks as it's drawn down.
+/obj/structure/ms13_vehicle_part/fuel_tank/proc/top_up()
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/spare in vehicle?.parts)
+		var/room = reagents.maximum_volume - reagents.total_volume
+		if(room <= 0)
+			return
+		if(spare.is_operational())
+			spare.reagents.trans_to(src, room)
 
 /obj/structure/ms13_vehicle_part/fuel_tank/atom_break(damage_flag)
 	. = ..()
@@ -966,10 +982,12 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	layer = OBJ_LAYER
 	max_integrity = 150
 	var/slots = 8
+	/// The biggest thing it takes.
+	var/max_item_size = WEIGHT_CLASS_BULKY
 
 /obj/structure/ms13_vehicle_part/stowage/Initialize(mapload)
 	. = ..()
-	create_storage(max_slots = slots, max_specific_storage = WEIGHT_CLASS_BULKY, max_total_storage = slots * WEIGHT_CLASS_BULKY)
+	create_storage(max_slots = slots, max_specific_storage = max_item_size, max_total_storage = slots * max_item_size)
 
 /// Fills the rack from loadout: item type = how many.
 /obj/structure/ms13_vehicle_part/stowage/proc/stock(list/loadout)

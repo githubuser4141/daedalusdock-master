@@ -8,9 +8,10 @@
 	var/cameras_on = TRUE
 	var/next_horn_time = 0
 	var/starter_cost = 100
-	var/alternator_rate = 20
 	/// The battery its battery is built with.
 	var/battery_cell = /obj/item/stock_parts/cell/ms13_vehicle
+	/// The alternator its engine is built with.
+	var/alternator_type = /obj/structure/ms13_vehicle_part/alternator
 	var/idle_fuel_rate = 0.01
 	var/electrical_live = FALSE
 
@@ -27,6 +28,12 @@
 	if(!battery.cell.charge)
 		update_electrical()
 	return TRUE
+
+/// Charge for appliances that run with the ignition off. They run the battery flat, unless a low-voltage cut-out is fitted.
+/datum/ms13_ground_vehicle/proc/use_spare_charge(amount)
+	var/obj/structure/ms13_vehicle_part/battery_cutout/cutout = locate() in parts
+	var/reserve = cutout?.is_operational() ? starter_cost : 0
+	return has_standby_power() && battery.cell.charge - amount >= reserve && battery.cell.use(amount)
 
 /datum/ms13_ground_vehicle/proc/start_engine(mob/user)
 	if(QDELETED(pivot))
@@ -62,10 +69,16 @@
 		else
 			engine.consume_fuel(idle_fuel_rate * seconds_per_tick)
 			if(engine_running && battery?.is_operational())
-				battery.cell?.give(alternator_rate * seconds_per_tick)
+				for(var/obj/structure/ms13_vehicle_part/alternator/alternator in parts)
+					if(alternator.is_operational())
+						battery.cell?.give(alternator.rate * seconds_per_tick)
 	if(battery?.is_operational() && battery.cell)
 		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel/panel in parts)
 			battery.cell.give(panel.output * panel.sunlight() * seconds_per_tick)
+	for(var/obj/structure/ms13_vehicle_part/stowage/freezer/freezer in parts)
+		freezer.chill(seconds_per_tick)
+	for(var/obj/structure/ms13_vehicle_part/stowage/recharge_station/station in parts)
+		station.recharge(seconds_per_tick)
 	if(has_electrical_power())
 		var/load = 1 // Ignition/instruments.
 		for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
@@ -77,7 +90,12 @@
 				var/obj/structure/ms13_vehicle_part/exterior_equipment/equipment = part
 				if(equipment.is_enabled())
 					load += equipment.power_draw
-		battery.cell.use(min(battery.cell.charge, load * seconds_per_tick))
+		var/obj/structure/ms13_vehicle_part/battery_cutout/cutout = locate() in parts
+		if(!engine_running && cutout?.is_operational() && battery.cell.charge - load * seconds_per_tick < starter_cost)
+			set_ignition(FALSE)
+			cutout.visible_message(span_warning("[cutout] clicks, cutting the power to save the battery."))
+		else
+			battery.cell.use(min(battery.cell.charge, load * seconds_per_tick))
 	if(electrical_live != has_electrical_power())
 		update_electrical()
 
@@ -200,6 +218,47 @@
 	maxcharge = 60000
 	w_class = WEIGHT_CLASS_HUGE
 
+/**
+ * Cuts the battery's equipment off before it's run too flat to start the engine: the appliances that work with the
+ * ignition off, and the lights and cameras with the engine off. Without one, they run the battery flat.
+ */
+/obj/structure/ms13_vehicle_part/battery_cutout
+	name = "low-voltage cut-out"
+	desc = "A relay on the battery. It cuts the vehicle's equipment off before the battery runs too flat to start the engine."
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	icon_state = "vp_battery_charger_#0"
+	layer = OBJ_LAYER
+	max_integrity = 40
+	fits_itself = TRUE
+
+/// Charges the battery while the engine runs. Without a working one the engine still runs, but the battery only drains.
+/obj/structure/ms13_vehicle_part/alternator
+	name = "car alternator"
+	desc = "A belt-driven generator on the engine. It charges the battery while the engine runs."
+	icon = 'icons/obj/power.dmi'
+	icon_state = "portgen0_0"
+	layer = OBJ_LAYER
+	max_integrity = 80
+	/// Charge a second it puts back into the battery.
+	var/rate = 20
+
+/obj/structure/ms13_vehicle_part/alternator/examine(mob/user)
+	. = ..()
+	if(!is_operational())
+		. += span_warning("Its windings are burnt out: it charges nothing.")
+
+/obj/structure/ms13_vehicle_part/alternator/bike
+	name = "motorcycle alternator"
+	desc = "A small generator on a motorcycle's engine. It charges the battery while the engine runs."
+	rate = 8
+	max_integrity = 50
+
+/obj/structure/ms13_vehicle_part/alternator/truck
+	name = "truck alternator"
+	desc = "A heavy-duty generator on a truck's engine. It charges the battery quickly while the engine runs."
+	rate = 40
+	max_integrity = 120
+
 /// Non-dense exterior accessories use the same per-client exterior images as wheels and turrets.
 /obj/structure/ms13_vehicle_part/exterior_equipment
 	icon_state = "none"
@@ -207,6 +266,8 @@
 	var/equipment_icon
 	var/on_state
 	var/off_state
+	/// For art drawn in four turns rather than facings: "[rotated_art]_#0" to "_#3", facing north, east, south, west.
+	var/rotated_art
 	var/power_draw = 1
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/Initialize(mapload)
@@ -225,12 +286,17 @@
 	if(exterior_image)
 		exterior_image.pixel_x = dir == EAST ? 16 : dir == WEST ? -16 : 0
 		exterior_image.pixel_y = dir == NORTH ? 16 : dir == SOUTH ? -16 : 0
+	if(rotated_art)
+		update_appearance(UPDATE_ICON_STATE)
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/proc/is_enabled()
 	return is_operational() && vehicle?.has_electrical_power()
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/update_icon_state()
 	. = ..()
+	if(rotated_art)
+		on_state = "[rotated_art]_#[dir2angle(dir) / 90]"
+		off_state = on_state
 	if(exterior_image)
 		exterior_image.icon_state = is_enabled() ? on_state : off_state
 		exterior_image.color = broken ? "#706060" : null
