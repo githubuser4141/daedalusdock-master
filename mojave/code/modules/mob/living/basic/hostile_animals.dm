@@ -383,8 +383,8 @@
 	deathsound = list('mojave/sound/ms13npc/yaoguai_death1.ogg', 'mojave/sound/ms13npc/yaoguai_death2.ogg')
 	health = 500
 	maxHealth = 500
-	melee_damage_lower = 60
-	melee_damage_upper = 60
+	melee_damage_lower = 78
+	melee_damage_upper = 78
 	subtractible_armour_penetration = 15
 	speed = 1.35
 	sharpness = SHARP_EDGED
@@ -415,8 +415,8 @@
 	deathsound = list('mojave/sound/ms13npc/hellpig_death1.ogg', 'mojave/sound/ms13npc/hellpig_death2.ogg') //Not in love with either of these death or attack sounds but they work for now. Just pulled them from Yaoguai files
 	health = 550
 	maxHealth = 550
-	melee_damage_lower = 60
-	melee_damage_upper = 60
+	melee_damage_lower = 78
+	melee_damage_upper = 78
 	subtractible_armour_penetration = 20
 	speed = 1.8
 	sharpness = NONE
