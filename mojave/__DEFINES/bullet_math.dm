@@ -539,6 +539,10 @@ TYPEINFO_DEF(/obj/projectile)
 /atom/proc/finish_bullet_hit(obj/projectile/P, diverted, landed)
 	return
 
+/// Whoever is inside this atom, for a round that gets through it to hit next (a mech's pilot).
+/atom/proc/get_bullet_occupant()
+	return null
+
 /**
  * The one place a bullet hit resolves. Takes the target's share out of the round, lets the target apply it
  * through its normal bullet_act(), then sends the remainder on if the target let it through.
@@ -567,6 +571,10 @@ TYPEINFO_DEF(/obj/projectile)
 		damage = original_damage
 		return
 	damage = original_damage * (1 - stop_fraction)
+	// Through a shell with someone inside, it hits them, and only flies on if it gets through them too.
+	var/atom/occupant = target.get_bullet_occupant()
+	if(occupant)
+		return penetrating_hit(occupant, def_zone)
 	return BULLET_ACT_FORCE_PIERCE
 
 /// target stops `amount` of this round's damage and takes its bullet_damage_ratio share of that.
