@@ -5312,6 +5312,7 @@
 #include "mojave\code\modules\mob\living\carcass.dm"
 #include "mojave\code\modules\mob\living\emote.dm"
 #include "mojave\code\modules\mob\living\examine.dm"
+#include "mojave\code\modules\mob\living\field_of_vision.dm"
 #include "mojave\code\modules\mob\living\living.dm"
 #include "mojave\code\modules\mob\living\living_armor.dm"
 #include "mojave\code\modules\mob\living\living_defines.dm"

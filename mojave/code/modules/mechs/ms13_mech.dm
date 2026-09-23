@@ -45,6 +45,8 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	var/list/autofiring
 	/// No sides to it: a round aimed at the head or chest finds whoever's inside, not the frame.
 	var/open_cockpit = FALSE
+	/// The blind spot those inside have, seeing out of its cab (see __DEFINES/fov.dm). Null leaves them their own.
+	var/fov_angle = FOV_180_DEGREES
 	/// Weighed as a vehicle's mass_per_frame counts it: a vehicle ramming it with more momentum than this knocks it back.
 	var/mass = 2000
 	/// How long it takes to load someone in, or pry them out with a crowbar.
@@ -112,8 +114,12 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 /obj/vehicle/sealed/ms13_mech/setDir(newdir)
 	var/turned = newdir != dir
 	. = ..()
-	if(turned)
-		update_appearance()
+	if(!turned)
+		return
+	update_appearance()
+	// Those inside look out the way it faces.
+	for(var/mob/occupant as anything in occupants)
+		occupant.setDir(newdir)
 
 /obj/vehicle/sealed/ms13_mech/generate_actions()
 	. = ..()
@@ -129,11 +135,18 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	if(!.)
 		return
 	RegisterSignal(M, COMSIG_LIVING_DEATH, PROC_REF(mob_exit))
+	M.setDir(dir)
+	var/mob/living/living_occupant = M
+	if(fov_angle && istype(living_occupant))
+		living_occupant.add_fov_trait(src, fov_angle)
 	update_appearance()
 
 /obj/vehicle/sealed/ms13_mech/remove_occupant(mob/M)
 	if(ismob(M))
 		UnregisterSignal(M, COMSIG_LIVING_DEATH)
+	var/mob/living/living_occupant = M
+	if(istype(living_occupant))
+		living_occupant.remove_fov_trait(src)
 	. = ..()
 	update_appearance()
 
@@ -760,6 +773,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley)
 	mass = 1500
 	enter_delay = 1 SECONDS
 	open_cockpit = TRUE
+	fov_angle = null
 	stepsound = 'sound/mecha/powerloader_step.ogg'
 	turnsound = 'sound/mecha/powerloader_turn2.ogg'
 
@@ -776,6 +790,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 	mass = 2000
 	enter_delay = 4 SECONDS
 	open_cockpit = FALSE
+	fov_angle = FOV_180_DEGREES
 
 #ifdef UNIT_TESTS
 /// A Durand's arms fire the guns mounted on them and work their actions; the autoloader swaps magazines; rounds that

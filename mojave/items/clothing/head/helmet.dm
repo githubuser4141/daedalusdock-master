@@ -18,19 +18,17 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13)
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 2 SECONDS
 	var/has_fov = FALSE //Whether this has a grim dark FOV or not
-	var/fov_angle = 60 //What kind of FOV type it has. This should either be 60, 90, 120, or 180
+	fov_angle = 60 //What kind of FOV type it has. This should either be 60, 90, 120, or 180
 
 /obj/item/clothing/head/helmet/ms13/Initialize()
 	. = ..()
 	AddElement(/datum/element/world_icon, null, icon, 'mojave/icons/objects/clothing/clothing_inventory/hats_inventory.dmi')
 	init_fov()
 
+/// Only helmets with a field of vision restriction apply fov_angle (see field_of_vision.dm).
 /obj/item/clothing/head/helmet/ms13/proc/init_fov()
-	// AI EDIT: disabled, not fixed - clothing_fov_visor exists in MS's own source but depends on
-	// add_fov_trait()/remove_fov_trait()/update_fov() mob procs that were never added anywhere (neither DD nor
-	// MS have them). has_fov/fov_angle are left set on all the helmets that had them (real data, ~36 sites) for
-	// whenever this gets built for real - this proc is just a no-op until then.
-	return
+	if(!has_fov)
+		fov_angle = null
 
 TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood)
 	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)
@@ -52,7 +50,7 @@ TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood)
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 2 SECONDS
 	var/has_fov = FALSE //Whether this has a grim dark FOV or not
-	var/fov_angle = 60 //What kind of FOV type it has. This should either be 60, 90, 120, or 180
+	fov_angle = 60 //What kind of FOV type it has. This should either be 60, 90, 120, or 180
 
 
 /obj/item/clothing/head/ms13/hood/Initialize()
@@ -61,8 +59,8 @@ TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood)
 	init_fov()
 
 /obj/item/clothing/head/ms13/hood/proc/init_fov()
-	// AI EDIT: disabled, not fixed - see the identical note on /obj/item/clothing/head/helmet/ms13/init_fov() above
-	return
+	if(!has_fov)
+		fov_angle = null
 
 TYPEINFO_DEF(/obj/item/clothing/head/hooded/ms13)
 	default_armor = list(BLUNT = 0, PUNCTURE = 0, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, FIRE = 0, ACID = 0)

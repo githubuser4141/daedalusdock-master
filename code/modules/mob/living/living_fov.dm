@@ -1,18 +1,3 @@
-/// Is `observed_atom` in a mob's field of view? This takes blindness, nearsightness and FOV into consideration
-/mob/living/proc/in_fov(atom/observed_atom)
-	if(is_blind())
-		return TRUE
-
-	// Handling nearsightnedness
-	if(HAS_TRAIT(src, TRAIT_NEARSIGHT))
-		//Checking if our dude really is suffering from nearsightness! (very nice nearsightness code)
-		if(iscarbon(src))
-			var/mob/living/carbon/carbon_me = src
-			if(carbon_me.glasses)
-				var/obj/item/clothing/glasses/glass = carbon_me.glasses
-				if(!glass.vision_correction)
-					return TRUE
-
 /// Plays a visual effect representing a sound cue for people with vision obstructed by FOV or blindness
 /proc/play_fov_effect(atom/center, range, icon_state, dir = SOUTH, ignore_self = FALSE, angle, list/override_list)
 	var/turf/anchor_point = get_turf(center)
@@ -25,7 +10,7 @@
 		if(ignore_self && living_mob == center)
 			continue
 
-		if(!living_mob.can_hear() || !living_mob.in_fov(center, ignore_self))
+		if(!living_mob.can_hear() || living_mob.in_fov(center, ignore_self))
 			continue
 
 		if(!fov_image) //Make the image once we found one recipient to receive it

@@ -16,6 +16,8 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor)
 	worn_y_dimension = 48
 	worn_y_offset = 2
 	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL | SNUG_FIT | BLOCKS_SHOVE_KNOCKDOWN
+	// Seen out of through a visor.
+	fov_angle = FOV_120_DEGREES
 	var/obj/item/radio/headset/ms13/powerarmor/radio //Instantiated radio
 	var/radiotype = /obj/item/radio/headset/ms13/powerarmor //Typepath of the radio
 	actions_types = list(/datum/action/item_action/toggle_helmet_light) //New ability to modify the radio's settings
