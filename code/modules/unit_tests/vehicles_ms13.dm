@@ -55,7 +55,9 @@
 	passenger.forceMove(get_turf(back))
 	TEST_ASSERT(driver_seat.can_use_controls(passenger), "A nearby passenger cannot use the occupied dashboard.")
 	for(var/mutable_appearance/monitor as anything in driver_seat.overlays)
-		TEST_ASSERT(!monitor.pixel_x && !monitor.pixel_y, "Dashboard art protrudes past the cabin tile.")
+		// Drawn back from the windscreen into the cabin, never forward past it.
+		var/ahead = ((driver_seat.dir & EAST) ? monitor.pixel_x : (driver_seat.dir & WEST) ? -monitor.pixel_x : 0) + ((driver_seat.dir & NORTH) ? monitor.pixel_y : (driver_seat.dir & SOUTH) ? -monitor.pixel_y : 0)
+		TEST_ASSERT(ahead <= 0 && abs(monitor.pixel_x) < 16 && abs(monitor.pixel_y) < 16, "Dashboard art protrudes past the cabin tile.")
 	TEST_ASSERT(istype(front.vehicle, /datum/ms13_ground_vehicle/jeep), "Jeep did not instantiate its own handling configuration.")
 	TEST_ASSERT_EQUAL(front.vehicle.gear_count(), 4, "Jeep gearbox did not provide four gears.")
 
