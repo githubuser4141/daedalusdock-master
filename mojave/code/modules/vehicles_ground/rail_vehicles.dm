@@ -122,6 +122,13 @@
 			rail_bogie = frame
 	return rail_bogie
 
+/// The wreck left behind mustn't hold on to a bogie blown off it.
+/obj/structure/ms13_vehicle_frame/Destroy()
+	var/datum/ms13_ground_vehicle/rail/line = vehicle
+	. = ..()
+	if(istype(line) && line.rail_bogie == src)
+		line.rail_bogie = null
+
 /datum/ms13_ground_vehicle/rail/can_operate_steering()
 	return length(rail_route) || ..()
 

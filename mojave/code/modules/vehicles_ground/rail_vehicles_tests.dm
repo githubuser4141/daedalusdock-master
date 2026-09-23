@@ -400,6 +400,21 @@
 		Fail("The blast door did not slide shut again.")
 	clear_vehicle(drive)
 
+	// Frames blown off a running car, its pivot and the one on the rail among them, aren't held by the wreck left.
+	var/obj/structure/ms13_vehicle_frame/tram/train/electric/train = new(locate(20, 38, z))
+	var/datum/ms13_ground_vehicle/rail/electric/wreck = train.vehicle
+	wreck.depart_for(stop)
+	for(var/tick in 1 to 3)
+		wreck.next_move_time = 0
+		wreck.movement_tick(wreck.movement_generation)
+	var/obj/structure/ms13_vehicle_frame/bogie = wreck.rail_frame()
+	qdel(bogie)
+	qdel(train)
+	// Only this proc's own variable and the garbage queue should still hold them.
+	if(refcount(bogie) > 2 || refcount(train) > 2)
+		Fail("A wreck held on to its destroyed frames: [refcount(bogie) - 2] refs to the bogie, [refcount(train) - 2] to the pivot.")
+	clear_vehicle(wreck)
+
 /// Power doors the driver works, latches worked by hand from inside only, a battery bank, a welding torch that burns
 /// the battery and winds back past its hose, and a smoke generator that burns fuel into a screen outside.
 /datum/unit_test/ms13_rail_vehicles/proc/check_equipment(test_z)

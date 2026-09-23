@@ -852,6 +852,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	interior_light_block = null
 	if(vehicle?.pivot == src)
 		vehicle.destroy_soundloops()
+		// The wreck left behind outlives its pivot; QDELETED(pivot) still reads as wrecked.
+		vehicle.pivot = null
 	vehicle?.stop_motion()
 	vehicle?.frames -= src
 	vehicle?.uncover_exposed()
