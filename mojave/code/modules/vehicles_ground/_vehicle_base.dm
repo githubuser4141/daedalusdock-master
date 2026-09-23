@@ -469,9 +469,10 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/impact = energy * efficiency
 	var/resistance = clamp(obstacle.returnArmor().getRating(BLUNT), 0, 100)
 	var/work = impact
+	// attack_dir points from what's hit toward what hit it, as for any other attack.
 	if(obstacle.uses_integrity && !(obstacle.resistance_flags & INDESTRUCTIBLE) && obstacle.get_integrity() > 0)
 		var/integrity_before = obstacle.get_integrity()
-		var/dealt = obstacle.take_damage(impact, BRUTE, BLUNT, TRUE, direction)
+		var/dealt = obstacle.take_damage(impact, BRUTE, BLUNT, TRUE, turn(direction, 180))
 		// Don't spend a reinforced wall's worth of energy on a flimsy chair. Armor absorption counts.
 		if(dealt > 0)
 			work = min(impact, min(integrity_before, dealt) / max(0.05, 1 - resistance / 100))
@@ -481,7 +482,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(!QDELETED(contact))
 		var/contact_integrity = contact.get_integrity()
 		var/recoil = work * (1 - efficiency) * (0.5 + resistance / 100)
-		self_damage = min(contact_integrity, contact.take_damage(recoil, BRUTE, BLUNT, FALSE, turn(direction, 180)) || 0)
+		self_damage = min(contact_integrity, contact.take_damage(recoil, BRUTE, BLUNT, FALSE, direction) || 0)
 	impact_energy_reserve = max(0, energy - work - 1.5 * self_damage)
 	var/mass_factor = max(0.1, length(frames) * mass_per_frame / 1000)
 	speed = min(speed, CEILING(sqrt(impact_energy_reserve / (50 * mass_factor)), 1))
