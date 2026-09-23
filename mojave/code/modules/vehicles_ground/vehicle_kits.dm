@@ -50,13 +50,18 @@
 	update_interior_masks()
 	return segment
 
-/// Would taking frame away leave the rest of the floor in one piece, around the pivot? The pivot goes only last.
+/// Would taking frame away leave the rest of the floor in one piece?
 /datum/ms13_ground_vehicle/proc/holds_together_without(obj/structure/ms13_vehicle_frame/frame)
-	if(frame == pivot)
-		return length(frames) == 1
+	var/obj/structure/ms13_vehicle_frame/start
+	for(var/obj/structure/ms13_vehicle_frame/other as anything in frames)
+		if(other != frame)
+			start = other
+			break
+	if(!start)
+		return TRUE
 	var/list/reached = list()
-	reached[pivot] = TRUE
-	var/list/queue = list(pivot)
+	reached[start] = TRUE
+	var/list/queue = list(start)
 	while(length(queue))
 		var/obj/structure/ms13_vehicle_frame/current = queue[length(queue)]
 		queue.len--
@@ -1140,7 +1145,7 @@
 		Fail("A floor tile with things fitted to it was taken up.")
 	var/obj/item/ms13_vehicle_frame_kit/third = allocate(/obj/item/ms13_vehicle_frame_kit)
 	var/obj/structure/ms13_vehicle_frame/tail = third.lay(get_step(back_spot, WEST), NORTH)
-	if(vehicle.holds_together_without(back) || vehicle.holds_together_without(front) || !vehicle.holds_together_without(tail))
+	if(vehicle.holds_together_without(back) || !vehicle.holds_together_without(front) || !vehicle.holds_together_without(tail))
 		Fail("The floor's pieces weren't told apart from what holds it together.")
 
 	// A gun mount comes unloaded, and its gunner's seat works it.
@@ -1148,6 +1153,18 @@
 	var/obj/structure/ms13_vehicle_part/turret/machine_gun/gun = mount.fit(tail, NORTH)
 	if(gun.ammo || !gun.gunner_seat || gun.gunner_seat.operated_turret != gun || get_turf(gun.gunner_seat) != get_turf(tail))
 		Fail("A gun mount didn't come unloaded, worked from its own gunner's seat.")
+
+	// Losing the pivot, another frame takes over, with everything still where it is.
+	qdel(front)
+	if(!vehicle.pivot || vehicle.pivot.forward_offset || vehicle.pivot.right_offset)
+		Fail("No frame took over as the pivot when it was destroyed.")
+		return
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
+		if(vehicle.get_relative_turf(frame.forward_offset, frame.right_offset, vehicle.dir) != get_turf(frame))
+			Fail("A frame's place was lost when the pivot changed.")
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls)
+		if(vehicle.get_relative_turf(wall.forward_offset, wall.right_offset, vehicle.dir) != get_turf(wall))
+			Fail("A hull panel's place was lost when the pivot changed.")
 
 /// A parked vehicle's battery doesn't process; a wreck is drained, flat and broken; a welder mends a broken part.
 /datum/unit_test/ms13_vehicle_wrecks

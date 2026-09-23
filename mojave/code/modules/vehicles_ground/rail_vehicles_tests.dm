@@ -707,7 +707,7 @@
 	if(!QDELETED(engine) || vehicle.engine || !QDELETED(seat) || driver.buckled || cargo.loc != wreck || driver.loc != wreck)
 		Fail("Destroyed frame retained supported hardware or lost its occupants/cargo.")
 	for(var/obj/structure/ms13_vehicle_part/part as anything in vehicle.parts)
-		if(part.forward_offset == 0 && part.right_offset == 0)
+		if(get_turf(part) == wreck)
 			Fail("Destroyed frame left an attached component in the controller.")
 	if(!(locate(/obj/item/stack/sheet/ms13/scrap_steel) in wreck))
 		Fail("Lost frame/hardware left no steel scrap.")

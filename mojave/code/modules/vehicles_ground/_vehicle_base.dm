@@ -864,15 +864,33 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	roof = null
 	interior_light = null
 	interior_light_block = null
-	if(vehicle?.pivot == src)
+	var/was_pivot = vehicle?.pivot == src
+	if(was_pivot)
 		vehicle.destroy_soundloops()
-		// The wreck left behind outlives its pivot; QDELETED(pivot) still reads as wrecked.
 		vehicle.pivot = null
 	vehicle?.stop_motion()
 	vehicle?.frames -= src
+	// Another frame takes over, so what's left can be driven again once it's repaired.
+	if(was_pivot && length(vehicle.frames))
+		vehicle.repivot()
 	vehicle?.uncover_exposed()
 	vehicle = null
 	return ..()
+
+/// The pivot's gone: another frame takes over, and everything's offsets are measured from it instead.
+/datum/ms13_ground_vehicle/proc/repivot()
+	pivot = frames[1]
+	var/forward = pivot.forward_offset
+	var/right = pivot.right_offset
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		frame.forward_offset -= forward
+		frame.right_offset -= right
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
+		wall.forward_offset -= forward
+		wall.right_offset -= right
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
+		part.forward_offset -= forward
+		part.right_offset -= right
 
 /obj/structure/ms13_vehicle_frame/deconstruct(disassembled = TRUE, mob/user)
 	if(!QDELETED(src) && !(flags_1 & NODECONSTRUCT_1))
