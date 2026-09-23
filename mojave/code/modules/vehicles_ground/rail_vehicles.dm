@@ -125,15 +125,28 @@
 /datum/ms13_ground_vehicle/rail/can_operate_steering()
 	return length(rail_route) || ..()
 
+/// Turning, a rail car swings about the frame on the rail rather than its pivot, so it stays on the line at a corner.
+/datum/ms13_ground_vehicle/rail/get_relative_turf(forward_offset, right_offset, facing_dir)
+	var/obj/structure/ms13_vehicle_frame/bogie = facing_dir != dir && rail_frame()
+	if(!bogie)
+		return ..()
+	var/forward = forward_offset - bogie.forward_offset
+	var/right = right_offset - bogie.right_offset
+	var/step_x = (facing_dir & EAST) ? 1 : (facing_dir & WEST) ? -1 : 0
+	var/step_y = (facing_dir & NORTH) ? 1 : (facing_dir & SOUTH) ? -1 : 0
+	// Right of (x, y) is (y, -x).
+	return locate(bogie.x + forward * step_x + right * step_y, bogie.y + forward * step_y - right * step_x, bogie.z)
+
 /// Conservatively reserve the turning apron, not just the final footprint: a long car must not
 /// rotate through a house merely because its final orientation happens to be clear.
 /datum/ms13_ground_vehicle/rail/can_rotate(new_dir)
 	if(!..())
 		return FALSE
-	var/min_x = pivot.x
-	var/max_x = pivot.x
-	var/min_y = pivot.y
-	var/max_y = pivot.y
+	var/obj/structure/ms13_vehicle_frame/centre = rail_frame() || pivot
+	var/min_x = centre.x
+	var/max_x = centre.x
+	var/min_y = centre.y
+	var/max_y = centre.y
 	var/turn_radius = 0
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/destination = get_relative_turf(frame.forward_offset, frame.right_offset, new_dir)
@@ -141,16 +154,16 @@
 		max_x = max(max_x, frame.x, destination.x)
 		min_y = min(min_y, frame.y, destination.y)
 		max_y = max(max_y, frame.y, destination.y)
-		turn_radius = max(turn_radius, abs(frame.forward_offset), abs(frame.right_offset))
+		turn_radius = max(turn_radius, abs(frame.forward_offset - centre.forward_offset), abs(frame.right_offset - centre.right_offset))
 	if(new_dir == turn(dir, 180))
-		min_x = pivot.x - turn_radius
-		max_x = pivot.x + turn_radius
-		min_y = pivot.y - turn_radius
-		max_y = pivot.y + turn_radius
+		min_x = centre.x - turn_radius
+		max_x = centre.x + turn_radius
+		min_y = centre.y - turn_radius
+		max_y = centre.y + turn_radius
 	if(min_x < 1 || min_y < 1 || max_x > world.maxx || max_y > world.maxy)
 		return FALSE
 	var/list/aboard = get_all_parts() | get_manifest()
-	for(var/turf/ground in block(locate(min_x, min_y, pivot.z), locate(max_x, max_y, pivot.z)))
+	for(var/turf/ground in block(locate(min_x, min_y, centre.z), locate(max_x, max_y, centre.z)))
 		if(ground.density)
 			return FALSE
 		for(var/atom/movable/blocker in ground)

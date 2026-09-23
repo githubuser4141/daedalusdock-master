@@ -289,6 +289,19 @@
 	clear_vehicle(service)
 	clear_vehicle(standing)
 
+	// A train riding the line under its middle turns a corner about it and runs on along the new line.
+	for(var/y in 38 to 49)
+		allocate(/obj/structure/ms13_rail, locate(29, y, z))
+	for(var/x in 24 to 28)
+		allocate(/obj/structure/ms13_rail, locate(x, 38, z))
+	var/obj/structure/ms13_vehicle_frame/tram/train/long_car = allocate(/obj/structure/ms13_vehicle_frame/tram/train, locate(30, 44, z))
+	var/datum/ms13_ground_vehicle/rail/turner = long_car.vehicle
+	var/turf/corner_end = locate(24, 38, z)
+	turner.depart_for(corner_end)
+	if(!run_to_stand(turner, corner_end) || turner.dir != WEST)
+		Fail("A train riding the line under its middle came off it at a corner.")
+	clear_vehicle(turner)
+
 /// Runs line to stop, one tile at a time. TRUE if it came to a stand on the stop.
 /datum/unit_test/ms13_rail_vehicles/proc/run_to_stand(datum/ms13_ground_vehicle/rail/line, turf/stop)
 	for(var/tick in 1 to 120)
