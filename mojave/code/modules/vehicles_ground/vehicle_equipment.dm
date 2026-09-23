@@ -7,8 +7,8 @@
 /obj/structure/ms13_vehicle_part/welding_rig
 	name = "vehicle welding set"
 	desc = "An arc welder bolted into the vehicle and run off its battery. Take the torch to use it: the hose only reaches so far, and it winds back in when you let go."
-	icon = 'icons/obj/tools.dmi'
-	icon_state = "indwelder"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	icon_state = "vp_welding_rig_#0"
 	max_integrity = 100
 	fits_itself = TRUE
 	var/obj/item/weldingtool/ms13/vehicle/torch
@@ -156,9 +156,9 @@
 /obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel
 	name = "vehicle solar panel"
 	desc = "A solar panel bolted flat to the roof. It trickle-charges the battery in daylight."
-	equipment_icon = 'icons/obj/solar.dmi'
-	on_state = "solar_panel"
-	off_state = "solar_panel"
+	equipment_icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment_32x48.dmi'
+	on_state = "vp_solar_panel_#0"
+	off_state = "vp_solar_panel_#0"
 	power_draw = 0
 	max_integrity = 60
 	fits_itself = TRUE

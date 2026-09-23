@@ -102,8 +102,8 @@
 /obj/structure/ms13_vehicle_part/battery
 	name = "vehicle battery"
 	desc = "A low, bolted-down starter battery. A screwdriver releases its cell; insert a charged cell to replace it."
-	icon = 'icons/obj/power.dmi'
-	icon_state = "cell"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	icon_state = "vp_ap_battery"
 	layer = OBJ_LAYER
 	max_integrity = 100
 	var/obj/item/stock_parts/cell/cell
@@ -112,7 +112,14 @@
 	vehicle.battery = src
 	if(!cell)
 		cell = new vehicle.battery_cell(src)
+	update_appearance()
 	START_PROCESSING(SSobj, src)
+
+/// Shows the battery in it, or an empty box.
+/obj/structure/ms13_vehicle_part/battery/update_icon_state()
+	icon_state = cell?.icon == icon ? cell.icon_state : initial(icon_state)
+	color = cell ? null : "#606060"
+	return ..()
 
 /obj/structure/ms13_vehicle_part/battery/process(seconds_per_tick)
 	vehicle?.process_power(seconds_per_tick)
@@ -148,6 +155,7 @@
 		return TRUE
 	cell.forceMove(drop_location())
 	cell = null
+	update_appearance()
 	vehicle?.stop_engine()
 	vehicle?.update_electrical()
 	return TRUE
@@ -157,34 +165,38 @@
 		return ..()
 	if(user.transferItemToLoc(item, src))
 		cell = item
+		update_appearance()
 		vehicle?.update_electrical()
 
 /// Vehicle batteries come in sizes. Any of them fits any vehicle's battery box, swapped like any cell.
 /obj/item/stock_parts/cell/ms13_vehicle
 	name = "car battery"
 	desc = "A lead-acid battery for a car's starter and lights."
-	icon_state = "hcell"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	icon_state = "vp_ap_battery_small"
+	// The charge light is drawn for SS13's cell sprite.
+	charge_light_type = null
 	maxcharge = 10000
 	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/stock_parts/cell/ms13_vehicle/bike
 	name = "motorcycle battery"
 	desc = "A small lead-acid battery for a motorcycle."
-	icon_state = "cell"
+	icon_state = "vp_battery_motorbike"
 	maxcharge = 2500
 	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/stock_parts/cell/ms13_vehicle/truck
 	name = "truck battery"
 	desc = "A heavy lead-acid battery for a truck or an armored vehicle."
-	icon_state = "scell"
+	icon_state = "vp_ap_battery_medium"
 	maxcharge = 20000
 	w_class = WEIGHT_CLASS_BULKY
 
 /obj/item/stock_parts/cell/ms13_vehicle/storage
 	name = "storage battery bank"
 	desc = "A crate of storage cells, big enough to drive an electric vehicle or run a rail car's doors and lights."
-	icon_state = "bscell"
+	icon_state = "vp_ap_battery_large"
 	maxcharge = 60000
 	w_class = WEIGHT_CLASS_HUGE
 
@@ -410,9 +422,9 @@
 /obj/structure/ms13_vehicle_part/exterior_equipment/light
 	name = "vehicle exterior light"
 	desc = "An exterior lamp. Its switch is at the driver's controls."
-	equipment_icon = 'icons/obj/lighting.dmi'
-	on_state = "floor"
-	off_state = "floor-burned"
+	equipment_icon = 'mojave/icons/cdda_ultimate_cataclysm/vehicle_equipment.dmi'
+	on_state = "vp_headlight"
+	off_state = "vp_headlight"
 	power_draw = 2
 	// A beam cast ahead along the lamp's facing; overlay lights cap their range at 6.
 	light_system = OVERLAY_LIGHT_DIRECTIONAL
