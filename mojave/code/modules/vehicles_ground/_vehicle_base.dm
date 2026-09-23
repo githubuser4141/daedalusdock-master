@@ -490,7 +490,13 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(!speed)
 		stop_motion()
 		return FALSE
+	if(!QDELETED(obstacle))
+		obstacle.rammed_by(src, direction)
 	return !QDELETED(pivot)
+
+/// A vehicle rammed this and is still moving.
+/atom/proc/rammed_by(datum/ms13_ground_vehicle/vehicle, direction)
+	return
 
 /// Driving/gear changes replenish the speed-band estimate; repeated impacts at one band share it.
 /datum/ms13_ground_vehicle/proc/collision_energy()

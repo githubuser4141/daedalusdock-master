@@ -6,8 +6,8 @@
  *
  * Built on sealed vehicles rather than /mecha: there's no cabin air, malfunction, stock part or control panel to
  * switch off, and nothing processing while it stands idle. The pilot breathes the air outside, as on foot.
- * Everything else is done from outside, by hand: use a gun on it to mount it, a wrench to take one off, magazines
- * to reload, a crowbar for the battery and a welder for repairs.
+ * Everything else is done from outside, by hand: use a gun or a piece of equipment on it to mount it, a wrench to take
+ * one off, magazines to reload, a crowbar to pry out an occupant or the battery, and a welder for repairs.
  */
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	default_armor = list(BLUNT = 20, PUNCTURE = 10, SLASH = 0, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, FIRE = 100, ACID = 100)
@@ -34,15 +34,23 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	var/list/facing_modifiers = list(MECHA_FRONT_ARMOUR = 0.5, MECHA_SIDE_ARMOUR = 1, MECHA_BACK_ARMOUR = 1.5)
 	var/stepsound = 'sound/mecha/mechstep.ogg'
 	var/turnsound = 'sound/mecha/mechturn.ogg'
-	/// The gun on each arm. The pilot fires the left with a left click and the right with a right click.
+	/// The gun or equipment on each arm. The driver uses the left with a left click and the right with a right click.
 	var/list/arms = list(MS13_MECH_LEFT_ARM = null, MS13_MECH_RIGHT_ARM = null)
 	var/obj/item/ms13_mech_autoloader/autoloader
 	/// Knocked out: it stands where it fell, climbable, until it's welded back up. Whoever's inside stays inside.
 	var/wrecked = FALSE
-	/// The pilot's client, whose mouse buttons fire the arms.
+	/// The driver's client, whose mouse buttons work the arms.
 	var/client/pilot_client
-	/// Arms held down on automatic: arm = list(target, click params, the target's turf when aimed). A new list each press.
+	/// Arms held down, going again and again: arm = list(target, click params, the target's turf when aimed). A new list each press.
 	var/list/autofiring
+	/// No sides to it: a round aimed at the head or chest finds whoever's inside, not the frame.
+	var/open_cockpit = FALSE
+	/// Weighed as a vehicle's mass_per_frame counts it: a vehicle ramming it with more momentum than this knocks it back.
+	var/mass = 2000
+	/// How long it takes to load someone in, or pry them out with a crowbar.
+	var/load_time = 6 SECONDS
+	/// Being loaded in by someone else: they ride along rather than taking the controls.
+	var/mob/living/loading
 	/// Guns still working their action after a shot.
 	var/list/cycling
 
@@ -66,9 +74,16 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 		. += span_warning("It's wrecked. Welded back up, it would walk again.")
 	for(var/arm in arms)
 		var/obj/item/gun/ballistic/gun = arms[arm]
-		if(gun)
+		var/obj/item/ms13_mech_equipment/clamp/clamp = arms[arm]
+		if(istype(gun))
 			var/rounds = gun.get_ammo(FALSE) + !!gun.chambered?.loaded_projectile
 			. += "On its [arm]: [gun], with [rounds] round\s left."
+		else if(istype(clamp) && clamp.held)
+			. += "On its [arm]: [clamp], holding [clamp.held]."
+		else if(arms[arm])
+			. += "On its [arm]: [arms[arm]]."
+	if(LAZYLEN(occupants) > 1)
+		. += "It carries [LAZYLEN(occupants)] people."
 	if(autoloader)
 		. += "An autoloader on its back holds [length(autoloader.contents)] magazine\s."
 	. += cell ? "Its battery reads [round(cell.percent())]%." : span_warning("It has no battery.")
@@ -76,6 +91,29 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 /obj/vehicle/sealed/ms13_mech/update_icon_state()
 	icon_state = wrecked ? "[base_icon_state]-broken" : (LAZYLEN(occupants) ? base_icon_state : "[base_icon_state]-open")
 	return ..()
+
+/// A clamp shows a small copy of what it holds, out on its arm's side.
+/obj/vehicle/sealed/ms13_mech/update_overlays()
+	. = ..()
+	for(var/arm in arms)
+		var/obj/item/ms13_mech_equipment/clamp/clamp = arms[arm]
+		if(!istype(clamp) || !clamp.held)
+			continue
+		var/mutable_appearance/held_look = new(clamp.held)
+		held_look.transform = matrix(0.5, 0, 0, 0, 0.5, 0)
+		held_look.plane = FLOAT_PLANE
+		var/side = turn(dir, arm == MS13_MECH_LEFT_ARM ? 90 : -90)
+		held_look.pixel_x = (side & EAST) ? 12 : (side & WEST) ? -12 : 0
+		held_look.pixel_y = (side & NORTH) ? 6 : (side & SOUTH) ? -6 : 0
+		// The far arm is behind the body.
+		held_look.layer = side == NORTH ? layer - 0.01 : layer + 0.01
+		. += held_look
+
+/obj/vehicle/sealed/ms13_mech/setDir(newdir)
+	var/turned = newdir != dir
+	. = ..()
+	if(turned)
+		update_appearance()
 
 /obj/vehicle/sealed/ms13_mech/generate_actions()
 	. = ..()
@@ -90,19 +128,62 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	. = ..()
 	if(!.)
 		return
-	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_click))
-	RegisterSignal(M, COMSIG_MOB_LOGIN, PROC_REF(grab_mouse))
-	RegisterSignal(M, COMSIG_MOB_LOGOUT, PROC_REF(release_mouse))
 	RegisterSignal(M, COMSIG_LIVING_DEATH, PROC_REF(mob_exit))
-	grab_mouse(M)
 	update_appearance()
 
 /obj/vehicle/sealed/ms13_mech/remove_occupant(mob/M)
 	if(ismob(M))
-		UnregisterSignal(M, list(COMSIG_MOB_CLICKON, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT, COMSIG_LIVING_DEATH))
-		release_mouse()
+		UnregisterSignal(M, COMSIG_LIVING_DEATH)
 	. = ..()
 	update_appearance()
+
+/// Only someone climbing in takes the controls. Anyone loaded in rides along.
+/obj/vehicle/sealed/ms13_mech/auto_assign_occupant_flags(mob/M)
+	if(M != loading)
+		return ..()
+
+/// The driver walks it and works its arms.
+/obj/vehicle/sealed/ms13_mech/add_control_flags(mob/controller, flags)
+	var/was_driving = is_driver(controller)
+	. = ..()
+	if(!was_driving && is_driver(controller))
+		RegisterSignal(controller, COMSIG_MOB_CLICKON, PROC_REF(on_click))
+		RegisterSignal(controller, COMSIG_MOB_LOGIN, PROC_REF(grab_mouse))
+		RegisterSignal(controller, COMSIG_MOB_LOGOUT, PROC_REF(release_mouse))
+		grab_mouse(controller)
+
+/obj/vehicle/sealed/ms13_mech/remove_control_flags(mob/controller, flags)
+	var/was_driving = is_driver(controller)
+	. = ..()
+	if(was_driving && !is_driver(controller))
+		UnregisterSignal(controller, list(COMSIG_MOB_CLICKON, COMSIG_MOB_LOGIN, COMSIG_MOB_LOGOUT))
+		release_mouse()
+
+/obj/vehicle/sealed/ms13_mech/relaymove(mob/living/user, direction)
+	if(is_driver(user))
+		return ..()
+	return TRUE
+
+/// Drag someone else onto it to load them in.
+/obj/vehicle/sealed/ms13_mech/MouseDroppedOn(atom/dropping, mob/user)
+	if(ishuman(dropping) && dropping != user && isliving(user))
+		load_passenger(dropping, user)
+		return
+	return ..()
+
+/obj/vehicle/sealed/ms13_mech/proc/load_passenger(mob/living/carbon/human/passenger, mob/living/user)
+	if(wrecked || is_occupant(passenger) || !user.Adjacent(src) || !user.Adjacent(passenger))
+		return FALSE
+	if(occupant_amount() >= max_occupants)
+		balloon_alert(user, "no room!")
+		return FALSE
+	user.visible_message(span_warning("[user] starts loading [passenger] into [src]."))
+	if(!do_after(user, src, load_time, extra_checks = CALLBACK(src, PROC_REF(enter_checks), passenger)) || wrecked || !user.Adjacent(passenger))
+		return FALSE
+	loading = passenger
+	mob_enter(passenger)
+	loading = null
+	return TRUE
 
 /obj/vehicle/sealed/ms13_mech/Exited(atom/movable/gone, direction)
 	. = ..()
@@ -114,12 +195,18 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 		for(var/arm in arms)
 			if(arms[arm] != gone)
 				continue
-			var/obj/item/gun/ballistic/gun = gone
 			arms[arm] = null
-			gun.wielded = FALSE
-			UnregisterSignal(gun, list(COMSIG_PROJECTILE_BEFORE_FIRE, COMSIG_MOVABLE_PRE_THROW))
 			LAZYREMOVE(autofiring, arm)
-			LAZYREMOVE(cycling, gun)
+			update_appearance()
+			// Taken off, a clamp lets go.
+			var/obj/item/ms13_mech_equipment/clamp/clamp = gone
+			if(istype(clamp))
+				clamp.held?.forceMove(drop_location())
+			var/obj/item/gun/ballistic/gun = gone
+			if(istype(gun))
+				gun.wielded = FALSE
+				UnregisterSignal(gun, list(COMSIG_PROJECTILE_BEFORE_FIRE, COMSIG_MOVABLE_PRE_THROW))
+				LAZYREMOVE(cycling, gun)
 
 // Movement
 
@@ -163,6 +250,11 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 /obj/vehicle/sealed/ms13_mech/get_bullet_stopping_power(obj/projectile/P)
 	return ..() / facing_modifier(REVERSE_DIR(P.dir))
 
+/obj/vehicle/sealed/ms13_mech/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
+	if(open_cockpit && LAZYLEN(occupants) && (def_zone == BODY_ZONE_HEAD || def_zone == BODY_ZONE_CHEST))
+		return 0
+	return ..()
+
 /obj/vehicle/sealed/ms13_mech/get_bullet_occupant()
 	return LAZYLEN(occupants) ? pick(occupants) : null
 
@@ -184,6 +276,21 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 		visible_message(span_notice("[src] shudders back to life."))
 	update_appearance()
 
+/// A vehicle ramming it with more momentum than it has mass knocks it back a tile, if there's room, and drives on.
+/obj/vehicle/sealed/ms13_mech/rammed_by(datum/ms13_ground_vehicle/vehicle, direction)
+	if(length(vehicle.frames) * vehicle.mass_per_frame * vehicle.speed >= mass)
+		knocked_back(direction)
+
+/obj/vehicle/sealed/ms13_mech/proc/knocked_back(direction)
+	var/facing = dir
+	if(!step(src, direction))
+		return FALSE
+	setDir(facing)
+	playsound(src, 'sound/effects/meteorimpact.ogg', 60, TRUE)
+	for(var/mob/living/occupant as anything in occupants)
+		shake_camera(occupant, 3, 2)
+	return TRUE
+
 /obj/vehicle/sealed/ms13_mech/welder_act(mob/living/user, obj/item/tool)
 	if(atom_integrity >= max_integrity)
 		balloon_alert(user, "not damaged!")
@@ -199,10 +306,10 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 /obj/vehicle/sealed/ms13_mech/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(user.combat_mode)
 		return NONE
-	if(istype(tool, /obj/item/gun/ballistic))
+	if(istype(tool, /obj/item/gun/ballistic) || istype(tool, /obj/item/ms13_mech_equipment))
 		var/arm = !arms[MS13_MECH_LEFT_ARM] ? MS13_MECH_LEFT_ARM : (!arms[MS13_MECH_RIGHT_ARM] ? MS13_MECH_RIGHT_ARM : null)
 		if(!arm)
-			balloon_alert(user, "both arms are armed!")
+			balloon_alert(user, "both arms are full!")
 			return ITEM_INTERACT_BLOCKING
 		balloon_alert(user, "mounting it...")
 		if(!do_after(user, src, 3 SECONDS) || arms[arm] || !user.transferItemToLoc(tool, src))
@@ -240,7 +347,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 		return ITEM_INTERACT_BLOCKING
 	return NONE
 
-/// A wrench takes a gun or the autoloader off whole.
+/// A wrench takes a gun, equipment or the autoloader off whole.
 /obj/vehicle/sealed/ms13_mech/wrench_act(mob/living/user, obj/item/tool)
 	var/list/choices = list()
 	for(var/arm in arms)
@@ -261,19 +368,44 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	user.put_in_hands(part)
 	return ITEM_INTERACT_SUCCESS
 
+/// A crowbar pries out whoever's picked from inside, or the battery.
 /obj/vehicle/sealed/ms13_mech/crowbar_act(mob/living/user, obj/item/tool)
-	if(!cell)
-		balloon_alert(user, "no battery!")
+	var/list/choices = list()
+	var/list/picks = list()
+	var/list/used_names = list()
+	for(var/mob/occupant as anything in occupants)
+		var/label = avoid_assoc_duplicate_keys(occupant.name, used_names)
+		choices[label] = image(occupant)
+		picks[label] = occupant
+	if(cell)
+		choices["battery"] = image(cell)
+	if(!length(choices))
+		balloon_alert(user, "nothing to pry out!")
 		return ITEM_INTERACT_BLOCKING
-	balloon_alert(user, "prying the battery out...")
-	if(!tool.use_tool(src, user, 3 SECONDS, volume = 50) || !cell)
+	var/choice = length(choices) == 1 ? choices[1] : show_radial_menu(user, src, choices, require_near = TRUE, tooltips = TRUE)
+	if(choice == "battery")
+		balloon_alert(user, "prying the battery out...")
+		if(!tool.use_tool(src, user, 3 SECONDS, volume = 50) || !cell)
+			return ITEM_INTERACT_BLOCKING
+		user.put_in_hands(cell)
+		return ITEM_INTERACT_SUCCESS
+	var/mob/living/occupant = picks[choice]
+	if(!is_occupant(occupant))
 		return ITEM_INTERACT_BLOCKING
-	user.put_in_hands(cell)
+	user.visible_message(span_warning("[user] starts prying [occupant] out of [src]!"))
+	to_chat(occupant, span_userdanger("[user] is prying you out of [src]!"))
+	if(!tool.use_tool(src, user, load_time, volume = 50, extra_checks = CALLBACK(src, PROC_REF(is_occupant), occupant)))
+		return ITEM_INTERACT_BLOCKING
+	mob_exit(occupant)
 	return ITEM_INTERACT_SUCCESS
 
-/// Bolts gun, already inside, onto arm.
-/obj/vehicle/sealed/ms13_mech/proc/mount(obj/item/gun/ballistic/gun, arm)
-	arms[arm] = gun
+/// Bolts item, already inside, onto arm.
+/obj/vehicle/sealed/ms13_mech/proc/mount(obj/item/item, arm)
+	arms[arm] = item
+	update_appearance()
+	var/obj/item/gun/ballistic/gun = item
+	if(!istype(gun))
+		return
 	// Braced on the arm, it shoots as steady as held in both hands.
 	gun.wielded = TRUE
 	RegisterSignal(gun, COMSIG_PROJECTILE_BEFORE_FIRE, PROC_REF(clear_own_hull))
@@ -298,7 +430,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	var/obj/item/gun/ballistic/best
 	for(var/arm in arms)
 		var/obj/item/gun/ballistic/gun = arms[arm]
-		if(!gun || (is_magazine ? (gun.internal_magazine || !istype(ammo, gun.mag_type)) : !(gun.internal_magazine || istype(gun.bolt, /datum/gun_bolt/no_bolt))))
+		if(!istype(gun) || (is_magazine ? (gun.internal_magazine || !istype(ammo, gun.mag_type)) : !(gun.internal_magazine || istype(gun.bolt, /datum/gun_bolt/no_bolt))))
 			continue
 		if(!best || gun.get_ammo() < best.get_ammo())
 			best = gun
@@ -315,7 +447,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 
 /// Once gun's magazine runs dry, the autoloader swaps in the first full one it has that fits.
 /obj/vehicle/sealed/ms13_mech/proc/autoload(obj/item/gun/ballistic/gun)
-	if(!autoloader || gun?.loc != src || gun.internal_magazine || gun.magazine?.ammo_count())
+	if(!autoloader || !istype(gun) || gun.loc != src || gun.internal_magazine || gun.magazine?.ammo_count())
 		return
 	var/obj/item/ammo_box/magazine/fresh
 	for(var/obj/item/ammo_box/magazine/mag in autoloader)
@@ -352,20 +484,24 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	if(gun.loc == src)
 		cycle(gun)
 
-// Firing
+// Using the arms
 
-/// Pulls the trigger of arm's gun at target. FALSE when it can't fire any more, such as when it's run dry.
-/obj/vehicle/sealed/ms13_mech/proc/fire_arm(arm, atom/target, mob/living/pilot, params)
-	var/obj/item/gun/ballistic/gun = arms[arm]
-	if(!gun || wrecked || !cell?.charge || QDELETED(target) || !is_occupant(pilot) || pilot.incapacitated())
-		return FALSE
-	if(HAS_TRAIT(pilot, TRAIT_PACIFISM))
-		to_chat(pilot, span_warning("You don't want to harm other living beings!"))
+/// Fires arm's gun, or works its equipment, at target. FALSE when holding it down should stop, such as a gun run dry.
+/obj/vehicle/sealed/ms13_mech/proc/use_arm(arm, atom/target, mob/living/pilot, params)
+	var/obj/item/held = arms[arm]
+	if(!held || wrecked || !cell?.charge || QDELETED(target) || !is_driver(pilot) || pilot.incapacitated())
 		return FALSE
 	// The arms only swing so far.
 	var/dir_to_target = get_dir(src, target)
 	if(dir_to_target && !(dir_to_target & dir))
 		return TRUE
+	var/obj/item/ms13_mech_equipment/equipment = held
+	if(istype(equipment))
+		return !Adjacent(target) || equipment.action(src, target, pilot)
+	var/obj/item/gun/ballistic/gun = held
+	if(HAS_TRAIT(pilot, TRAIT_PACIFISM))
+		to_chat(pilot, span_warning("You don't want to harm other living beings!"))
+		return FALSE
 	if(gun.fire_lockout || LAZYACCESS(cycling, gun))
 		return TRUE
 	gun.on_trigger_pull(target, pilot)
@@ -379,7 +515,26 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 		addtimer(CALLBACK(src, PROC_REF(finish_cycling), gun), gun.rack_delay)
 	return TRUE
 
-/// A click fires the gun on that arm once. Automatics fire from on_mouse_down() instead, for as long as it's held.
+/// How soon holding the button down uses held again, or null if it goes once a click.
+/obj/vehicle/sealed/ms13_mech/proc/repeat_delay(obj/item/held)
+	var/obj/item/ms13_mech_equipment/equipment = held
+	if(istype(equipment))
+		return equipment.repeat_delay
+	var/datum/component/automatic_fire/automatic = held?.GetComponent(/datum/component/automatic_fire)
+	return automatic?.autofire_shot_delay
+
+/// A click on a door beside it opens or shuts it, as a person would, unless it's the drill doing the clicking.
+/obj/vehicle/sealed/ms13_mech/proc/is_door_click(arm, atom/target)
+	return istype(target, /obj/machinery/door/unpowered) && Adjacent(target) && !istype(arms[arm], /obj/item/ms13_mech_equipment/drill)
+
+/obj/vehicle/sealed/ms13_mech/proc/work_door(obj/machinery/door/unpowered/door, mob/living/pilot)
+	if(!wrecked && do_after(pilot, door, 0.5 SECONDS, extra_checks = CALLBACK(src, PROC_REF(can_reach_door), door), interaction_key = DOAFTER_SOURCE_DOORS))
+		door.try_to_activate_door(pilot)
+
+/obj/vehicle/sealed/ms13_mech/proc/can_reach_door(obj/machinery/door/unpowered/door)
+	return !wrecked && Adjacent(door)
+
+/// A click uses that arm once. Anything that goes again while held uses on_mouse_down() instead.
 /obj/vehicle/sealed/ms13_mech/proc/on_click(mob/living/user, atom/target, list/modifiers)
 	SIGNAL_HANDLER
 	if(LAZYACCESS(modifiers, SHIFT_CLICK) || LAZYACCESS(modifiers, CTRL_CLICK) || LAZYACCESS(modifiers, ALT_CLICK) || LAZYACCESS(modifiers, MIDDLE_CLICK))
@@ -387,10 +542,13 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	if(target == src || (!isturf(target) && !isturf(target.loc)))
 		return NONE
 	var/arm = LAZYACCESS(modifiers, RIGHT_CLICK) ? MS13_MECH_RIGHT_ARM : MS13_MECH_LEFT_ARM
-	var/obj/item/gun/gun = arms[arm]
-	if(!gun || gun.GetComponent(/datum/component/automatic_fire))
+	if(is_door_click(arm, target))
+		INVOKE_ASYNC(src, PROC_REF(work_door), target, user)
+		return COMSIG_MOB_CANCEL_CLICKON
+	var/obj/item/held = arms[arm]
+	if(!held || repeat_delay(held))
 		return NONE
-	INVOKE_ASYNC(src, PROC_REF(fire_arm), arm, target, user, list2params(modifiers))
+	INVOKE_ASYNC(src, PROC_REF(use_arm), arm, target, user, list2params(modifiers))
 	return COMSIG_MOB_CANCEL_CLICKON
 
 /obj/vehicle/sealed/ms13_mech/proc/grab_mouse(mob/pilot)
@@ -417,8 +575,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	if(LAZYACCESS(modifiers, SHIFT_CLICK) || LAZYACCESS(modifiers, CTRL_CLICK) || LAZYACCESS(modifiers, ALT_CLICK) || LAZYACCESS(modifiers, MIDDLE_CLICK))
 		return
 	var/arm = LAZYACCESS(modifiers, RIGHT_CLICK) ? MS13_MECH_RIGHT_ARM : MS13_MECH_LEFT_ARM
-	var/obj/item/gun/gun = arms[arm]
-	if(!gun?.GetComponent(/datum/component/automatic_fire))
+	if(!repeat_delay(arms[arm]))
 		return
 	if(isnull(location) || istype(target, /atom/movable/screen))
 		// Only the catcher behind the map: pressing on the HUD shouldn't open fire.
@@ -426,7 +583,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 			return
 		target = parse_caught_click_modifiers(modifiers, get_turf(source.eye), source)
 		params = list2params(modifiers)
-	if(!target || target == src)
+	if(!target || target == src || is_door_click(arm, target))
 		return
 	var/list/aim = list(target, params, get_turf(target))
 	LAZYSET(autofiring, arm, aim)
@@ -458,20 +615,19 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 		aim[2] = params
 		aim[3] = get_turf(target)
 
-/// Keeps firing arm while aim is still the press held on it, at the gun's own automatic rate.
+/// Keeps using arm while aim is still the press held on it, as fast as what's on it goes again.
 /obj/vehicle/sealed/ms13_mech/proc/autofire(arm, list/aim)
 	if(LAZYACCESS(autofiring, arm) != aim)
 		return
-	var/obj/item/gun/gun = arms[arm]
-	var/datum/component/automatic_fire/automatic = gun?.GetComponent(/datum/component/automatic_fire)
+	var/delay = repeat_delay(arms[arm])
 	var/atom/target = aim[1]
 	// Like a held automatic, it keeps on the tile it was aimed at rather than following whatever walks off it.
 	if(QDELETED(target) || get_turf(target) != aim[3])
 		target = aim[3]
-	if(!automatic || !fire_arm(arm, target, pilot_client?.mob, aim[2]))
+	if(!delay || !use_arm(arm, target, pilot_client?.mob, aim[2]))
 		LAZYREMOVE(autofiring, arm)
 		return
-	addtimer(CALLBACK(src, PROC_REF(autofire), arm, aim), automatic.autofire_shot_delay)
+	addtimer(CALLBACK(src, PROC_REF(autofire), arm, aim), delay)
 
 /// Bolts onto a mech's back. Stock it with magazines, by hand or through the mech: when a mounted gun runs dry, it swaps
 /// in a full magazine that fits.
@@ -486,6 +642,85 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	. = ..()
 	create_storage(canhold = list(/obj/item/ammo_box/magazine), type = /datum/storage/ms13/suit/med)
 
+/// Equipment for a mech's arm. It mounts like a gun, by using it on the mech, and a wrench takes it off.
+/obj/item/ms13_mech_equipment
+	icon = 'icons/mecha/mecha_equipment.dmi'
+	w_class = WEIGHT_CLASS_BULKY
+	/// Held down, it goes again after this long. Null goes once a click.
+	var/repeat_delay
+	COOLDOWN_DECLARE(next_use)
+
+/// Works on target, beside mech, for pilot. FALSE when holding it down should stop.
+/obj/item/ms13_mech_equipment/proc/action(obj/vehicle/sealed/ms13_mech/mech, atom/target, mob/living/pilot)
+	return FALSE
+
+/obj/item/ms13_mech_equipment/clamp
+	name = "mech clamp"
+	desc = "A hydraulic clamp for a mech's arm. It picks up one thing at a time and holds it until it's set down."
+	icon_state = "mecha_clamp"
+	var/obj/item/held
+
+/obj/item/ms13_mech_equipment/clamp/Destroy()
+	held?.forceMove(drop_location())
+	return ..()
+
+/obj/item/ms13_mech_equipment/clamp/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone != held)
+		return
+	held = null
+	if(istype(loc, /obj/vehicle/sealed/ms13_mech))
+		loc.update_appearance()
+
+/// Picks up a loose item, or sets down the one it holds on target's tile.
+/obj/item/ms13_mech_equipment/clamp/action(obj/vehicle/sealed/ms13_mech/mech, atom/target, mob/living/pilot)
+	if(!COOLDOWN_FINISHED(src, next_use))
+		return TRUE
+	var/obj/item/thing = target
+	if(held)
+		var/turf/spot = get_turf(target)
+		if(spot.density)
+			mech.balloon_alert(pilot, "no room!")
+			return FALSE
+		held.forceMove(spot)
+	else if(istype(thing) && !thing.anchored && isturf(thing.loc))
+		thing.forceMove(src)
+		held = thing
+		mech.update_appearance()
+	else
+		mech.balloon_alert(pilot, "can't grab that!")
+		return FALSE
+	COOLDOWN_START(src, next_use, 1 SECONDS)
+	playsound(mech, 'sound/mecha/hydraulic.ogg', 50, TRUE)
+	return TRUE
+
+/// Bites into whatever it's held against, again and again for as long as it's held down.
+/obj/item/ms13_mech_equipment/drill
+	name = "mech drill"
+	desc = "A heavy drill for a mech's arm. Held against something, it grinds away at it a bite at a time."
+	icon_state = "mecha_drill"
+	repeat_delay = 0.7 SECONDS
+	/// Damage a bite does to someone, through their armor, and to anything else.
+	var/mob_damage = 10
+	var/object_damage = 15
+
+/obj/item/ms13_mech_equipment/drill/action(obj/vehicle/sealed/ms13_mech/mech, atom/target, mob/living/pilot)
+	var/mob/living/victim = target
+	if(istype(victim))
+		if(HAS_TRAIT(pilot, TRAIT_PACIFISM))
+			to_chat(pilot, span_warning("You don't want to harm other living beings!"))
+			return FALSE
+		var/zone = ran_zone(BODY_ZONE_CHEST)
+		victim.apply_damage(mob_damage, BRUTE, zone, victim.run_armor_check(zone, BLUNT))
+		log_combat(pilot, victim, "drilled", src)
+	else if(target.uses_integrity && target.get_integrity() > 0 && !(target.resistance_flags & INDESTRUCTIBLE))
+		target.take_damage(object_damage, BRUTE, NONE, FALSE, get_dir(target, mech))
+	else
+		return TRUE
+	mech.do_attack_animation(target)
+	playsound(mech, 'sound/weapons/drill.ogg', 40, TRUE)
+	return TRUE
+
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/durand)
 	default_armor = list(BLUNT = 40, PUNCTURE = 35, SLASH = 0, LASER = 15, ENERGY = 10, BOMB = 20, BIO = 0, FIRE = 100, ACID = 100)
 
@@ -496,6 +731,8 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/durand)
 	base_icon_state = "durand"
 	max_integrity = 400
 	movedelay = 4
+	max_occupants = 2
+	mass = 3000
 
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/gygax)
 	default_armor = list(BLUNT = 25, PUNCTURE = 20, SLASH = 0, LASER = 30, ENERGY = 15, BOMB = 0, BIO = 0, FIRE = 100, ACID = 100)
@@ -508,6 +745,37 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/gygax)
 	max_integrity = 250
 	movedelay = 3
 	step_energy_drain = 3
+	mass = 1500
+
+TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley)
+	default_armor = list(BLUNT = 40, PUNCTURE = 20, SLASH = 0, LASER = 10, ENERGY = 20, BOMB = 40, BIO = 0, FIRE = 100, ACID = 100)
+
+/obj/vehicle/sealed/ms13_mech/ripley
+	name = "\improper Ripley MK-I"
+	desc = "A pre-war power loader, open to the air. The load limits stenciled on its arms are still legible. It was built to move freight."
+	icon_state = "ripley"
+	base_icon_state = "ripley"
+	max_integrity = 200
+	movedelay = 2
+	mass = 1500
+	enter_delay = 1 SECONDS
+	open_cockpit = TRUE
+	stepsound = 'sound/mecha/powerloader_step.ogg'
+	turnsound = 'sound/mecha/powerloader_turn2.ogg'
+
+TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
+	default_armor = list(BLUNT = 40, PUNCTURE = 30, SLASH = 0, LASER = 30, ENERGY = 30, BOMB = 60, BIO = 0, FIRE = 100, ACID = 100)
+
+/obj/vehicle/sealed/ms13_mech/ripley/mk2
+	name = "\improper Ripley MK-II"
+	desc = "A pre-war power loader with a sealed cab welded over the seat. Somebody wanted more between them and whatever they were digging into."
+	icon_state = "ripleymkii"
+	base_icon_state = "ripleymkii"
+	max_integrity = 250
+	movedelay = 4
+	mass = 2000
+	enter_delay = 4 SECONDS
+	open_cockpit = FALSE
 
 #ifdef UNIT_TESTS
 /// A Durand's arms fire the guns mounted on them and work their actions; the autoloader swaps magazines; rounds that
@@ -527,7 +795,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/gygax)
 	rifle.forceMove(mech)
 	mech.mount(rifle, MS13_MECH_RIGHT_ARM)
 	var/in_magazine = rifle.magazine.ammo_count()
-	if(!mech.fire_arm(MS13_MECH_RIGHT_ARM, ahead, pilot) || !rifle.chambered || rifle.chambered.loaded_projectile)
+	if(!mech.use_arm(MS13_MECH_RIGHT_ARM, ahead, pilot) || !rifle.chambered || rifle.chambered.loaded_projectile)
 		Fail("A mounted bolt action didn't fire, leaving its spent case in.")
 	mech.finish_cycling(rifle)
 	if(!rifle.chambered?.loaded_projectile || rifle.magazine.ammo_count() != in_magazine - 1 || rifle.bolt.is_locked || rifle.loc != mech)
@@ -588,6 +856,81 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/gygax)
 	automatic.forceMove(mech.loc)
 	if(mech.arms[MS13_MECH_LEFT_ARM] || automatic.wielded)
 		Fail("A gun taken off a mech stayed on its arm, or braced.")
+
+	// A clamp picks up a loose item beside it and shows it on its side; clicked on a tile, it sets it down there.
+	rifle.forceMove(mech.loc)
+	var/obj/item/ms13_mech_equipment/clamp/clamp = allocate(/obj/item/ms13_mech_equipment/clamp)
+	clamp.forceMove(mech)
+	mech.mount(clamp, MS13_MECH_LEFT_ARM)
+	var/turf/front = get_step(mech, NORTH)
+	var/obj/item/wrench/cargo = allocate(/obj/item/wrench, front)
+	if(!mech.use_arm(MS13_MECH_LEFT_ARM, cargo, pilot) || clamp.held != cargo || cargo.loc != clamp || !length(mech.overlays))
+		Fail("A mech's clamp didn't pick up a loose item and show it on the mech.")
+	COOLDOWN_RESET(clamp, next_use)
+	var/turf/beside = get_step(front, EAST)
+	if(!mech.use_arm(MS13_MECH_LEFT_ARM, beside, pilot) || cargo.loc != beside || clamp.held)
+		Fail("A mech's clamp didn't set what it held down where it was clicked.")
+
+	// A drill bites into a wall beside it.
+	var/obj/item/ms13_mech_equipment/drill/drill = allocate(/obj/item/ms13_mech_equipment/drill)
+	drill.forceMove(mech)
+	mech.mount(drill, MS13_MECH_RIGHT_ARM)
+	var/turf/closed/wall/wall = front.ChangeTurf(/turf/closed/wall)
+	var/wall_integrity = wall.get_integrity()
+	if(!mech.use_arm(MS13_MECH_RIGHT_ARM, wall, pilot) || wall.get_integrity() >= wall_integrity)
+		Fail("A mech's drill didn't bite into a wall.")
+	wall.ChangeTurf(/turf/open/floor/iron)
+
+	// It opens a door beside it, as a person would, after a moment.
+	var/obj/machinery/door/unpowered/ms13/metal/door = allocate(/obj/machinery/door/unpowered/ms13/metal, front)
+	mech.work_door(door, pilot)
+	if(door.density)
+		Fail("A mech couldn't open a door beside it.")
+	qdel(door)
+
+	// Someone loaded in rides along: the driver keeps the controls.
+	var/mob/living/carbon/human/passenger = allocate(/mob/living/carbon/human/consistent)
+	mech.loading = passenger
+	mech.mob_enter(passenger, TRUE)
+	mech.loading = null
+	if(!mech.is_occupant(passenger) || mech.is_driver(passenger) || !mech.is_driver(pilot) || mech.use_arm(MS13_MECH_RIGHT_ARM, beside, passenger))
+		Fail("Someone loaded into a mech took its controls, or its driver lost them.")
+	mech.mob_exit(passenger, TRUE)
+
+	// A light cart ramming it only dents it; a heavy truck knocks it back a tile, still facing the same way.
+	var/obj/structure/ms13_vehicle_frame/bumper = allocate(/obj/structure/ms13_vehicle_frame, get_step(mech, SOUTH))
+	// Tough enough not to break on the mech, so the heavy truck carries on.
+	bumper.modify_max_integrity(100000)
+	var/datum/ms13_ground_vehicle/truck = new
+	bumper.vehicle = truck
+	truck.pivot = bumper
+	truck.frames += bumper
+	truck.mass_per_frame = 100
+	truck.speed = 1
+	var/turf/rammed_at = get_turf(mech)
+	var/before_ram = mech.get_integrity()
+	truck.damage_collision(mech, bumper, NORTH)
+	if(get_turf(mech) != rammed_at || mech.get_integrity() >= before_ram)
+		Fail("A light cart knocked a mech back, or didn't dent it.")
+	truck.mass_per_frame = 100000
+	truck.speed = 1
+	truck.impact_energy_reserve = null
+	truck.damage_collision(mech, bumper, NORTH)
+	if(get_turf(mech) != get_step(rammed_at, NORTH) || mech.dir != NORTH)
+		Fail("A heavy truck ramming a mech didn't knock it back a tile, facing the way it was.")
+	qdel(bumper)
+
+	// An open cockpit: a round at the chest finds the pilot, not the frame.
+	var/obj/vehicle/sealed/ms13_mech/ripley/open_loader = allocate(/obj/vehicle/sealed/ms13_mech/ripley, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z))
+	open_loader.setDir(NORTH)
+	var/mob/living/carbon/human/driver = allocate(/mob/living/carbon/human/consistent)
+	open_loader.mob_enter(driver, TRUE)
+	var/obj/projectile/bullet/ms13/c9mm/pistol_round = new(get_step(open_loader, NORTH))
+	pistol_round.setDir(SOUTH)
+	pistol_round.penetrating_hit(open_loader, BODY_ZONE_CHEST)
+	qdel(pistol_round)
+	if(!driver.getBruteLoss() || open_loader.get_integrity() < open_loader.max_integrity)
+		Fail("A round at an open cockpit's pilot hit the frame instead.")
 
 /// Fires a rifle round into mech's back (SOUTH, travelling north) or front. TRUE if its pilot was hurt.
 /datum/unit_test/ms13_mech/proc/hit_through(obj/vehicle/sealed/ms13_mech/mech, mob/living/carbon/human/pilot, from_dir)
