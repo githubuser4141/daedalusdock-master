@@ -124,7 +124,7 @@ TYPEINFO_DEF(/obj/item/melee/sabre)
 /obj/item/melee/sabre/proc/suicide_dismember(mob/living/user, obj/item/bodypart/affecting)
 	if(!QDELETED(affecting) && affecting.dismemberable && affecting.owner == user && !QDELETED(user))
 		playsound(user, get_hitsound(), 25, TRUE)
-		affecting.dismember(BRUTE)
+		affecting.dismember() // MOJAVE EDIT: was dismember(BRUTE)
 		user.adjustBruteLoss(20)
 
 /obj/item/melee/sabre/proc/manual_suicide(mob/living/user, originally_nodropped)

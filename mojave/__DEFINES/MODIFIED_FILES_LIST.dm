@@ -107,6 +107,8 @@ code/controllers/subsystem/ai_controllers.dm,
 code/modules/unit_tests/cover_ms13.dm,
 code/game/objects/obj_defense.dm,
 code/modules/mapping/mapping_helpers.dm,
+code/modules/mob/living/carbon/carbon_defense.dm,
+code/game/objects/items/melee/misc.dm,
 
 
 */
