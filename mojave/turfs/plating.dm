@@ -53,6 +53,7 @@
 	var/obj/structure/flora/turfPlant = null
 	//Used for larger than 32x border icons
 	var/border_icon
+	var/image/border_overlay
 
 /turf/open/floor/plating/ms13/ground/try_replace_tile(obj/item/stack/tile/T, mob/user, params)
 	return
@@ -118,7 +119,9 @@
 			icon = 'mojave/icons/turf/64x/drought_3.dmi'
 			border_icon = 'mojave/icons/turf/64x/drought_3_border.dmi'
 
-	add_overlay(image(border_icon, icon_state, TURF_LAYER_DESERT_BORDER, pixel_x = -16, pixel_y = -16))
+	cut_overlay(border_overlay)
+	border_overlay = image(border_icon, icon_state, TURF_LAYER_DESERT_BORDER, pixel_x = -16, pixel_y = -16)
+	add_overlay(border_overlay)
 
 /turf/open/floor/plating/ms13/ground/desert/attackby(obj/item/W, mob/user, params)
 	. = ..()
@@ -261,7 +264,9 @@
 			icon = 'mojave/icons/turf/64x/snow_3.dmi'
 			border_icon = 'mojave/icons/turf/64x/snow_3_border.dmi'
 
-	add_overlay(image(border_icon, icon_state, TURF_LAYER_SNOW_BORDER, pixel_x = -16, pixel_y = -16))
+	cut_overlay(border_overlay)
+	border_overlay = image(border_icon, icon_state, TURF_LAYER_SNOW_BORDER, pixel_x = -16, pixel_y = -16)
+	add_overlay(border_overlay)
 
 /turf/open/floor/plating/ms13/ground/snow/attackby(obj/item/W, mob/user, params)
 	return

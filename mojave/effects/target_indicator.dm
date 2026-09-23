@@ -18,10 +18,15 @@
 	// /obj/effect does not run the smoothing setup used by turfs, structures, and machinery.
 	SETUP_SMOOTHING()
 	if(smoothing_flags & (SMOOTH_BITMASK))
-		QUEUE_SMOOTH_NEIGHBORS(src)
+		smooth_indicators_beside()
 		QUEUE_SMOOTH(src)
 
 /obj/effect/temp_visual/ms13/target_indicator/Destroy()
 	if(smoothing_flags & (SMOOTH_BITMASK))
-		QUEUE_SMOOTH_NEIGHBORS(src)
+		smooth_indicators_beside()
 	return ..()
+
+/// It only joins up with other indicators: QUEUE_SMOOTH_NEIGHBORS() would redo every floor and wall around it too.
+/obj/effect/temp_visual/ms13/target_indicator/proc/smooth_indicators_beside()
+	for(var/obj/effect/temp_visual/ms13/target_indicator/other in orange(1, src))
+		QUEUE_SMOOTH(other)
