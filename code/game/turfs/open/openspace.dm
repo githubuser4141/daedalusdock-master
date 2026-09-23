@@ -29,7 +29,7 @@
 
 /turf/open/openspace/examine(mob/user)
 	SHOULD_CALL_PARENT(FALSE)
-	return below.examine(user)
+	return below ? below.examine(user) : ..() // MOJAVE EDIT: no level linked below
 
 ///Makes movables fall when forceMove()'d to this turf.
 /turf/open/openspace/Entered(atom/movable/movable)
