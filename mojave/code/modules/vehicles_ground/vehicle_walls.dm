@@ -309,6 +309,7 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 		parent_frame.roof_hull_breached = TRUE
 		parent_frame.update_roof_damage()
 	vehicle?.walls -= src
+	LAZYREMOVE(parent_frame?.mounted_walls, src)
 	vehicle?.update_interior_masks()
 	parent_frame = null
 	return ..()

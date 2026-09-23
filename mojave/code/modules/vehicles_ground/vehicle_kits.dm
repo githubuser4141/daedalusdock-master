@@ -69,9 +69,8 @@
 
 /// Anything fitted to frame: a panel on its edges, a seat or a part on it.
 /datum/ms13_ground_vehicle/proc/fitted_to(obj/structure/ms13_vehicle_frame/frame)
-	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
-		if(wall.parent_frame == frame)
-			return wall
+	if(LAZYLEN(frame.mounted_walls))
+		return frame.mounted_walls[1]
 	for(var/obj/structure/ms13_vehicle_part/part as anything in parts)
 		if(part.forward_offset == frame.forward_offset && part.right_offset == frame.right_offset)
 			return part
@@ -237,8 +236,8 @@
 
 /// The panel on this frame's edge facing edge, if any.
 /obj/structure/ms13_vehicle_frame/proc/wall_on(edge)
-	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle?.walls)
-		if(wall.parent_frame == src && wall.dir == edge)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in mounted_walls)
+		if(wall.dir == edge)
 			return wall
 
 /// A wrench takes a panel off whole. Closed first, and only with nothing mounted on it.
@@ -267,6 +266,7 @@
 	if(istype(door) && door.opened)
 		door.close()
 	vehicle?.walls -= src
+	LAZYREMOVE(parent_frame?.mounted_walls, src)
 	parent_frame = null
 	vehicle?.update_interior_masks()
 

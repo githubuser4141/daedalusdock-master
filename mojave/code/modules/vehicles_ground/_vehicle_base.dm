@@ -167,8 +167,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		if(get_frame_at(get_step(frame, edge_dir)))
 			continue
 		var/sealed_edge = FALSE
-		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
-			if(wall.parent_frame != frame || wall.dir != edge_dir)
+		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in frame.mounted_walls)
+			if(wall.dir != edge_dir)
 				continue
 			if(light ? wall.blocks_light() : (wall.density && !wall.hull_broken))
 				sealed_edge = TRUE
@@ -233,15 +233,16 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Returns this vehicle's frame on turf_to_check, if it has one there.
 /datum/ms13_ground_vehicle/proc/get_frame_at(turf/turf_to_check)
-	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
-		if(get_turf(frame) == turf_to_check)
-			return frame
+	// Looked up on the tile: cabin masks ask this of every tile in view. A frame being destroyed is still on its tile.
+	var/obj/structure/ms13_vehicle_frame/frame = locate() in turf_to_check
+	if(frame?.vehicle == src && !QDELETED(frame))
+		return frame
 
 /// Does a sight ray from viewer_turf, leaving frame in exit_dir, hit a hull panel that won't let this viewer see
 /// out? Solid panels always block; a porthole only lets through viewers within its vision_range.
 /datum/ms13_ground_vehicle/proc/boundary_blocks_vision(obj/structure/ms13_vehicle_frame/frame, exit_dir, turf/viewer_turf)
-	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls)
-		if(wall.parent_frame != frame || !(wall.dir & exit_dir))
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in frame.mounted_walls)
+		if(!(wall.dir & exit_dir))
 			continue
 		if(wall.blocks_sight())
 			return TRUE
@@ -316,14 +317,14 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /// vehicle - including its current passengers, who are expected to come along for the ride rather
 /// than count as obstacles to their own vehicle (this matters most for rotation, below: the pivot's
 /// own "destination" is its current tile, which its driver is standing on).
-/datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE, list/aboard)
-	var/list/parts = aboard || (get_all_parts() + get_manifest())
+/datum/ms13_ground_vehicle/proc/can_move(direction, ignore_living = FALSE, list/manifest)
+	manifest ||= get_manifest()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/dest = get_step(frame, direction)
 		if(!dest || dest.density)
 			return FALSE
 		for(var/atom/movable/blocker in dest)
-			if(blocker in parts)
+			if(manifest[blocker] || is_own_piece(blocker))
 				continue
 			if(ignore_living && isliving(blocker))
 				continue
@@ -377,19 +378,32 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/can_rotate(new_dir)
 	if(new_dir == dir)
 		return FALSE
-	var/list/parts = get_all_parts() + get_manifest()
+	var/list/manifest = get_manifest()
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		var/turf/dest = get_relative_turf(frame.forward_offset, frame.right_offset, new_dir)
 		if(!dest || dest.density)
 			return FALSE
 		for(var/atom/movable/blocker in dest)
-			if(blocker in parts)
+			if(manifest[blocker] || is_own_piece(blocker))
 				continue
 			if(isliving(blocker) && can_run_over(blocker))
 				continue
 			if(blocks_vehicle(blocker))
 				return FALSE
 	return TRUE
+
+/// Is thing one of this vehicle's own frames, hull panels or parts? Each knows its own vehicle, so this needn't look.
+/datum/ms13_ground_vehicle/proc/is_own_piece(atom/movable/thing)
+	if(istype(thing, /obj/structure/ms13_vehicle_frame))
+		var/obj/structure/ms13_vehicle_frame/frame = thing
+		return frame.vehicle == src
+	if(istype(thing, /obj/structure/window/ms13_vehicle_wall))
+		var/obj/structure/window/ms13_vehicle_wall/wall = thing
+		return wall.parent_frame?.vehicle == src
+	if(istype(thing, /obj/structure/ms13_vehicle_part))
+		var/obj/structure/ms13_vehicle_part/part = thing
+		return part.vehicle == src
+	return FALSE
 
 /// Builds the manifest of everything currently standing on any frame tile that isn't part of the
 /// vehicle itself, tagged with which frame it was on - shared by do_move() and do_rotate() so both
@@ -415,7 +429,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			obstacles += destination
 		// Check structures as well as the turf, including windows stacked on low walls.
 		for(var/atom/movable/obstacle in destination)
-			if(blocks_vehicle(obstacle) && !isliving(obstacle) && !(obstacle in manifest) && !(obstacle in parts) && !(obstacle in walls) && !(obstacle in frames))
+			if(blocks_vehicle(obstacle) && !isliving(obstacle) && !manifest[obstacle] && !is_own_piece(obstacle))
 				obstacles += obstacle
 		for(var/atom/obstacle as anything in obstacles)
 			if(QDELETED(obstacle) || (obstacle in impacted))
@@ -428,8 +442,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 					// Its entire formation moved; all cached obstacles on this tile are stale.
 					break
 			var/obj/contact = frame
-			for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in walls)
-				if(panel.parent_frame == frame && panel.exterior && panel.density && panel.dir != turn(direction, 180))
+			for(var/obj/structure/window/ms13_vehicle_wall/panel as anything in frame.mounted_walls)
+				if(panel.exterior && panel.density && panel.dir != turn(direction, 180))
 					contact = panel
 					// Side panels also have a leading edge, even after the front plating is gone.
 					if(panel.dir == direction)
@@ -509,8 +523,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	// Resolve solid impacts before pushing mobs. A surviving obstacle still stops the vehicle.
 	if(speed && !ram_obstacles(direction, manifest))
 		return FALSE
-	var/list/aboard = get_all_parts() | manifest
-	if(!can_move(direction, TRUE, aboard) || !ram_living(direction, manifest) || !can_move(direction, FALSE, aboard))
+	if(!can_move(direction, TRUE, manifest) || !ram_living(direction, manifest) || !can_move(direction, FALSE, manifest))
 		return FALSE
 	if(!bypass_cooldown)
 		next_move_time = world.time + gear_delay(max(speed, 1))
@@ -765,6 +778,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/roof_hull_breached = FALSE
 	/// Lighting-plane cover shown only to occupants: replaces or adds to outside light on this tile.
 	var/image/interior_light
+	/// The hull panels on this frame's edges, so the checks on one tile needn't look through the whole hull's.
+	var/list/obj/structure/window/ms13_vehicle_wall/mounted_walls
 	/// Blanks the additive lighting plane here while the tile is sealed, so bright lamps outside can't bleed in.
 	var/image/interior_light_block
 	/// Position relative to the vehicle's pivot, in vehicle-local (forward, right) tiles - see
@@ -816,8 +831,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(!roof)
 		return
 	var/is_damaged = roof_hull_breached
-	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle?.walls)
-		if(wall.parent_frame == src && wall.exterior && wall.get_integrity() < wall.max_integrity)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in mounted_walls)
+		if(wall.exterior && wall.get_integrity() < wall.max_integrity)
 			is_damaged = TRUE
 			break
 	roof.icon = is_damaged && roof_damaged_icon ? roof_damaged_icon : roof_undamaged_icon
@@ -834,9 +849,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			if(seat.parent_frame == src)
 				seat.unbuckle_all_mobs(force = TRUE)
 				qdel(seat)
-		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls.Copy())
-			if(wall.parent_frame == src)
-				qdel(wall)
+		for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in LAZYCOPY(mounted_walls))
+			qdel(wall)
 	// Power updates rebuild cabin lighting; do this before deleting this frame's lighting images.
 	if(vehicle?.pivot == src)
 		vehicle.set_ignition(FALSE)
@@ -922,6 +936,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	wall.relative_turn = (dir2angle(vehicle.dir) - dir2angle(wall_dir) + 360) % 360
 	wall.finish_mount()
 	vehicle.walls += wall
+	LAZYADD(mounted_walls, wall)
 	vehicle.update_interior_lighting()
 	return wall
 

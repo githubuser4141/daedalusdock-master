@@ -170,12 +170,12 @@
 		max_y = centre.y + turn_radius
 	if(min_x < 1 || min_y < 1 || max_x > world.maxx || max_y > world.maxy)
 		return FALSE
-	var/list/aboard = get_all_parts() | get_manifest()
+	var/list/manifest = get_manifest()
 	for(var/turf/ground in block(locate(min_x, min_y, centre.z), locate(max_x, max_y, centre.z)))
 		if(ground.density)
 			return FALSE
 		for(var/atom/movable/blocker in ground)
-			if(!(blocker in aboard) && blocks_vehicle(blocker))
+			if(!manifest[blocker] && !is_own_piece(blocker) && blocks_vehicle(blocker))
 				return FALSE
 	return TRUE
 
