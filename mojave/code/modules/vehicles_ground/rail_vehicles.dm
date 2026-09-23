@@ -89,6 +89,9 @@
 	var/halting = FALSE
 	/// The frame riding the guide rail. The line can run under any part of the hull, not just the pivot.
 	var/obj/structure/ms13_vehicle_frame/rail_bogie
+	/// While taking a corner: where the bogie lands, from where it stands, so the whole car comes down on the new line.
+	var/corner_offset_x = 0
+	var/corner_offset_y = 0
 	/// Coasting from top speed, the drive pulls again below this share of it, after about coast_tiles tiles.
 	var/coast_resume = 0.85
 	var/coast_tiles = 20
@@ -134,6 +137,7 @@
 	return length(rail_route) || ..()
 
 /// Turning, a rail car swings about the frame on the rail rather than its pivot, so it stays on the line at a corner.
+/// Taking a corner, it comes down corner_offset tiles away, wholly on the new line (take_corner()).
 /datum/ms13_ground_vehicle/rail/get_relative_turf(forward_offset, right_offset, facing_dir)
 	var/obj/structure/ms13_vehicle_frame/bogie = facing_dir != dir && rail_frame()
 	if(!bogie)
@@ -143,41 +147,7 @@
 	var/step_x = (facing_dir & EAST) ? 1 : (facing_dir & WEST) ? -1 : 0
 	var/step_y = (facing_dir & NORTH) ? 1 : (facing_dir & SOUTH) ? -1 : 0
 	// Right of (x, y) is (y, -x).
-	return locate(bogie.x + forward * step_x + right * step_y, bogie.y + forward * step_y - right * step_x, bogie.z)
-
-/// Conservatively reserve the turning apron, not just the final footprint: a long car must not
-/// rotate through a house merely because its final orientation happens to be clear.
-/datum/ms13_ground_vehicle/rail/can_rotate(new_dir)
-	if(!..())
-		return FALSE
-	var/obj/structure/ms13_vehicle_frame/centre = rail_frame() || pivot
-	var/min_x = centre.x
-	var/max_x = centre.x
-	var/min_y = centre.y
-	var/max_y = centre.y
-	var/turn_radius = 0
-	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
-		var/turf/destination = get_relative_turf(frame.forward_offset, frame.right_offset, new_dir)
-		min_x = min(min_x, frame.x, destination.x)
-		max_x = max(max_x, frame.x, destination.x)
-		min_y = min(min_y, frame.y, destination.y)
-		max_y = max(max_y, frame.y, destination.y)
-		turn_radius = max(turn_radius, abs(frame.forward_offset - centre.forward_offset), abs(frame.right_offset - centre.right_offset))
-	if(new_dir == turn(dir, 180))
-		min_x = centre.x - turn_radius
-		max_x = centre.x + turn_radius
-		min_y = centre.y - turn_radius
-		max_y = centre.y + turn_radius
-	if(min_x < 1 || min_y < 1 || max_x > world.maxx || max_y > world.maxy)
-		return FALSE
-	var/list/manifest = get_manifest()
-	for(var/turf/ground in block(locate(min_x, min_y, centre.z), locate(max_x, max_y, centre.z)))
-		if(ground.density)
-			return FALSE
-		for(var/atom/movable/blocker in ground)
-			if(!manifest[blocker] && !is_own_piece(blocker) && blocks_vehicle(blocker))
-				return FALSE
-	return TRUE
+	return locate(bogie.x + corner_offset_x + forward * step_x + right * step_y, bogie.y + corner_offset_y + forward * step_y - right * step_x, bogie.z)
 
 /datum/ms13_ground_vehicle/rail/stop_motion()
 	var/stopped_short = length(rail_route)
@@ -230,6 +200,53 @@
 			rail_route.Cut(1, reached + 1)
 		else
 			stop_motion()
+
+/// How far the hull reaches ahead of bogie, the way the car is going.
+/datum/ms13_ground_vehicle/rail/proc/lead_reach(obj/structure/ms13_vehicle_frame/bogie)
+	var/sign = travel_dir == turn(dir, 180) ? -1 : 1
+	. = 0
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		. = max(., sign * (frame.forward_offset - bogie.forward_offset))
+
+/// Where the route turns off the straight within reach of the front of the car: the index in rail_route of the first
+/// tile off it, or null. Onto another level or region the line runs straight on.
+/datum/ms13_ground_vehicle/rail/proc/corner_ahead(obj/structure/ms13_vehicle_frame/bogie, reach)
+	var/turf/previous = get_turf(bogie)
+	for(var/index in 1 to min(length(rail_route), reach + 1))
+		var/turf/next = rail_route[index]
+		if(next.z == previous.z && get_dir(previous, next) != travel_dir)
+			return index
+		previous = next
+
+/**
+ * Takes the corner before rail_route[turn_at]: the car swings onto the new line and comes down on it with its tail at
+ * the corner, as far along as the line runs straight. Nothing of it hangs past the corner or out to the side, so only
+ * the line it lands on need be clear.
+ */
+/datum/ms13_ground_vehicle/rail/proc/take_corner(turn_at)
+	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
+	var/turf/corner = turn_at > 1 ? rail_route[turn_at - 1] : get_turf(bogie)
+	var/direction = get_dir(corner, rail_route[turn_at])
+	var/facing = travel_dir == turn(dir, 180) ? turn(direction, 180) : direction
+	// How far the hull reaches behind the bogie, heading the new way.
+	var/behind = 0
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
+		behind = max(behind, (facing == direction ? -1 : 1) * (frame.forward_offset - bogie.forward_offset))
+	var/turf/landing = corner
+	var/slide = 0
+	while(slide < behind && turn_at + slide <= length(rail_route))
+		var/turf/next = rail_route[turn_at + slide]
+		if(next.z != landing.z || get_dir(landing, next) != direction)
+			break
+		landing = next
+		slide++
+	corner_offset_x = landing.x - bogie.x
+	corner_offset_y = landing.y - bogie.y
+	. = full_turn(facing)
+	corner_offset_x = 0
+	corner_offset_y = 0
+	if(.)
+		rail_route.Cut(1, turn_at + slide)
 
 /// Null for an ordinary step. At an incline the car comes out whole on the other level, its tail on the tile past
 /// the far incline and the rest strung out ahead the way it was going, or stays put if anything there is in the way.
@@ -334,16 +351,18 @@
 		return
 	var/direction = get_dir(bogie, next)
 	var/corner_velocity = gear_velocity(max_turn_speed)
+	// Either end can lead: backing up needs no turn.
 	if(direction == dir || direction == turn(dir, 180))
-		// Either end can lead: backing up needs no turn.
 		travel_dir = direction
-	else
-		// A corner: whatever is left above turning speed comes off here, then the leading end swings onto the new line.
+	var/reach = lead_reach(bogie)
+	var/turn_at = corner_ahead(bogie, reach)
+	if(turn_at)
+		// The front has reached a corner: whatever is left above turning speed comes off here, then it swings onto the new line.
 		if(velocity > corner_velocity)
 			velocity = corner_velocity
 			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
 		speed = gear_for(velocity)
-		if(world.time >= next_move_time && !full_turn(travel_dir == turn(dir, 180) ? turn(direction, 180) : direction))
+		if(world.time >= next_move_time && !take_corner(turn_at))
 			stop_motion()
 			return
 		addtimer(CALLBACK(src, PROC_REF(movement_tick), generation), gear_delay(speed))
@@ -365,7 +384,8 @@
 			break
 	// The fastest the car may go and still slow, on the brakes it expects, to turning speed or a stop by the end.
 	var/end_velocity = straight >= length(rail_route) ? 0 : corner_velocity
-	var/allowed = halting ? 0 : sqrt(end_velocity ** 2 + 2 * deceleration * max(straight - 1, 0))
+	// It takes a corner when its front gets there, reach tiles before the bogie would.
+	var/allowed = halting ? 0 : sqrt(end_velocity ** 2 + 2 * deceleration * max(straight - 1 - (end_velocity ? reach : 0), 0))
 	// Another car on the line ahead: slow to stop a tile short of it. On service, a car asks it to move on.
 	var/gap = gap_to_car_ahead(max(look_ahead, MS13_RAIL_PING_RANGE))
 	if(!isnull(gap))

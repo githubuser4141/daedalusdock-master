@@ -95,12 +95,6 @@
 			if(monitor.layer >= MOB_LAYER)
 				Fail("Dashboard overlay was drawn over its driver.")
 	driver_seat.setDir(train.dir)
-	// Intermediate obstacles must block a turn even when both endpoint footprints are clear.
-	blocker = allocate(/obj/structure, locate(23, 37, test_z))
-	blocker.density = TRUE
-	if(train.can_rotate(EAST))
-		Fail("Train rotated through an obstacle in its turning apron.")
-	qdel(blocker)
 	cargo = allocate(/obj/item, get_turf(tram))
 	var/list/parents = train.find_rail_routes()
 	if(!parents[locate(35, 25, test_z)] || length(parents) != 40)
@@ -289,17 +283,21 @@
 	clear_vehicle(service)
 	clear_vehicle(standing)
 
-	// A train riding the line under its middle turns a corner about it and runs on along the new line.
+	// A train riding the line under its middle takes a T junction's corner when its front gets there, landing on the new
+	// line: walls past the corner and beside the junction, where swinging about its middle would take it, don't stop it.
 	for(var/y in 38 to 49)
 		allocate(/obj/structure/ms13_rail, locate(29, y, z))
-	for(var/x in 24 to 28)
+	for(var/x in 24 to 32)
 		allocate(/obj/structure/ms13_rail, locate(x, 38, z))
+	for(var/turf/beside as anything in list(locate(29, 36, z), locate(28, 35, z), locate(32, 40, z), locate(31, 36, z)))
+		var/obj/structure/wall_stand_in = allocate(/obj/structure, beside)
+		wall_stand_in.density = TRUE
 	var/obj/structure/ms13_vehicle_frame/tram/train/long_car = allocate(/obj/structure/ms13_vehicle_frame/tram/train, locate(30, 44, z))
 	var/datum/ms13_ground_vehicle/rail/turner = long_car.vehicle
 	var/turf/corner_end = locate(24, 38, z)
 	turner.depart_for(corner_end)
 	if(!run_to_stand(turner, corner_end) || turner.dir != WEST)
-		Fail("A train riding the line under its middle came off it at a corner.")
+		Fail("A train riding the line under its middle came off it, or stuck, at a T junction's corner.")
 	clear_vehicle(turner)
 
 /// Runs line to stop, one tile at a time. TRUE if it came to a stand on the stop.
