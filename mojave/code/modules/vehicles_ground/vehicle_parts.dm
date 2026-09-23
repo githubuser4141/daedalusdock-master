@@ -93,6 +93,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	stock_on_fit = FALSE
 	update_appearance()
 	vehicle.update_interior_lighting()
+	vehicle.update_power_processing()
 	// Those aboard see the cabin, not its outside.
 	for(var/obj/structure/ms13_vehicle_frame/aboard as anything in vehicle.frames)
 		for(var/mob/living/passenger in get_turf(aboard))
@@ -101,8 +102,23 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 
 /// Takes it off its vehicle whole. Destroy() does this too.
 /obj/structure/ms13_vehicle_part/proc/detach()
+	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
 	vehicle?.parts -= src
 	vehicle = null
+	old_vehicle?.update_power_processing()
+
+/// A welder patches it back to whole, broken or not.
+/obj/structure/ms13_vehicle_part/welder_act(mob/living/user, obj/item/tool)
+	if(get_integrity() >= max_integrity)
+		balloon_alert(user, "it's intact!")
+		return ITEM_INTERACT_BLOCKING
+	if(!tool.tool_start_check(user, amount = 1))
+		return ITEM_INTERACT_BLOCKING
+	balloon_alert(user, "repairing...")
+	if(!tool.use_tool(src, user, fitting_time, amount = 1, volume = 50))
+		return ITEM_INTERACT_BLOCKING
+	repair_damage(max_integrity)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/structure/ms13_vehicle_part/wrench_act(mob/living/user, obj/item/tool)
 	if(!vehicle || !removable)

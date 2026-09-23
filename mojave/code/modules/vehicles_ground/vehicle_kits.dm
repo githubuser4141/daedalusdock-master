@@ -4,13 +4,27 @@
  * to its floor. Panels and outside parts go on the edge you're working from, or, from aboard, the side you face.
  *
  * A wrench takes a part, panel or seat off whole, the thing itself inside what you carry: fuel, battery, contents and
- * damage go with it. A welder patches damaged floor, and takes up a bare floor tile that nothing else hangs off.
+ * damage go with it. A welder patches damaged parts and floor, and takes up a bare floor tile that nothing else hangs off.
  * Everything is made at workbenches, and parts come empty: no fuel in a tank, no battery in its box.
+ *
+ * Wrecks are mapped with a wreck spawner: the vehicle, left for dead. A parked vehicle's battery doesn't process, so a
+ * map can carry plenty of them (see update_power_processing()).
  */
 
 /// A vehicle built up in-game from one floor frame.
 /datum/ms13_ground_vehicle/modular
 	required_running_gear = 2
+
+/// Builds frame_type on spot, facing facing: the vehicle is assembled facing that way from the start.
+/proc/ms13_build_vehicle(obj/structure/ms13_vehicle_frame/frame_type, turf/spot, facing)
+	var/static/builds = 0
+	var/source = "ms13_build_vehicle_[++builds]"
+	SSatoms.map_loader_begin(source)
+	var/obj/structure/ms13_vehicle_frame/front = new frame_type(spot)
+	front.dir = facing
+	SSatoms.map_loader_stop(source)
+	SSatoms.InitializeAtoms(list(front))
+	return front
 
 /// Room on spot for a floor frame: open, and nothing on it in the way.
 /proc/ms13_frame_room(turf/spot)
@@ -506,6 +520,80 @@
 
 /obj/item/ms13_vehicle_part_kit/route_terminal
 	part_type = /obj/structure/ms13_vehicle_part/rail_terminal
+
+/**
+ * Leaves the vehicle for dead: each part gone or broken at random, the tanks drained, the battery flat, the racks
+ * emptied and the hull holed. Everything can be repaired or replaced to drive it again.
+ */
+/datum/ms13_ground_vehicle/proc/wreck(missing_chance, broken_chance, holed_chance)
+	set_ignition(FALSE)
+	for(var/obj/structure/ms13_vehicle_part/part as anything in parts.Copy())
+		if(part.removable && prob(missing_chance))
+			qdel(part)
+			continue
+		if(prob(broken_chance))
+			part.update_integrity(part.max_integrity * part.integrity_failure * rand(10, 90) / 100)
+		part.reagents?.remove_all(max(0, part.reagents.total_volume - rand(0, 5)))
+		if(istype(part, /obj/structure/ms13_vehicle_part/battery))
+			var/obj/structure/ms13_vehicle_part/battery/battery = part
+			battery.cell?.charge = 0
+		else if(istype(part, /obj/structure/ms13_vehicle_part/turret))
+			var/obj/structure/ms13_vehicle_part/turret/turret = part
+			turret.ammo = 0
+			turret.loaded_rounds = list()
+			turret.selected_round = null
+		else if(istype(part, /obj/structure/ms13_vehicle_part/stowage))
+			for(var/obj/item/stowed in part)
+				qdel(stowed)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in walls.Copy())
+		if(wall.exterior && prob(holed_chance))
+			wall.update_integrity(wall.max_integrity * rand(5, 30) / 100)
+
+/// A vehicle left for dead, mapped in. Rotate it to set the way the vehicle faces.
+/obj/effect/ms13_vehicle_wreck
+	name = "vehicle wreck spawner"
+	icon = 'mojave/icons/structure/crates.dmi'
+	icon_state = "army"
+	invisibility = INVISIBILITY_ABSTRACT
+	var/obj/structure/ms13_vehicle_frame/frame_type = /obj/structure/ms13_vehicle_frame/jeep_front
+	/// Chance each part is gone, and that each one left is broken.
+	var/missing_chance = 40
+	var/broken_chance = 50
+	/// Chance each outer hull panel is holed.
+	var/holed_chance = 30
+
+/obj/effect/ms13_vehicle_wreck/Initialize(mapload)
+	. = ..()
+	var/obj/structure/ms13_vehicle_frame/front = ms13_build_vehicle(frame_type, get_turf(src), dir)
+	front.vehicle?.wreck(missing_chance, broken_chance, holed_chance)
+	return INITIALIZE_HINT_QDEL
+
+/obj/effect/ms13_vehicle_wreck/armored_truck
+	frame_type = /obj/structure/ms13_vehicle_frame/armored_truck_front_left
+
+/obj/effect/ms13_vehicle_wreck/m113
+	frame_type = /obj/structure/ms13_vehicle_frame/m113/front_left
+
+/obj/effect/ms13_vehicle_wreck/btr80
+	frame_type = /obj/structure/ms13_vehicle_frame/civ96/btr80
+
+/obj/effect/ms13_vehicle_wreck/mtlb
+	frame_type = /obj/structure/ms13_vehicle_frame/civ96/mtlb
+
+/obj/effect/ms13_vehicle_wreck/bmd2
+	frame_type = /obj/structure/ms13_vehicle_frame/civ96/bmd2
+
+/obj/effect/ms13_vehicle_wreck/t34
+	frame_type = /obj/structure/ms13_vehicle_frame/civ96/t34
+
+/obj/effect/ms13_vehicle_wreck/is3
+	frame_type = /obj/structure/ms13_vehicle_frame/civ96/is3
+
+/obj/effect/ms13_vehicle_wreck/tram
+	frame_type = /obj/structure/ms13_vehicle_frame/tram
+
+/obj/effect/ms13_vehicle_wreck/train
+	frame_type = /obj/structure/ms13_vehicle_frame/tram/train
 
 // Recipes. Every crafting_recipe subtype is a recipe, so each carries its own bench and category.
 
@@ -1040,4 +1128,41 @@
 	if(gun.ammo || !gun.gunner_seat || gun.gunner_seat.operated_turret != gun || get_turf(gun.gunner_seat) != get_turf(tail))
 		Fail("A gun mount didn't come unloaded, worked from its own gunner's seat.")
 
+/// A parked vehicle's battery doesn't process; a wreck is drained, flat and broken; a welder mends a broken part.
+/datum/unit_test/ms13_vehicle_wrecks
+	name = "VEHICLES: Parked Vehicles Sleep, Wrecks Are Left For Dead And Mend"
+
+/datum/unit_test/ms13_vehicle_wrecks/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
+	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	if(vehicle.battery.datum_flags & DF_ISPROCESSING)
+		Fail("A parked vehicle's battery was processing.")
+	vehicle.set_ignition(TRUE)
+	if(!(vehicle.battery.datum_flags & DF_ISPROCESSING))
+		Fail("Switching the ignition on didn't wake the battery.")
+	vehicle.wreck(0, 100, 100)
+	if(vehicle.battery.datum_flags & DF_ISPROCESSING)
+		Fail("A wreck's battery kept processing.")
+	if(vehicle.fuel_tank.reagents.total_volume > 5 || vehicle.battery.cell.charge)
+		Fail("A wreck kept its fuel or its battery charge.")
+	var/obj/structure/ms13_vehicle_part/engine/engine = vehicle.engine
+	if(!engine.broken)
+		Fail("A wreck's parts weren't broken.")
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls)
+		if(wall.exterior && !wall.hull_broken)
+			Fail("A wreck's hull wasn't holed.")
+			break
+	var/mob/living/carbon/human/consistent/mechanic = allocate(/mob/living/carbon/human/consistent, spot)
+	var/obj/item/weldingtool/welder = allocate(/obj/item/weldingtool)
+	mechanic.put_in_active_hand(welder)
+	welder.welding = TRUE
+	engine.welder_act(mechanic, welder)
+	if(engine.broken || engine.get_integrity() < engine.max_integrity)
+		Fail("A welder didn't mend a broken engine.")
+	vehicle.wreck(100, 0, 0)
+	for(var/obj/structure/ms13_vehicle_part/part as anything in vehicle.parts)
+		if(part.removable)
+			Fail("A wreck kept a [part] it should have lost.")
+			break
 #endif

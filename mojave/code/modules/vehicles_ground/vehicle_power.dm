@@ -61,6 +61,19 @@
 	if(!ignition)
 		stop_engine()
 	update_electrical()
+	update_power_processing()
+
+/**
+ * The battery runs the electrical bus only while something needs it: the ignition, or equipment that works with it off.
+ * A parked vehicle, or a wreck, costs nothing.
+ */
+/datum/ms13_ground_vehicle/proc/update_power_processing()
+	if(!battery)
+		return
+	if(ignition || (locate(/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel) in parts) || (locate(/obj/structure/ms13_vehicle_part/stowage/freezer) in parts) || (locate(/obj/structure/ms13_vehicle_part/stowage/recharge_station) in parts))
+		START_PROCESSING(SSobj, battery)
+	else
+		STOP_PROCESSING(SSobj, battery)
 
 /datum/ms13_ground_vehicle/proc/process_power(seconds_per_tick)
 	if(engine_running)
@@ -131,7 +144,7 @@
 	if(!cell && stock_on_fit)
 		cell = new vehicle.battery_cell(src)
 	update_appearance()
-	START_PROCESSING(SSobj, src)
+	vehicle.update_power_processing()
 
 /// Shows the battery in it, or an empty box.
 /obj/structure/ms13_vehicle_part/battery/update_icon_state()
@@ -149,9 +162,12 @@
 /obj/structure/ms13_vehicle_part/battery/detach()
 	STOP_PROCESSING(SSobj, src)
 	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
-	. = ..()
-	if(old_vehicle?.battery == src)
+	// Unlinked first, so the vehicle doesn't set it processing again as it goes.
+	var/was_battery = old_vehicle?.battery == src
+	if(was_battery)
 		old_vehicle.battery = null
+	. = ..()
+	if(was_battery)
 		old_vehicle.stop_engine()
 		old_vehicle.update_electrical()
 
