@@ -252,6 +252,60 @@
 	crafting_interface = CRAFTING_BENCH_GENERAL
 	one_per_turf = TRUE
 
+/datum/crafting_recipe/ms13_door_frame
+	name = "door frame kit"
+	result = /obj/item/ms13/door_frame
+	time = 20 SECONDS
+	tool_behaviors = list(TOOL_SAW)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/wood/plank = 6,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_padlock
+	name = "padlock"
+	result = /obj/item/ms13/lock
+	time = 10 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_brass = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_griddle
+	name = "flat-top griddle"
+	result = /obj/machinery/griddle/ms13
+	time = 25 SECONDS
+	tool_behaviors = list(TOOL_WELDER, TOOL_WRENCH)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/scrap_steel = 6,
+				/obj/item/stack/sheet/ms13/scrap_parts = 3,
+				/obj/item/stack/sheet/ms13/scrap = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL
+	one_per_turf = TRUE
+
+/datum/crafting_recipe/ms13_torch
+	name = "torch"
+	result = /obj/item/flashlight/flare/torch/ms13
+	time = 6 SECONDS
+	tool_paths = list()
+	reqs = list(/obj/item/stack/sheet/ms13/wood/scrap_wood = 2,
+				/obj/item/stack/sheet/ms13/cloth = 2)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_GENERAL | CRAFTING_BENCH_CAMPFIRE
+
+/datum/crafting_recipe/ms13_candle
+	name = "candle"
+	result = /obj/item/candle/ms13
+	time = 8 SECONDS
+	tool_paths = list()
+	reqs = list(/obj/item/trash/ms13/candle = 3,
+				/obj/item/stack/sheet/ms13/thread = 1)
+	category = CAT_UTILITY
+	crafting_interface = CRAFTING_BENCH_CAMPFIRE
 
 //SMELTER CRAFTING
 
