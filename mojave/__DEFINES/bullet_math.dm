@@ -479,6 +479,19 @@ TYPEINFO_DEF(/obj/projectile)
 /obj/projectile/proc/can_overpenetrate(atom/target)
 	return damage > 0 && damage_type == BRUTE && istype(src, /obj/projectile/bullet) && (target.density || isliving(target))
 
+/// A beam never glances off or breaks up like a round does.
+/obj/projectile/beam
+	canRicochet = FALSE
+	canFragment = FALSE
+
+/// Except that a beam burns on through vehicle plating with whatever its laser armor doesn't stop.
+/obj/projectile/beam/can_overpenetrate(atom/target)
+	return damage > 0 && istype(target, /obj/structure/window/ms13_vehicle_wall)
+
+/// Light has no construction to hold together or break up.
+/obj/projectile/beam/get_own_hardness_ratio()
+	return 1
+
 /// Penetration power this atom strips from P, from its armor against P's damage type.
 /atom/proc/get_bullet_stopping_power(obj/projectile/P)
 	var/datum/armor/armor = returnArmor()

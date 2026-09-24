@@ -59,6 +59,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	var/exterior_pixel_y = 0
 	var/image/exterior_image
 	bullet_damage_ratio = 1
+	// Plating, not glass: a laser hits it rather than passing through like a window, and only burns on through
+	// with what its laser armor doesn't stop (see /obj/projectile/beam/can_overpenetrate()).
+	pass_flags_self = NONE
 
 /obj/structure/window/ms13_vehicle_wall/proc/blocks_sight()
 	return blocks_vision && !hull_broken
