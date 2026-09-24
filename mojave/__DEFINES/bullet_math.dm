@@ -408,9 +408,9 @@ TYPEINFO_DEF(/obj/projectile)
 	/// the fragmentTowards() call in projectile.dm's Impact()). Deliberately separate from armor_penetration:
 	/// an AP round trades size for penetration, so this can't be inferred from the round's own armor rating.
 	var/bullet_mass = 3
-	/// Stops in a body outright, all of it on the limb it hit, instead of taking the path through it
-	/// (bullet_penetration.dm): no organs, no deforming, far cheaper. For rounds that come in numbers, where the
-	/// detail's lost anyway.
+	/// Lands on a body like a blow instead of taking the path through it (bullet_penetration.dm): through armor and the
+	/// body's own tissue layers, a plain wound to treat, and it stays in. Far cheaper, for rounds that come in numbers
+	/// where the detail's lost anyway.
 	var/simple_bullet = FALSE
 
 /// The bullet's own toughness against deforming/fragmenting on impact - shared by the mob overpenetration
@@ -475,8 +475,11 @@ TYPEINFO_DEF(/obj/projectile)
 	last_hit_blocked = blocked
 	return ..()
 
-/// Only solid bullets carry on through things. Lasers, rockets and the like stop where they hit.
+/// Only solid bullets carry on through things. Lasers, rockets and the like stop where they hit, and so does a
+/// simple bullet in a body.
 /obj/projectile/proc/can_overpenetrate(atom/target)
+	if(simple_bullet && isliving(target))
+		return FALSE
 	return damage > 0 && damage_type == BRUTE && istype(src, /obj/projectile/bullet) && (target.density || isliving(target))
 
 /// A beam never glances off or breaks up like a round does.

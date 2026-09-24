@@ -100,8 +100,6 @@ TYPEINFO_DEF(/obj/item/organ/kidneys)
 	var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : get_bodypart(deprecise_zone(def_zone))
 	if(!hit_part || P.damage <= 0)
 		return ..()
-	if(P.simple_bullet) // Stays in, all of it on the limb: nothing to work out.
-		return 1
 
 	var/list/crossed = list()
 	for(var/obj/item/organ/O in hit_part.contained_organs)
@@ -195,16 +193,17 @@ TYPEINFO_DEF(/obj/item/organ/kidneys)
 	struck.applyOrganDamage(left)
 
 #ifdef UNIT_TESTS
-/// A simple bullet stops in a body without taking the path through it: no organs crossed, and the round as it went in.
+/// A simple bullet lands on a body like a blow: it hurts, it stays in, and it never takes the path through.
 /datum/unit_test/ms13_simple_bullet
-	name = "BULLETS: Simple Bullets Skip The Path Through A Body"
+	name = "BULLETS: Simple Bullets Land Like A Blow"
 
 /datum/unit_test/ms13_simple_bullet/Run()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
 	var/obj/projectile/bullet/ms13/a762/bullet = allocate(/obj/projectile/bullet/ms13/a762)
 	bullet.simple_bullet = TRUE
 	var/integrity = bullet.getBIntegrity()
-	var/stopped = victim.get_bullet_transfer_fraction(bullet, BODY_ZONE_CHEST)
-	if(victim.pending_bullet_organs || bullet.getBIntegrity() != integrity || stopped != 1)
-		Fail("A simple bullet took the path through a body, or came out the other side.")
+	var/brute = victim.getBruteLoss()
+	var/result = bullet.penetrating_hit(victim, BODY_ZONE_CHEST)
+	if(result == BULLET_ACT_FORCE_PIERCE || victim.getBruteLoss() <= brute || bullet.getBIntegrity() != integrity)
+		Fail("A simple bullet went through a body, did no harm, or took the path through it.")
 #endif
