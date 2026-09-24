@@ -6,7 +6,7 @@
 // supply directly, AND simultaneously bleeds some of that out of the body entirely via DD's real bleed()
 // proc (code/modules/mob/living/blood.dm) - the same proc DD's own bleed_rate system already uses, reused
 // here rather than inventing a second global blood-loss pathway. A ruptured vessel already causes the
-// existing flat +4 bleed_rate through BP_ARTERY_CUT (see vessel.dm's set_organ_dead() override) - this adds
+// existing flat +5 bleed_rate through BP_ARTERY_CUT (see vessel.dm's set_organ_dead() override) - this adds
 // a smaller, damage-scaled drain on TOP of that for the merely-damaged-but-not-yet-ruptured case, which
 // previously did nothing at all between "healthy" and "ruptured."
 //
@@ -15,6 +15,9 @@
 // global, same as real circulation. get_vessel_circulation_factor() (vessel.dm) reads local_blood_volume
 // per limb, so a locally blood-starved limb drags down whole-body circulation the same way a damaged
 // vessel does, even before it's damaged enough on its own to matter.
+
+/datum/physiology
+	bleed_mod = MS13_EXTERNAL_BLEED_MULT
 
 /obj/item/bodypart
 	/// How much blood is currently available to this specific limb - drained by its own vessel's damage,

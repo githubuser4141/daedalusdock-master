@@ -42,7 +42,7 @@ TYPEINFO_DEF(/obj/item/organ/vessel)
  * anticoagulants work on vessel bleeding at all.
  *
  * A fully ruptured vessel contributes nothing here on purpose - that case is already represented by the
- * flat +4 the severed-artery term adds just above the call site, and counting both meant a burst aorta
+ * flat +5 the severed-artery term adds just above the call site, and counting both meant a burst aorta
  * bled at several times the intended rate with no treatment able to touch the larger half of it.
  */
 /obj/item/bodypart/proc/get_vessel_bleed_rate()

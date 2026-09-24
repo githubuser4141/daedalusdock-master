@@ -80,12 +80,15 @@
 
 	if(bled && COOLDOWN_FINISHED(src, blood_spray_cd) && LAZYLEN(spray_candidates))
 		var/obj/item/bodypart/spray_part = pick(spray_candidates)
-		spray_blood(pick(GLOB.alldirs))
-		visible_message(
-			span_danger("Blood sprays out from \the [src]'s [spray_part.plaintext_zone]!"),
-			span_userdanger("Blood sprays out from your [spray_part.plaintext_zone]!"),
-		)
-		COOLDOWN_START(src, blood_spray_cd, 8 SECONDS)
+		// MOJAVE EDIT: an open artery spurts in bursts, more and further the harder it's bleeding.
+		for(var/i in 1 to clamp(round(temp_bleed / 3), 1, 3))
+			spray_blood(pick(GLOB.alldirs), clamp(round(temp_bleed * 0.6), 3, 6))
+		if(prob(50))
+			visible_message(
+				span_danger("Blood sprays out from \the [src]'s [spray_part.plaintext_zone]!"),
+				span_userdanger("Blood sprays out from your [spray_part.plaintext_zone]!"),
+			)
+		COOLDOWN_START(src, blood_spray_cd, 4 SECONDS) //MOJAVE EDIT: was 8
 
 /// Has each bodypart update its bleed/wound overlay icon states
 /mob/living/carbon/proc/update_bodypart_bleed_overlays()
@@ -101,7 +104,7 @@
 
 	//Blood loss still happens in locker, floor stays clean
 	if(isturf(loc) && prob(sqrt(amt)*BLOOD_DRIP_RATE_MOD))
-		add_splatter_floor(loc, (amt <= 10))
+		add_splatter_floor(loc, (amt <= 2)) //MOJAVE EDIT: was 10, so even an open artery only dripped
 
 /mob/living/carbon/human/bleed(amt)
 	if(NOBLOOD in dna.species.species_traits)
