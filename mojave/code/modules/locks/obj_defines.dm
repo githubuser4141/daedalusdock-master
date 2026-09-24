@@ -50,7 +50,7 @@
 			else if(lock)
 				lock.lock_open = FALSE
 				lock.item_lock_locked = TRUE
-				AddElement(/datum/element/lockpickable, lock.lock_difficulty)
+				AddElement(/datum/element/lockpickable, difficulty = lock.lock_difficulty)
 				to_chat(user, span_notice("You lock [src] with [key]."))
 				playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
 			return
@@ -104,7 +104,7 @@
 						if(do_after(user, time = 0.5 SECONDS))
 							to_chat(user, span_notice("You shut and clasp the [lock.name]."))
 							lock.item_lock_locked = TRUE
-							AddElement(/datum/element/lockpickable, lock.lock_difficulty)
+							AddElement(/datum/element/lockpickable, difficulty = lock.lock_difficulty)
 							playsound(src, 'mojave/sound/ms13effects/lock_close.ogg', 50, TRUE)
 							return
 					if("Open Lock")
