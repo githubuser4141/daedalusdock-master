@@ -5,7 +5,7 @@
 	var/recoil_deviation = 22.5
 
 	/// Range beyond which no one is hearing anything, not even far_fire_sound
-	var/far_fire_range = SOUND_RANGE * 3
+	var/far_fire_range = SOUND_RANGE * 4
 	/// Falloff distance for far fire sound, no need to fuck with falloff for nearby guns honestly
 	var/far_fire_falloff_distance = SOUND_RANGE
 	/// Fire sound for long distances (not providing a default because it would be so fucked up dude)
@@ -13,7 +13,7 @@
 	/// Whether or not to apply variation to the far fire sound
 	var/vary_far_fire_sound = TRUE
 	/// Volume of the far fire sound (generally should be lower than the normal fire sound, obviously)
-	var/far_fire_sound_volume = 40
+	var/far_fire_sound_volume = 50
 
 // An ammo_stack (mojave/code/modules/projectiles/boxes_magazines/ammo_stack.dm) is itself a subtype of
 // /obj/item/ammo_box/magazine (deliberately, to reuse magazine behavior) - which means DD's core

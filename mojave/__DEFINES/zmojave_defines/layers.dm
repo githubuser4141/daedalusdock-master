@@ -1,2 +1,1 @@
-#define GAME_PLANE_FOV_HIDDEN -29
 #define ABOVE_GAME_PLANE -20

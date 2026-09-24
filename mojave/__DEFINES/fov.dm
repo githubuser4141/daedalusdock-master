@@ -21,7 +21,8 @@
 #define FULLSCREEN_OVERLAY_RESOLUTION_Y 15
 
 /// Mobs and loose items. A viewer's field of vision masks this plane, which is then drawn into the game plane at mob layer.
-#define GAME_PLANE_FOV_HIDDEN -4
+/// Its own number only has to be free, and above the floors so map editors draw them on top.
+#define GAME_PLANE_FOV_HIDDEN 10
 /// The field of vision mask. Never drawn itself: only the plane above uses it, as a render source.
-#define FIELD_OF_VISION_BLOCKER_PLANE -3
+#define FIELD_OF_VISION_BLOCKER_PLANE 11
 #define FIELD_OF_VISION_BLOCKER_RENDER_TARGET "*FIELD_OF_VISION_BLOCKER_RENDER_TARGET"

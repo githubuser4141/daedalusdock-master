@@ -19,7 +19,8 @@
 	name = "game world fov hidden plane master"
 	plane = GAME_PLANE_FOV_HIDDEN
 	blend_mode = BLEND_OVERLAY
-	render_relay_plane = GAME_PLANE
+	// The game world's plane, -6. Not GAME_PLANE: mojave's layers.dm renumbers that to -5, DD's click-through seethrough plane.
+	render_relay_plane = WALL_PLANE
 
 // Only on the player's own view, not the map popups camera consoles open, which never call backdrop().
 /atom/movable/screen/plane_master/game_world_fov_hidden/backdrop(mob/mymob)
@@ -327,4 +328,25 @@
 	mech.mob_exit(viewer, TRUE)
 	if(viewer.fov_view != FOV_120_DEGREES)
 		Fail("Climbing out of a mech didn't give its pilot their own eyes back.")
+
+/// The HUD keeps one master per plane number, the last made: a shared number leaves one of them unused.
+/datum/unit_test/ms13_fov_planes
+	name = "FOV: Its Planes Are Its Own, And What It Hides Stays Clickable"
+
+/datum/unit_test/ms13_fov_planes/Run()
+	var/list/masters_by_plane = list()
+	for(var/atom/movable/screen/plane_master/master as anything in subtypesof(/atom/movable/screen/plane_master) - /atom/movable/screen/plane_master/rendering_plate)
+		masters_by_plane["[initial(master.plane)]"] += list(master)
+	var/atom/movable/screen/plane_master/hidden = /atom/movable/screen/plane_master/game_world_fov_hidden
+	var/atom/movable/screen/plane_master/blocker = /atom/movable/screen/plane_master/field_of_vision_blocker
+	if(length(masters_by_plane["[initial(hidden.plane)]"]) != 1 || length(masters_by_plane["[initial(blocker.plane)]"]) != 1)
+		Fail("A field of vision plane shares its number with another plane master.")
+	var/list/game = masters_by_plane["[initial(hidden.render_relay_plane)]"]
+	var/atom/movable/screen/plane_master/drawn_by = game?[length(game)]
+	if(!drawn_by || initial(drawn_by.mouse_opacity) == MOUSE_OPACITY_TRANSPARENT)
+		Fail("Mobs and items are drawn through a plane that doesn't take clicks.")
+	var/mob/any_mob = /mob
+	var/turf/open/any_floor = /turf/open
+	if(initial(any_mob.plane) <= initial(any_floor.plane))
+		Fail("Mobs and items sit below the floor, where map editors hide them.")
 #endif
