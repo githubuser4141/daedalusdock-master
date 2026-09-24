@@ -23,7 +23,7 @@ GLOBAL_DATUM_INIT(success_roll, /datum/roll_result/success, new)
 
 	if(defender && skill_path)
 		skill_mod -= defender.stats?.get_skill_modifier(skill_path) || 0
-		stat_mod += defender.stats?.get_stat_modifier(initial(skill_path.parent_stat_type)) || 0
+		stat_mod -= defender.stats?.get_stat_modifier(initial(skill_path.parent_stat_type)) || 0 //MOJAVE EDIT: was +=, so a tougher defender was easier to beat
 
 	requirement -= stat_mod
 
