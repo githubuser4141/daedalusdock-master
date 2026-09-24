@@ -23,9 +23,8 @@ TYPEINFO_DEF(/turf/closed/wall/ms13)
 	// to smooth toward them back - without this, that's one-directional, producing mismatched junctions.
 	canSmoothWith = SMOOTH_GROUP_MS13_LOW_WALL + SMOOTH_GROUP_MS13_WINDOW + SMOOTH_GROUP_MS13_WALL + SMOOTH_GROUP_SHUTTERS_BLASTDOORS
 	var/weldable = FALSE
-	var/girder_type
+	/// Sheet type -> amount it drops when it comes down.
 	var/list/sheet_type
-	var/sheet_amount = 2
 	max_integrity = 500
 	damage_deflection = 20
 	sheet_type = WALL_MATS_SCRAP
@@ -47,6 +46,18 @@ TYPEINFO_DEF(/turf/closed/wall/ms13)
 
 /turf/closed/wall/ms13/deconstruction_hints()
 	return
+
+// MS13 walls come down as their own sheet_type, and never leave a girder.
+/turf/closed/wall/ms13/break_wall(drop_mats = TRUE)
+	if(drop_mats)
+		drop_materials_used()
+
+/turf/closed/wall/ms13/devastate_wall()
+	drop_materials_used()
+
+/turf/closed/wall/ms13/drop_materials_used(drop_reinf = FALSE)
+	for(var/sheet in sheet_type)
+		new sheet(src, sheet_type[sheet])
 
 TYPEINFO_DEF(/turf/closed/wall/ms13/metal) // Thin iron sheet wall
 	default_armor = list(BLUNT = 50, PUNCTURE = 10, SLASH = 80, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
@@ -134,6 +145,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/adobe)
 	desc = ""
 	icon = 'mojave/icons/turf/walls/drought/siding.dmi'
 	frill_icon = 'mojave/icons/turf/walls/drought/siding_frill.dmi'
+	sheet_type = WALL_MATS_WOOD
 
 /turf/closed/wall/ms13/siding/Initialize()
 	. = ..()
@@ -262,6 +274,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/brick)
 	max_integrity = 800
 	damage_deflection = 15
 	bullet_damage_ratio = 0.9
+	sheet_type = list(/obj/item/stack/sheet/ms13/ceramic = 4)
 
 /turf/closed/wall/ms13/brick/alt
 	icon = 'mojave/icons/turf/walls/brickalt.dmi'
@@ -465,9 +478,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/dungeon)
 	desc = "A crude wall made of scrap metal. This looks very recently constructed."
 	icon = 'mojave/icons/turf/walls/roughscrap.dmi'
 	frill_icon = 'mojave/icons/turf/walls/roughscrap_1_frill.dmi'
-	girder_type = null
-	sheet_type = /obj/item/stack/sheet/ms13/scrap
-	sheet_amount = 6
+	sheet_type = list(/obj/item/stack/sheet/ms13/scrap = 6)
 	slicing_duration = 30 SECONDS
 
 /turf/closed/wall/ms13/craftable/scrap/Initialize()
@@ -489,9 +500,7 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/dungeon)
 	desc = "A freshly made, crude log wall. This looks very recently constructed."
 	icon = 'mojave/icons/turf/walls/woodfresh.dmi'
 	frill_icon = 'mojave/icons/turf/walls/woodfresh_frill.dmi'
-	girder_type = null
-	sheet_type = /obj/item/stack/sheet/ms13/wood/log
-	sheet_amount = 2
+	sheet_type = list(/obj/item/stack/sheet/ms13/wood/log = 2)
 	slicing_duration = 30 SECONDS
 
 //Wall Supports
@@ -501,8 +510,54 @@ TYPEINFO_DEF(/turf/closed/wall/ms13/dungeon)
 	desc = "No more girder spam, circa mojave sun - 2021"
 	can_displace = FALSE
 	icon = 'mojave/icons/turf/walls/girder.dmi'
-	var/list/material_used
-	var/wall_type = /turf/closed/wall/ms13/craftable
+	/// Sheet type -> list(wall it plates into, sheets it takes).
+	var/list/platings = list()
+
+/obj/structure/girder/ms13/examine(mob/user)
+	. = ..()
+	var/list/options = list()
+	for(var/obj/item/stack/sheet/sheet as anything in platings)
+		var/turf/closed/wall/wall = platings[sheet][1]
+		options += "[platings[sheet][2]] [initial(sheet.name)] for  [initial(wall.name)]"
+	if(length(options))
+		. += span_notice("Plate it with [english_list(options, and_text = " or ")].")
+
+/obj/structure/girder/ms13/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	var/obj/item/stack/sheet/sheets = tool
+	var/list/plating = istype(sheets) && platings[sheets.merge_type]
+	if(!plating)
+		return ..()
+	var/needed = plating[2]
+	if(sheets.get_amount() < needed)
+		to_chat(user, span_warning("You need [needed] of [sheets] to plate [src]."))
+		return ITEM_INTERACT_BLOCKING
+	to_chat(user, span_notice("You start plating [src]..."))
+	if(!do_after(user, src, 15 SECONDS, DO_PUBLIC, display = sheets) || QDELETED(src) || sheets.get_amount() < needed)
+		return ITEM_INTERACT_BLOCKING
+	var/turf/closed/wall/ms13/wall = plate(sheets)
+	user.visible_message(span_notice("[user] finishes  [wall]."), span_notice("You finish 	he [wall]."))
+	return ITEM_INTERACT_SUCCESS
+
+/// Uses up the plating and puts the wall up where the supports stood. Player walls cut down with a welder.
+/obj/structure/girder/ms13/proc/plate(obj/item/stack/sheet/sheets)
+	var/list/plating = platings[sheets.merge_type]
+	sheets.use(plating[2])
+	var/turf/spot = get_turf(src)
+	qdel(src)
+	var/turf/closed/wall/ms13/wall = spot.PlaceOnTop(plating[1])
+	wall.weldable = TRUE
+	return wall
+
+/obj/structure/girder/ms13/welder_act(mob/living/user, obj/item/tool)
+	to_chat(user, span_notice("You start cutting [src] apart..."))
+	if(tool.use_tool(src, user, 10 SECONDS, volume = 50))
+		deconstruct(TRUE)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/structure/girder/ms13/deconstruct(disassembled = TRUE)
+	if(!(flags_1 & NODECONSTRUCT_1))
+		new /obj/item/stack/sheet/ms13/scrap(loc, disassembled ? 4 : 2)
+	qdel(src)
 
 TYPEINFO_DEF(/obj/structure/girder/ms13/bars)
 	default_armor = list(BLUNT = 50, PUNCTURE = 35, SLASH = 50, LASER = 50, ENERGY = 25, BOMB = 25, BIO = 100, FIRE = 25, ACID = 50)
@@ -512,13 +567,46 @@ TYPEINFO_DEF(/obj/structure/girder/ms13/bars)
 	desc = "Cheap building supports for makeshift construction projects."
 	icon_state = "rebar"
 	max_integrity = 300
-	material_used = list(/obj/item/stack/sheet/ms13/scrap)
-	wall_type = list(/turf/closed/wall/ms13/craftable/scrap, /turf/closed/wall/ms13/craftable/wood)
+	platings = list(
+		/obj/item/stack/sheet/ms13/scrap = list(/turf/closed/wall/ms13/craftable/scrap, 4),
+		/obj/item/stack/sheet/ms13/wood/log = list(/turf/closed/wall/ms13/craftable/wood, 3),
+		/obj/item/stack/sheet/ms13/wood/plank = list(/turf/closed/wall/ms13/siding, 6),
+		/obj/item/stack/sheet/ms13/scrap_steel = list(/turf/closed/wall/ms13/metal, 4),
+		/obj/item/stack/sheet/ms13/refined_steel = list(/turf/closed/wall/ms13/metal/reinforced, 3),
+		/obj/item/stack/sheet/ms13/ceramic = list(/turf/closed/wall/ms13/brick, 6),
+	)
 	projectile_passchance = 50
 
 /obj/structure/girder/ms13/bars/Initialize()
 	. = ..()
 	AddElement(/datum/element/climbable, 3 SECONDS, climb_stun = 0)
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_wall_building
+	name = "WALLS: Supports Take Plating, And Walls Fall To Their Own Sheets"
+
+/datum/unit_test/ms13_wall_building/Run()
+	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	var/floor_type = spot.type
+	var/obj/structure/girder/ms13/bars/supports = allocate(/obj/structure/girder/ms13/bars, spot)
+	var/obj/item/stack/sheet/ms13/scrap_steel/sheets = allocate(/obj/item/stack/sheet/ms13/scrap_steel/four, spot)
+	var/turf/closed/wall/ms13/wall = supports.plate(sheets)
+	if(!istype(wall, /turf/closed/wall/ms13/metal) || !wall.weldable || !QDELETED(sheets) || !QDELETED(supports))
+		Fail("Plating wall supports with scrap steel didn't make a weldable metal wall from all four sheets.")
+		return
+	var/list/expected = wall.sheet_type.Copy()
+	wall.dismantle_wall()
+	if(spot.type != floor_type)
+		Fail("A dismantled wall didn't leave the floor it was built on.")
+	if(locate(/obj/structure/girder) in spot)
+		Fail("A dismantled MS13 wall left a girder.")
+	if(locate(/obj/item/stack/sheet/iron) in spot)
+		Fail("A dismantled MS13 wall dropped iron sheets.")
+	for(var/sheet_type in expected)
+		var/obj/item/stack/dropped = locate(sheet_type) in spot
+		if(dropped?.amount != expected[sheet_type])
+			Fail("A dismantled metal wall dropped [dropped?.amount || 0] of [sheet_type], not [expected[sheet_type]].")
+#endif
 
 #undef WALL_MATS_SCRAP
 #undef WALL_MATS_METAL

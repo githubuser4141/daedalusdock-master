@@ -307,14 +307,6 @@ GLOBAL_LIST_INIT(ceramic_recipes, list ( \
 	//grid_width = 96
 	//grid_height = 64
 
-GLOBAL_LIST_INIT(log_recipes, list ( \
-	new/datum/stack_recipe("crude log wall", /turf/closed/wall/ms13/craftable/wood, 4, time = 40 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
-))
-
-/obj/item/stack/sheet/ms13/wood/log/get_main_recipes()
-	. = ..()
-	. += GLOB.log_recipes
-
 /obj/item/stack/sheet/ms13/wood/log/attackby(obj/item/W, mob/user, params)
 	if(W.sharpness & SHARP_AXE)
 		if(amount > 1)
