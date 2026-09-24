@@ -26,6 +26,8 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	movedelay = 1 SECONDS
 	// Armor plate, like vehicle hull plating: it stops a lot of a round but takes little harm from it.
 	bullet_damage_ratio = 0.3
+	// Blunt blows under this don't dent it: an average person's fist, but not a strong one's or power armor's.
+	damage_deflection = 8
 	/// Runs everything. Any cell fits, and a crowbar pries it out.
 	var/obj/item/stock_parts/cell/cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	/// Charge used by every step and turn.
@@ -981,7 +983,8 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 		Fail("Someone loaded into a mech took its controls, or its driver lost them.")
 	mech.mob_exit(passenger, TRUE)
 
-	// A light cart ramming it only dents it; a heavy truck knocks it back a tile, still facing the same way.
+	// A light cart at a crawl bounces off without a dent (damage_deflection); a heavy truck dents it and knocks it back
+	// a tile, still facing the same way.
 	var/obj/structure/ms13_vehicle_frame/bumper = allocate(/obj/structure/ms13_vehicle_frame, get_step(mech, SOUTH))
 	// Tough enough not to break on the mech, so the heavy truck carries on.
 	bumper.modify_max_integrity(100000)
@@ -994,14 +997,14 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 	var/turf/rammed_at = get_turf(mech)
 	var/before_ram = mech.get_integrity()
 	truck.damage_collision(mech, bumper, NORTH)
-	if(get_turf(mech) != rammed_at || mech.get_integrity() >= before_ram)
-		Fail("A light cart knocked a mech back, or didn't dent it.")
+	if(get_turf(mech) != rammed_at || mech.get_integrity() != before_ram)
+		Fail("A light cart at a crawl knocked a mech back, or dented it.")
 	truck.mass_per_frame = 100000
 	truck.speed = 1
 	truck.impact_energy_reserve = null
 	truck.damage_collision(mech, bumper, NORTH)
-	if(get_turf(mech) != get_step(rammed_at, NORTH) || mech.dir != NORTH)
-		Fail("A heavy truck ramming a mech didn't knock it back a tile, facing the way it was.")
+	if(get_turf(mech) != get_step(rammed_at, NORTH) || mech.dir != NORTH || mech.get_integrity() >= before_ram)
+		Fail("A heavy truck ramming a mech didn't dent it and knock it back a tile, facing the way it was.")
 	qdel(bumper)
 
 	// Built by hand, a mech comes without a battery.

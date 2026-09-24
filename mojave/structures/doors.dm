@@ -231,16 +231,8 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		close()
 	return TRUE
 
+// Punching a closed door in combat mode, locked or not, goes through the shared punch (punching.dm).
 /obj/machinery/door/unpowered/ms13/attack_hand(mob/living/M)
-	if(M.combat_mode)
-		// Locks (either kind) only gate walking through the door, not taking a swing at it -
-		// smashing a locked door down bare-handed should always be possible, same as it already is
-		// with a weapon via attackby() below. ponytail: flat damage, not scaled to the attacker's
-		// actual unarmed-damage stats like a real punch would be.
-		if(!open)
-			add_fingerprint(M)
-			take_damage(rand(3, 7), BRUTE, BLUNT, TRUE)
-			return TRUE
 	if(locked)
 		to_chat(M, "<span class='warning'> The [name] is locked.</span>")
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
