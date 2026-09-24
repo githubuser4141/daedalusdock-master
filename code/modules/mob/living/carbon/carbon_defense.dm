@@ -228,7 +228,7 @@
 
 	var/list/holding = list(target.get_active_held_item() = 60, target.get_inactive_held_item() = 30)
 
-	var/datum/roll_result/result = stat_roll(14, /datum/rpg_skill/bloodsport, defender = target)
+	var/datum/roll_result/result = stat_roll(14, /datum/rpg_skill/bloodsport, strength_edge(target), defender = target) //MOJAVE EDIT: Strength, mojave/code/modules/stats/stats.dm
 
 	//Handle unintended consequences
 	for(var/obj/item/I in holding)

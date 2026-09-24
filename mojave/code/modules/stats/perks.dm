@@ -29,21 +29,18 @@ PERK_HUMAN_TORCH = /datum/perk/human_torch,
 	var/icon/display = null
 	var/icon_state = ""
 
-	//Value is 0 because you will modificited main stats
-	var/perceptive = 0
-	var/enduring = 0
-	var/retaining = 0
-	var/strong = 0
-	var/outgoing = 0
-	var/nimble = 0
+	/// What the perk adds to SPECIAL: attribute = amount.
+	var/list/special_modifiers
+	/// The SPECIAL attribute "level" is checked against, by type_class.
+	var/static/list/class_attributes = list("s" = SPECIAL_STRENGTH, "p" = SPECIAL_PERCEPTION, "e" = SPECIAL_ENDURANCE, "o" = SPECIAL_CHARISMA, "r" = SPECIAL_INTELLIGENCE, "n" = SPECIAL_AGILITY, "l" = SPECIAL_LUCK)
 
 	//Attached stats
-	var/datum/ms13_stats/stats // AI EDIT: datum/stats -> datum/ms13_stats (renamed, see mojave/code/modules/stats/stats.dm)
+	var/datum/ms13_stats/stats
 
 	//DEV THING
 	var/is_ready = FALSE
 
-/datum/perk/New(special)
+/datum/perk/New(datum/ms13_stats/stats)
 	src.stats = stats
 
 /datum/perk/Destroy(force, ...)
@@ -51,61 +48,18 @@ PERK_HUMAN_TORCH = /datum/perk/human_torch,
 	. = ..()
 
 /datum/perk/proc/added_effect()
-	stats.modifyRating(perceptive, enduring, retaining, strong, outgoing, nimble)
+	stats?.owner?.set_special_modifier("perk: [id]", special_modifiers)
 
 /datum/perk/proc/remove_effect()
-	stats.modifyRating(-perceptive, -enduring, -retaining, -strong, -outgoing, -nimble)
+	stats?.owner?.set_special_modifier("perk: [id]", null)
 
+/// Above 5, the attribute has to reach level; at 5 or below, it has to be no higher.
 /datum/perk/proc/has_level(datum/ms13_stats/s)
-	switch(type_class)
-		if("p")
-			if(level > 5)
-				if(s.perceptive - 10 >= level)
-					return TRUE
-			else
-				if(s.perceptive - 10 <= level)
-					return TRUE
-			return FALSE
-		if("e")
-			if(level > 5)
-				if(s.enduring - 10 >= level)
-					return TRUE
-			else
-				if(s.enduring - 10 <= level)
-					return TRUE
-			return FALSE
-		if("r")
-			if(level > 5)
-				if(s.retaining - 10 >= level)
-					return TRUE
-			else
-				if(s.retaining - 10 <= level)
-					return TRUE
-			return FALSE
-		if("s")
-			if(level > 5)
-				if(s.strong - 10 >= level)
-					return TRUE
-			else
-				if(s.strong - 10 <= level)
-					return TRUE
-			return FALSE
-		if("o")
-			if(level > 5)
-				if(s.outgoing - 10 >= level)
-					return TRUE
-			else
-				if(s.outgoing - 10 <= level)
-					return TRUE
-			return FALSE
-		if("n")
-			if(level > 5)
-				if(s.nimble - 10 >= level)
-					return TRUE
-			else
-				if(s.nimble - 10 <= level)
-					return TRUE
-			return FALSE
+	var/attribute = class_attributes[type_class]
+	if(!attribute)
+		return FALSE
+	var/value = s.owner ? s.owner.get_special(attribute) : SPECIAL_BASELINE
+	return level > 5 ? value >= level : value <= level
 
 /datum/perk/proc/check_to_add(datum/ms13_stats/s)
 	if(!has_level(s))

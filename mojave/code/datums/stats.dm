@@ -38,7 +38,9 @@ GLOBAL_LIST_INIT(perks, list())
 		var/datum/perk/p = get_perk(type)
 		.["activeperks"] += list(list("name" = p.name, "desc" = p.desc, "id" = p.id, "type" = p.type_class, "filter" = p.filter, "level" = p.level, "ranks" = p.ranks))
 
-	.["stats"] = list("perceptive" = "[temp_special.perceptive]", "enduring" = "[temp_special.enduring]", "retaining" = "[temp_special.retaining]", "strong" = "[temp_special.strong]", "outgoing" = "[temp_special.outgoing]", "nimble" = "[temp_special.nimble]")
+	.["stats"] = list()
+	for(var/attribute in SPECIAL_ATTRIBUTES)
+		.["stats"][attribute] = "[temp_special.owner ? temp_special.owner.get_special(attribute) : SPECIAL_BASELINE]"
 
 /datum/stats_browser/ui_act(action, params, datum/tgui/ui)
 	. = ..()
@@ -62,7 +64,7 @@ GLOBAL_LIST_INIT(perks, list())
 /datum/stats_browser/ui_interact(mob/user, datum/tgui/ui)
 	if(isliving(user))
 		var/mob/living/u = user
-		temp_special = u.ms13_stats // AI EDIT: stats -> ms13_stats
+		temp_special = u.get_ms13_stats(TRUE)
 	else
 		temp_special = new
 

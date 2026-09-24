@@ -174,6 +174,7 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 
 /obj/item/organ/bone/Insert(mob/living/carbon/reciever, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
+	update_strength_density()
 	if(ownerlimb)
 		ownerlimb.refresh_muscle_effects()
 

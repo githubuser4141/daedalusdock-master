@@ -277,6 +277,7 @@
 
 	var/can_heal = damage && damage < maxHealth && (damage % damage_threshold_value || CHEM_EFFECT_MAGNITUDE(owner, CE_BRAIN_REGEN) || (!past_damage_threshold(3) && owner.chem_effects[CE_STABLE]))
 	var/damprob
+	var/resilience = owner.get_endurance_resilience() //MOJAVE EDIT: Endurance, mojave/code/modules/stats/stats.dm
 	//Effects of bloodloss
 	switch(blood_percent)
 		if(BLOOD_CIRC_SAFE to INFINITY)
@@ -287,16 +288,16 @@
 			if(owner.stat == CONSCIOUS && prob(1))
 				to_chat(owner, span_warning("You feel [pick("dizzy","woozy","faint")]..."))
 			damprob = CHEM_EFFECT_MAGNITUDE(owner, CE_STABLE) ? 30 : 60
-			if(!past_damage_threshold(2) && prob(damprob))
+			if(!past_damage_threshold(2) && prob(damprob / resilience))
 				applyOrganDamage(BRAIN_DECAY_RATE, cause_of_death = "Hypoxemia")
 
 		if(BLOOD_CIRC_BAD to BLOOD_CIRC_OKAY)
 			owner.blur_eyes(6)
 			damprob = CHEM_EFFECT_MAGNITUDE(owner, CE_STABLE) ? 40 : 80
-			if(!past_damage_threshold(4) && prob(damprob))
+			if(!past_damage_threshold(4) && prob(damprob / resilience))
 				applyOrganDamage(BRAIN_DECAY_RATE, cause_of_death = "Hypoxemia")
 
-			if(owner.stat == CONSCIOUS && prob(10))
+			if(owner.stat == CONSCIOUS && prob(10 / resilience))
 				log_health(owner, "Passed out due to poor blood oxygenation, random chance.")
 				to_chat(owner, span_warning("You feel extremely [pick("dizzy","woozy","faint")]..."))
 				owner.Unconscious(rand(1,3) SECONDS)
@@ -304,10 +305,10 @@
 		if(BLOOD_CIRC_SURVIVE to BLOOD_CIRC_BAD)
 			owner.blur_eyes(6)
 			damprob = CHEM_EFFECT_MAGNITUDE(owner, CE_STABLE) ? 60 : 100
-			if(!past_damage_threshold(6) && prob(damprob))
+			if(!past_damage_threshold(6) && prob(damprob / resilience))
 				applyOrganDamage(BRAIN_DECAY_RATE, updating_health = FALSE, cause_of_death = "Hypoxemia")
 
-			if(owner.stat == CONSCIOUS && prob(15))
+			if(owner.stat == CONSCIOUS && prob(15 / resilience))
 				log_health(owner, "Passed out due to poor blood oxygenation, random chance.")
 				owner.Unconscious(rand(3,5) SECONDS)
 				to_chat(owner, span_warning("You feel extremely [pick("dizzy","woozy","faint")]..."))
@@ -315,9 +316,9 @@
 		if(-(INFINITY) to BLOOD_VOLUME_SURVIVE) // Also see heart.dm, being below this point puts you into cardiac arrest.
 			owner.blur_eyes(6)
 			damprob = CHEM_EFFECT_MAGNITUDE(owner, CE_STABLE) ? 80 : 100
-			if(prob(damprob))
+			if(prob(damprob / resilience))
 				applyOrganDamage(BRAIN_DECAY_RATE, updating_health = FALSE, cause_of_death = "Hypoxemia")
-			if(prob(damprob))
+			if(prob(damprob / resilience))
 				applyOrganDamage(BRAIN_DECAY_RATE, updating_health = FALSE, cause_of_death = "Hypoxemia")
 	. = ..()
 

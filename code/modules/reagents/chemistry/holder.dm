@@ -694,7 +694,7 @@
 
 		if(can_overdose)
 			if(reagent.overdose_threshold)
-				if(reagent.volume >= reagent.overdose_threshold && !reagent.overdosed)
+				if(reagent.volume * reagent.get_dose_mult(owner) >= reagent.overdose_threshold && !reagent.overdosed) //MOJAVE EDIT: Strength, mojave/code/modules/stats/stats.dm
 					reagent.overdosed = TRUE
 					need_mob_update += reagent.overdose_start(owner)
 					log_game("[key_name(owner)] has started overdosing on [reagent.name] at [reagent.volume] units.")

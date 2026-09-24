@@ -1,18 +1,12 @@
-// The live half of /datum/ms13_stats (stats.dm). That datum's six vars were only ever read by the perk
-// gating in perks.dm and the character sheet in mojave/code/datums/stats.dm - nothing in the world used
-// them. This makes them mean something: the vars stay the character's BASE stats, and everything in the
-// game asks get_stat() instead, which is that base scaled by how intact the body currently is.
+// The live half of S.P.E.C.I.A.L. (stats.dm): the game asks get_stat(), which is the attribute scaled by how intact
+// the body currently is.
 //
-// Only strength has condition inputs wired up so far. The other five deliberately return a condition of 1
-// and read as their flat base value - the framework is shaped for all six so they can be filled in the
-// same way later (see get_stat_condition() below), not left as a strength-shaped special case.
+// Only strength has condition inputs wired up so far. The others deliberately return a condition of 1 and read as
+// their plain value, so they can be filled in the same way later (see get_stat_condition() below).
 
-/// Base stat, before any body-condition scaling. Safe on any mob: only job-spawned mobs get a stats datum
-/// at all (mojave/code/modules/jobs/job_types/_job.dm), so everything else reads as the neutral baseline.
+/// The attribute before any body-condition scaling.
 /mob/living/proc/get_base_stat(stat)
-	if(!ms13_stats)
-		return MS13_STAT_BASELINE
-	return ms13_stats.vars[stat]
+	return get_special(stat)
 
 /**
  * 0-1: how well the body can currently deliver this stat. 1 means "as capable as this character gets",
@@ -26,17 +20,17 @@
 
 /// Base stat scaled by current body condition, floored so a stat never reaches zero outright.
 /mob/living/proc/get_stat(stat)
-	return max(MS13_STAT_MINIMUM, get_base_stat(stat) * get_stat_condition(stat))
+	return max(SPECIAL_MINIMUM, get_base_stat(stat) * get_stat_condition(stat))
 
-/// get_stat() expressed as a multiplier around the neutral baseline: 1 at MS13_STAT_BASELINE, above 1 for
+/// get_stat() expressed as a multiplier around the neutral baseline: 1 at SPECIAL_BASELINE, above 1 for
 /// a stronger-than-average character, below for a weaker or badly hurt one. This is what damage and
 /// carry-weight maths want, rather than the raw number.
 /mob/living/proc/get_stat_ratio(stat)
-	return get_stat(stat) / MS13_STAT_BASELINE
+	return get_stat(stat) / SPECIAL_BASELINE
 
 /mob/living/carbon/human/get_stat_condition(stat)
 	switch(stat)
-		if(MS13_STAT_STRONG)
+		if(SPECIAL_STRENGTH)
 			return get_strength_condition()
 	return ..()
 
@@ -81,5 +75,6 @@
  * so a pipe still hurts when a starving, half-bled-out raider swings it, just much less than it should.
  */
 /mob/living/proc/get_melee_strength_mult()
-	var/ratio = get_stat_ratio(MS13_STAT_STRONG)
+	// In power armor the frame swings, at its own strength, whatever shape its wearer is in.
+	var/ratio = HAS_TRAIT(src, TRAIT_IN_POWERARMOUR) ? 1 + get_body_special_offset(SPECIAL_STRENGTH) / SPECIAL_BASELINE : get_stat_ratio(SPECIAL_STRENGTH)
 	return (1 - MS13_STAT_STRONG_MELEE_CONTRIBUTION) + (MS13_STAT_STRONG_MELEE_CONTRIBUTION * ratio)

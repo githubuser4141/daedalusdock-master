@@ -143,6 +143,7 @@ GLOBAL_LIST_INIT(name2reagent, build_name2reagent())
 	var/effective = removed
 	if(!(chemical_flags & REAGENT_IGNORE_MOB_SIZE) && location != CHEM_TOUCH)
 		effective *= (MOB_SIZE_HUMAN/M.mob_size)
+	effective *= get_dose_mult(M) //MOJAVE EDIT: Strength, mojave/code/modules/stats/stats.dm
 
 	var/remove_from_holder = FALSE
 	if(effective >= (metabolization_rate * 0.1) || effective >= 0.1)

@@ -153,7 +153,7 @@
 			if(DT_PROB(round(-human.satiety/77), delta_time))
 				human.set_timed_status_effect(10 SECONDS, /datum/status_effect/jitter, only_if_higher = TRUE)
 			hunger_rate = 3 * HUNGER_DECAY
-		hunger_rate *= human.physiology.hunger_mod
+		hunger_rate *= human.physiology.hunger_mod * human.get_metabolism_mult() //MOJAVE EDIT: Strength, mojave/code/modules/stats/stats.dm
 		human.adjust_nutrition(-hunger_rate * delta_time)
 
 	var/nutrition = human.nutrition

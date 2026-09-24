@@ -177,12 +177,16 @@ TYPEINFO_DEF(/obj/item/organ/heart)
 
 	//If heart is stopped, it isn't going to restart itself randomly.
 	if(pulse == PULSE_NONE)
+		// MOJAVE EDIT: unless it's a hardy one with the blood to pump (Endurance, mojave/code/modules/stats/stats.dm).
+		if(owner.blood_volume / BLOOD_VOLUME_NORMAL * 100 >= owner.get_heart_stop_circulation() && prob(owner.get_heart_restart_chance()) && Restart())
+			to_chat(owner, span_notice("Your heart lurches back into rhythm."))
+			log_health(owner, "Heart restarted by itself.")
 		return
 
 	else if(can_heartattack)//and if it's beating, let's see if it should
 		// Cardiovascular shock, not enough liquid to pump
 		var/blood_circulation = owner.get_blood_circulation()
-		var/should_stop = prob(80) && (blood_circulation < BLOOD_CIRC_SURVIVE)
+		var/should_stop = prob(80) && (blood_circulation < owner.get_heart_stop_circulation()) //MOJAVE EDIT: was BLOOD_CIRC_SURVIVE, Endurance moves it
 		if(should_stop)
 			log_health(owner, "Heart stopped due to poor blood circulation: [blood_circulation]%")
 

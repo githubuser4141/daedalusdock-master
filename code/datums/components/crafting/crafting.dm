@@ -227,7 +227,7 @@
 					return ", missing trait"
 			// MOJAVE EDIT - CRAFTING BENCHES END
 			//If we're a mob we'll try a do_after; non mobs will instead instantly construct the item
-			if(ismob(a) && !do_after(a, time = R.time, timed_action_flags = DO_PUBLIC))
+			if(ismob(a) && !do_after(a, time = R.time * special_crafting_mult(a), timed_action_flags = DO_PUBLIC)) //MOJAVE EDIT: Intelligence, mojave/code/modules/stats/stats.dm
 				return "."
 			contents = get_surroundings(a,R.blacklist)
 			if(!check_contents(a, R, contents))

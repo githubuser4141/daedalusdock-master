@@ -58,7 +58,7 @@
 
 			for(var/datum/wound/W as anything in iter_part.wounds)
 				if(W.bleeding() && W.bleed_timer > 0)
-					W.bleed_timer--
+					W.bleed_timer -= get_endurance_resilience() //MOJAVE EDIT: Endurance clots faster, mojave/code/modules/stats/stats.dm
 					if(!W.bleeding())
 						needs_bleed_update = TRUE
 

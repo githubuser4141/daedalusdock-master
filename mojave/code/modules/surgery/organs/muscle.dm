@@ -154,8 +154,25 @@ TYPEINFO_DEF(/obj/item/organ/muscle)
 
 /obj/item/organ/muscle/Insert(mob/living/carbon/reciever, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
+	update_strength_density()
 	if(ownerlimb)
 		ownerlimb.refresh_muscle_effects()
+
+/**
+ * Strength packs muscle and bone denser: tougher and with more to give. Dense tissue soaks more of a round and
+ * mangles it on the way (bullet_penetration.dm), so a weak round stops short of what's behind it and a strong one
+ * comes through deformed; light tissue lets rounds through cleaner and deeper.
+ */
+/obj/item/organ/proc/get_strength_density()
+	if(!owner || !(istype(src, /obj/item/organ/muscle) || istype(src, /obj/item/organ/bone)))
+		return 1
+	var/offset = owner.get_special_offset(SPECIAL_STRENGTH) / SPECIAL_BASELINE
+	return 1 + SPECIAL_STRENGTH_TISSUE_DENSITY * offset * abs(offset)
+
+/obj/item/organ/proc/update_strength_density()
+	if(istype(src, /obj/item/organ/muscle) || istype(src, /obj/item/organ/bone))
+		maxHealth = initial(maxHealth) * get_strength_density()
+		damage = min(damage, maxHealth)
 
 /// A missing muscle floors performance at MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR instead of 0 - refresh
 /// immediately since no more on_life() ticks are coming from this (removed) organ.

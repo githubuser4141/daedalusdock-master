@@ -171,6 +171,8 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	ms13_flags_1 = LOCKABLE_1
 	clothing_flags = LARGE_WORN_ICON | STOPSPRESSUREDAMAGE | THICKMATERIAL | SNUG_FIT | BLOCKS_SHOVE_KNOCKDOWN
 	slowdown = 1.55
+	/// Stands in for its wearer's Strength: past what any person reaches (SPECIAL_MAXIMUM), whoever's inside.
+	var/strength = 13
 	/// Literally just whether or not we allow fatties to wear this power armor
 	var/no_fatties = TRUE
 	var/mob/listeningTo
@@ -531,6 +533,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	ADD_TRAIT(user, TRAIT_IN_POWERARMOUR, "power_armor")
 	ADD_TRAIT(user, TRAIT_SHOVEIMMUNE, "power_armor")
 	RegisterSignal(user, COMSIG_ATOM_CAN_BE_GRABBED, PROC_REF(reject_pulls))
+	user.special_changed()
 
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/unequipped(mob/living/carbon/human/user)
 	. = ..()
@@ -553,6 +556,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	REMOVE_TRAIT(user, TRAIT_IN_POWERARMOUR, "power_armor")
 	REMOVE_TRAIT(user, TRAIT_SHOVEIMMUNE, "power_armor")
 	UnregisterSignal(user, COMSIG_ATOM_CAN_BE_GRABBED)
+	user.special_changed()
 
 // AI EDIT: COMSIG_ATOM_CAN_BE_PULLED/COMSIG_ATOM_CANT_PULL are the original Mojave Sun signal names (confirmed
 // against github.com/Mojave-Sun/mojave-sun-13) - DD's grab system renamed them to
