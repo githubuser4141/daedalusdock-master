@@ -61,6 +61,9 @@
 	var/fov_angle
 	var/atom/movable/screen/fov_blocker/blocker_mask
 	var/atom/movable/screen/fov_shadow/visual_shadow
+	/// How far, in pixels, something panning the view (a scope) has shifted it from the mob.
+	var/view_shift_x = 0
+	var/view_shift_y = 0
 
 /datum/component/fov_handler/Initialize(fov_type = FOV_90_DEGREES)
 	if(!isliving(parent))
@@ -110,11 +113,35 @@
 		return
 	current_fov_x = view_size[1]
 	current_fov_y = view_size[2]
-	var/matrix/new_matrix = new
+	blocker_mask.transform = mask_matrix()
+	visual_shadow.transform = mask_matrix()
+
+/// Stretches the masks over the view, kept centred on the mob wherever the view is panned.
+/datum/component/fov_handler/proc/mask_matrix()
+	var/matrix/new_matrix = matrix()
 	new_matrix.Scale(current_fov_x / BASE_FOV_MASK_X_DIMENSION, current_fov_y / BASE_FOV_MASK_Y_DIMENSION)
-	new_matrix.Translate((current_fov_x - BASE_FOV_MASK_X_DIMENSION) * 16, (current_fov_y - BASE_FOV_MASK_Y_DIMENSION) * 16)
-	blocker_mask.transform = new_matrix
-	visual_shadow.transform = new_matrix
+	new_matrix.Translate((current_fov_x - BASE_FOV_MASK_X_DIMENSION) * 16 - view_shift_x, (current_fov_y - BASE_FOV_MASK_Y_DIMENSION) * 16 - view_shift_y)
+	return new_matrix
+
+/// The view has been panned x, y pixels from the mob, over time: the masks follow, so the blind spot stays behind it.
+/datum/component/fov_handler/proc/follow_view(x, y, time)
+	view_shift_x = x
+	view_shift_y = y
+	animate(blocker_mask, transform = mask_matrix(), time = time)
+	animate(visual_shadow, transform = mask_matrix(), time = time)
+
+// A scope pans the view toward where it's aimed.
+/datum/component/scope/process(delta_time)
+	. = ..()
+	if(tracker)
+		var/datum/component/fov_handler/fov = tracker.owner.GetComponent(/datum/component/fov_handler)
+		fov?.follow_view(tracker.given_x, tracker.given_y, world.tick_lag)
+
+/datum/component/scope/stop_zooming(mob/user)
+	SIGNAL_HANDLER
+	. = ..()
+	var/datum/component/fov_handler/fov = user.GetComponent(/datum/component/fov_handler)
+	fov?.follow_view(0, 0, 0.2 SECONDS)
 
 /// Masks only while alive and seeing from where it is: not when dead, or looking through a camera.
 /datum/component/fov_handler/proc/update_mask()
@@ -178,10 +205,6 @@
 		return TRUE
 	return get_between_angles(get_angle(here, there), dir2angle(dir)) < 180 - fov_view / 2
 
-/mob/living/Initialize(mapload)
-	. = ..()
-	fov_view = native_fov
-
 /mob/living/proc/add_fov_trait(source, angle)
 	LAZYSET(fov_traits, source, angle)
 	update_fov()
@@ -190,8 +213,12 @@
 	LAZYREMOVE(fov_traits, source)
 	update_fov()
 
+/// The blind spot it has by nature, before anything it wears or rides in.
+/mob/living/proc/get_native_fov()
+	return native_fov
+
 /mob/living/proc/update_fov()
-	fov_view = native_fov
+	fov_view = get_native_fov()
 	for(var/source in fov_traits)
 		fov_view = max(fov_view, fov_traits[source])
 	if(!client)
