@@ -77,9 +77,12 @@
 		return
 
 	if(length(cable_trail) && cable_trail[length(cable_trail)].loc == drone.loc)
-		// Stepped back onto the tile our last-laid segment sits on - reel it in.
-		qdel(cable_trail[length(cable_trail)])
+		// Stepped back onto the tile our last-laid segment sits on - reel it in. Not a cut, so drop the
+		// cut signal first or on_cable_cut() severs the link from inside the drone's own Moved().
+		var/obj/structure/ms13_pa_cable/reeled = cable_trail[length(cable_trail)]
 		cable_trail.len--
+		UnregisterSignal(reeled, COMSIG_PARENT_QDELETING)
+		qdel(reeled)
 		return
 
 	var/obj/structure/ms13_pa_cable/segment = new(old_turf)
@@ -112,12 +115,15 @@
 		leaving.dropItemToGround(held)
 	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/suit = leaving.get_item_by_slot(ITEM_SLOT_OCLOTHING)
 	if(suit)
-		leaving.dropItemToGround(suit)
-	qdel(leaving)
+		leaving.dropItemToGround(suit, TRUE) // force past the suit's permanent TRAIT_NODROP
+	// Skip whatever's already mid-qdel (the drone or a cut segment that triggered this sever).
+	if(!QDELETED(leaving))
+		qdel(leaving)
 
 	for(var/obj/structure/ms13_pa_cable/segment as anything in cable_trail)
 		UnregisterSignal(segment, COMSIG_PARENT_QDELETING)
-		qdel(segment)
+		if(!QDELETED(segment))
+			qdel(segment)
 	cable_trail = list()
 
 	if(module)

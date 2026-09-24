@@ -513,8 +513,9 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	. = ..()
 	if(slot != ITEM_SLOT_OCLOTHING)
 		return
-	user.RemoveElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6)
-	user.AddElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
+	if(!QDELETED(user))
+		user.RemoveElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6, TRUE)
+		user.AddElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
 	listeningTo = user
 	// How do you buckle a suit of power armor to something?
 	user.can_buckle_to = FALSE
@@ -541,8 +542,9 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	user.can_buckle_to = TRUE
 	user.base_pixel_y = user.base_pixel_y - 6
 	user.pixel_y = user.base_pixel_y
-	user.RemoveElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
-	user.AddElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6)
+	if(!QDELETED(user)) // unequipped by the wearer's own Destroy
+		user.RemoveElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
+		user.AddElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6, TRUE)
 	listeningTo.remove_movespeed_modifier(/datum/movespeed_modifier/ms13/pa_broken)
 	listeningTo = null
 	REMOVE_TRAIT(user, TRAIT_FORCED_STANDING, "power_armor") //It's a suit of armor, it ain't going to fall over just because the pilot is dead

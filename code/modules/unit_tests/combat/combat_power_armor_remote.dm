@@ -48,10 +48,17 @@
 
 	link.drone.forceMove(start_turf)
 	TEST_ASSERT_EQUAL(length(link.cable_trail), 0, "Stepping back over its own cable did not reel the segment back in.")
+	TEST_ASSERT(link.drone, "Reeling cable back in severed the link as if it were cut.")
 
-	link.sever("unit test teardown")
-	TEST_ASSERT_EQUAL(operator_mind.current, operator, "sever() did not return the operator's mind to their real body.")
+	link.drone.forceMove(next_turf)
+	qdel(link.cable_trail[1])
+	TEST_ASSERT_EQUAL(operator_mind.current, operator, "Cutting the cable did not return the operator's mind to their real body.")
 	TEST_ASSERT(QDELETED(link.drone) || !link.drone, "The drone mob was not cleaned up after sever().")
+
+	var/datum/ms13_remote_link/drone_link = new(operator, receiver, computer, "cable")
+	qdel(drone_link.drone)
+	TEST_ASSERT_EQUAL(operator_mind.current, operator, "Destroying the drone did not return the operator's mind to their real body.")
+	TEST_ASSERT(!QDELETED(suit), "Destroying the drone destroyed the suit with it.")
 
 	// Now the unrecoverable-body case: if the real body is gone by the time sever() runs, it must not
 	// runtime - the drone's own mind handling takes over instead of a crash.
