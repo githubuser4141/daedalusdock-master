@@ -2,12 +2,14 @@
 #define DISTANT_SOUND_TILES_PER_SECOND 100
 
 /**
- * Loud sounds carry. Past where a sound can normally be heard, listeners out to far_range still hear it: fainter the
- * further off they are, muffled, and echoing off the land around them (or the room they're in), from the direction it
- * came. far_sound, if given, is played for them instead, a recording made at a distance.
+ * Loud sounds carry. Past where a sound can normally be heard, listeners out to far_range still hear it, from the
+ * direction it came: fainter, duller and more echo than shot the further off they are.
+ *
+ * Sounds with baked distant versions (distant_sound_versions.dm, made by tools/distant_sounds) play those: dulled, the
+ * crack softened, with a reverb tail and echoes off the land, and at the edge of hearing a low rolling thump. Others
+ * fall back to far_sound if given, or the sound itself, dulled and echoed with BYOND's own effects.
  *
  * vol is how loud it is heard distant; near_vol is how loud it was played plainly, with playsound().
- * It's all done with BYOND's own sound effects (EAX reverb and echo), no extra sound files needed.
  */
 /proc/playsound_distant(atom/source, soundin, vol, far_range = SOUND_RANGE * 4, far_sound, vary = TRUE, near_vol = vol)
 	var/turf/turf_source = get_turf(source)
@@ -21,7 +23,7 @@
 	for(var/mob/listener as anything in listeners)
 		var/distance = get_dist(listener, turf_source)
 		if(distance > near_range && distance <= far_range)
-			addtimer(CALLBACK(listener, TYPE_PROC_REF(/mob, hear_distant_sound), turf_source, far_sound || soundin, vol, (distance - near_range) / (far_range - near_range), vary), distance / DISTANT_SOUND_TILES_PER_SECOND * (1 SECONDS))
+			addtimer(CALLBACK(listener, TYPE_PROC_REF(/mob, hear_distant_sound), turf_source, soundin, far_sound, vol, (distance - near_range) / (far_range - near_range), vary), distance / DISTANT_SOUND_TILES_PER_SECOND * (1 SECONDS))
 
 #undef DISTANT_SOUND_TILES_PER_SECOND
 
@@ -29,10 +31,15 @@
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
  * limit of hearing it at all.
  */
-/mob/proc/hear_distant_sound(turf/turf_source, soundin, vol, remoteness, vary)
+/mob/proc/hear_distant_sound(turf/turf_source, soundin, far_sound, vol, remoteness, vary)
 	if(!client || !can_hear())
 		return
 	var/turf/ear = get_turf(src)
+	var/baked = distant_version(soundin, remoteness)
+	if(baked)
+		SEND_SOUND(src, make_distant_sound(turf_source, ear, baked, vol, remoteness, vary, TRUE))
+		return
+	soundin = far_sound || soundin
 	SEND_SOUND(src, make_distant_sound(turf_source, ear, soundin, vol, remoteness, vary))
 	// Then its echo off the land: fainter, duller, later the further off, and from somewhere else.
 	var/sound/echo = make_distant_sound(turf_source, ear, soundin, vol * 0.4, min(remoteness + 0.3, 1), vary)
@@ -45,7 +52,13 @@
 	if(listener.client && listener.can_hear())
 		SEND_SOUND(listener, echo)
 
-/proc/make_distant_sound(turf/turf_source, turf/ear, soundin, vol, remoteness, vary)
+/// The baked version of soundin for how far off it's heard: the far one out to halfway, then the one at the edge of hearing.
+/proc/distant_version(soundin, remoteness)
+	var/list/versions = GLOB.distant_sound_versions["[get_sfx(soundin)]"]
+	return versions?[remoteness < 0.5 ? 1 : 2]
+
+/// baked: soundin already has its distance, reverb and echoes in it, and only needs placing.
+/proc/make_distant_sound(turf/turf_source, turf/ear, soundin, vol, remoteness, vary, baked = FALSE)
 	var/sound/far = sound(get_sfx(soundin))
 	far.channel = SSsounds.random_available_channel()
 	far.volume = vol * (1 - 0.5 * remoteness)
@@ -55,6 +68,8 @@
 	far.x = turf_source.x - ear.x
 	far.z = turf_source.y - ear.y
 	far.falloff = get_dist(ear, turf_source) + 1
+	if(baked)
+		return far
 	var/area/ear_area = get_area(ear)
 	var/indoors = !ear_area.outdoors
 	// The further off, the less of it arrives straight and the more as echo, and the duller both are. Walls muffle it more.
@@ -119,4 +134,12 @@
 	var/obj/projectile/beam/ms13/laser = /obj/projectile/beam/ms13
 	if(!shooter.default_fire_sound() || shooter.default_fire_sound() != initial(laser.fallback_fire_sound))
 		Fail("A mob with no fire sound of its own didn't fall back to its laser's.")
+	var/near_version = distant_version('mojave/sound/ms13weapons/hunting_rifle.ogg', 0.2)
+	var/edge_version = distant_version('mojave/sound/ms13weapons/hunting_rifle.ogg', 0.9)
+	if(!isfile(near_version) || !isfile(edge_version) || near_version == edge_version)
+		Fail("A gunshot heard far off didn't play its baked versions, one for far and one for the edge of hearing.")
+	for(var/obj/item/gun/gun_type as anything in subtypesof(/obj/item/gun))
+		var/fire_sound = initial(gun_type.fire_sound)
+		if(fire_sound && findtext("[gun_type]", "/ms13") && !GLOB.distant_sound_versions["[fire_sound]"])
+			Fail("[gun_type]'s fire sound has no distant versions: run tools/distant_sounds/make_distant_sounds.py.")
 #endif
