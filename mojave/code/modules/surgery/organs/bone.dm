@@ -114,33 +114,30 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 		return 1
 	return (total / count) / 100
 
-/// Fragmenting is a per-hit event, not a tick effect - hooked on the damage-application proc itself.
-/// bridging_break is set while DD's own break_bones() is driving this organ to full damage (see
-/// apply_bone_break() in code/modules/surgery/bodyparts/injuries.dm): that single synthetic 0 -> maxHealth
-/// jump isn't a real hit, and letting it fragment meant every engine-side break also dumped the maximum
-/// four fragments into the muscle and vessel sharing the limb, on top of the break's own effects.
+/// What a hit puts into the bone past what it can take splinters out into whatever else shares the limb. A bone
+/// that can take the hit just takes it, so nothing is added. bridging_break is set while DD's own break_bones()
+/// drives this organ to full damage (apply_bone_break(), injuries.dm), which isn't a hit at all.
 /obj/item/organ/bone/applyOrganDamage(damage_amount, maximum = maxHealth, silent, updating_health = TRUE, cause_of_death = "Organ failure")
 	. = ..()
-	if(. > 0 && !bridging_break)
-		try_fragment(.)
+	if(damage_amount > 0 && !bridging_break)
+		splinter(damage_amount - max(., 0))
 	if(ownerlimb)
 		ownerlimb.refresh_muscle_effects()
 
-/// Sends a few chunks of bone into whatever else shares this limb. Scales with how hard THIS hit was, not
-/// cumulative damage - a single solid hit chips fragments loose, a string of small ones doesn't.
-/obj/item/organ/bone/proc/try_fragment(hit_damage)
-	if(hit_damage < MS13_BONE_FRAGMENT_MIN_DAMAGE || !ownerlimb)
+/obj/item/organ/bone/proc/splinter(amount)
+	if(amount <= 0 || !ownerlimb)
 		return
-	var/fragment_count = min(MS13_BONE_FRAGMENT_MAX_COUNT, round((hit_damage - MS13_BONE_FRAGMENT_MIN_DAMAGE) * MS13_BONE_FRAGMENT_PER_DAMAGE) + 1)
-	var/list/neighbors = ownerlimb.contained_organs - src
+	var/list/neighbors = list()
+	for(var/obj/item/organ/O in ownerlimb.contained_organs)
+		if(O != src && !O.cosmetic_only)
+			neighbors += O
 	if(!length(neighbors))
 		return
-	for(var/i in 1 to fragment_count)
-		if(!prob(MS13_BONE_FRAGMENT_CHANCE))
-			continue
+	var/count = min(MS13_BONE_FRAGMENT_MAX_COUNT, ceil(amount / MS13_BONE_FRAGMENT_DAMAGE))
+	for(var/i in 1 to count)
 		var/obj/item/organ/victim = pick(neighbors)
-		victim.applyOrganDamage(MS13_BONE_FRAGMENT_DAMAGE)
-		ms13_medical_debug(owner, "Bone fragment hit [victim.name] for [MS13_BONE_FRAGMENT_DAMAGE]")
+		victim.applyOrganDamage(amount / count)
+		ms13_medical_debug(owner, "Bone splinter hit [victim.name] for [round(amount / count, 0.1)]")
 
 /**
  * A break is self-contained - local blood loss only (see apply_organ_bleed(), vessel_local_blood.dm), not a
@@ -190,12 +187,22 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 	gone_fraction = MS13_BONE_ARMOR_GONE_FRACTION
 	absorb_fraction = MS13_BONE_ARMOR_ABSORB_FRACTION
 
-/// Below MS13_BONE_ARMOR_MIN_DAMAGE, the hit is too weak to so much as scratch the bone - so the bone stops
-/// it cold instead of the normal gone/absorbed/passthrough split, and it doesn't even register as organ damage.
-/datum/natural_armor_layer/bone/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone)
-	if(damage_amount < MS13_BONE_ARMOR_MIN_DAMAGE)
-		return 0
-	return ..()
+/**
+ * Below MS13_BONE_ARMOR_MIN_DAMAGE a hit only reaches the bone if it cut or stabbed its way through what's over
+ * it, and then the bone stops it: all of it goes into the bone. A weak blunt blow never gets that deep, and
+ * lands on the limb whole.
+ */
+/datum/natural_armor_layer/bone/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone, sharpness)
+	if(damage_amount >= MS13_BONE_ARMOR_MIN_DAMAGE)
+		return ..()
+	if(!sharpness)
+		return damage_amount
+	var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : H.get_bodypart(deprecise_zone(def_zone))
+	var/obj/item/organ/bone/B = hit_part && get_organ(H, hit_part, damagetype)
+	if(!B || (B.organ_flags & ORGAN_DEAD))
+		return damage_amount
+	B.applyOrganDamage(damage_amount, updating_health = FALSE)
+	return 0
 
 /datum/natural_armor_layer/bone/get_organ(mob/living/carbon/human/H, obj/item/bodypart/hit_part, damagetype)
 	if(damagetype != BRUTE)

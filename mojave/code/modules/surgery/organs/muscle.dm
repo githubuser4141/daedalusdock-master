@@ -116,7 +116,7 @@ TYPEINFO_DEF(/obj/item/organ/muscle)
 		return
 	if(failing && owner)
 		add_myoglobin(MS13_MUSCLE_RUPTURE_WASTE_BURST)
-		to_chat(owner, span_userdanger("Your [zone == BODY_ZONE_L_ARM || zone == BODY_ZONE_R_ARM ? "arm" : "leg"] floods with the poison of dead muscle tissue!"))
+		to_chat(owner, span_userdanger("Your [ownerlimb?.plaintext_zone || "body"] floods with the poison of dead muscle tissue!"))
 		ms13_medical_debug(owner, "Muscle [name] destroyed - myoglobin burst +[MS13_MUSCLE_RUPTURE_WASTE_BURST]")
 	if(ownerlimb)
 		ownerlimb.refresh_muscle_effects()

@@ -19,7 +19,7 @@
 
 /// Splits damage_amount three ways (gone / to the organ / passthrough, scaled by the organ's own remaining
 /// health) and returns what's left to pass to the next layer or the person.
-/datum/natural_armor_layer/proc/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone)
+/datum/natural_armor_layer/proc/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone, sharpness)
 	var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : H.get_bodypart(deprecise_zone(def_zone))
 	if(!hit_part)
 		return damage_amount
@@ -39,13 +39,13 @@
 GLOBAL_LIST_INIT(natural_armor_layers, list(new /datum/natural_armor_layer/muscle(), new /datum/natural_armor_layer/bone()))
 
 /// Base stub - safe no-op for any mob without natural armor layers.
-/mob/living/proc/apply_natural_armor_layers(damage_amount, damagetype, def_zone)
+/mob/living/proc/apply_natural_armor_layers(damage_amount, damagetype, def_zone, sharpness)
 	return damage_amount
 
-/mob/living/carbon/human/apply_natural_armor_layers(damage_amount, damagetype, def_zone)
+/mob/living/carbon/human/apply_natural_armor_layers(damage_amount, damagetype, def_zone, sharpness)
 	// Bullets already split their damage between tissue and limb (bullet_penetration.dm).
 	if(resolving_bullet_hit)
 		return damage_amount
 	for(var/datum/natural_armor_layer/layer as anything in GLOB.natural_armor_layers)
-		damage_amount = layer.absorb(src, damage_amount, damagetype, def_zone)
+		damage_amount = layer.absorb(src, damage_amount, damagetype, def_zone, sharpness)
 	return damage_amount

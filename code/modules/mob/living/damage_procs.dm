@@ -54,7 +54,7 @@
 		// bone) - deliberately NOT gated on ignore_subarmor, since that flag is about external protection
 		// (e.g. a destroyed power armor component) and the body's own tissue is still there either way.
 		// Base stub always returns damage_amount unchanged for mobs without any registered layers.
-		damage_amount = apply_natural_armor_layers(damage_amount, damagetype, def_zone)
+		damage_amount = apply_natural_armor_layers(damage_amount, damagetype, def_zone, sharpness)
 
 	if(damage_amount <= 0)
 		return 0

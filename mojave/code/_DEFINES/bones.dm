@@ -20,14 +20,10 @@
 /// bone resists better.
 #define MS13_BONE_EXTERNAL_DAMAGE_MODIFIER 0.3
 
-/// Minimum single-hit damage to bone before it can fragment at all - a scrape doesn't chip bone.
-#define MS13_BONE_FRAGMENT_MIN_DAMAGE 8
-/// Fragment count scales with (damage - min) times this, capped at MS13_BONE_FRAGMENT_MAX_COUNT.
-#define MS13_BONE_FRAGMENT_PER_DAMAGE 0.4
-#define MS13_BONE_FRAGMENT_MAX_COUNT 4
-/// Damage each fragment has a chance to deal to another organ sharing the limb.
+/// A hit past what a bone can take splinters into one piece per this much of the excess, up to
+/// MS13_BONE_FRAGMENT_MAX_COUNT, each driven into another organ in the limb.
 #define MS13_BONE_FRAGMENT_DAMAGE 3
-#define MS13_BONE_FRAGMENT_CHANCE 50
+#define MS13_BONE_FRAGMENT_MAX_COUNT 4
 
 /// One-time local (not global - "self-sealing", see bone.dm's set_organ_dead()) blood loss on a break.
 #define MS13_BONE_BREAK_LOCAL_BLEED 15

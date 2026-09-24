@@ -160,33 +160,36 @@ TYPEINFO_DEF(/obj/item/organ/vessel)
  * weighted by that vessel type's own vessel_size (see the subtypes above) - losing the aorta (size 3) should
  * hurt whole-body circulation much more than losing a wrist's worth of vessel (size 1).
  *
- * AI EDIT: this weight list has to mirror each subtype's own vessel_size initial() value above - can't just
- * read V.vessel_size here, because a MISSING vessel (getorganslot() returns null) still needs to count
- * against total_weight with its normal size, not be skipped from the average entirely (see the loop below).
+ * The weights mirror each subtype's vessel_size above: a vessel missing from a limb that's still attached counts
+ * against total_weight at its normal size. A limb that's gone altogether doesn't count at all - an amputee's
+ * stump doesn't starve the rest of the body.
  */
 /mob/living/carbon/human/proc/get_vessel_circulation_factor()
-	var/static/list/vessel_slot_weights = list(
-		(ORGAN_SLOT_VESSEL_HEAD) = 2,
-		(ORGAN_SLOT_VESSEL_CHEST) = 3,
-		(ORGAN_SLOT_VESSEL_L_ARM) = 1,
-		(ORGAN_SLOT_VESSEL_R_ARM) = 1,
-		(ORGAN_SLOT_VESSEL_L_LEG) = 1.5,
-		(ORGAN_SLOT_VESSEL_R_LEG) = 1.5,
+	var/static/list/vessel_zone_weights = list(
+		(BODY_ZONE_HEAD) = 2,
+		(BODY_ZONE_CHEST) = 3,
+		(BODY_ZONE_L_ARM) = 1,
+		(BODY_ZONE_R_ARM) = 1,
+		(BODY_ZONE_L_LEG) = 1.5,
+		(BODY_ZONE_R_LEG) = 1.5,
 	)
 	var/total_weight = 0
 	var/prop_sum = 0
-	for(var/slot in vessel_slot_weights)
-		var/weight = vessel_slot_weights[slot]
+	for(var/zone in vessel_zone_weights)
+		var/obj/item/bodypart/limb = get_bodypart(zone)
+		if(!limb)
+			continue
+		var/weight = vessel_zone_weights[zone]
 		total_weight += weight
-		var/obj/item/organ/vessel/V = getorganslot(slot)
-		if(!V || !V.ownerlimb || (V.organ_flags & ORGAN_DEAD))
+		var/obj/item/organ/vessel/V = locate() in limb.contained_organs
+		if(!V || (V.organ_flags & ORGAN_DEAD))
 			continue // missing or ruptured - contributes nothing to circulation
 		var/damage_factor = 1 - (V.damage / V.maxHealth)
 		// AI EDIT: also folds in local_blood_volume (mojave/code/modules/surgery/organs/vessel_local_blood.dm) -
 		// a limb can be locally blood-starved (drained faster than it's regenerating) even before its vessel
 		// takes enough damage to show up in damage_factor, so this keeps the two in sync instead of only one
 		// of them mattering.
-		var/local_blood_factor = V.ownerlimb.local_blood_volume / V.ownerlimb.local_blood_volume_max
+		var/local_blood_factor = limb.local_blood_volume / limb.local_blood_volume_max
 		prop_sum += weight * damage_factor * local_blood_factor
 	if(!total_weight)
 		return 1
