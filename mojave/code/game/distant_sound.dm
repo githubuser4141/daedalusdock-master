@@ -1,3 +1,6 @@
+/// How fast sound carries. Faster than real sound over these distances, where the true delay would be too slight to notice.
+#define DISTANT_SOUND_TILES_PER_SECOND 100
+
 /**
  * Loud sounds carry. Past where a sound can normally be heard, listeners out to far_range still hear it: fainter the
  * further off they are, muffled, and echoing off the land around them (or the room they're in), from the direction it
@@ -18,7 +21,9 @@
 	for(var/mob/listener as anything in listeners)
 		var/distance = get_dist(listener, turf_source)
 		if(distance > near_range && distance <= far_range)
-			listener.hear_distant_sound(turf_source, far_sound || soundin, vol, (distance - near_range) / (far_range - near_range), vary)
+			addtimer(CALLBACK(listener, TYPE_PROC_REF(/mob, hear_distant_sound), turf_source, far_sound || soundin, vol, (distance - near_range) / (far_range - near_range), vary), distance / DISTANT_SOUND_TILES_PER_SECOND * (1 SECONDS))
+
+#undef DISTANT_SOUND_TILES_PER_SECOND
 
 /**
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
