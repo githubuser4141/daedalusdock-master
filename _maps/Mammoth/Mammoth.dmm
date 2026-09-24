@@ -25047,6 +25047,10 @@
 /mob/living/basic/ms13/ghoul,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"nZO" = (
+/obj/item/stack/sheet/ms13/wood/scrap_wood,
+/turf/open/floor/plating/ms13/ground/road,
+/area/ms13)
 "nZP" = (
 /obj/structure/chair/office/ms13/red/broken{
 	dir = 4
@@ -58560,7 +58564,7 @@ hQt
 xZD
 xBj
 xBj
-ykT
+nZO
 ykT
 ykT
 ykT
