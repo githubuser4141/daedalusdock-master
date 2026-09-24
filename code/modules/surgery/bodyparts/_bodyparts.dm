@@ -1075,7 +1075,8 @@
 
 	. = bandage
 	UnregisterSignal(bandage, COMSIG_PARENT_QDELETING)
-	if(bandage.loc == src)
+	// A bandage being deleted (with its limb, say) can't be moved anywhere.
+	if(bandage.loc == src && !QDELING(bandage))
 		bandage.forceMove(drop_location())
 	bandage = null
 
