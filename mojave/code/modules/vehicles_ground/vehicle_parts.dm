@@ -806,6 +806,8 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	var/weapon_name = "unarmed mount"
 	var/fire_sound
 	var/fire_sound_volume = 75
+	/// How far off it's still heard (playsound_distant()).
+	var/far_fire_range = SOUND_RANGE * 5
 	var/fire_delay = 1 SECONDS
 	var/max_ammo = 0
 	/// Rounds loaded, of every kind.
@@ -945,7 +947,10 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 		loaded_rounds -= round_type
 		selected_round = length(loaded_rounds) ? loaded_rounds[1] : null
 	next_fire_time = world.time + fire_delay
-	playsound(src, fire_sound, fire_sound_volume, TRUE)
+	var/obj/projectile/first_shot = shots[1]
+	var/shot_sound = fire_sound || first_shot.fallback_fire_sound
+	playsound(src, shot_sound, fire_sound_volume, TRUE)
+	playsound_distant(src, shot_sound, fire_sound_volume * 0.7, far_fire_range, near_vol = fire_sound_volume)
 	for(var/obj/projectile/shot as anything in shots)
 		shot.fire()
 	return TRUE
@@ -963,6 +968,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 
 /obj/structure/ms13_vehicle_part/turret/tank
 	shot_power_cost = 50
+	far_fire_range = SOUND_RANGE * 8
 
 /obj/structure/ms13_vehicle_part/turret/autocannon/btr80
 	weapon_name = "Shipunov 2A72 30mm autocannon"
