@@ -143,6 +143,8 @@ code/modules/spells/spell_types/self/lightning.dm,
 code/modules/surgery/organs/stomach/stomach_ethereal.dm,
 code/modules/surgery/organs/tongue.dm,
 code/modules/wiremod/shell/shell_items.dm,
+code/modules/unit_tests/combat/combat_power_armor_remote.dm,
+code/modules/mob/inventory.dm,
 
 
 */
