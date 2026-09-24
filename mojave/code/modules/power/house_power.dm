@@ -92,6 +92,21 @@ SUBSYSTEM_DEF(ms13_house_power)
 				return FALSE
 	return TRUE
 
+/// The building seed stands in, if it's one a utility box could give its own power: enclosed, of a sensible size, and
+/// all in one area. Null otherwise.
+/datum/controller/subsystem/ms13_house_power/proc/room_at(turf/seed)
+	if(!is_building_floor(seed))
+		return null
+	var/list/building = find_building(seed, list())
+	if(length(building) < HOUSE_POWER_MIN_SIZE || length(building) > HOUSE_POWER_MAX_SIZE)
+		return null
+	var/list/inside = list()
+	for(var/turf/tile as anything in building)
+		if(tile.loc != seed.loc)
+			return null
+		inside[tile] = TRUE
+	return is_enclosed(inside) ? building : null
+
 /datum/controller/subsystem/ms13_house_power/proc/try_power(list/building)
 	if(length(building) < HOUSE_POWER_MIN_SIZE || length(building) > HOUSE_POWER_MAX_SIZE)
 		return

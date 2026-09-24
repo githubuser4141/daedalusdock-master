@@ -136,3 +136,58 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 /// A fusebox that just works, with no generator or cabling.
 /obj/machinery/power/apc/ms13/always_on
 	always_powered = TRUE
+
+/// A utility box, ready to screw to a wall. Put up in a room that doesn't need power yet, it gives the room power of its
+/// own, if the room is a proper one: floored, walled in and more than a closet.
+/obj/item/wallframe/ms13_utility_box
+	name = "utility box frame"
+	desc = "A fusebox, breaker and cover, ready to screw to a wall. Put it up in a floored, walled-in room, wire a cable to the terminal under it, and the room runs off whatever feeds that cable."
+	icon_state = "apc"
+	result_path = /obj/machinery/power/apc/ms13
+
+/obj/item/wallframe/ms13_utility_box/try_build(turf/on_wall, mob/user)
+	if(!..())
+		return FALSE
+	var/area/place = get_area(user)
+	if(place.apc)
+		to_chat(user, span_warning("[place] already has a utility box."))
+		return FALSE
+	if(!place.requires_power && !SSms13_house_power.room_at(get_turf(user)))
+		to_chat(user, span_warning("[src] needs a proper room: a floor, walls and doors all round, and more than a few steps across."))
+		return FALSE
+	return TRUE
+
+/obj/item/wallframe/ms13_utility_box/attach(turf/on_wall, mob/user)
+	var/area/place = get_area(user)
+	if(!place.requires_power)
+		SSms13_house_power.make_house_area(SSms13_house_power.room_at(get_turf(user)))
+	return ..()
+
+/// Built whole: electronics in, cover shut, terminal under it.
+/obj/item/wallframe/ms13_utility_box/after_attach(obj/machinery/power/apc/ms13/box)
+	. = ..()
+	box.name = initial(box.name)
+	box.has_electronics = APC_ELECTRONICS_SECURED
+	box.opened = APC_COVER_CLOSED
+	box.operating = TRUE
+	box.set_machine_stat(box.machine_stat & ~MAINT)
+	box.area = get_area(box)
+	box.area.apc = box
+	box.make_terminal()
+	box.terminal.connect_to_network()
+	box.update_appearance()
+	box.update()
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_utility_box_frame
+	name = "POWER: A Crafted Utility Box Goes Up Whole"
+
+/datum/unit_test/ms13_utility_box_frame/Run()
+	var/obj/item/wallframe/ms13_utility_box/frame = allocate(/obj/item/wallframe/ms13_utility_box)
+	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, run_loc_floor_bottom_left, NORTH, TRUE)
+	frame.after_attach(box)
+	if(!box.operating || (box.machine_stat & MAINT) || box.opened != APC_COVER_CLOSED || box.has_electronics != APC_ELECTRONICS_SECURED)
+		Fail("A crafted utility box went up unfinished.")
+	if(!box.terminal || box.area?.apc != box)
+		Fail("A crafted utility box had no terminal, or its area didn't know it.")
+#endif

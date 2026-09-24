@@ -44,6 +44,8 @@
 	var/wear_rate = 0.002
 	/// Condition a single weld restores.
 	var/repair_amount = 25
+	/// Colour of its glow while running; null for none.
+	var/running_light = "#9fd0ff"
 	var/datum/powernet/powernet
 	var/datum/looping_sound/generator/soundloop
 
@@ -146,7 +148,8 @@
 	update_appearance()
 	if(generator_state == GENERATOR_ON)
 		soundloop?.start()
-		set_light(2, 1, 0.6, l_color = "#9fd0ff", l_on = TRUE)
+		if(running_light)
+			set_light(2, 1, 0.6, l_color = running_light, l_on = TRUE)
 	else
 		soundloop?.stop()
 		set_light(l_on = FALSE)
@@ -187,6 +190,46 @@
 	if(generator_state == GENERATOR_BROKEN)
 		set_generator_state(GENERATOR_OFF) // repaired, but still needs to be switched on
 	return TRUE
+
+/// A portable petrol generator: weaker than a fusion generator, and it drinks fuel poured in from a can.
+/obj/machinery/ms13/fusion_generator/petrol
+	name = "petrol generator"
+	desc = "A portable petrol generator in a yellow frame. Enough for a room's lights and a machine or two, while it's kept fed. Pour fuel in from a can."
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/machinery.dmi'
+	icon_state = "f_active_backup_generator"
+	anchored = FALSE
+	max_integrity = 300
+	flags_1 = NONE
+	generator_state = GENERATOR_OFF
+	power_gen = 2000
+	fuel = 0
+	max_fuel = 40 MINUTES / 10
+	wear_rate = 0.004
+	running_light = null
+	/// Seconds of running one unit of fuel buys.
+	var/seconds_per_unit = 60
+
+/obj/machinery/ms13/fusion_generator/petrol/update_icon_state()
+	. = ..()
+	color = generator_state == GENERATOR_BROKEN ? "#6a5050" : null
+
+/obj/machinery/ms13/fusion_generator/petrol/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
+	var/available = tool.reagents?.get_reagent_amount(/datum/reagent/fuel)
+	if(!available)
+		return NONE
+	var/poured = min(available, (max_fuel - fuel) / seconds_per_unit)
+	if(poured < 1)
+		to_chat(user, span_warning("[src]'s tank is already full."))
+		return ITEM_INTERACT_BLOCKING
+	tool.reagents.remove_reagent(/datum/reagent/fuel, poured)
+	fuel += poured * seconds_per_unit
+	user.visible_message(span_notice("[user] fills [src] from [tool]."), span_notice("You pour [round(poured)] units of fuel into [src]."))
+	playsound(src, 'sound/effects/refill.ogg', 50, TRUE)
+	return ITEM_INTERACT_SUCCESS
+
+/obj/machinery/ms13/fusion_generator/petrol/wrench_act(mob/living/user, obj/item/tool)
+	default_unfasten_wrench(user, tool)
+	return ITEM_INTERACT_SUCCESS
 
 #undef GENERATOR_ON
 #undef GENERATOR_OFF
