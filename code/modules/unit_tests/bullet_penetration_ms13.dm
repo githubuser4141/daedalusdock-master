@@ -56,7 +56,8 @@
 	var/body_taken = (victim.getBruteLoss() - brute_before) + (organ_after - organ_before)
 	var/leftover = result == BULLET_ACT_FORCE_PIERCE ? bullet.damage : 0
 	TEST_ASSERT(body_taken > 0, "The body took no damage.")
-	TEST_ASSERT(body_taken + leftover <= reaching_body + 0.01, "Body damage ([body_taken]) plus the round's leftover ([leftover]) exceeded the [reaching_body] that reached the body.")
+	// Every limb and organ rounds its damage to DAMAGE_PRECISION (0.1), so each one it lands in can add up to 0.05.
+	TEST_ASSERT(body_taken + leftover <= reaching_body + 0.25, "Body damage ([body_taken]) plus the round's leftover ([leftover]) exceeded the [reaching_body] that reached the body.")
 
 /// A round that bounces off armor does less to it than one that punches through.
 /datum/unit_test/bullet_barrier_damage_falloff/Run()

@@ -9,7 +9,7 @@
 // mojave/icons/objects/organs/tissue_organs.dmi.
 
 TYPEINFO_DEF(/obj/item/organ/muscle)
-	default_armor = list(BLUNT = 25, PUNCTURE = 25, SLASH = 25, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+	default_armor = list(BLUNT = 25, PUNCTURE = 20, SLASH = 25, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
 
 /obj/item/organ/muscle
 	name = "muscle tissue"
@@ -31,7 +31,10 @@ TYPEINFO_DEF(/obj/item/organ/muscle)
 	/// Last get_performance() value pushed through refresh_muscle_effects(), so on_life() can skip the
 	/// resync when nothing has changed. -1 rather than 0 so the first tick always syncs.
 	var/last_synced_performance = -1
-	bullet_damage_ratio = 0.85
+	// Most of a limb, and the first thing a round meets under the skin. Its PUNCTURE armor is set so a .22 or a
+	// weak 9mm stays in dense muscle while anything heavier gets through, mangled.
+	bullet_hit_chance = 80
+	bullet_depth = BULLET_DEPTH_OUTER
 
 /obj/item/organ/muscle/l_arm
 	name = "left arm muscle"
@@ -57,10 +60,14 @@ TYPEINFO_DEF(/obj/item/organ/muscle)
 
 /// Chest wall muscle - armor (natural_armor.dm) and myoglobin only, no movement/grip output (chest isn't a
 /// grabby or movement limb, so refresh_muscle_effects() naturally skips those parts).
+TYPEINFO_DEF(/obj/item/organ/muscle/chest)
+	default_armor = list(BLUNT = 25, PUNCTURE = 14, SLASH = 25, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+
 /obj/item/organ/muscle/chest
 	name = "chest muscle"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_MUSCLE_CHEST
+	bullet_hit_chance = 60
 
 /// 0-100: own damage ratio times current local blood flow ratio. Always 0 once destroyed.
 /obj/item/organ/muscle/proc/get_performance()

@@ -11,7 +11,7 @@
 	to_chat(recipient, span_notice("[DEBUG] [message]"))
 
 TYPEINFO_DEF(/obj/item/organ/vessel)
-	default_armor = list(BLUNT = 25, PUNCTURE = 10, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25) // famously low slash armor
+	default_armor = list(BLUNT = 25, PUNCTURE = 3, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25) // famously low slash armor
 
 /obj/item/organ/vessel
 	name = "blood vessel"
@@ -32,6 +32,8 @@ TYPEINFO_DEF(/obj/item/organ/vessel)
 	/// below. Scales the one-time rupture burst (set_organ_dead()), the ongoing bleed rate (on_life(),
 	/// vessel_local_blood.dm), and this vessel's weight in get_vessel_circulation_factor() below.
 	var/vessel_size = 1
+	bullet_hit_chance = 8
+	bullet_depth = BULLET_DEPTH_MIDDLE
 
 /**
  * What a damaged-but-not-ruptured vessel contributes to its limb's bleed rate, called from
@@ -96,12 +98,15 @@ TYPEINFO_DEF(/obj/item/organ/vessel)
 	zone = BODY_ZONE_HEAD
 	slot = ORGAN_SLOT_VESSEL_HEAD
 	vessel_size = 2
+	bullet_hit_chance = 10
 
 /obj/item/organ/vessel/chest
 	name = "aorta"
 	zone = BODY_ZONE_CHEST
 	slot = ORGAN_SLOT_VESSEL_CHEST
 	vessel_size = 3
+	bullet_hit_chance = 6
+	bullet_depth = BULLET_DEPTH_INNER
 
 /**
  * DD's own artery-fix tooling (the fix_vein surgery step, anti-coagulant chems, human.dm's full-heal) all

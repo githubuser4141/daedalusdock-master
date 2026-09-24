@@ -5,7 +5,7 @@
 // mojave/icons/objects/organs/tissue_organs.dmi.
 
 TYPEINFO_DEF(/obj/item/organ/bone)
-	default_armor = list(BLUNT = 15, PUNCTURE = 50, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+	default_armor = list(BLUNT = 15, PUNCTURE = 17, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
 
 /obj/item/organ/bone
 	name = "bone"
@@ -26,7 +26,8 @@ TYPEINFO_DEF(/obj/item/organ/bone)
 	/// Set while DD's break_bones()/heal_bones() bridge is syncing this organ to the limb's own bone state,
 	/// so that synthetic damage jump isn't mistaken for a real hit. See applyOrganDamage() below.
 	var/bridging_break = FALSE
-	bullet_damage_ratio = 1.5
+	bullet_hit_chance = 30
+	bullet_depth = BULLET_DEPTH_MIDDLE
 
 /obj/item/organ/bone/l_arm
 	name = "left arm bone"
@@ -56,6 +57,9 @@ TYPEINFO_DEF(/obj/item/organ/bone)
 	icon_state = "right_leg"
 	relative_size = 40
 
+TYPEINFO_DEF(/obj/item/organ/bone/chest)
+	default_armor = list(BLUNT = 15, PUNCTURE = 14, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+
 /obj/item/organ/bone/chest
 	name = "ribcage"
 	desc = "Ribs and spine. Protects the organs behind them. Best left where it is."
@@ -63,9 +67,11 @@ TYPEINFO_DEF(/obj/item/organ/bone)
 	slot = ORGAN_SLOT_BONE_CHEST
 	icon_state = "ribcage"
 	relative_size = 35
+	// Gaps between the ribs.
+	bullet_hit_chance = 40
 
 TYPEINFO_DEF(/obj/item/organ/bone/head)
-	default_armor = list(BLUNT = 15, PUNCTURE = 75, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
+	default_armor = list(BLUNT = 15, PUNCTURE = 17, SLASH = 50, LASER = 50, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25)
 
 /obj/item/organ/bone/head
 	name = "skull"
@@ -75,7 +81,8 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 	icon_state = "skull"
 	external_damage_modifier = MS13_BONE_SKULL_EXTERNAL_DAMAGE_MODIFIER
 	relative_size = 100
-	bullet_damage_ratio = 2
+	// Around nearly everything in the head.
+	bullet_hit_chance = 85
 
 /// 0-100, own damage ratio. Always 0 once destroyed (broken).
 /obj/item/organ/bone/proc/get_stability()

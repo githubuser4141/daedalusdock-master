@@ -245,11 +245,14 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 #define BULLET_INTEGRITYLOSSMULT 1
 #define BULLET_INTEGRITYLOSS_RICOCHET 20 * BULLET_INTEGRITYLOSSMULT
 #define BULLET_INTEGRITYLOSS_FRAGMENT 50 * BULLET_INTEGRITYLOSSMULT
-/// Base integrity cost of hitting an organ (mojave/code/modules/mob/living/carbon/human/
-/// bullet_penetration.dm), scaled by that hit's rigidity - hitting bone costs more integrity than a clean
-/// pass, same idea as ricochet (20) and fragmenting (50) above but lighter, since a body isn't as abrupt a
-/// stop as a wall.
-#define MS13_BULLET_ORGAN_INTEGRITY_LOSS_BASE 15
+/// Integrity a round loses crossing part of a body (bullet_penetration.dm), for each whole share of its energy that
+/// part soaked: dense muscle that takes half a round costs it 30, the same as a ricochet (20) and then some. A round
+/// mangled this way dumps more of what it has left into everything behind.
+#define MS13_BULLET_DEFORM 60
+/// How deep an organ sits, for the order a round crosses them in (bullet_penetration.dm).
+#define BULLET_DEPTH_OUTER 1
+#define BULLET_DEPTH_MIDDLE 2
+#define BULLET_DEPTH_INNER 3
 /// Bullet Malus defines for fragmenting or expanding
 
 
@@ -311,32 +314,13 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 
 #define BULLET_EXPAND_SPEEDMALUS 0.05
 
-/// Mob overpenetration (mojave/code/modules/mob/living/carbon/human/bullet_penetration.dm) - fraction of a
-/// bullet's damage that stays in the body vs continues through as leftover damage, by what internal
-/// structure absorbed the hit. Denser structures transfer MORE, not less - they decelerate/deform the round
-/// instead of letting it pass through. Shares get_own_hardness_ratio() below with wall overpenetration
-/// (wall_integrity.dm) so the same round's construction matters consistently against either.
-#define MS13_BULLET_TRANSFER_BONE 0.85
-#define MS13_BULLET_TRANSFER_ORGAN 0.6
-#define MS13_BULLET_TRANSFER_MUSCLE 0.5
-#define MS13_BULLET_TRANSFER_VESSEL 0.4
-#define MS13_BULLET_TRANSFER_CLEAN 0.3
-/// What every structure's transfer fraction converges toward at low speed - a slow-moving round gets stopped
-/// by almost anything in its path, dense or soft, so the structures stop mattering much. Speed then SPREADS
-/// fractions apart from this point (not a uniform multiplier): a fast round makes bone transfer even MORE
-/// (violent fragmentation) while soft tissue transfers even LESS (clean pass-through) - see
-/// get_bullet_transfer_fraction() for the actual interpolation.
+/// What every living mob that isn't a human body (bullet_penetration.dm) always keeps of a round.
 #define MS13_BULLET_TRANSFER_CONVERGENCE 0.55
-/// Clamp on the spread factor - P.speed is a delay-per-tile (lower = faster), so the ratio used is
-/// initial(P.speed)/P.speed. 1 = exactly the baseline MS13_BULLET_TRANSFER_* fractions above; below 1
-/// compresses every structure toward MS13_BULLET_TRANSFER_CONVERGENCE, above 1 spreads them further apart.
-#define MS13_BULLET_SPEED_SPREAD_MIN 0.4
-#define MS13_BULLET_SPEED_SPREAD_MAX 1.8
 /// The bullet's own construction, from two signals: bulletTipType (shape) and its own armor rating
 /// (bulletArmorType via returnArmor()) - that rating represents the bullet's OWN toughness against
 /// deforming/fragmenting on impact, not its ability to defeat a target's armor. Combined into one
-/// hardness_ratio that DIVIDES the transfer fraction - a tougher round holds together and punches through
-/// more (divides down), one that deforms/fragments easily dumps more energy instead (divides up, i.e. < 1).
+/// hardness_ratio that scales its penetration power - a tougher round holds together and punches through
+/// more, one that deforms/fragments easily (< 1) dumps more of its energy into whatever it hits.
 GLOBAL_LIST_INIT(bulletTipHardness, list(
 	"[BULLET_SHARP]" = 1.1,
 	"[BULLET_ROUNDED]" = 0.8,
@@ -352,10 +336,11 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 #define MS13_BULLET_HARDNESS_BASELINE 50
 #define MS13_BULLET_HARDNESS_MIN 0.5
 #define MS13_BULLET_HARDNESS_MAX 2.7
-/// Splash: fraction of transferred_amount up for grabs by nearby organs (carved out of, not added to, the
-/// struck organ's own share), and a multiplier on bullet_cross_section for the per-organ splash chance.
+/// Splash: share of what an organ soaks that bursts out into each nearby organ off the round's path (taken out of
+/// the organ's own damage, never added to it), and the chance of that, as a share of the nearby organ's own
+/// bullet_hit_chance.
 #define MS13_BULLET_SPLASH_SHARE 0.15
-#define MS13_BULLET_SPLASH_CHANCE_MULT 60
+#define MS13_BULLET_SPLASH_CHANCE_MULT 0.6
 /// Below this much leftover damage, the bullet just stops - not worth continuing as an overpenetration hit.
 #define MS13_BULLET_OVERPEN_MIN_REMAINING 10
 
@@ -371,7 +356,7 @@ GLOBAL_LIST_INIT(bulletTipHardness, list(
 #define MS13_BULLET_FLATTEN_FALLOFF 2
 /// A barrier always takes at least this share of a round that passes through it.
 #define MS13_WALL_BULLET_TRANSFER_MIN 0.1
-/// Share of the damage a body keeps that goes into the struck organ rather than the limb as a whole.
+/// Share of what an organ soaks from a round that it keeps as its own damage; the wound channel around it takes the rest.
 #define MS13_BULLET_ORGAN_SHARE 0.5
 /// Share of a round a glancing hit leaves in the barrier it bounces off.
 #define MS13_BULLET_RICOCHET_LOSS 0.2
@@ -423,6 +408,10 @@ TYPEINFO_DEF(/obj/projectile)
 	/// the fragmentTowards() call in projectile.dm's Impact()). Deliberately separate from armor_penetration:
 	/// an AP round trades size for penetration, so this can't be inferred from the round's own armor rating.
 	var/bullet_mass = 3
+	/// Stops in a body outright, all of it on the limb it hit, instead of taking the path through it
+	/// (bullet_penetration.dm): no organs, no deforming, far cheaper. For rounds that come in numbers, where the
+	/// detail's lost anyway.
+	var/simple_bullet = FALSE
 
 /// The bullet's own toughness against deforming/fragmenting on impact - shared by the mob overpenetration
 /// system (bullet_penetration.dm) and wall overpenetration (wall_integrity.dm) so the same round behaves
@@ -666,6 +655,7 @@ TYPEINFO_DEF(/obj/projectile)
 		// could too, exponentially. "no fragmentation of the fragmentation" per this file's own
 		// bulletStandardFragmentAngles comment - now actually enforced.
 		projectile.canFragment = FALSE
+		projectile.simple_bullet = TRUE
 		projectile.preparePixelProjectile(get_turf_in_angle(fragmentAngle, lastHit, 2), src)
 		projectile.adjustSpeed(-BULLET_FRAGMENT_SPEEDMALUS)
 		projectile.adjustIntegrity(-BULLET_INTEGRITYLOSS_FRAGMENT)

@@ -1,161 +1,210 @@
-// Bullet overpenetration: a shot doesn't dump its whole damage budget into the first person it hits - only
-// part of it, depending on what internal structure is in its path and how fast it's going. The rest
-// continues through as leftover damage on the same projectile, via DD's real BULLET_ACT_FORCE_PIERCE
-// mechanic (process_hit(), projectile.dm) - reused as-is, see human_defense.dm's bullet_act() for the split.
+// Bullets through a body. A round crosses the limb's own soft tissue, then whichever organs its path happens
+// to cross, shallow to deep (bullet_depth), and each soaks a share of the energy that reaches it: its armor against
+// the round, through the same stopping-power maths as walls and plating (get_bullet_stopping_power(), bullet_math.dm),
+// set against the round's remaining power. Soaking energy deforms the round, so everything after it soaks a bigger
+// share of what's left. What an organ soaks isn't lost the way a steel plate sheds it: it goes into the organ and the
+// wound channel around it. Whatever gets through all of it flies on, through DD's own BULLET_ACT_FORCE_PIERCE
+// (penetrating_hit(), bullet_math.dm).
 //
-// Strict conservation: nothing here ever adds damage, only redistributes a fixed budget - the transferred
-// amount, the primary organ's share of it, and any splash carved out of that share, always sum back to
-// exactly what was transferred. Denser structures (bone) transfer more of the budget at baseline, but speed
-// and the bullet's own construction can push that either way - see get_bullet_transfer_fraction().
-//
-// Cross-section values below are placeholder-sensible, not simulated - see bullet_math.dm's TODO for
-// eventually unifying this with the wall penetration math instead of a separate formula.
+// Nothing adds damage, and nothing stops a round outright. A round stays in only when it has too little left to get
+// out (MS13_BULLET_OVERPEN_MIN_REMAINING), and then what's left goes into the last thing it reached.
 
-/// Cross-section coverage, centralized here for one-stop tuning (var-only reopens, not proc redeclarations -
-/// safe to spread a type's vars across files, unlike a proc body). Limb bone/muscle/vessel default here;
-/// chest/head-specific organs (including the head/chest bone and chest muscle subtypes) override below.
-/obj/item/organ/bone
-	bullet_cross_section = 0.15
-/obj/item/organ/bone/head
-	bullet_cross_section = 0.2
-/obj/item/organ/muscle
-	bullet_cross_section = 0.45
-/obj/item/organ/muscle/chest
-	bullet_cross_section = 0.2
-/obj/item/organ/vessel
-	bullet_cross_section = 0.03
+/obj/item/organ
+	/// Percent chance a round through this organ's limb crosses it.
+	var/bullet_hit_chance = 0
+	/// How deep it sits (BULLET_DEPTH_*). A round crosses shallower organs first.
+	var/bullet_depth = BULLET_DEPTH_INNER
 
-/// Real cross-section coverage for DD's own chest/head organs.
-/obj/item/organ/heart
-	bullet_cross_section = 0.1
-/obj/item/organ/lungs
-	bullet_cross_section = 0.25
-/obj/item/organ/liver
-	bullet_cross_section = 0.08
-/obj/item/organ/kidneys
-	bullet_cross_section = 0.05
-/obj/item/organ/stomach
-	bullet_cross_section = 0.08
+/// How much of a round's power this organ soaks: its armor, and for muscle and bone its owner's Strength
+/// (get_strength_density(), muscle.dm).
+/obj/item/organ/proc/get_bullet_soak_power(obj/projectile/P)
+	return get_bullet_stopping_power(P) * get_strength_density()
+
+/obj/item/bodypart
+	/// Skin, fat and connective tissue, crossed by every round through the limb before any organ: an armor rating
+	/// through the same maths as organ armor. Kept off the limb's own armor, which already guards it from every hit.
+	var/soft_tissue_armor = 4
+
+/obj/item/bodypart/chest
+	soft_tissue_armor = 5
+
+/obj/item/bodypart/head
+	soft_tissue_armor = 3
+
+// DD's own chest and head organs. Mojave's tissue organs set theirs in muscle.dm, bone.dm and vessel.dm. Organ armor
+// is only read by bullets, so PUNCTURE is how much of a round each soaks.
+
+TYPEINFO_DEF(/obj/item/organ/brain)
+	default_armor = list(BLUNT = 10, PUNCTURE = 7, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
 /obj/item/organ/brain
-	bullet_cross_section = 0.55
+	bullet_hit_chance = 70
+	bullet_depth = BULLET_DEPTH_INNER
+
+TYPEINFO_DEF(/obj/item/organ/eyes)
+	default_armor = list(BLUNT = 10, PUNCTURE = 2, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
 /obj/item/organ/eyes
-	bullet_cross_section = 0.02
+	bullet_hit_chance = 5
+	bullet_depth = BULLET_DEPTH_MIDDLE
 
-/// How much of the transferred amount a hit on this organ type claims per unit of "rigidity" - reused for
-/// both the primary struck organ and any splash targets, so "armor" consistently means MORE damage taken,
-/// not less (deliberately not code/modules/surgery/organs/_organ.dm's external_damage_modifier, which means
-/// the opposite for the organ's own general damage resistance).
-/mob/living/carbon/human/proc/get_organ_bullet_rigidity(obj/item/organ/O)
-	if(istype(O, /obj/item/organ/bone))
-		return MS13_BULLET_TRANSFER_BONE
-	if(istype(O, /obj/item/organ/vessel))
-		return MS13_BULLET_TRANSFER_VESSEL
-	if(istype(O, /obj/item/organ/muscle))
-		return MS13_BULLET_TRANSFER_MUSCLE
-	return MS13_BULLET_TRANSFER_ORGAN
+/datum/typeinfo/obj/item/organ/lungs
+	default_armor = list(BLUNT = 10, PUNCTURE = 3, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
 
-/**
- * Picks what the shot's path crosses (weighted by bullet_cross_section, remainder is a clean pass through
- * generic tissue), applies organ-level consequences (primary hit + any splash, carved out of the same
- * transferred_amount - never on top of it), and returns the transfer fraction for the caller to split
- * P.damage with. See human_defense.dm's bullet_act() for how the split/pass-through actually happens.
- */
+/obj/item/organ/lungs
+	bullet_hit_chance = 50
+	bullet_depth = BULLET_DEPTH_INNER
+
+/datum/typeinfo/obj/item/organ/heart
+	default_armor = list(BLUNT = 10, PUNCTURE = 11, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
+/obj/item/organ/heart
+	bullet_hit_chance = 15
+	bullet_depth = BULLET_DEPTH_INNER
+
+TYPEINFO_DEF(/obj/item/organ/liver)
+	default_armor = list(BLUNT = 10, PUNCTURE = 10, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
+/obj/item/organ/liver
+	bullet_hit_chance = 12
+	bullet_depth = BULLET_DEPTH_INNER
+
+TYPEINFO_DEF(/obj/item/organ/stomach)
+	default_armor = list(BLUNT = 10, PUNCTURE = 6, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
+/obj/item/organ/stomach
+	bullet_hit_chance = 10
+	bullet_depth = BULLET_DEPTH_INNER
+
+TYPEINFO_DEF(/obj/item/organ/kidneys)
+	default_armor = list(BLUNT = 10, PUNCTURE = 9, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 10, ACID = 10)
+
+/obj/item/organ/kidneys
+	bullet_hit_chance = 6
+	bullet_depth = BULLET_DEPTH_INNER
+
+/proc/cmp_organ_bullet_depth(obj/item/organ/a, obj/item/organ/b)
+	return a.bullet_depth - b.bullet_depth
+
 /mob/living/carbon/human
-	/// Organ and limb picked by get_bullet_transfer_fraction(), waiting to see whether the hit lands.
-	var/tmp/obj/item/organ/pending_bullet_organ
+	/// What get_bullet_transfer_fraction() left for each organ it crossed, as organ = damage, waiting to see whether the hit lands.
+	var/tmp/list/pending_bullet_organs
 	var/tmp/obj/item/bodypart/pending_bullet_part
+	/// Of the energy that path stopped, the share that became damage.
+	var/tmp/pending_bullet_damage_share
 
 /mob/living/carbon/human/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
-	pending_bullet_organ = null
+	pending_bullet_organs = null
 	pending_bullet_part = null
+	pending_bullet_damage_share = null
 	var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : get_bodypart(deprecise_zone(def_zone))
-	if(!hit_part)
-		return MS13_BULLET_TRANSFER_CLEAN
+	if(!hit_part || P.damage <= 0)
+		return ..()
+	if(P.simple_bullet) // Stays in, all of it on the limb: nothing to work out.
+		return 1
 
-	var/list/candidates = list()
-	var/total_cross_section = 0
+	var/list/crossed = list()
 	for(var/obj/item/organ/O in hit_part.contained_organs)
-		if((O.organ_flags & ORGAN_DEAD) || O.cosmetic_only || !O.bullet_cross_section)
-			continue
-		candidates[O] = O.bullet_cross_section
-		total_cross_section += O.bullet_cross_section
-	candidates["clean pass"] = max(0.05, 1 - total_cross_section) // floor so a badly-tuned bodypart (cross-sections summing to >=1) can't zero this out
+		if(!(O.organ_flags & ORGAN_DEAD) && !O.cosmetic_only && prob(O.bullet_hit_chance))
+			crossed += O
+	shuffle_inplace(crossed) // Organs at the same depth come in any order.
+	sortTim(crossed, GLOBAL_PROC_REF(cmp_organ_bullet_depth))
 
-	var/picked = pick_weight(candidates)
-	var/rigidity = istext(picked) ? MS13_BULLET_TRANSFER_CLEAN : get_organ_bullet_rigidity(picked)
+	var/remaining = P.damage
+	var/wound = 0
+	var/list/organ_damage = list()
+	var/atom/deepest = hit_part
+	for(var/atom/layer as anything in list(hit_part) + crossed)
+		var/obj/item/organ/organ = isorgan(layer) ? layer : null
+		var/stopping = organ ? organ.get_bullet_soak_power(P) : ms13_armor_stopping_power(hit_part.soft_tissue_armor, P)
+		var/share = stopping / max(stopping + remaining * P.get_velocity() * P.get_own_hardness_ratio(), 1)
+		var/soaked = remaining * share
+		remaining -= soaked
+		wound += soak_bullet(layer, soaked, organ_damage)
+		deepest = layer
+		// It deforms by what it gave up: a round that had to dump half its energy comes out of it mangled. Kept above
+		// 0 integrity, which would delete it in the middle of this hit.
+		var/deform = min(MS13_BULLET_DEFORM * share, P.getBIntegrity() - 1)
+		if(deform > 0)
+			P.adjustIntegrity(-deform)
 
-	// Speed spreads structures apart from a common convergence point rather than scaling all of them
-	// uniformly - see MS13_BULLET_TRANSFER_CONVERGENCE (bullet_math.dm). P.speed is a delay-per-tile (lower =
-	// faster), so the ratio is initial/current, not current/initial.
-	var/velocity_spread = clamp(initial(P.speed) / P.speed, MS13_BULLET_SPEED_SPREAD_MIN, MS13_BULLET_SPEED_SPREAD_MAX)
-	var/transfer_fraction = MS13_BULLET_TRANSFER_CONVERGENCE + (rigidity - MS13_BULLET_TRANSFER_CONVERGENCE) * velocity_spread
+	// Too little left to get out: it stops in the deepest thing it reached.
+	if(remaining < MS13_BULLET_OVERPEN_MIN_REMAINING)
+		wound += soak_bullet(deepest, remaining, organ_damage)
+		remaining = 0
 
-	// The bullet's own construction divides the result - a tougher round holds its shape and punches through
-	// more (transfer_fraction goes down); one that deforms/fragments more easily dumps its energy instead
-	// (transfer_fraction goes up). Shared with wall overpenetration (bullet_math.dm's get_own_hardness_ratio()).
-	var/hardness_ratio = P.get_own_hardness_ratio()
-	transfer_fraction /= hardness_ratio
-	// Whatever the split above says, a round without the power to get through the struck organ (its armor) stays in.
-	if(!istext(picked))
-		var/obj/item/organ/struck = picked
-		transfer_fraction = max(transfer_fraction, struck.get_bullet_stopping_power(P) / max(P.get_penetration_power(), 1))
-
-	transfer_fraction = clamp(transfer_fraction, 0, 1)
-	var/transferred_amount = P.damage * transfer_fraction
-
-	if(P.firer)
-		log_combat(P.firer, src, "shot [istext(picked) ? "with a clean pass" : "hitting [picked]"] in the [hit_part.plaintext_zone]", P, "transferred [round(transferred_amount, 0.1)]/[P.damage] (fraction [round(transfer_fraction, 0.01)], velocity_spread [round(velocity_spread, 0.01)], hardness [round(hardness_ratio, 0.01)], integrity [round(P.getBIntegrity(), 1)])")
-
-	// Hitting a structure costs the bullet some of its own integrity too - more for a rigid one (bone) than a
-	// clean pass, same idea as the existing ricochet/fragment integrity costs (bullet_math.dm). This also
-	// shrinks its remaining range (adjustIntegrity()'s override there), so a sufficiently worn-down bullet
-	// naturally runs out of both damage and distance instead of either being tracked forever.
-	// AI EDIT: floored at 1, not 0 - adjustIntegrity() qdels the projectile outright at 0 integrity, and P is
-	// still needed by the caller (human_defense.dm's bullet_act()) for the rest of this same hit. Letting an
-	// organ hit alone fully finish the bullet off risks using it after it's deleted; a future ricochet or
-	// fragment event can still finish it for real.
-	var/integrity_cost = min(MS13_BULLET_ORGAN_INTEGRITY_LOSS_BASE * rigidity, P.getBIntegrity() - 1)
-	if(integrity_cost > 0)
-		P.adjustIntegrity(-integrity_cost)
-
-	if(!istext(picked))
-		pending_bullet_organ = picked
+	var/damage = wound
+	for(var/obj/item/organ/O as anything in organ_damage)
+		damage += organ_damage[O]
+	pending_bullet_damage_share = damage / max(P.damage - remaining, 0.01)
+	if(length(organ_damage))
+		pending_bullet_organs = organ_damage
 		pending_bullet_part = hit_part
+	if(P.firer)
+		var/list/names = list()
+		for(var/obj/item/organ/O as anything in organ_damage)
+			names += "[O] ([round(organ_damage[O], 0.1)])"
+		log_combat(P.firer, src, "shot in the [hit_part.plaintext_zone]", P, "through [length(names) ? english_list(names) : "flesh only"], [round(damage, 0.1)] damage, [round(remaining, 0.1)]/[P.damage] carried on, integrity [round(P.getBIntegrity(), 1)]")
+	return 1 - remaining / P.damage
 
-	return transfer_fraction
+/// Of what a layer soaks, its bullet_damage_ratio becomes damage. An organ keeps MS13_BULLET_ORGAN_SHARE of that;
+/// the rest, and all of the soft tissue's, is the wound in the limb. Returns the wound's part.
+/mob/living/carbon/human/proc/soak_bullet(atom/layer, soaked, list/organ_damage)
+	var/damage = soaked * clamp(layer.bullet_damage_ratio, 0, 1)
+	if(!isorgan(layer))
+		return damage
+	organ_damage[layer] += damage * MS13_BULLET_ORGAN_SHARE
+	return damage * (1 - MS13_BULLET_ORGAN_SHARE)
 
-/// The struck organ's share comes out of the limb's damage, never on top of it. An organ's bullet_damage_ratio
-/// scales that share: above 1 it eats more of the hit, below 1 more of it lands on the limb instead.
+/mob/living/carbon/human/get_bullet_damage_share(obj/projectile/P, stop_fraction)
+	return isnull(pending_bullet_damage_share) ? ..() : pending_bullet_damage_share
+
+/// The organs' damage comes out of the limb's, never on top of it.
 /mob/living/carbon/human/divert_bullet_damage(obj/projectile/P)
-	if(!pending_bullet_organ)
-		return 0
-	return P.damage * clamp(MS13_BULLET_ORGAN_SHARE * pending_bullet_organ.bullet_damage_ratio, 0, 1)
+	. = 0
+	for(var/obj/item/organ/O as anything in pending_bullet_organs)
+		. += pending_bullet_organs[O]
 
-/// Armor that blunted the hit on the limb blunts it on the organ too.
+/// Armor that blunted the hit on the limb blunts it on the organs too.
 /mob/living/carbon/human/finish_bullet_hit(obj/projectile/P, diverted, landed)
-	var/obj/item/organ/organ = pending_bullet_organ
+	var/list/organ_damage = pending_bullet_organs
 	var/obj/item/bodypart/part = pending_bullet_part
-	pending_bullet_organ = null
+	pending_bullet_organs = null
 	pending_bullet_part = null
-	if(!landed || !organ || !part || diverted <= 0)
+	pending_bullet_damage_share = null
+	if(!landed || !part || diverted <= 0)
 		return
-	apply_bullet_organ_damage(part, organ, diverted * (100 - clamp(P.last_hit_blocked, 0, 100)) / 100, P.firer)
+	var/through_armor = (100 - clamp(P.last_hit_blocked, 0, 100)) / 100
+	for(var/obj/item/organ/O as anything in organ_damage)
+		apply_bullet_organ_damage(part, O, organ_damage[O] * through_armor, organ_damage, P.firer)
 
-/// Splits transferred_amount between the primary struck organ and any splash to nearby organs sharing the
-/// bodypart - carved out of transferred_amount, never added to it.
-/mob/living/carbon/human/proc/apply_bullet_organ_damage(obj/item/bodypart/hit_part, obj/item/organ/primary, transferred_amount, atom/firer)
-	var/organ_pool = transferred_amount
+/// Some of an organ's damage bursts out into organs near it that weren't on the round's path, taken out of that
+/// organ's own, never added to it.
+/mob/living/carbon/human/proc/apply_bullet_organ_damage(obj/item/bodypart/hit_part, obj/item/organ/struck, amount, list/on_path, atom/firer)
+	var/left = amount
 	for(var/obj/item/organ/O in hit_part.contained_organs)
-		if(O == primary || (O.organ_flags & ORGAN_DEAD) || O.cosmetic_only || !O.bullet_cross_section)
+		if((O in on_path) || (O.organ_flags & ORGAN_DEAD) || O.cosmetic_only || !prob(O.bullet_hit_chance * MS13_BULLET_SPLASH_CHANCE_MULT))
 			continue
-		if(!prob(O.bullet_cross_section * 100 * MS13_BULLET_SPLASH_CHANCE_MULT))
-			continue
-		var/splash = min(organ_pool, transferred_amount * MS13_BULLET_SPLASH_SHARE * get_organ_bullet_rigidity(O))
+		var/splash = min(left, amount * MS13_BULLET_SPLASH_SHARE)
 		if(splash <= 0)
-			continue
+			break
 		O.applyOrganDamage(splash)
-		organ_pool -= splash
+		left -= splash
 		if(firer)
 			log_combat(firer, src, "bullet splash hit [O]", addition = "[round(splash, 0.1)] damage")
+	struck.applyOrganDamage(left)
 
-	primary.applyOrganDamage(organ_pool)
+#ifdef UNIT_TESTS
+/// A simple bullet stops in a body without taking the path through it: no organs crossed, and the round as it went in.
+/datum/unit_test/ms13_simple_bullet
+	name = "BULLETS: Simple Bullets Skip The Path Through A Body"
+
+/datum/unit_test/ms13_simple_bullet/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human/consistent)
+	var/obj/projectile/bullet/ms13/a762/bullet = allocate(/obj/projectile/bullet/ms13/a762)
+	bullet.simple_bullet = TRUE
+	var/integrity = bullet.getBIntegrity()
+	var/stopped = victim.get_bullet_transfer_fraction(bullet, BODY_ZONE_CHEST)
+	if(victim.pending_bullet_organs || bullet.getBIntegrity() != integrity || stopped != 1)
+		Fail("A simple bullet took the path through a body, or came out the other side.")
+#endif

@@ -8,7 +8,6 @@ TYPEINFO_DEF(/obj/item/organ)
 	)
 	/// Type of food we turn into when grilled, should probably keep it as what it is here
 	var/grilled_type = /obj/item/food/meat/steak/plain/ms13/organ
-	bullet_damage_ratio = 1.15
 
 /obj/item/organ/Initialize(mapload)
 	. = ..()
