@@ -9,6 +9,13 @@
 	icon_state = "f_canvas_wall-0"
 	base_icon_state = "f_canvas_wall"
 
+/turf/closed/wall/ms13/concrete/cdda/f_sandbag_wall
+	name = "sandbag wall"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "f_sandbag_wall-0"
+	base_icon_state = "f_sandbag_wall"
+
 /turf/closed/wall/ms13/concrete/cdda/f_skin_wall
 	name = "skin wall"
 	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
@@ -43,6 +50,13 @@
 	frill_icon = null
 	icon_state = "t_brick_wall_halfway-0"
 	base_icon_state = "t_brick_wall_halfway"
+
+/turf/closed/wall/ms13/concrete/cdda/t_concrete_wall
+	name = "concrete wall"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_concrete_wall-0"
+	base_icon_state = "t_concrete_wall"
 
 /turf/closed/wall/ms13/concrete/cdda/t_concrete_wall_P
 	name = "concrete wall P"
@@ -149,6 +163,13 @@
 	icon_state = "t_ice_wall-0"
 	base_icon_state = "t_ice_wall"
 
+/turf/closed/wall/ms13/metal/cdda/t_nl_metal_wall
+	name = "nl metal wall"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_nl_metal_wall-0"
+	base_icon_state = "t_nl_metal_wall"
+
 /turf/closed/wall/ms13/concrete/cdda/t_nm_wall_flesh
 	name = "nm wall flesh"
 	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
@@ -253,6 +274,13 @@
 	frill_icon = null
 	icon_state = "t_scrap_wall-0"
 	base_icon_state = "t_scrap_wall"
+
+/turf/closed/wall/ms13/metal/cdda/t_scrap_wall_halfway
+	name = "scrap wall halfway"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_scrap_wall_halfway-0"
+	base_icon_state = "t_scrap_wall_halfway"
 
 /turf/closed/wall/ms13/concrete/cdda/t_screened_porch_wall
 	name = "screened porch wall"
@@ -359,6 +387,55 @@
 	icon_state = "t_triffid_wood_wall-0"
 	base_icon_state = "t_triffid_wood_wall"
 
+/turf/closed/wall/ms13/concrete/cdda/t_wall
+	name = "wall"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall-0"
+	base_icon_state = "t_wall"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_P
+	name = "wall P"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_P-0"
+	base_icon_state = "t_wall_P"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_b
+	name = "wall b"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_b-0"
+	base_icon_state = "t_wall_b"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_black
+	name = "wall black"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_black-0"
+	base_icon_state = "t_wall_black"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_brown
+	name = "wall brown"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_brown-0"
+	base_icon_state = "t_wall_brown"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_cyan
+	name = "wall cyan"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_cyan-0"
+	base_icon_state = "t_wall_cyan"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_g
+	name = "wall g"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_g-0"
+	base_icon_state = "t_wall_g"
+
 /turf/closed/wall/ms13/metal/cdda/t_wall_glass
 	name = "wall glass"
 	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
@@ -366,12 +443,40 @@
 	icon_state = "t_wall_glass-0"
 	base_icon_state = "t_wall_glass"
 
+/turf/closed/wall/ms13/concrete/cdda/t_wall_gray
+	name = "wall gray"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_gray-0"
+	base_icon_state = "t_wall_gray"
+
+/turf/closed/wall/ms13/metal/cdda/t_wall_metal
+	name = "wall metal"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_metal-0"
+	base_icon_state = "t_wall_metal"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_orange
+	name = "wall orange"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_orange-0"
+	base_icon_state = "t_wall_orange"
+
 /turf/closed/wall/ms13/metal/cdda/t_wall_prefab_metal
 	name = "wall prefab metal"
 	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
 	frill_icon = null
 	icon_state = "t_wall_prefab_metal-0"
 	base_icon_state = "t_wall_prefab_metal"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_r
+	name = "wall r"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_r-0"
+	base_icon_state = "t_wall_r"
 
 /turf/closed/wall/ms13/concrete/cdda/t_wall_rammed_earth
 	name = "wall rammed earth"
@@ -387,6 +492,41 @@
 	icon_state = "t_wall_resin-0"
 	base_icon_state = "t_wall_resin"
 
+/turf/closed/wall/ms13/concrete/cdda/t_wall_w
+	name = "wall w"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_w-0"
+	base_icon_state = "t_wall_w"
+
+/turf/closed/wall/ms13/concrete/cdda/t_wall_y
+	name = "wall y"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wall_y-0"
+	base_icon_state = "t_wall_y"
+
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_P
+	name = "wood wall P"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_P-0"
+	base_icon_state = "t_wood_wall_P"
+
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_b
+	name = "wood wall b"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_b-0"
+	base_icon_state = "t_wood_wall_b"
+
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_black
+	name = "wood wall black"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_black-0"
+	base_icon_state = "t_wood_wall_black"
+
 /turf/closed/wall/ms13/wood/cdda/t_wood_wall_brown
 	name = "wood wall brown"
 	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
@@ -401,6 +541,13 @@
 	icon_state = "t_wood_wall_cyan-0"
 	base_icon_state = "t_wood_wall_cyan"
 
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_g
+	name = "wood wall g"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_g-0"
+	base_icon_state = "t_wood_wall_g"
+
 /turf/closed/wall/ms13/wood/cdda/t_wood_wall_gray
 	name = "wood wall gray"
 	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
@@ -414,3 +561,24 @@
 	frill_icon = null
 	icon_state = "t_wood_wall_orange-0"
 	base_icon_state = "t_wood_wall_orange"
+
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_r
+	name = "wood wall r"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_r-0"
+	base_icon_state = "t_wood_wall_r"
+
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_w
+	name = "wood wall w"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_w-0"
+	base_icon_state = "t_wood_wall_w"
+
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_y
+	name = "wood wall y"
+	icon = 'mojave/icons/cdda_ultimate_cataclysm/walls_smooth.dmi'
+	frill_icon = null
+	icon_state = "t_wood_wall_y-0"
+	base_icon_state = "t_wood_wall_y"

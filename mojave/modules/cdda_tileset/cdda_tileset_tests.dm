@@ -3,7 +3,7 @@
 	name = "ICONS: CDDA Tileset Types Point At Real Icon States"
 
 /datum/unit_test/cdda_tileset_icons/Run()
-	for(var/root in list(/turf/open/floor/plating/ms13/ground, /obj/structure/flora/ms13, /obj/structure/ms13))
+	for(var/root in list(/turf/open/floor/plating/ms13/ground, /turf/open/floor/ms13, /obj/structure/flora/ms13, /obj/structure/ms13, /obj/structure/mineral_door, /obj/structure/window/fulltile/ms13))
 		for(var/atom/path as anything in subtypesof(root))
 			if(findtext("[path]", "/cdda/") && !icon_exists(initial(path.icon), initial(path.icon_state)))
 				TEST_FAIL("[path] has no icon state \"[initial(path.icon_state)]\" in [initial(path.icon)].")
