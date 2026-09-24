@@ -792,6 +792,75 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 	open_cockpit = FALSE
 	fov_angle = FOV_180_DEGREES
 
+// Crafting. A mech built by hand comes without a battery: fit one after, like any other.
+
+/obj/vehicle/sealed/ms13_mech/CheckParts(list/parts_list, datum/crafting_recipe/current_recipe)
+	. = ..()
+	QDEL_NULL(cell)
+
+/datum/crafting_recipe/ms13_mech_ripley
+	name = "Ripley MK-I"
+	result = /obj/vehicle/sealed/ms13_mech/ripley
+	time = 2 MINUTES
+	tool_behaviors = list(TOOL_WRENCH, TOOL_WELDER, TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 20, /obj/item/stack/sheet/ms13/scrap_parts = 25, /obj/item/stack/sheet/ms13/scrap_copper = 8, /obj/item/stack/sheet/ms13/rubber = 6)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_mech_ripley_mk2
+	name = "Ripley MK-II"
+	result = /obj/vehicle/sealed/ms13_mech/ripley/mk2
+	time = 3 MINUTES
+	tool_behaviors = list(TOOL_WRENCH, TOOL_WELDER, TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 30, /obj/item/stack/sheet/ms13/scrap_parts = 25, /obj/item/stack/sheet/ms13/scrap_copper = 8, /obj/item/stack/sheet/ms13/rubber = 6, /obj/item/stack/sheet/ms13/glass = 4)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_mech_gygax
+	name = "Gygax"
+	result = /obj/vehicle/sealed/ms13_mech/gygax
+	time = 3 MINUTES
+	tool_behaviors = list(TOOL_WRENCH, TOOL_WELDER, TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 30, /obj/item/stack/sheet/ms13/scrap_parts = 30, /obj/item/stack/sheet/ms13/scrap_copper = 12, /obj/item/stack/sheet/ms13/circuits = 4, /obj/item/stack/sheet/ms13/glass = 4)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_mech_durand
+	name = "Durand"
+	result = /obj/vehicle/sealed/ms13_mech/durand
+	time = 5 MINUTES
+	tool_behaviors = list(TOOL_WRENCH, TOOL_WELDER, TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 50, /obj/item/stack/sheet/ms13/scrap_parts = 40, /obj/item/stack/sheet/ms13/scrap_copper = 15, /obj/item/stack/sheet/ms13/circuits = 6, /obj/item/stack/sheet/ms13/ceramic = 8, /obj/item/stack/sheet/ms13/kevlar = 6)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_ARMTAILOR
+
+/datum/crafting_recipe/ms13_mech_clamp
+	name = "mech clamp"
+	result = /obj/item/ms13_mech_equipment/clamp
+	time = 40 SECONDS
+	tool_behaviors = list(TOOL_WRENCH, TOOL_WELDER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 6, /obj/item/stack/sheet/ms13/scrap_parts = 8)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_mech_drill
+	name = "mech drill"
+	result = /obj/item/ms13_mech_equipment/drill
+	time = 45 SECONDS
+	tool_behaviors = list(TOOL_WRENCH, TOOL_WELDER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 8, /obj/item/stack/sheet/ms13/scrap_parts = 10, /obj/item/stack/sheet/ms13/scrap_copper = 2)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_GENERAL
+
+/datum/crafting_recipe/ms13_mech_autoloader
+	name = "mech autoloader"
+	result = /obj/item/ms13_mech_autoloader
+	time = 40 SECONDS
+	tool_behaviors = list(TOOL_WRENCH, TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 4, /obj/item/stack/sheet/ms13/scrap_parts = 8, /obj/item/stack/sheet/ms13/scrap_copper = 2)
+	category = CAT_VEHICLES
+	crafting_interface = CRAFTING_BENCH_WEAPONS
+
 #ifdef UNIT_TESTS
 /// A Durand's arms fire the guns mounted on them and work their actions; the autoloader swaps magazines; rounds that
 /// get through the plate hit the pilot; and knocked out, it wrecks with the pilot still inside, until it's welded up.
@@ -934,6 +1003,12 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 	if(get_turf(mech) != get_step(rammed_at, NORTH) || mech.dir != NORTH)
 		Fail("A heavy truck ramming a mech didn't knock it back a tile, facing the way it was.")
 	qdel(bumper)
+
+	// Built by hand, a mech comes without a battery.
+	var/obj/vehicle/sealed/ms13_mech/gygax/built = allocate(/obj/vehicle/sealed/ms13_mech/gygax)
+	built.CheckParts(list(), null)
+	if(built.cell)
+		Fail("A mech built by hand came with a battery.")
 
 	// An open cockpit: a round at the chest finds the pilot, not the frame.
 	var/obj/vehicle/sealed/ms13_mech/ripley/open_loader = allocate(/obj/vehicle/sealed/ms13_mech/ripley, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z))
