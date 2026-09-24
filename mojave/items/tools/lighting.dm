@@ -36,6 +36,13 @@
 	light_power = 0.6
 	light_color = "#ddd2b9"
 
+/obj/item/flashlight/lantern/ms13
+	name = "electric lantern"
+	desc = "A camping lantern: a bulb behind glass, run off a fission battery. It throws a warm light all round."
+	light_outer_range = 4.5
+	light_power = 0.8
+	light_color = "#e0c088"
+
 /obj/item/flashlight/flare/ms13
 	name = "flare"
 	desc = "A red flare, quite simple."
@@ -74,6 +81,21 @@
 			"<span class='notice'>[user] snuffs [src] out.</span>")
 		on = FALSE
 		set_light(0)
+
+/obj/item/flashlight/flare/torch/ms13/interact_with_atom(atom/interacting_with, mob/living/user, list/modifiers)
+	var/facing = get_dir(interacting_with, user)
+	if(!iswallturf(interacting_with) || !(facing in GLOB.cardinals))
+		return ..()
+	to_chat(user, span_notice("You start fixing [src] to [interacting_with]..."))
+	if(!do_after(user, interacting_with, 3 SECONDS))
+		return ITEM_INTERACT_BLOCKING
+	var/obj/structure/ms13/torch/wall_mounted/mounted = new(get_turf(user))
+	mounted.setDir(facing)
+	if(on)
+		mounted.StartBurning()
+	user.visible_message(span_notice("[user] fixes [src] to [interacting_with]."), span_notice("You fix [src] to [interacting_with]."))
+	qdel(src)
+	return ITEM_INTERACT_SUCCESS
 
 /obj/item/flashlight/flare/torch/ms13/attackby(obj/item/W, mob/user, params)
 	. = ..()

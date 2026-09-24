@@ -60,16 +60,27 @@
 
 /obj/structure/ms13/torch/wall_mounted/Initialize() //So that no matter what, Mappers aren't messing stuff up. Nice and consistent.
 	. = ..()
-	if(dir == NORTH)
-		return
-	if(dir == SOUTH)
-		pixel_y = 28
-	if(dir == WEST)
-		pixel_x = 10
-		pixel_y = 11
-	if(dir == EAST)
-		pixel_x = -10
-		pixel_y = 11
+	align_to_wall()
+
+/obj/structure/ms13/torch/wall_mounted/setDir(newdir)
+	. = ..()
+	align_to_wall()
+
+/// Faces away from its wall.
+/obj/structure/ms13/torch/wall_mounted/proc/align_to_wall()
+	switch(dir)
+		if(NORTH)
+			pixel_x = 0
+			pixel_y = 0
+		if(SOUTH)
+			pixel_x = 0
+			pixel_y = 28
+		if(WEST)
+			pixel_x = 10
+			pixel_y = 11
+		if(EAST)
+			pixel_x = -10
+			pixel_y = 11
 
 /obj/structure/ms13/torch/wall_mounted/prelit
 

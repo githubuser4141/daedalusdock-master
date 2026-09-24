@@ -40,8 +40,16 @@
 	transfer_fingerprints_to(new_light)
 	qdel(src)
 
-/obj/machinery/light/ms13/Initialize(mapload) //shoutout to the shartcoder that coded in lights backwards
+/obj/machinery/light/ms13/Initialize(mapload)
 	. = ..()
+	align_to_wall()
+
+// A frame put up mid-round gets its direction after it's made.
+/obj/machinery/light/ms13/setDir(newdir)
+	. = ..()
+	align_to_wall()
+
+/obj/machinery/light/ms13/proc/align_to_wall() //shoutout to the shartcoder that coded in lights backwards
 	switch(dir)
 		if(SOUTH)
 			pixel_x = 0
@@ -95,3 +103,15 @@
 /obj/machinery/light/ms13/bulb/industrial/built
 	icon_state = "light_bulb_indust-empty"
 	status = LIGHT_EMPTY
+
+/// An empty MS13 light fixture, ready to screw to a wall. Fit a tube once it's up.
+/obj/item/wallframe/light_fixture/ms13
+	name = "light fixture"
+	desc = "An empty tube light fixture. Screw it to a wall, then fit a light tube."
+	result_path = /obj/machinery/light/ms13/built
+
+/obj/item/wallframe/light_fixture/ms13/bulb
+	name = "bulb fixture"
+	desc = "An empty bulb light fixture. Screw it to a wall, then fit a light bulb."
+	icon_state = "bulb-construct-item"
+	result_path = /obj/machinery/light/ms13/bulb/built
