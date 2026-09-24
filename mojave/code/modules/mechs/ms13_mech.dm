@@ -47,8 +47,9 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	var/list/autofiring
 	/// No sides to it: a round aimed at the head or chest finds whoever's inside, not the frame.
 	var/open_cockpit = FALSE
-	/// The blind spot those inside have, seeing out of its cab (see __DEFINES/fov.dm). Null leaves them their own.
-	var/fov_angle = FOV_180_DEGREES
+	/// The blind spot its sensors leave those inside, in place of their own eyes: decent, and the same whoever's
+	/// piloting (see __DEFINES/fov.dm). Null leaves them their own eyes.
+	var/fov_angle = FOV_90_DEGREES
 	/// Weighed as a vehicle's mass_per_frame counts it: a vehicle ramming it with more momentum than this knocks it back.
 	var/mass = 2000
 	/// How long it takes to load someone in, or pry them out with a crowbar.
@@ -140,15 +141,17 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	M.setDir(dir)
 	var/mob/living/living_occupant = M
 	if(fov_angle && istype(living_occupant))
-		living_occupant.add_fov_trait(src, fov_angle)
+		living_occupant.fov_sensors = fov_angle
+		living_occupant.update_fov()
 	update_appearance()
 
 /obj/vehicle/sealed/ms13_mech/remove_occupant(mob/M)
 	if(ismob(M))
 		UnregisterSignal(M, COMSIG_LIVING_DEATH)
 	var/mob/living/living_occupant = M
-	if(istype(living_occupant))
-		living_occupant.remove_fov_trait(src)
+	if(istype(living_occupant) && !isnull(living_occupant.fov_sensors))
+		living_occupant.fov_sensors = null
+		living_occupant.update_fov()
 	. = ..()
 	update_appearance()
 
@@ -792,7 +795,6 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 	mass = 2000
 	enter_delay = 4 SECONDS
 	open_cockpit = FALSE
-	fov_angle = FOV_180_DEGREES
 
 // Crafting. A mech built by hand comes without a battery: fit one after, like any other.
 

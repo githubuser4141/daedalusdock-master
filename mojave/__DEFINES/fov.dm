@@ -4,6 +4,8 @@
 #define FOV_120_DEGREES 120 //MOJAVE EDIT - Base TG only has 90, 180, 270
 #define FOV_180_DEGREES 180
 #define FOV_270_DEGREES 270
+/// The blind spots a view steps through, narrowest first. A visor costs its wearer steps along this.
+#define FOV_STEPS list(FOV_60_DEGREES, FOV_90_DEGREES, FOV_120_DEGREES, FOV_180_DEGREES, FOV_270_DEGREES)
 
 /// Base mask dimensions. They're like a client's view, only change them if you modify the mask to different dimensions.
 #define BASE_FOV_MASK_X_DIMENSION 15

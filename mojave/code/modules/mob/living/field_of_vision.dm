@@ -178,6 +178,10 @@
 	var/native_fov
 	/// Wider blind spots from what it wears or rides in: source = degrees. The widest applies.
 	var/list/fov_traits
+	/// Visors it looks out through, which cost its own eyes steps along FOV_STEPS: source = steps. The most applies.
+	var/list/fov_visors
+	/// Sensors it sees through instead of its own eyes, like a mech's cab: the blind spot they leave, in degrees.
+	var/fov_sensors
 	/// The blind spot it has now.
 	var/fov_view
 
@@ -217,8 +221,26 @@
 /mob/living/proc/get_native_fov()
 	return native_fov
 
+/mob/living/proc/add_fov_visor(source, steps)
+	LAZYSET(fov_visors, source, steps)
+	update_fov()
+
+/mob/living/proc/remove_fov_visor(source)
+	LAZYREMOVE(fov_visors, source)
+	update_fov()
+
+/// Its own view, a step narrower for each step of visor it looks out through.
+/mob/living/proc/narrow_by_visors(angle)
+	var/steps = 0
+	for(var/source in fov_visors)
+		steps = max(steps, fov_visors[source])
+	if(!steps)
+		return angle
+	var/list/ladder = FOV_STEPS
+	return ladder[clamp(ladder.Find(angle) + steps, 1, length(ladder))]
+
 /mob/living/proc/update_fov()
-	fov_view = get_native_fov()
+	fov_view = isnull(fov_sensors) ? narrow_by_visors(get_native_fov()) : fov_sensors
 	for(var/source in fov_traits)
 		fov_view = max(fov_view, fov_traits[source])
 	if(!client)
@@ -238,20 +260,30 @@
 /obj/item/clothing
 	/// Worn where it's meant to be, it narrows the wearer's view to a blind spot this wide (see __DEFINES/fov.dm).
 	var/fov_angle
+	/// Or a visor: it costs the wearer's own view this many steps (FOV_STEPS), so how sharp their eyes are still counts.
+	var/fov_visor_steps
 
 /obj/item/clothing/equipped(mob/living/user, slot)
 	. = ..()
-	if(fov_angle && isliving(user) && (slot & slot_flags))
+	if(!isliving(user) || !(slot & slot_flags))
+		return
+	if(fov_angle)
 		user.add_fov_trait(src, fov_angle)
+	if(fov_visor_steps)
+		user.add_fov_visor(src, fov_visor_steps)
 
 /obj/item/clothing/unequipped(mob/living/user)
 	. = ..()
-	if(fov_angle && isliving(user))
+	if(!isliving(user))
+		return
+	if(fov_angle)
 		user.remove_fov_trait(src)
+	if(fov_visor_steps)
+		user.remove_fov_visor(src)
 
 #ifdef UNIT_TESTS
-/// A person can't see what's straight behind them, and a helmet or a mech's cab widens the blind spot. Mobs and loose
-/// items are what it hides.
+/// A person can't see what's straight behind them, and a helmet or visor widens the blind spot. A mech's sensors see
+/// for its pilot, whoever they are. Mobs and loose items are what it hides.
 /datum/unit_test/ms13_field_of_vision
 	name = "FOV: People Can't See Behind Them, Less So In Helmets And Mechs"
 
@@ -275,13 +307,24 @@
 	if(viewer.fov_view != FOV_90_DEGREES)
 		Fail("Taking a helmet off didn't narrow the blind spot again.")
 
+	// A visor costs a step of the wearer's own view, so sharp eyes still see more through it.
+	helmet.fov_angle = null
+	helmet.fov_visor_steps = 1
+	viewer.equip_to_slot_or_del(helmet, ITEM_SLOT_HEAD)
+	var/average_through_visor = viewer.fov_view
+	viewer.set_special_base(SPECIAL_PERCEPTION, 9)
+	if(average_through_visor != FOV_120_DEGREES || viewer.fov_view != FOV_90_DEGREES)
+		Fail("A visor didn't cost its wearer a step of their own view.")
+	viewer.dropItemToGround(helmet)
+	viewer.set_special_base(SPECIAL_PERCEPTION, 2)
+
 	var/obj/vehicle/sealed/ms13_mech/durand/mech = allocate(/obj/vehicle/sealed/ms13_mech/durand, locate(viewer.x + 1, viewer.y, viewer.z))
 	mech.setDir(EAST)
 	mech.mob_enter(viewer, TRUE)
 	mech.setDir(SOUTH)
 	if(viewer.fov_view != mech.fov_angle || viewer.dir != SOUTH)
-		Fail("A mech's pilot didn't take its blind spot, or face the way it faces.")
+		Fail("A mech's sensors didn't see for its dull-eyed pilot, or it didn't face the way the mech faces.")
 	mech.mob_exit(viewer, TRUE)
-	if(viewer.fov_view != FOV_90_DEGREES)
-		Fail("Climbing out of a mech didn't give its pilot their own view back.")
+	if(viewer.fov_view != FOV_120_DEGREES)
+		Fail("Climbing out of a mech didn't give its pilot their own eyes back.")
 #endif
