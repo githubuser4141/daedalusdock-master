@@ -638,21 +638,10 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/fence/wire)
 			I.forceMove(loc)
 	qdel(src)
 
-/obj/machinery/door/unpowered/ms13/seethrough/fence/Initialize()
-	. = ..()
-	if(dir == NORTH)
-		pixel_y = -8
-
-	if(dir == SOUTH)
-		pixel_y = -8
-
-	if(dir == EAST)
-		pixel_x = -16
-		pixel_y = 0
-
-	if(dir == WEST)
-		pixel_x = -16
-		pixel_y = 0
+/obj/machinery/door/unpowered/ms13/seethrough/fence/align_to_dir()
+	pixel_x = -16
+	pixel_y = (dir & (NORTH|SOUTH)) ? -8 : 0
+	update_appearance()
 
 /obj/machinery/door/unpowered/ms13/seethrough/fence/open()
 	. = ..()
