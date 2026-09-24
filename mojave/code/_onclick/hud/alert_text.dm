@@ -57,7 +57,7 @@
 /atom/movable/screen/alert/text/New(loc, text)
 	if(text)
 		message = text
-	. = ..()
+	. = ..(loc) // Don't forward text: screen/Initialize() takes it as hud_owner and RegisterSignal()s it
 
 /atom/movable/screen/alert/text/Initialize(mapload)
 	. = ..()

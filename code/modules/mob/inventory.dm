@@ -443,6 +443,8 @@
 		I.plane = initial(I.plane)
 		I.appearance_flags &= ~NO_CLIENT_COLOR
 
+		// Or the move below hits /obj/item/doMove(), which unequips it a second time before unequipped() here.
+		I.equipped_to = null
 		if(!no_move && !(I.item_flags & DROPDEL) && !QDELETED(I)) //item may be moved/qdel'd immedietely, don't bother moving it
 			if (isnull(newloc))
 				I.moveToNullspace()
