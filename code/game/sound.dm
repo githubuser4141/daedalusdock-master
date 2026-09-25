@@ -58,6 +58,7 @@
 	channel = channel || SSsounds.random_available_channel()
 
 	var/sound/S = sound(get_sfx(soundin))
+	carry_sound(turf_source, S.file, vol, extrarange) // MOJAVE EDIT - loud sounds carry far (mojave/code/game/distant_sound.dm)
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
 	var/list/listeners = SSmobs.clients_by_zlevel[source_z].Copy()

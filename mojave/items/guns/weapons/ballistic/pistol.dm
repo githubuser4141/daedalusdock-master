@@ -12,7 +12,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/45/45out.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/45/45out.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/10mm_fire_02.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/10mm_pistol.ogg'
 	w_class = WEIGHT_CLASS_NORMAL
 	fire_delay = 0.45 SECONDS
 	spread = 8
@@ -40,7 +39,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/chinese/cpistoleject.ogg' //placeholder - these aren't very good
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/chinese/cpistoleject.ogg' //placeholder - these aren't very good
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/chinese/chinese1.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/10mm_chinese.ogg'
 	fire_delay = 0.5 SECONDS
 	internal_magazine = TRUE
 
@@ -73,7 +71,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/9mm/9mm_out2.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/9mm/9mm_out2.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/9mm/9mm2.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/9mmpistol.ogg'
 	w_class = WEIGHT_CLASS_NORMAL
 	fire_delay = 0.45 SECONDS
 	spread = 8
@@ -107,7 +104,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/12mm/12mmunload2.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/12mm/12mmunload2.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/12mm/m12mm1.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/12mm_smg.ogg'
 	w_class = WEIGHT_CLASS_NORMAL
 	fire_delay = 0.5 SECONDS
 	spread = 6
@@ -130,7 +126,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/45/45out.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/45/45out.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/45/45auto1.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/45_pistol.ogg'
 	can_suppress = FALSE
 	fire_delay = 0.45 SECONDS
 	spread = 8
@@ -160,7 +155,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/45/45out.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/45/45out.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/44/44mag1.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/44_revolver.ogg'
 	w_class = WEIGHT_CLASS_NORMAL
 	fire_delay = 0.45 SECONDS
 	spread = 6
@@ -183,7 +177,6 @@
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/9mm/9mm_out2.ogg' //placeholder
 	w_class = WEIGHT_CLASS_SMALL
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/22/22pistol.ogg'
-	far_fire_sound = null
 	fire_delay = 0.45 SECONDS
 	spread = 8
 	recoil = 0.1

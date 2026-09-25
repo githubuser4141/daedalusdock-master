@@ -13,7 +13,6 @@
 	lock_back_sound = 'mojave/sound/ms13weapons/breakaction_open2.ogg'
 	bolt_drop_sound = 'mojave/sound/ms13weapons/breakaction_close2.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/hunting_rifle.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/hunting_rifle.ogg' //placeholder sounds for now
 	load_empty_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_load.ogg'
 	load_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_load.ogg'
 	fire_delay = 1 SECONDS

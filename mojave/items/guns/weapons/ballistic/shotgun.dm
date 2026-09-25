@@ -11,7 +11,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/levershot/levershot2.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/shotgun_lever.ogg'
 	bolt_wording = "lever"
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
@@ -46,7 +45,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshot2.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/shotgun_hunting.ogg'
 	w_class = WEIGHT_CLASS_HUGE
 	weapon_weight = WEAPON_HEAVY
 	force = 30
@@ -82,7 +80,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/trailfire.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/trailfire.ogg'
 	fire_delay = 0.55 SECONDS
 	rack_delay = 0.55 SECONDS
 	spread = 4
@@ -106,7 +103,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/repeater/repeater1.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/repeater.ogg'
 	fire_delay = 0.55 SECONDS
 	rack_delay = 0.55 SECONDS
 	spread = 4
@@ -130,7 +126,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/huntingshot/huntingshoteject.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/brushfire.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/brushfire.ogg'
 	fire_delay = 0.55 SECONDS
 	rack_delay = 0.55 SECONDS
 	spread = 4
@@ -156,7 +151,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/sniper/sniperunload.ogg' //placeholder
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/sniper/sniperunload.ogg' //placeholder
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/sks/sks1.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/sks.ogg'
 	bolt_wording = "bolt"
 	fire_delay = 0.55 SECONDS
 	spread = 5

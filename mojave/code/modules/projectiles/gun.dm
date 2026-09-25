@@ -4,17 +4,6 @@
 	/// This is how much deviation the gun recoil can have, recoil pushes the screen towards the reverse angle you shot + some deviation which this is the max.
 	var/recoil_deviation = 22.5
 
-	/// Range beyond which no one is hearing anything, not even far_fire_sound
-	var/far_fire_range = SOUND_RANGE * 4
-	/// Falloff distance for far fire sound, no need to fuck with falloff for nearby guns honestly
-	var/far_fire_falloff_distance = SOUND_RANGE
-	/// Fire sound for long distances (not providing a default because it would be so fucked up dude)
-	var/far_fire_sound
-	/// Whether or not to apply variation to the far fire sound
-	var/vary_far_fire_sound = TRUE
-	/// Volume of the far fire sound (generally should be lower than the normal fire sound, obviously)
-	var/far_fire_sound_volume = 50
-
 // An ammo_stack (mojave/code/modules/projectiles/boxes_magazines/ammo_stack.dm) is itself a subtype of
 // /obj/item/ammo_box/magazine (deliberately, to reuse magazine behavior) - which means DD's core
 // /obj/item/gun/ballistic/attackby() (code/modules/projectiles/guns/ballistic.dm) matches it against
@@ -34,17 +23,3 @@
 			update_appearance()
 		return TRUE
 	return ..()
-
-/// Gunfire carries: past where the shot is heard plainly, out to far_fire_range, it's heard distant (playsound_distant()).
-/obj/item/gun/proc/play_far_fire_sound()
-	if(!suppressed)
-		playsound_distant(src, fire_sound, far_fire_sound_volume, far_fire_range, far_fire_sound, vary_far_fire_sound, fire_sound_volume)
-
-/obj/item/gun/play_fire_sound()
-	. = ..()
-	play_far_fire_sound()
-
-// Energy guns play their own fire sound, without the one above.
-/obj/item/gun/energy/play_fire_sound()
-	. = ..()
-	play_far_fire_sound()

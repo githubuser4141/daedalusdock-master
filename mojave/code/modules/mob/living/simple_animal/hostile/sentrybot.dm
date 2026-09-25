@@ -242,7 +242,6 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/gunfire_sound()
 	playsound(src, 'mojave/sound/ms13npc/sentrybot/laser_gatling.ogg', 50, FALSE)
-	playsound_distant(src, 'mojave/sound/ms13npc/sentrybot/laser_gatling.ogg', 50, vary = FALSE)
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/spinup_sound()
 	playsound(src, 'mojave/sound/ms13npc/sentrybot/gatling_windup.ogg', 75, FALSE)
@@ -557,7 +556,6 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/ballistic/gunfire_sound()
 	playsound(src, 'mojave/sound/ms13npc/sentrybot/ballistic_minigun_fire.ogg', 50, FALSE)
-	playsound_distant(src, 'mojave/sound/ms13npc/sentrybot/ballistic_minigun_fire.ogg', 50, vary = FALSE)
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/ballistic/spinup_sound()
 	playsound(src, 'mojave/sound/ms13npc/sentrybot/ballistic_minigun_spinup_down.ogg', 50, FALSE)

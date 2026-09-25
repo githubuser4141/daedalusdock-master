@@ -1,31 +1,78 @@
 /// How fast sound carries. Faster than real sound over these distances, where the true delay would be too slight to notice.
 #define DISTANT_SOUND_TILES_PER_SECOND 100
+/// How far into the plain sound's range, as a share of it, the distant sound starts fading in, so one hands over to the other.
+#define DISTANT_SOUND_BLEND_START 0.75
+/// Played quieter than this, even a loud sound doesn't carry.
+#define DISTANT_SOUND_MIN_VOLUME 25
+
+/**
+ * Called by playsound() for every sound: a loud one with baked distant versions (distant_sound_versions.dm, made by
+ * tools/distant_sounds) carries on its own, out as far as its kind does. Gunfire, engines, monsters, the hivemind,
+ * structures taking a beating. Explosions go their own way (shake_the_room() below).
+ */
+/proc/carry_sound(turf/turf_source, sound_file, vol, extrarange)
+	if(vol < DISTANT_SOUND_MIN_VOLUME)
+		return
+	var/list/versions = GLOB.distant_sound_versions["[sound_file]"]
+	if(versions)
+		playsound_distant(turf_source, sound_file, min(vol * 0.8, 60), versions[3], near_vol = vol, near_max = SOUND_RANGE + extrarange)
 
 /**
  * Loud sounds carry. Past where a sound can normally be heard, listeners out to far_range still hear it, from the
  * direction it came: fainter, duller and more echo than shot the further off they are.
  *
- * Sounds with baked distant versions (distant_sound_versions.dm, made by tools/distant_sounds) play those: dulled, the
- * crack softened, with a reverb tail and echoes off the land, and at the edge of hearing a low rolling thump. Others
- * fall back to far_sound if given, or the sound itself, dulled and echoed with BYOND's own effects.
+ * Sounds with baked distant versions play those: dulled, the crack softened, with a reverb tail and echoes off the land,
+ * and at the edge of hearing a low rolling thump. Others fall back to far_sound if given, or the sound itself, dulled
+ * and echoed with BYOND's own effects.
  *
- * vol is how loud it is heard distant; near_vol is how loud it was played plainly, with playsound().
+ * vol is how loud it is heard distant; near_vol and near_max are how loud and how far it was played plainly.
  */
-/proc/playsound_distant(atom/source, soundin, vol, far_range = SOUND_RANGE * 4, far_sound, vary = TRUE, near_vol = vol)
+/proc/playsound_distant(atom/source, soundin, vol, far_range = SOUND_RANGE * 4, far_sound, vary = TRUE, near_vol = vol, near_max = SOUND_RANGE)
 	var/turf/turf_source = get_turf(source)
 	if(!turf_source || !vol)
 		return
 	// Starts where the sound played plainly fades out, so nobody in between hears nothing.
-	var/near_range = CALCULATE_MAX_SOUND_AUDIBLE_DISTANCE(near_vol, SOUND_RANGE, SOUND_DEFAULT_FALLOFF_DISTANCE, SOUND_FALLOFF_EXPONENT)
+	var/near_range = CALCULATE_MAX_SOUND_AUDIBLE_DISTANCE(near_vol, near_max, SOUND_DEFAULT_FALLOFF_DISTANCE, SOUND_FALLOFF_EXPONENT)
 	if(far_range <= near_range)
 		return
+	var/blend_start = near_range * DISTANT_SOUND_BLEND_START
 	var/list/listeners = SSmobs.clients_by_zlevel[turf_source.z] | SSmobs.dead_players_by_zlevel[turf_source.z]
 	for(var/mob/listener as anything in listeners)
 		var/distance = get_dist(listener, turf_source)
-		if(distance > near_range && distance <= far_range)
-			addtimer(CALLBACK(listener, TYPE_PROC_REF(/mob, hear_distant_sound), turf_source, soundin, far_sound, vol, (distance - near_range) / (far_range - near_range), vary), distance / DISTANT_SOUND_TILES_PER_SECOND * (1 SECONDS))
+		if(distance <= blend_start || distance > far_range)
+			continue
+		var/fade_in = min((distance - blend_start) / max(near_range - blend_start, 1), 1)
+		var/remoteness = max(distance - near_range, 0) / (far_range - near_range)
+		addtimer(CALLBACK(listener, TYPE_PROC_REF(/mob, hear_distant_sound), turf_source, soundin, far_sound, vol * fade_in, remoteness, vary), distance / DISTANT_SOUND_TILES_PER_SECOND * (1 SECONDS))
 
 #undef DISTANT_SOUND_TILES_PER_SECOND
+#undef DISTANT_SOUND_BLEND_START
+#undef DISTANT_SOUND_MIN_VOLUME
+
+/**
+ * A blast out here: the blast itself up close, then its baked distant versions by how far off, out further the bigger
+ * it is. No space station hull creaking. Screen shake as DD's.
+ */
+/datum/controller/subsystem/explosions/shake_the_room(turf/epicenter, near_distance, far_distance, quake_factor, echo_factor, creaking, sound/near_sound = sound(get_sfx(SFX_EXPLOSION)), sound/far_sound, sound/echo_sound, sound/creaking_sound, hull_creaking_sound)
+	var/list/versions = GLOB.distant_sound_versions["[near_sound.file]"]
+	if(!versions)
+		return ..()
+	var/frequency = get_rand_frequency()
+	var/near_reach = round(near_distance + world.view - 2, 1)
+	for(var/mob/listener as anything in GLOB.player_list)
+		var/turf/listener_turf = get_turf(listener)
+		if(!listener_turf || listener_turf.z != epicenter.z)
+			continue
+		var/distance = get_dist(epicenter, listener_turf)
+		var/shake = isobserver(listener) ? 0 : sqrt(near_distance / (distance + 1))
+		if(distance <= near_reach)
+			listener.playsound_local(epicenter, null, 100, TRUE, frequency, sound_to_use = near_sound)
+			if(shake > 0)
+				shake_camera(listener, 1.5 SECONDS, min(shake, 5))
+		else if(distance < far_distance && (shake || quake_factor))
+			shake_camera(listener, 1 SECONDS, min(max(shake, quake_factor * 3), 1.5))
+	// A grenade carries a good way; a big bomb, as far as explosions do.
+	playsound_distant(epicenter, near_sound.file, 70, versions[3] * clamp(near_distance / 10, 0.4, 1), vary = FALSE, near_vol = 100, near_max = near_reach)
 
 /**
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
@@ -61,7 +108,7 @@
 /proc/make_distant_sound(turf/turf_source, turf/ear, soundin, vol, remoteness, vary, baked = FALSE)
 	var/sound/far = sound(get_sfx(soundin))
 	far.channel = SSsounds.random_available_channel()
-	far.volume = vol * (1 - 0.5 * remoteness)
+	far.volume = vol * (1 - 0.7 * remoteness)
 	if(vary)
 		far.frequency = get_rand_frequency()
 	// From the direction it came, without BYOND fading it further.
@@ -93,18 +140,14 @@
 /datum/emote/living/agony
 	carries_far = TRUE
 
-// Mobs' gunfire carries too. A mob that gives its shots no sound fires them with the projectile's own.
+// A mob that gives its shots no sound fires them with the projectile's own.
 /mob/living/simple_animal/hostile/Shoot(atom/targeted_atom)
 	. = ..()
-	if(QDELETED(targeted_atom) || !(casingtype || projectiletype))
+	if(projectilesound || QDELETED(targeted_atom) || !(casingtype || projectiletype))
 		return
-	var/shot_sound = projectilesound
-	if(!shot_sound)
-		shot_sound = default_fire_sound()
-		if(!shot_sound)
-			return
+	var/shot_sound = default_fire_sound()
+	if(shot_sound)
 		playsound(src, shot_sound, 100, TRUE)
-	playsound_distant(src, shot_sound, 50, near_vol = 100)
 
 /// What its shots sound like when it gives them no sound: its casing's, or else the projectile's fallback_fire_sound.
 /mob/living/simple_animal/hostile/proc/default_fire_sound()
@@ -138,8 +181,12 @@
 	var/edge_version = distant_version('mojave/sound/ms13weapons/hunting_rifle.ogg', 0.9)
 	if(!isfile(near_version) || !isfile(edge_version) || near_version == edge_version)
 		Fail("A gunshot heard far off didn't play its baked versions, one for far and one for the edge of hearing.")
+	// Not just gunfire: a blast, an engine, a monster, the hivemind and a structure taking a beating all carry.
+	for(var/loud in list("sound/effects/explosion1.ogg", "mojave/sound/ms13machines/engine_running1.ogg", "mojave/sound/ms13npc/yaoguai_attack1.ogg", "mojave/sound/wip/necromorphs/brute_shout_1.ogg", "sound/weapons/smash.ogg"))
+		if(!(GLOB.distant_sound_versions[loud]?[3] > SOUND_RANGE))
+			Fail("[loud] doesn't carry past where it's heard plainly.")
 	for(var/obj/item/gun/gun_type as anything in subtypesof(/obj/item/gun))
 		var/fire_sound = initial(gun_type.fire_sound)
-		if(fire_sound && findtext("[gun_type]", "/ms13") && !GLOB.distant_sound_versions["[fire_sound]"])
+		if(fire_sound && findtext("[gun_type]", "/ms13") && !findtext("[fire_sound]", "suppressed") && !GLOB.distant_sound_versions["[fire_sound]"])
 			Fail("[gun_type]'s fire sound has no distant versions: run tools/distant_sounds/make_distant_sounds.py.")
 #endif

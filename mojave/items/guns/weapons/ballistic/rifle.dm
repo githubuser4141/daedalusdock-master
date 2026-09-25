@@ -13,7 +13,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/rifle/riflemag_unload.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/rifle/riflemag_unload.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/hunting_rifle.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/hunting_rifle.ogg'
 	w_class = WEIGHT_CLASS_HUGE
 	weapon_weight = WEAPON_HEAVY
 	slot_flags = ITEM_SLOT_BACK
@@ -51,7 +50,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/rifle/riflemag_unload.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/rifle/riflemag_unload.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/varmint/varmint_rifle.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/varmint_rifle.ogg'
 	fire_delay = 0.6 SECONDS
 	rack_delay = 0.6 SECONDS
 	spread = 2
@@ -99,7 +97,6 @@
 	recoil = 0.25
 	slowdown = 1
 	fire_sound = 'sound/weapons/gun/smg/shot_suppressed.ogg'
-	far_fire_sound = null
 	w_class = WEIGHT_CLASS_HUGE
 	has_scope = TRUE
 	scope_range = 2
@@ -120,7 +117,6 @@
 	eject_sound = 'mojave/sound/ms13weapons/gunsounds/amr/amrunload.ogg'
 	eject_empty_sound = 'mojave/sound/ms13weapons/gunsounds/amr/amrunload.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/amr/amrfire.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/amr.ogg'
 	fire_delay = 1 SECONDS
 	rack_delay = 1 SECONDS
 	spread = 2
@@ -172,7 +168,6 @@
 	load_sound = 'mojave/sound/ms13weapons/gunsounds/rifle/rifle_load.ogg'
 	load_empty_sound = 'mojave/sound/ms13weapons/gunsounds/rifle/rifle_load.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/hunting_rifle.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/hunting_rifle.ogg'
 	spread = 2
 	recoil = 1.25
 
@@ -191,7 +186,6 @@
 	lock_back_sound = 'mojave/sound/ms13weapons/breakaction_open2.ogg'
 	bolt_drop_sound = 'mojave/sound/ms13weapons/breakaction_close2.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/hunting_rifle.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/hunting_rifle.ogg' //placeholder sounds for now
 	load_empty_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_load.ogg'
 	load_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_load.ogg'
 	fire_delay = 1 SECONDS
@@ -216,7 +210,6 @@
 	lock_back_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_open.ogg'
 	bolt_drop_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_close.ogg'
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_fire.ogg'
-	far_fire_sound = 'mojave/sound/ms13weapons/distant_shots/antique.ogg'
 	load_empty_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_load.ogg'
 	load_sound = 'mojave/sound/ms13weapons/gunsounds/antique_sniper/antique_load.ogg'
 	fire_delay = 1 SECONDS
