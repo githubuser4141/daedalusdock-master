@@ -147,6 +147,8 @@
 			sound_to_use.volume *= pressure_factor
 			//End Atmosphere affecting sound
 
+		sound_to_use.volume *= ms13_wall_muffle(turf_source, turf_loc) // MOJAVE EDIT - walls muffle it (mojave/code/game/distant_sound.dm)
+
 		if(sound_to_use.volume < SOUND_AUDIBLE_VOLUME_MIN)
 			return FALSE
 

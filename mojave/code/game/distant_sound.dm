@@ -17,7 +17,9 @@
 		return
 	var/list/versions = GLOB.distant_sound_versions["[sound_file]"]
 	if(versions)
-		playsound_distant(turf_source, sound_file, min(vol * 0.8, 60), versions[3] * (SOUND_RANGE + extrarange) / SOUND_RANGE, near_vol = vol, near_max = SOUND_RANGE + extrarange)
+		// Some kinds carry quieter than they're played: creatures are eerie far off, not deafening.
+		var/loudness = length(versions) > 3 ? versions[4] : 1
+		playsound_distant(turf_source, sound_file, min(vol * 0.8, 60) * loudness, versions[3] * (SOUND_RANGE + extrarange) / SOUND_RANGE, near_vol = vol, near_max = SOUND_RANGE + extrarange)
 
 /// A blow this hard sounds as every hit used to: a ghoul's claw, a pipe swung at a door.
 #define MS13_SOLID_HIT 25
@@ -106,10 +108,33 @@ GLOBAL_VAR(ms13_hit_force)
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
  * limit of hearing it at all.
  */
+/// Each wall between a sound and whoever hears it halves it. Past a few it's lost in the stone.
+#define SOUND_WALL_MUFFLE 0.5
+#define SOUND_WALLS_HEARD_THROUGH 3
+
+/// Walls between source and listener, counting up to SOUND_WALLS_HEARD_THROUGH: solid turfs, and turfs with something
+/// opaque in them, like a shut door.
+/proc/ms13_walls_between(turf/source, turf/listener)
+	. = 0
+	if(!source || !listener || source == listener || source.z != listener.z)
+		return
+	for(var/turf/between as anything in get_line(source, listener))
+		if(between != source && between != listener && (between.density || between.directional_opacity))
+			if(++. >= SOUND_WALLS_HEARD_THROUGH)
+				return
+
+/// What's left of a sound after the walls between: heard, but muffled.
+/proc/ms13_wall_muffle(turf/source, turf/listener)
+	return SOUND_WALL_MUFFLE ** ms13_walls_between(source, listener)
+
 /mob/proc/hear_distant_sound(turf/turf_source, soundin, far_sound, vol, remoteness, vary)
 	if(!client || !can_hear())
 		return
 	var/turf/ear = get_turf(src)
+	// Through walls it's quieter, and duller, as if from further off.
+	var/walls = ms13_walls_between(turf_source, ear)
+	vol *= SOUND_WALL_MUFFLE ** walls
+	remoteness = min(remoteness + 0.25 * walls, 1)
 	var/baked = distant_version(soundin, remoteness)
 	if(baked)
 		SEND_SOUND(src, make_distant_sound(turf_source, ear, baked, vol, remoteness, vary, TRUE))
@@ -229,6 +254,10 @@ GLOBAL_VAR(ms13_hit_force)
 	GLOB.ms13_hit_force = null
 	if(scales[1] != 1 || scales[2] != 0.5 || scales[3] != 2 || scales[4] != 2 || ms13_hit_scale() != 1)
 		Fail("Blows sounded [english_list(scales)] times as loud at 25, 6.25, 100 and 300 force, not 1, 0.5, 2 and 2.")
+	// A wall between muffles a sound; nothing between leaves it be.
+	var/turf/outside = locate(run_loc_floor_top_right.x + 3, run_loc_floor_bottom_left.y, ear.z)
+	if(ms13_wall_muffle(ear, locate(ear.x + 2, ear.y, ear.z)) != 1 || ms13_walls_between(ear, outside) < 1 || ms13_wall_muffle(ear, outside) > SOUND_WALL_MUFFLE)
+		Fail("Walls between a sound and its listener didn't muffle it, or open floor did.")
 
 /obj/structure/ms13_hit_probe
 	max_integrity = 1000
@@ -237,3 +266,6 @@ GLOBAL_VAR(ms13_hit_force)
 /obj/structure/ms13_hit_probe/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	heard_force = GLOB.ms13_hit_force
 #endif
+
+#undef SOUND_WALL_MUFFLE
+#undef SOUND_WALLS_HEARD_THROUGH

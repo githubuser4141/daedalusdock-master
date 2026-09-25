@@ -27,7 +27,8 @@ OUT_DIR = "mojave/sound/ms13distant"
 DM_FILE = "mojave/code/game/distant_sound_versions.dm"
 CODE = glob.glob("mojave/**/*.dm", recursive=True) + glob.glob("code/modules/projectiles/**/*.dm", recursive=True)
 
-# How each kind of loud sound is found, how far it carries (in SOUND_RANGEs) and how it's baked. First match wins.
+# How each kind of loud sound is found, how far it carries (in SOUND_RANGEs), how loud it carries if quieter than
+# it's played (a share of it), and how it's baked. First match wins.
 # "code" is a pattern for where the code gives a sound to something; "files" are globs of sound files.
 CATEGORIES = [
     dict(name="artillery", reach=16, bake="explosion", files=["mojave/sound/ms13vehicles/artillery_outgoing.ogg"]),
@@ -38,10 +39,11 @@ CATEGORIES = [
          code=r"fire_sound\s*=\s*'(mojave/sound/ms13vehicles/[^']+)'"),
     dict(name="gunfire", reach=8, bake="gunfire", files=["mojave/sound/ms13npc/sentrybot/*_fire.ogg", "mojave/sound/ms13npc/sentrybot/laser_gatling.ogg"],
          code=r"(?:fire_sound|projectilesound|fallback_fire_sound)\s*=\s*'([^']+\.(?:ogg|wav))'"),
-    dict(name="hivemind", reach=6, bake="gunfire", files=[
+    dict(name="hivemind", reach=4, loudness=0.25, bake="gunfire", files=[
         "mojave/sound/wip/necromorphs/*.ogg", "mojave/sound/by_nc/tgmc_xenomorphs/*.ogg"]),
-    dict(name="monster", reach=5, bake="gunfire", files=[
-        f"mojave/sound/ms13npc/{kind}_*.ogg" for kind in ("genericclaw", "yaoguai", "mirelurk", "radscorp", "hellpig", "radstag", "ghoul")]),
+    # Creatures carry quietly: eerie far off, fading as it goes, rather than as loud as a gunshot.
+    dict(name="monster", reach=3, loudness=0.25, bake="gunfire", files=[
+        "mojave/sound/ms13npc/*_attack*.ogg", "mojave/sound/ms13npc/*_death*.ogg", "mojave/sound/ms13npc/brahmin_moo*.ogg"]),
     dict(name="engine", reach=5, bake="gunfire", files=[
         "mojave/sound/ms13machines/engine_*.ogg", "sound/effects/tank_treads.ogg", "sound/mecha/mechstep.ogg"]),
     dict(name="structure", reach=3, bake="gunfire", files=[
@@ -154,7 +156,8 @@ def main():
         dm.write("/// See playsound_distant().\n")
         dm.write("GLOBAL_LIST_INIT(distant_sound_versions, list(\n")
         for source, category, (far, distant) in entries:
-            dm.write(f"\t\"{source}\" = list('{far}', '{distant}', SOUND_RANGE * {category['reach']}), // {category['name']}\n")
+            loudness = f", {category['loudness']}" if "loudness" in category else ""
+            dm.write(f"\t\"{source}\" = list('{far}', '{distant}', SOUND_RANGE * {category['reach']}{loudness}), // {category['name']}\n")
         dm.write("))\n")
     print(f"{len(entries)} sounds baked.")
     baked = {v for _, _, versions in entries for v in versions}
