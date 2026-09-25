@@ -205,13 +205,15 @@
 	parent_type = /mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier
 	can_scale_roofs = TRUE
 	off_terrain_damage_multiplier = 0
-	var/hibernating = TRUE
+	/// Lying in wait. It leaves the nest with the rest first, so it doesn't lie in their way.
+	var/hibernating = FALSE
 	COOLDOWN_DECLARE(ambush_scan_cooldown)
 	COOLDOWN_DECLARE(ambush_awake_cooldown)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
 	. = ..()
 	name = "[name] ambusher"
+	COOLDOWN_START(src, ambush_awake_cooldown, 30 SECONDS)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/handle_automated_action()
 	if(AIStatus == AI_OFF || !network?.active || incapacitated())
@@ -219,7 +221,7 @@
 	if(target || health < maxHealth)
 		hibernating = FALSE
 		COOLDOWN_START(src, ambush_awake_cooldown, 30 SECONDS)
-	if(!hibernating && !target && COOLDOWN_FINISHED(src, ambush_awake_cooldown))
+	if(!hibernating && !target && COOLDOWN_FINISHED(src, ambush_awake_cooldown) && good_ambush_spot())
 		hibernating = TRUE
 	if(!hibernating)
 		return ..()
@@ -233,6 +235,18 @@
 				visible_message(span_warning("[src] suddenly stirs and lunges!"))
 				break
 	return TRUE
+
+/// Somewhere to lie in wait: clear of the nest, and not in a doorway or a passage the rest of the hive needs.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/proc/good_ambush_spot()
+	var/turf/here = get_turf(src)
+	if(!here || (network?.core && get_dist(here, network.core) <= 4) || (locate(/obj/machinery/door) in here))
+		return FALSE
+	var/open_sides = 0
+	for(var/direction in GLOB.cardinals)
+		var/turf/beside = get_step(here, direction)
+		if(beside && !beside.is_blocked_turf(TRUE))
+			open_sides++
+	return open_sides >= 3
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/examine(mob/user)
 	. = ..()
