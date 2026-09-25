@@ -1435,10 +1435,21 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	LoseTarget()
 	return TRUE
 
-/// Tank-grade hull is futile prey except at its hatches; lighter hull can be torn open anywhere.
+/// Hull is torn open to get at whoever's aboard, so an empty vehicle is left be. Tank-grade hull is futile prey except at
+/// its hatches; lighter hull can be torn open anywhere.
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/is_vehicle_hull_target(obj/structure/window/ms13_vehicle_wall/wall)
 	var/datum/ms13_ground_vehicle/vehicle = wall?.parent_frame?.vehicle
 	if(!vehicle || !wall.exterior || !wall.density)
+		return FALSE
+	var/prey_aboard = FALSE
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames)
+		for(var/mob/living/rider in frame.loc)
+			if(rider.stat == CONSCIOUS && !faction_check_atom(rider))
+				prey_aboard = TRUE
+				break
+		if(prey_aboard)
+			break
+	if(!prey_aboard)
 		return FALSE
 	var/heavy_armor = FALSE
 	for(var/obj/structure/window/ms13_vehicle_wall/candidate as anything in vehicle.walls)
@@ -1454,7 +1465,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	return can_field_convert_corpses() || network?.units_haul_corpses
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_terrain_recovery(ignore_dependency = FALSE)
-	if((!terrain_dependent && !ignore_dependency) || health >= maxHealth * 0.8)
+	if(!network || (!terrain_dependent && !ignore_dependency) || health >= maxHealth * 0.8)
 		terrain_recovering = FALSE
 		return FALSE
 	if(!terrain_recovering && health > maxHealth * terrain_recovery_health)
@@ -1487,7 +1498,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	SSmove_manager.stop_looping(src)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/find_local_corpses()
-	if(!COOLDOWN_FINISHED(src, corpse_report_cooldown))
+	if(!network || !COOLDOWN_FINISHED(src, corpse_report_cooldown))
 		return
 	COOLDOWN_START(src, corpse_report_cooldown, 3 SECONDS)
 	for(var/mob/living/corpse in view(network.corpse_search_range, src))
@@ -1495,6 +1506,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 			network.report_corpse(corpse)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_corpse_work()
+	if(!network)
+		return FALSE
 	find_local_corpses()
 	if(!can_work_corpses())
 		return FALSE
@@ -1572,7 +1585,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	SSmove_manager.stop_looping(src)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/pick_roam_target()
-	if(!isturf(loc) || roam_range <= 0)
+	if(!network || !isturf(loc) || roam_range <= 0)
 		return
 	for(var/attempt in 1 to 16)
 		var/x_offset = rand(-roam_range, roam_range)

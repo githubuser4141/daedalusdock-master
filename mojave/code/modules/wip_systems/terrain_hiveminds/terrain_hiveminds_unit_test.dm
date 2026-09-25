@@ -32,7 +32,7 @@
 	var/datum/ms13_terrain_hivemind/necromorph/network = new
 	network.active = TRUE
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/charger = new(origin, network)
-	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, locate(origin.x + 3, origin.y, origin.z))
+	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, locate(origin.x + 2, origin.y, origin.z))
 	victim.maxHealth = 1000
 	victim.health = 1000
 	victim.set_density(TRUE)
@@ -298,7 +298,9 @@
 	var/obj/structure/window/ms13_vehicle_wall/solid/light_wall = new(vehicle_turf)
 	light_wall.parent_frame = test_frame
 	test_vehicle.walls += light_wall
-	TEST_ASSERT(test_unit.is_vehicle_hull_target(light_wall), "A light vehicle hull is not a valid hive target.")
+	TEST_ASSERT(!test_unit.is_vehicle_hull_target(light_wall), "A hive unit goes for the hull of an empty vehicle.")
+	allocate(/mob/living/carbon/human/consistent, vehicle_turf)
+	TEST_ASSERT(test_unit.is_vehicle_hull_target(light_wall), "A light vehicle hull with someone aboard is not a valid hive target.")
 	var/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank/tank_wall = new(vehicle_turf)
 	tank_wall.parent_frame = test_frame
 	test_vehicle.walls += tank_wall
