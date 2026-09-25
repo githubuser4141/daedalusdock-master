@@ -65,6 +65,16 @@
 				if(thing.density && thing != src && !ismob(thing))
 					return thing
 
+/obj/structure/ms13_vehicle_frame/udp_car/Destroy()
+	var/obj/structure/ms13_vehicle_frame/udp_car/pivot = vehicle?.pivot
+	if(istype(pivot) && pivot != src)
+		for(var/key in pivot.tiles)
+			if(pivot.tiles[key] == src)
+				pivot.tiles -= key
+				break
+	tiles = null
+	return ..()
+
 /obj/structure/ms13_vehicle_frame/udp_car/proc/check_part_of_car()
 	if(vehicle || QDELETED(src))
 		return
@@ -242,6 +252,22 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car)
 /obj/structure/window/ms13_vehicle_wall/solid/door/udp_car/blocks_light()
 	return FALSE
 
+/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car/open(mob/user)
+	. = ..()
+	show_on_roof()
+
+/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car/close(mob/user)
+	. = ..()
+	show_on_roof()
+
+/// Outsiders see the car's bodywork as a whole tile: it shows this door open or shut, where the art has both.
+/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car/proc/show_on_roof()
+	var/image/roof = parent_frame?.roof
+	if(!roof)
+		return
+	var/shut = replacetext(roof.icon_state, "_open", "")
+	roof.icon_state = (opened && ms13_icon_has_state(roof.icon, "[shut]_open")) ? "[shut]_open" : shut
+
 /obj/structure/window/ms13_vehicle_wall/solid/door/udp_car/hood
 	name = "hood"
 	desc = "The hood over the engine. Click to lift or shut it."
@@ -294,6 +320,15 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car)
 	door?.close()
 	if(!door || !door.density || door.blocks_sight())
 		Fail("A sedan's shut front door wasn't there, didn't shut, or couldn't be seen through.")
+	door.open()
+	if(door_tile.roof.icon_state != "roof_door_front_left_open")
+		Fail("An open sedan door still looked shut from outside.")
+	door.close()
+	if(door_tile.roof.icon_state != "roof_door_front_left")
+		Fail("A shut sedan door still looked open from outside.")
+	// Its glass lets the daylight in, down the middle of the cabin too.
+	if(vehicle.is_light_sealed(driving_tile))
+		Fail("The middle of a glass-walled sedan's cabin was shut off from outside light.")
 	// It drives, all of it together: a tile back.
 	var/turf/was = get_turf(driving_tile)
 	if(!vehicle.do_move(SOUTH, TRUE) || get_turf(driving_tile) != get_step(was, SOUTH) || get_turf(driver) != get_turf(driving_tile) || get_turf(door) != get_turf(door_tile))

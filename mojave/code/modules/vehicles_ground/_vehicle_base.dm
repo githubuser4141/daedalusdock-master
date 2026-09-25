@@ -204,8 +204,30 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			viewer.images |= frame.interior_light_block
 
 /// Can outside light reach frame? False only when every exterior edge of it is closed light-proof hull.
-/datum/ms13_ground_vehicle/proc/is_light_sealed(obj/structure/ms13_vehicle_frame/frame)
-	return outer_edges_closed(frame, TRUE)
+/// A tile with no exterior edge of its own gets light through the tiles round it, where nothing light-proof stands between.
+/datum/ms13_ground_vehicle/proc/is_light_sealed(obj/structure/ms13_vehicle_frame/frame, list/checked)
+	if(!outer_edges_closed(frame, TRUE))
+		return FALSE
+	var/list/inward = list()
+	for(var/edge_dir in GLOB.cardinals)
+		var/obj/structure/ms13_vehicle_frame/next = get_frame_at(get_step(frame, edge_dir))
+		if(!next)
+			return TRUE
+		inward[next] = edge_dir
+	LAZYINITLIST(checked)
+	checked[frame] = TRUE
+	for(var/obj/structure/ms13_vehicle_frame/next as anything in inward)
+		if(checked[next] || edge_blocks_light(frame, inward[next]) || edge_blocks_light(next, turn(inward[next], 180)))
+			continue
+		if(!is_light_sealed(next, checked))
+			return FALSE
+	return TRUE
+
+/datum/ms13_ground_vehicle/proc/edge_blocks_light(obj/structure/ms13_vehicle_frame/frame, edge_dir)
+	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in frame.mounted_walls)
+		if(wall.dir == edge_dir && wall.blocks_light())
+			return TRUE
+	return FALSE
 
 /// Is frame out of the weather - roofed, with every exterior edge covered by an intact, closed panel?
 /datum/ms13_ground_vehicle/proc/is_weather_sealed(obj/structure/ms13_vehicle_frame/frame)
