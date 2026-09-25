@@ -103,7 +103,8 @@
 	UnregisterSignal(charger, list(COMSIG_MOVABLE_BUMP, COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED))
 	if(!(charger == owner && (check_flags & AB_CHECK_CONSCIOUS)))
 		UnregisterSignal(charger, COMSIG_MOB_STATCHANGE)
-	SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
+	if(owner) // MOJAVE EDIT - a charger deleted mid-charge has lost its action first
+		SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
 	actively_moving = FALSE
 	charging -= charger
 

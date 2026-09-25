@@ -146,6 +146,7 @@ code/modules/wiremod/shell/shell_items.dm,
 code/modules/unit_tests/combat/combat_power_armor_remote.dm,
 code/modules/mob/inventory.dm,
 code/game/sound.dm,
+code/datums/actions/mobs/charge.dm,
 
 
 */
