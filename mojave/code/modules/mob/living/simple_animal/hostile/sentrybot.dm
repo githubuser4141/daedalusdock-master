@@ -272,6 +272,12 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 	if(istype(Proj, /obj/projectile/bullet/shrapnel))
 		visible_message(span_danger("[Proj] bounces off of the [src]!"))
 		return BULLET_ACT_BLOCK
+	// Its own rounds pass it by, bounced back off a wall or broken into fragments (whose firer is the round).
+	var/obj/projectile/round = Proj
+	while(istype(round.firer, /obj/projectile))
+		round = round.firer
+	if(round.firer == src)
+		return BULLET_ACT_FORCE_PIERCE
 	return ..()
 
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot/proc/trigger_abilities(atom/A)
@@ -620,3 +626,18 @@ TYPEINFO_DEF(/obj/projectile/bullet/ms13/gauss/sentry)
 	damage = RAILGUN_DAMAGE
 	bulletTipType = BULLET_ULTRASHARP
 	speed = BULLET_SPEED_BASELINE + BULLET_SPEED_RAILGUN
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_sentrybot_own_rounds
+	name = "MOBS: A Sentry Bot's Own Rounds Don't Hit It"
+
+/datum/unit_test/ms13_sentrybot_own_rounds/Run()
+	var/mob/living/simple_animal/hostile/ms13/robot/sentrybot/ballistic/sentry = allocate(/mob/living/simple_animal/hostile/ms13/robot/sentrybot/ballistic)
+	var/obj/projectile/bullet/ricochet = allocate(/obj/projectile/bullet)
+	ricochet.firer = sentry
+	ricochet.ignore_source_check = TRUE
+	var/obj/projectile/bullet/fragment = allocate(/obj/projectile/bullet)
+	fragment.firer = ricochet
+	if(sentry.bullet_act(ricochet) != BULLET_ACT_FORCE_PIERCE || sentry.bullet_act(fragment) != BULLET_ACT_FORCE_PIERCE || sentry.health < sentry.maxHealth)
+		Fail("A sentry bot was hit by its own round, bounced back or broken into fragments.")
+#endif
