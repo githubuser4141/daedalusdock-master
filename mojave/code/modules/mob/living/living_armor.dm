@@ -109,3 +109,40 @@
  */
 /mob/living/proc/get_subarmor_dt_reduction(def_zone, sharpness = NONE)
 	return 0
+
+/**
+ * A creature's own hide or plating, set on its type as any atom's is: TYPEINFO default_armor takes a share off each hit
+ * (armor penetration gets through it as it does worn armor), and subarmor takes a flat amount off blows. None set, none.
+ */
+/mob/living/simple_animal/getarmor(def_zone, type)
+	return returnArmor().getRating(type)
+
+/mob/living/simple_animal/getsubarmor(def_zone, d_type)
+	if(islist(subarmor))
+		subarmor = getSubarmor(arglist(subarmor))
+	return subarmor?.getRating(d_type) || 0
+
+/mob/living/simple_animal/get_subarmor_dt_reduction(def_zone, sharpness = NONE)
+	var/subarmor_flag = CRUSHING
+	if(sharpness & SHARP_IMPALING)
+		subarmor_flag = IMPALING
+	else if(sharpness & SHARP_POINTY)
+		subarmor_flag = PIERCING
+	else if(sharpness & SHARP_EDGED)
+		subarmor_flag = CUTTING
+	return getsubarmor(def_zone, subarmor_flag)
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_creature_armor
+	name = "MOBS: Creatures Can Have Their Own Armor"
+
+/datum/unit_test/ms13_creature_armor/Run()
+	var/mob/living/simple_animal/hostile/ms13/mongrel/bare = allocate(/mob/living/simple_animal/hostile/ms13/mongrel)
+	var/mob/living/simple_animal/hostile/ms13/mongrel/plated = allocate(/mob/living/simple_animal/hostile/ms13/mongrel)
+	plated.setArmor(getArmor(blunt = 50))
+	plated.subarmor = list(CRUSHING = 4)
+	for(var/mob/living/simple_animal/dog as anything in list(bare, plated))
+		dog.apply_damage(20, BRUTE, blocked = dog.run_armor_check(null, BLUNT, silent = TRUE))
+	if(bare.maxHealth - bare.health != 20 || plated.maxHealth - plated.health != 8)
+		Fail("A 20 damage blow took [bare.maxHealth - bare.health] off a bare creature and [plated.maxHealth - plated.health] off a plated one, not 20 and 8.")
+#endif
