@@ -30,26 +30,51 @@
 	. = ..()
 	roof.icon_state = "none"
 	if(!length(tile_rows))
+		// One tile only ever comes as part of a car, built with it.
+		addtimer(CALLBACK(src, PROC_REF(check_part_of_car)), 0)
 		return
 	vehicle = new vehicle_controller_type
 	vehicle.pivot = src
-	vehicle.dir = dir
 	vehicle.frames += src
-	if(!build_body())
-		return
+	// It lays out back and right of here, the way it faces or else whichever way there's room.
+	var/blocker
+	for(var/facing in list(dir, turn(dir, 90), turn(dir, 180), turn(dir, -90)))
+		blocker = find_blocker(facing)
+		if(!blocker)
+			setDir(facing)
+			vehicle.dir = facing
+			break
+	if(blocker)
+		visible_message(span_warning("There's no room for [src] here, any way round: [blocker] is in the way."))
+		return INITIALIZE_HINT_QDEL
+	build_body()
 	furnish()
 	vehicle.update_interior_lighting()
 
-/// Lays out every tile and its walls. FALSE if there isn't room.
+/// What's in the way of laying it out facing facing: a wall, something solid, or the edge of the map. Null if nothing.
+/obj/structure/ms13_vehicle_frame/udp_car/proc/find_blocker(facing)
+	for(var/row in 1 to length(tile_rows))
+		for(var/column in 1 to length(tile_rows[1]))
+			var/turf/spot = vehicle.get_relative_turf(1 - row, column - 1, facing)
+			if(!spot)
+				return "the edge of the map"
+			if(spot.density)
+				return spot
+			// Anyone standing there comes along for the ride.
+			for(var/atom/movable/thing in spot)
+				if(thing.density && thing != src && !ismob(thing))
+					return thing
+
+/obj/structure/ms13_vehicle_frame/udp_car/proc/check_part_of_car()
+	if(vehicle || QDELETED(src))
+		return
+	visible_message(span_warning("[src] is one tile of a car and does nothing on its own. Spawn a whole car, such as /obj/structure/ms13_vehicle_frame/udp_car/sedan."))
+	qdel(src)
+
+/// Lays out every tile and its walls.
 /obj/structure/ms13_vehicle_frame/udp_car/proc/build_body()
 	var/row_count = length(tile_rows)
 	var/column_count = length(tile_rows[1])
-	for(var/row in 1 to row_count)
-		for(var/column in 1 to column_count)
-			var/turf/destination = vehicle.get_relative_turf(1 - row, column - 1, dir)
-			if(!destination || (destination.density && destination != loc))
-				return FALSE
-
 	tiles = list()
 	for(var/row in 1 to row_count)
 		for(var/column in 1 to column_count)
@@ -78,7 +103,6 @@
 				if(wall_type)
 					var/obj/structure/ms13_vehicle_frame/frame = tiles["[row],[column]"]
 					frame.spawn_wall(edge_dir(edge), null, wall_type)
-	return TRUE
 
 /obj/structure/ms13_vehicle_frame/udp_car/proc/edge_dir(edge)
 	switch(edge)
@@ -302,5 +326,15 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car)
 	if(!vehicle.engine_running || vehicle.gear_delay(top) <= one_engine)
 		Fail("With one of two engines broken, it stalled, or its dead weight didn't slow it.")
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames.Copy())
+		qdel(frame)
+
+	// Spawned by hand it faces the default way, south, and lays out north. Blocked that way, it turns to fit.
+	var/turf/by_hand = locate(run_loc_floor_top_right.x + 12, run_loc_floor_top_right.y + 4, run_loc_floor_top_right.z)
+	var/obj/structure/obstacle = allocate(/obj/structure, locate(by_hand.x, by_hand.y + 2, by_hand.z))
+	obstacle.density = TRUE
+	var/obj/structure/ms13_vehicle_frame/udp_car/sedan/turned = new(by_hand)
+	if(length(turned.vehicle?.frames) != 18 || turned.dir == SOUTH || turned.vehicle.get_frame_at(obstacle.loc))
+		Fail("A sedan spawned facing something solid didn't turn to fit round it.")
+	for(var/obj/structure/ms13_vehicle_frame/frame as anything in turned.vehicle?.frames.Copy())
 		qdel(frame)
 #endif
