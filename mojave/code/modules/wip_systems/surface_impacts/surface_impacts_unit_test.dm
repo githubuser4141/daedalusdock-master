@@ -23,15 +23,48 @@
 		for(var/loot_type in impact.loot_types)
 			TEST_ASSERT(ispath(loot_type, /obj/item), "[impact.name] has invalid loot content [loot_type].")
 		TEST_ASSERT(impact.contains_offset(impact.radius, 0), "[impact.name] excludes its cardinal radius.")
+		var/fits_standard = FALSE
+		for(var/list/layout as anything in impact.layouts)
+			fits_standard ||= impact.layout_fits(layout)
+			for(var/list/cell as anything in impact.layout_cells(layout))
+				TEST_ASSERT(findtext("#.+XMLF", cell[3]), "[impact.name] has a layout with an unknown symbol [cell[3]].")
+			TEST_ASSERT_EQUAL(json_encode(impact.layout_cells(layout, 4)), json_encode(impact.layout_cells(layout)), "[impact.name]'s layouts don't turn round to where they started.")
+		TEST_ASSERT(fits_standard, "[impact.name] has no layout that fits a standard impact.")
 		TEST_ASSERT(!impact.contains_offset(impact.radius, 1), "[impact.name] generates a square instead of a circular footprint.")
 		qdel(impact)
 
 	TEST_ASSERT_EQUAL(concrete_variants, 10, "The prototype should expose five base themes and five elite variants.")
 	TEST_ASSERT_EQUAL(elite_variants, 5, "Every base surface-impact theme should have an elite variant.")
 	var/datum/ms13_surface_impact/natural/level_check = new
-	TEST_ASSERT(level_check.is_impact_level(SSmapping.station_start), "Impacts reject the first playable z-level.")
-	TEST_ASSERT(!level_check.is_impact_level(SSmapping.station_start + 1), "Impacts accept z-levels above the first playable level.")
+	var/surface = ms13_surface_z()
+	TEST_ASSERT(level_check.is_impact_level(surface), "Impacts reject the surface.")
+	if(surface != SSmapping.station_start)
+		TEST_ASSERT(!level_check.is_impact_level(SSmapping.station_start), "Impacts accept the basement below the surface.")
 	qdel(level_check)
+
+	// A small raider fort, built out past the test room (too small for one) and put back after.
+	var/datum/ms13_surface_impact/raider/fort = new
+	fort.radius = 3
+	var/turf/center = locate(run_loc_floor_top_right.x + 8, run_loc_floor_top_right.y + 8, run_loc_floor_top_right.z)
+	fort.center_x = center.x
+	fort.center_y = center.y
+	fort.center_z = center.z
+	var/list/footprint = fort.get_footprint(center)
+	var/list/floors = list()
+	for(var/turf/spot as anything in footprint)
+		floors[spot] = spot.type
+	var/list/spots = fort.build_structure(footprint.Copy())
+	var/walls = 0
+	for(var/turf/spot as anything in footprint)
+		walls += spot.density
+	var/doors = 0
+	for(var/turf/spot as anything in footprint)
+		doors += !!(locate(/obj/machinery/door) in spot)
+	for(var/turf/spot as anything in floors)
+		spot.ChangeTurf(floors[spot])
+	qdel(fort)
+	TEST_ASSERT(walls && doors, "A raider fort went up without walls or a door.")
+	TEST_ASSERT(length(spots["M"]) && length(spots["L"]), "A raider fort asked for nowhere to put its raiders or loot.")
 
 	var/turf/indicator_turf = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
 	var/obj/effect/temp_visual/ms13/target_indicator/indicator = new(indicator_turf)
