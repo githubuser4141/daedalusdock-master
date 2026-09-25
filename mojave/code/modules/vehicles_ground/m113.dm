@@ -13,6 +13,7 @@
 
 
 /datum/ms13_ground_vehicle/m113
+	rated_engine = /obj/structure/ms13_vehicle_part/engine/m113
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.8 SECONDS
@@ -35,6 +36,8 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine/m113)
 /obj/structure/ms13_vehicle_part/engine/m113
 	name = "Detroit 6V53T diesel engine"
 	desc = "The compact two-stroke diesel engine used to propel an M113 armored personnel carrier."
+	power = 205
+	mass = 540
 	density = TRUE
 	max_integrity = 350
 	icon_state = "engine_static"

@@ -253,7 +253,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	broken_icon_state = "m113_tracks_end_[side]_broken"
 	exterior_image.icon_state = broken ? broken_icon_state : stationary_icon_state
 
-/** The engine burns fuel drawn from the vehicle's fuel tank part. */
+/**
+ * The engine burns fuel drawn from the vehicle's fuel tanks. More engines drive it faster, for their weight, and burn
+ * fuel for their power (see power_factor()).
+ */
 /obj/structure/ms13_vehicle_part/engine
 	name = "vehicle engine"
 	desc = "A combustion engine."
@@ -261,6 +264,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	layer = OBJ_LAYER
 	max_integrity = 200
 	fitting_time = 8 SECONDS
+	/// Kilowatts.
+	var/power = 75
+	/// Kilograms.
+	var/mass = 150
 	var/static_icon_state = "carengine_static"
 	var/running_icon_state = "carengine_on"
 	var/broken_icon_state = "carengine_broken"
@@ -271,33 +278,33 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	return ..()
 
 /obj/structure/ms13_vehicle_part/engine/detach()
-	if(vehicle?.engine == src)
-		vehicle.stop_engine()
-		vehicle.engine = null
-	return ..()
+	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
+	vehicle?.engines -= src
+	. = ..()
+	set_moving(FALSE)
+	if(old_vehicle?.engine_running && !old_vehicle.engine_output())
+		old_vehicle.stop_engine()
 
 /obj/structure/ms13_vehicle_part/engine/configure_from_vehicle()
 	modify_max_integrity(vehicle.engine_integrity)
-	vehicle.engine = src
+	vehicle.engines |= src
 	soundloop ||= new(src)
 	if(!stock_on_fit)
 		return
 	// All layouts use this shared mount path; keep the walk-over battery at the driver's end.
-	if(!vehicle.battery)
+	if(!length(vehicle.batteries))
 		vehicle.pivot.spawn_part(/obj/structure/ms13_vehicle_part/battery)
 	// The alternator is belted to the engine, on its tile.
 	var/obj/structure/ms13_vehicle_frame/engine_bay = locate() in loc
-	if(engine_bay && !(locate(/obj/structure/ms13_vehicle_part/alternator) in vehicle.parts))
+	if(engine_bay && !(locate(/obj/structure/ms13_vehicle_part/alternator) in loc))
 		engine_bay.spawn_part(vehicle.alternator_type)
 
-/obj/structure/ms13_vehicle_part/engine/proc/consume_fuel(amount)
-	if(vehicle?.engine_running && is_operational())
-		vehicle.fuel_tank.draw_fuel(amount)
-	if(!is_operational())
-		vehicle?.stop_engine()
-
 /obj/structure/ms13_vehicle_part/engine/is_operational()
-	return ..() && vehicle?.fuel_tank?.has_fuel()
+	return ..() && vehicle?.has_fuel()
+
+/obj/structure/ms13_vehicle_part/engine/examine(mob/user)
+	. = ..()
+	. += span_notice("It makes [power] kW and weighs [mass] kg.")
 
 /obj/structure/ms13_vehicle_part/engine/set_moving(is_moving)
 	if(!broken)
@@ -309,7 +316,8 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 
 /obj/structure/ms13_vehicle_part/engine/atom_break(damage_flag)
 	. = ..()
-	vehicle?.stop_engine()
+	if(vehicle?.engine_running && !vehicle.engine_output())
+		vehicle.stop_engine()
 	icon_state = broken_icon_state
 	soundloop?.stop()
 
@@ -384,11 +392,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 		create_reagents(capacity, OPENCONTAINER)
 	if(stock_on_fit)
 		reagents.add_reagent(/datum/reagent/fuel, capacity)
-	vehicle.fuel_tank = src
+	vehicle.fuel_tanks |= src
 
 /obj/structure/ms13_vehicle_part/fuel_tank/detach()
-	if(vehicle?.fuel_tank == src)
-		vehicle.fuel_tank = null
+	vehicle?.fuel_tanks -= src
 	return ..()
 
 /obj/structure/ms13_vehicle_part/fuel_tank/proc/has_fuel()
@@ -396,7 +403,9 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 		top_up()
 	return reagents?.has_reagent(/datum/reagent/fuel)
 
+/// Draws up to amount, returning what it drew. Broken, it leaks leak_per_tile more.
 /obj/structure/ms13_vehicle_part/fuel_tank/proc/draw_fuel(amount)
+	. = min(amount, reagents?.get_reagent_amount(/datum/reagent/fuel))
 	reagents?.remove_reagent(/datum/reagent/fuel, broken ? amount + leak_per_tile : amount)
 	top_up()
 
@@ -903,7 +912,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 /obj/structure/ms13_vehicle_part/turret/proc/fire_at(atom/target, mob/living/user, list/modifiers)
 	if(!ammo_type || !is_operational() || !gunner_seat || user.buckled != gunner_seat || !(user in gunner_seat.buckled_mobs) || user.incapacitated())
 		return FALSE
-	if(shot_power_cost && (!vehicle?.has_electrical_power() || vehicle.battery.cell.charge < shot_power_cost))
+	if(shot_power_cost && (!vehicle?.has_electrical_power() || vehicle.stored_charge() < shot_power_cost))
 		balloon_alert(user, "mount has no power!")
 		return FALSE
 	var/turf/target_turf = get_turf(target)

@@ -1,6 +1,6 @@
-/// Shared electrical bus; one battery processor per vehicle, not one per lamp/camera.
+/// Shared electrical bus off a bank of batteries; one battery processes it for the vehicle, not one per lamp/camera.
 /datum/ms13_ground_vehicle
-	var/obj/structure/ms13_vehicle_part/battery/battery
+	var/list/obj/structure/ms13_vehicle_part/battery/batteries = list()
 	var/ignition = FALSE
 	var/engine_running = FALSE
 	var/interior_lights_on = TRUE
@@ -15,17 +15,52 @@
 	var/idle_fuel_rate = 0.01
 	var/electrical_live = FALSE
 
+/// Charge in its working batteries.
+/datum/ms13_ground_vehicle/proc/stored_charge()
+	. = 0
+	for(var/obj/structure/ms13_vehicle_part/battery/battery as anything in batteries)
+		if(battery.is_operational())
+			. += battery.cell?.charge
+
+/// What its working batteries hold full.
+/datum/ms13_ground_vehicle/proc/charge_capacity()
+	. = 0
+	for(var/obj/structure/ms13_vehicle_part/battery/battery as anything in batteries)
+		if(battery.is_operational())
+			. += battery.cell?.maxcharge
+
+/// Draws amount off its batteries in turn; nothing unless they hold that much between them.
+/datum/ms13_ground_vehicle/proc/use_charge(amount)
+	if(stored_charge() < amount)
+		return FALSE
+	for(var/obj/structure/ms13_vehicle_part/battery/battery as anything in batteries)
+		if(amount <= 0)
+			break
+		if(battery.is_operational() && battery.cell)
+			var/drawn = min(battery.cell.charge, amount)
+			battery.cell.use(drawn)
+			amount -= drawn
+	return TRUE
+
+/// Charges its batteries in turn.
+/datum/ms13_ground_vehicle/proc/give_charge(amount)
+	for(var/obj/structure/ms13_vehicle_part/battery/battery as anything in batteries)
+		if(amount <= 0)
+			return
+		if(battery.is_operational() && battery.cell)
+			amount -= battery.cell.give(amount)
+
 /datum/ms13_ground_vehicle/proc/has_electrical_power()
-	return ignition && battery?.is_operational() && battery.cell?.charge > 0
+	return ignition && stored_charge() > 0
 
 /// Power for things that run with the ignition off, like a rail car's route terminal.
 /datum/ms13_ground_vehicle/proc/has_standby_power()
-	return battery?.is_operational() && battery.cell?.charge > 0
+	return stored_charge() > 0
 
 /datum/ms13_ground_vehicle/proc/use_battery(amount)
-	if(!has_electrical_power() || !battery.cell.use(amount))
+	if(!has_electrical_power() || !use_charge(amount))
 		return FALSE
-	if(!battery.cell.charge)
+	if(!stored_charge())
 		update_electrical()
 	return TRUE
 
@@ -33,28 +68,35 @@
 /datum/ms13_ground_vehicle/proc/use_spare_charge(amount)
 	var/obj/structure/ms13_vehicle_part/battery_cutout/cutout = locate() in parts
 	var/reserve = cutout?.is_operational() ? starter_cost : 0
-	return has_standby_power() && battery.cell.charge - amount >= reserve && battery.cell.use(amount)
+	return has_standby_power() && stored_charge() - amount >= reserve && use_charge(amount)
 
+/// Cranks every working engine: the starter's charge for each.
 /datum/ms13_ground_vehicle/proc/start_engine(mob/user)
 	if(QDELETED(pivot))
 		return FALSE
-	if(engine_running && engine?.is_operational())
+	if(engine_output())
 		return TRUE
-	if(!engine?.is_operational())
+	var/working = 0
+	for(var/obj/structure/ms13_vehicle_part/engine/engine as anything in engines)
+		if(engine.is_operational())
+			working++
+	if(!working)
 		if(user)
 			to_chat(user, span_warning("The engine is damaged, missing, or out of fuel."))
 		return FALSE
-	if(!ignition || !use_battery(starter_cost))
+	if(!ignition || !use_battery(starter_cost * working))
 		if(user)
-			to_chat(user, span_warning("Switch on the ignition and check the battery: the starter needs [starter_cost] charge."))
+			to_chat(user, span_warning("Switch on the ignition and check the battery: the starter needs [starter_cost * working] charge."))
 		return FALSE
 	engine_running = TRUE
-	engine.set_moving(moving)
+	for(var/obj/structure/ms13_vehicle_part/engine/engine as anything in engines)
+		engine.set_moving(moving)
 	return TRUE
 
 /datum/ms13_ground_vehicle/proc/stop_engine()
 	engine_running = FALSE
-	engine?.set_moving(moving)
+	for(var/obj/structure/ms13_vehicle_part/engine/engine as anything in engines)
+		engine.set_moving(moving)
 
 /datum/ms13_ground_vehicle/proc/set_ignition(enabled)
 	ignition = enabled
@@ -68,26 +110,29 @@
  * A parked vehicle, or a wreck, costs nothing.
  */
 /datum/ms13_ground_vehicle/proc/update_power_processing()
-	if(!battery)
+	if(!length(batteries))
 		return
+	var/obj/structure/ms13_vehicle_part/battery/processor = batteries[1]
+	for(var/obj/structure/ms13_vehicle_part/battery/battery as anything in batteries)
+		if(battery != processor)
+			STOP_PROCESSING(SSobj, battery)
 	if(ignition || (locate(/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel) in parts) || (locate(/obj/structure/ms13_vehicle_part/stowage/freezer) in parts) || (locate(/obj/structure/ms13_vehicle_part/stowage/recharge_station) in parts))
-		START_PROCESSING(SSobj, battery)
+		START_PROCESSING(SSobj, processor)
 	else
-		STOP_PROCESSING(SSobj, battery)
+		STOP_PROCESSING(SSobj, processor)
 
 /datum/ms13_ground_vehicle/proc/process_power(seconds_per_tick)
 	if(engine_running)
-		if(!ignition || !engine?.is_operational())
+		if(!ignition || !engine_output())
 			stop_engine()
 		else
-			engine.consume_fuel(idle_fuel_rate * seconds_per_tick)
-			if(engine_running && battery?.is_operational())
+			burn_fuel(idle_fuel_rate * seconds_per_tick)
+			if(engine_running)
 				for(var/obj/structure/ms13_vehicle_part/alternator/alternator in parts)
 					if(alternator.is_operational())
-						battery.cell?.give(alternator.rate * seconds_per_tick)
-	if(battery?.is_operational() && battery.cell)
-		for(var/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel/panel in parts)
-			battery.cell.give(panel.output * panel.sunlight() * seconds_per_tick)
+						give_charge(alternator.rate * seconds_per_tick)
+	for(var/obj/structure/ms13_vehicle_part/exterior_equipment/solar_panel/panel in parts)
+		give_charge(panel.output * panel.sunlight() * seconds_per_tick)
 	for(var/obj/structure/ms13_vehicle_part/stowage/freezer/freezer in parts)
 		freezer.chill(seconds_per_tick)
 	for(var/obj/structure/ms13_vehicle_part/stowage/recharge_station/station in parts)
@@ -104,13 +149,19 @@
 				if(equipment.is_enabled())
 					load += equipment.power_draw
 		var/obj/structure/ms13_vehicle_part/battery_cutout/cutout = locate() in parts
-		if(!engine_running && cutout?.is_operational() && battery.cell.charge - load * seconds_per_tick < starter_cost)
+		if(!engine_running && cutout?.is_operational() && stored_charge() - load * seconds_per_tick < starter_cost)
 			set_ignition(FALSE)
 			cutout.visible_message(span_warning("[cutout] clicks, cutting the power to save the battery."))
 		else
-			battery.cell.use(min(battery.cell.charge, load * seconds_per_tick))
+			use_charge(min(stored_charge(), load * seconds_per_tick))
 	if(electrical_live != has_electrical_power())
 		update_electrical()
+
+/// A battery broke or came out: with no charge left in the rest, the engines stall.
+/datum/ms13_ground_vehicle/proc/battery_lost()
+	if(!has_standby_power())
+		stop_engine()
+	update_electrical()
 
 /datum/ms13_ground_vehicle/proc/update_electrical()
 	electrical_live = has_electrical_power()
@@ -142,7 +193,7 @@
 	var/obj/item/stock_parts/cell/cell
 
 /obj/structure/ms13_vehicle_part/battery/configure_from_vehicle()
-	vehicle.battery = src
+	vehicle.batteries |= src
 	if(!cell && stock_on_fit)
 		cell = new vehicle.battery_cell(src)
 	update_appearance()
@@ -165,18 +216,13 @@
 	STOP_PROCESSING(SSobj, src)
 	var/datum/ms13_ground_vehicle/old_vehicle = vehicle
 	// Unlinked first, so the vehicle doesn't set it processing again as it goes.
-	var/was_battery = old_vehicle?.battery == src
-	if(was_battery)
-		old_vehicle.battery = null
+	old_vehicle?.batteries -= src
 	. = ..()
-	if(was_battery)
-		old_vehicle.stop_engine()
-		old_vehicle.update_electrical()
+	old_vehicle?.battery_lost()
 
 /obj/structure/ms13_vehicle_part/battery/atom_break(damage_flag)
 	. = ..()
-	vehicle?.stop_engine()
-	vehicle?.update_electrical()
+	vehicle?.battery_lost()
 
 /obj/structure/ms13_vehicle_part/battery/atom_fix()
 	. = ..()
@@ -194,8 +240,7 @@
 	cell.forceMove(drop_location())
 	cell = null
 	update_appearance()
-	vehicle?.stop_engine()
-	vehicle?.update_electrical()
+	vehicle?.battery_lost()
 	return TRUE
 
 /obj/structure/ms13_vehicle_part/battery/attackby(obj/item/item, mob/user, params)

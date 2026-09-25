@@ -71,8 +71,9 @@
 /obj/structure/chair/ms13_vehicle_seat/proc/show_controls(mob/living/user)
 	while(can_use_controls(user))
 		var/datum/ms13_ground_vehicle/vehicle = parent_frame.vehicle
-		var/list/options = list("Drive" = 1, "[vehicle.engine ? "Engine" : "Motor"] toggle ([vehicle.engine_running ? "on" : "off"])" = 2, "Ignition toggle ([vehicle.ignition ? "on" : "off"])" = 3, "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])" = 4, "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])" = 5, "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])" = 6, "Camera view ([user.ms13_vehicle_camera ? user.ms13_vehicle_camera.feed_name() : "cabin"])" = 13, "Horn" = 7, "Exit" = 8, "Unbuckle" = 9, "Stop" = 10)
-		var/power_reading = vehicle.battery?.cell ? "Battery: [round(vehicle.battery.cell.percent())]%" : "Line power: [vehicle.has_standby_power() ? "live" : "dead"]"
+		var/list/options = list("Drive" = 1, "[length(vehicle.engines) ? "Engine" : "Motor"] toggle ([vehicle.engine_running ? "on" : "off"])" = 2, "Ignition toggle ([vehicle.ignition ? "on" : "off"])" = 3, "Exterior lights ([vehicle.exterior_lights_on ? "on" : "off"])" = 4, "Interior lights ([vehicle.interior_lights_on ? "on" : "off"])" = 5, "Vehicle cameras ([vehicle.cameras_on ? "on" : "off"])" = 6, "Camera view ([user.ms13_vehicle_camera ? user.ms13_vehicle_camera.feed_name() : "cabin"])" = 13, "Horn" = 7, "Exit" = 8, "Unbuckle" = 9, "Stop" = 10)
+		var/capacity = vehicle.charge_capacity()
+		var/power_reading = capacity ? "Battery: [round(vehicle.stored_charge() / capacity * 100)]%" : "Line power: [vehicle.has_standby_power() ? "live" : "dead"]"
 		if(istype(vehicle, /datum/ms13_ground_vehicle/rail))
 			// Rail cars only run routes to a stop.
 			options -= "Drive"

@@ -92,7 +92,7 @@
 		next_move_time = world.time + gear_delay(max(speed, 1))
 	update_underneath(manifest)
 	if(!being_pushed)
-		engine?.consume_fuel(fuel_per_tile)
+		burn_fuel(fuel_per_tile)
 	update_interior_masks()
 	for(var/mob/living/rider as anything in sights)
 		var/obj/item/ms13_vehicle_turret_control/control = sights[rider]
@@ -178,14 +178,14 @@
 		vehicle.travel_dir = direction
 		vehicle.drift = 1
 		var/heading = vehicle.dir
-		var/battery_charge = vehicle.battery.cell.charge
+		var/battery_charge = vehicle.stored_charge()
 		var/list/layout = list()
 		for(var/atom/movable/part as anything in vehicle.get_all_parts())
 			layout[part] = list(part.x - vehicle_pivot.x, part.y - vehicle_pivot.y, part.dir, part.get_integrity())
 		for(var/step in 1 to 30)
 			if(!vehicle.do_move(direction, TRUE) || vehicle_pivot.z == neighbor_z)
 				break
-		if(vehicle_pivot.z != neighbor_z || vehicle.speed != 3 || vehicle.travel_dir != direction || vehicle.dir != heading || vehicle.drift != 1 || !vehicle.engine_running || vehicle.battery.cell.charge != battery_charge)
+		if(vehicle_pivot.z != neighbor_z || vehicle.speed != 3 || vehicle.travel_dir != direction || vehicle.dir != heading || vehicle.drift != 1 || !vehicle.engine_running || vehicle.stored_charge() != battery_charge)
 			Fail("Whole-truck crossing lost motion/electrical state for direction [direction].")
 		if(driver.buckled != seat || vehicle.driver != driver || driver.z != neighbor_z || cargo.z != neighbor_z || nested_cargo.loc != cargo)
 			Fail("Whole-truck crossing lost a driver, buckle, or nested cargo.")

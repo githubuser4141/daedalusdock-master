@@ -296,7 +296,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 
 /// A vehicle ramming it with more momentum than it has mass knocks it back a tile, if there's room, and drives on.
 /obj/vehicle/sealed/ms13_mech/rammed_by(datum/ms13_ground_vehicle/vehicle, direction)
-	if(length(vehicle.frames) * vehicle.mass_per_frame * vehicle.speed >= mass)
+	if(vehicle.total_mass() * vehicle.speed >= mass)
 		knocked_back(direction)
 
 /obj/vehicle/sealed/ms13_mech/proc/knocked_back(direction)

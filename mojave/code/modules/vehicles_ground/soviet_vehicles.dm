@@ -192,6 +192,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/btr80
+	rated_engine = /obj/structure/ms13_vehicle_part/engine/btr80
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.2 SECONDS
@@ -207,6 +208,8 @@
 /obj/structure/ms13_vehicle_part/engine/btr80
 	name = "KamAZ-7403 diesel engine"
 	desc = "The BTR-80's turbocharged V8 diesel."
+	power = 191
+	mass = 750
 	icon_state = "engine_static"
 	static_icon_state = "engine_static"
 	running_icon_state = "engine_on"
@@ -279,6 +282,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/mtlb
+	rated_engine = /obj/structure/ms13_vehicle_part/engine/mtlb
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.6 SECONDS
@@ -295,6 +299,8 @@
 /obj/structure/ms13_vehicle_part/engine/mtlb
 	name = "YaMZ-238 diesel engine"
 	desc = "The MT-LB's V8 diesel, squeezed in right behind the cab."
+	power = 176
+	mass = 1100
 	icon_state = "engine_static"
 	static_icon_state = "engine_static"
 	running_icon_state = "engine_on"
@@ -365,6 +371,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/bmd2
+	rated_engine = /obj/structure/ms13_vehicle_part/engine/bmd2
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 1.1 SECONDS
@@ -381,6 +388,8 @@
 /obj/structure/ms13_vehicle_part/engine/bmd2
 	name = "5D-20 diesel engine"
 	desc = "The BMD-2's compact, lightweight diesel."
+	power = 176
+	mass = 665
 	icon_state = "engine_static"
 	static_icon_state = "engine_static"
 	running_icon_state = "engine_on"
@@ -447,6 +456,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/t34
+	rated_engine = /obj/structure/ms13_vehicle_part/engine/t34
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 2 SECONDS
@@ -463,6 +473,8 @@
 /obj/structure/ms13_vehicle_part/engine/t34
 	name = "V-2-34 diesel engine"
 	desc = "The T-34's twelve-cylinder aluminium diesel."
+	power = 368
+	mass = 1000
 	icon_state = "engine_static"
 	static_icon_state = "engine_static"
 	running_icon_state = "engine_on"
@@ -541,6 +553,7 @@
 // ---------------------------------------------------------------------------------------------------------
 
 /datum/ms13_ground_vehicle/is3
+	rated_engine = /obj/structure/ms13_vehicle_part/engine/is3
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/truck
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	acceleration_delay = 2.6 SECONDS
@@ -557,6 +570,8 @@
 /obj/structure/ms13_vehicle_part/engine/is3
 	name = "V-2-IS diesel engine"
 	desc = "A heavy-tank development of the V-2 twelve-cylinder diesel."
+	power = 382
+	mass = 1000
 	icon_state = "engine_static"
 	static_icon_state = "engine_static"
 	running_icon_state = "engine_on"

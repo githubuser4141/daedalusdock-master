@@ -23,9 +23,10 @@
 		TEST_ASSERT_EQUAL(wheel.exterior_image.pixel_x, wheel.dir == EAST ? 12 : wheel.dir == WEST ? -12 : 0, "A wheel was not offset horizontally toward its outside edge.")
 		TEST_ASSERT_EQUAL(wheel.exterior_image.pixel_y, wheel.dir == NORTH ? 12 : wheel.dir == SOUTH ? -12 : 0, "A wheel was not offset vertically toward its outside edge.")
 	TEST_ASSERT_EQUAL(wheel_count, 4, "Jeep did not assemble four independently damageable wheels.")
-	TEST_ASSERT(front.vehicle.fuel_tank?.has_fuel(), "Jeep fuel tank did not start with reagent fuel.")
+	TEST_ASSERT(front.vehicle.has_fuel(), "Jeep fuel tank did not start with reagent fuel.")
 	TEST_ASSERT(!front.vehicle.is_weather_sealed(front), "The open-top jeep kept the weather out.")
-	TEST_ASSERT(!front.vehicle.engine.reagents, "The engine still carries its own fuel instead of drawing from the tank.")
+	var/obj/structure/ms13_vehicle_part/engine/engine = locate() in front.vehicle.engines
+	TEST_ASSERT(engine && !engine.reagents, "The engine still carries its own fuel instead of drawing from the tank.")
 
 	var/obj/structure/ms13_vehicle_frame/back
 	for(var/obj/structure/ms13_vehicle_frame/candidate as anything in front.vehicle.frames)
@@ -66,13 +67,13 @@
 	TEST_ASSERT(expected_front_dest && !expected_front_dest.density, "No clear tile east of the front frame for this test.")
 	TEST_ASSERT(expected_back_dest && !expected_back_dest.density, "No clear tile east of the back frame for this test.")
 
-	var/fuel_before_move = front.vehicle.fuel_tank.reagents.get_reagent_amount(/datum/reagent/fuel)
+	var/fuel_before_move = front.vehicle.stored_fuel()
 	var/result = front.vehicle.do_move(EAST)
 	TEST_ASSERT(result, "do_move() reported failure on a clear path.")
 	TEST_ASSERT_EQUAL(get_turf(front), expected_front_dest, "Front frame did not move to the expected tile.")
 	TEST_ASSERT_EQUAL(get_turf(back), expected_back_dest, "Back frame did not move to the expected tile.")
 	TEST_ASSERT_EQUAL(get_turf(driver), expected_front_dest, "Driver was not carried along with the vehicle.")
-	TEST_ASSERT(front.vehicle.fuel_tank.reagents.get_reagent_amount(/datum/reagent/fuel) < fuel_before_move, "A powered movement step drew no fuel from the tank.")
+	TEST_ASSERT(front.vehicle.stored_fuel() < fuel_before_move, "A powered movement step drew no fuel from the tank.")
 
 	// Rotation: turn 90 degrees and confirm the back frame, its walls, and the driver all land where
 	// expected, and that the walls' own facings turned with them, not just their positions.
@@ -132,10 +133,11 @@
 
 	// Exercise throttle state without leaving a live timer behind: the first input performs one
 	// immediate low-speed step, then later held inputs climb the configured bands.
+	var/obj/structure/ms13_vehicle_part/engine/engine = locate() in vehicle.engines
 	vehicle.apply_throttle(vehicle.dir)
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Vehicle did not start in its first speed band.")
 	TEST_ASSERT(vehicle.moving, "Vehicle did not enter its self-driven movement loop.")
-	TEST_ASSERT(vehicle.engine.soundloop?.is_active(), "The engine running loop did not start with the vehicle.")
+	TEST_ASSERT(engine.soundloop?.is_active(), "The engine running loop did not start with the vehicle.")
 	TEST_ASSERT(vehicle.running_gear_soundloop?.is_active(), "The wheel movement loop did not start with the vehicle.")
 	vehicle.next_acceleration_time = 0
 	vehicle.apply_throttle(vehicle.travel_dir)
@@ -143,7 +145,7 @@
 	vehicle.apply_throttle(turn(vehicle.travel_dir, 180))
 	TEST_ASSERT_EQUAL(vehicle.speed, 1, "Opposite input did not brake the vehicle by one speed band.")
 	vehicle.stop_motion()
-	TEST_ASSERT(vehicle.engine.soundloop?.is_active(), "Stopping the wheels also stopped the idling engine.")
+	TEST_ASSERT(engine.soundloop?.is_active(), "Stopping the wheels also stopped the idling engine.")
 	TEST_ASSERT(!vehicle.running_gear_soundloop?.is_active(), "The wheel movement loop continued after the vehicle stopped.")
 
 	var/turf/ram_turf = get_step(front, vehicle.dir)
@@ -202,7 +204,8 @@
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/obj/structure/ms13_vehicle_frame/armored_truck_front_left/front = new(spot)
 	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
-	TEST_ASSERT(vehicle.battery && !vehicle.battery.density, "Vehicle battery is missing or not walk-overable.")
+	var/obj/structure/ms13_vehicle_part/battery/battery = locate() in vehicle.batteries
+	TEST_ASSERT(battery && !battery.density, "Vehicle battery is missing or not walk-overable.")
 	TEST_ASSERT(!vehicle.has_motive_power() && !vehicle.start_engine(), "Engine started without ignition.")
 	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/camera = locate() in vehicle.parts
 	var/obj/structure/ms13_vehicle_part/exterior_equipment/light/light = locate() in vehicle.parts
@@ -219,20 +222,20 @@
 		TEST_ASSERT(ms13_icon_has_state(equipment.equipment_icon, equipment.off_state), "Missing unpowered accessory art.")
 	TEST_ASSERT(!camera.is_enabled() && !dome.is_lit(), "Equipment works with ignition off.")
 	vehicle.set_ignition(TRUE)
-	var/charge_before = vehicle.battery.cell.charge
+	var/charge_before = battery.cell.charge
 	TEST_ASSERT(vehicle.start_engine(), "Fueled engine with charged battery failed to start.")
-	TEST_ASSERT_EQUAL(vehicle.battery.cell.charge, charge_before - vehicle.starter_cost, "Starter did not consume its charge.")
+	TEST_ASSERT_EQUAL(battery.cell.charge, charge_before - vehicle.starter_cost, "Starter did not consume its charge.")
 	vehicle.start_engine()
-	TEST_ASSERT_EQUAL(vehicle.battery.cell.charge, charge_before - vehicle.starter_cost, "Starting an already running engine consumed charge twice.")
-	var/fuel_before = vehicle.fuel_tank.reagents.get_reagent_amount(/datum/reagent/fuel)
+	TEST_ASSERT_EQUAL(battery.cell.charge, charge_before - vehicle.starter_cost, "Starting an already running engine consumed charge twice.")
+	var/fuel_before = vehicle.stored_fuel()
 	vehicle.process_power(2)
-	TEST_ASSERT(vehicle.battery.cell.charge > charge_before - vehicle.starter_cost, "Running engine did not recharge battery.")
-	TEST_ASSERT(vehicle.fuel_tank.reagents.get_reagent_amount(/datum/reagent/fuel) < fuel_before, "Idling engine consumed no fuel.")
+	TEST_ASSERT(battery.cell.charge > charge_before - vehicle.starter_cost, "Running engine did not recharge battery.")
+	TEST_ASSERT(vehicle.stored_fuel() < fuel_before, "Idling engine consumed no fuel.")
 	vehicle.stop_engine()
 	TEST_ASSERT(!vehicle.has_motive_power() && camera.is_enabled(), "Stopping the engine also disabled battery equipment.")
-	charge_before = vehicle.battery.cell.charge
+	charge_before = battery.cell.charge
 	vehicle.process_power(2)
-	TEST_ASSERT(vehicle.battery.cell.charge < charge_before, "Powered equipment did not drain battery.")
+	TEST_ASSERT(battery.cell.charge < charge_before, "Powered equipment did not drain battery.")
 	vehicle.exterior_lights_on = TRUE
 	vehicle.update_electrical()
 	TEST_ASSERT(light.is_enabled() && light.light_on && light.light_outer_range > 0 && light.light_power == 1, "Exterior lighting switch did not illuminate lamps.")
@@ -281,15 +284,15 @@
 	thermal.update_remote_sight(driver)
 	TEST_ASSERT(driver.sight & SEE_MOBS, "Thermal camera did not show warm bodies.")
 	qdel(thermal)
-	vehicle.battery.cell.charge = 1
+	battery.cell.charge = 1
 	vehicle.process_power(2)
 	TEST_ASSERT(!vehicle.has_electrical_power() && !dome.is_lit() && !light.light_on, "Drained battery left lighting powered.")
 	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside, TRUE), "Empty battery left camera vision active.")
 	TEST_ASSERT(!vehicle.start_engine(), "Empty battery started engine.")
-	vehicle.battery.cell.give(1000)
+	battery.cell.give(1000)
 	vehicle.update_electrical()
 	TEST_ASSERT(vehicle.start_engine(), "Charged battery did not restore starting.")
-	vehicle.battery.update_integrity(vehicle.battery.max_integrity * 0.1)
+	battery.update_integrity(battery.max_integrity * 0.1)
 	TEST_ASSERT(!vehicle.engine_running && !vehicle.has_electrical_power(), "Broken battery left the electrical system powered.")
 
 /// A camera console shows only what its camera takes in, and only with power. Fitted for remote viewing, its user looks out
@@ -337,22 +340,24 @@
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
 	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
+	var/obj/structure/ms13_vehicle_part/battery/battery = locate() in vehicle.batteries
+	var/obj/structure/ms13_vehicle_part/fuel_tank/tank = locate() in vehicle.fuel_tanks
 	var/obj/structure/ms13_vehicle_part/alternator/alternator = locate() in vehicle.parts
 	TEST_ASSERT(alternator, "The engine was fitted without an alternator.")
 	vehicle.set_ignition(TRUE)
 	TEST_ASSERT(vehicle.start_engine(), "The jeep's engine didn't start.")
-	var/charge_before = vehicle.battery.cell.charge
+	var/charge_before = battery.cell.charge
 	vehicle.process_power(2)
-	TEST_ASSERT(vehicle.battery.cell.charge > charge_before, "A running engine's alternator didn't charge the battery.")
+	TEST_ASSERT(battery.cell.charge > charge_before, "A running engine's alternator didn't charge the battery.")
 	alternator.update_integrity(alternator.max_integrity * 0.1)
-	charge_before = vehicle.battery.cell.charge
+	charge_before = battery.cell.charge
 	vehicle.process_power(2)
-	TEST_ASSERT(vehicle.battery.cell.charge < charge_before, "A burnt-out alternator still charged the battery.")
+	TEST_ASSERT(battery.cell.charge < charge_before, "A burnt-out alternator still charged the battery.")
 	vehicle.stop_engine()
 
 	var/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank/spare = front.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/fuel_tank)
-	vehicle.fuel_tank.reagents.clear_reagents()
-	TEST_ASSERT(vehicle.fuel_tank.has_fuel() && vehicle.fuel_tank.reagents.total_volume == spare.capacity && !spare.reagents.total_volume, "An external tank didn't feed the empty fuel tank.")
+	tank.reagents.clear_reagents()
+	TEST_ASSERT(tank.has_fuel() && tank.reagents.total_volume == spare.capacity && !spare.reagents.total_volume, "An external tank didn't feed the empty fuel tank.")
 
 	var/obj/structure/ms13_vehicle_part/stowage/freezer/freezer = front.spawn_part(/obj/structure/ms13_vehicle_part/stowage/freezer)
 	var/obj/item/organ/heart/heart = new(freezer)
@@ -362,14 +367,14 @@
 	TEST_ASSERT(!(heart.organ_flags & ORGAN_FROZEN), "An organ taken out of a freezer stayed frozen.")
 	heart.forceMove(freezer)
 	// It runs the battery flat, unless a low-voltage cut-out saves the starter's charge.
-	vehicle.battery.cell.charge = vehicle.starter_cost
+	battery.cell.charge = vehicle.starter_cost
 	vehicle.process_power(2)
-	TEST_ASSERT(freezer.cold && vehicle.battery.cell.charge < vehicle.starter_cost, "A freezer stopped short of running the battery flat with no cut-out.")
+	TEST_ASSERT(freezer.cold && battery.cell.charge < vehicle.starter_cost, "A freezer stopped short of running the battery flat with no cut-out.")
 	front.spawn_part(/obj/structure/ms13_vehicle_part/battery_cutout)
-	vehicle.battery.cell.charge = vehicle.starter_cost
+	battery.cell.charge = vehicle.starter_cost
 	vehicle.process_power(2)
 	TEST_ASSERT(!freezer.cold && !(heart.organ_flags & ORGAN_FROZEN), "A freezer ran the battery down past a cut-out.")
-	vehicle.battery.cell.give(vehicle.battery.cell.maxcharge)
+	battery.cell.give(battery.cell.maxcharge)
 
 	var/obj/structure/ms13_vehicle_part/stowage/recharge_station/station = front.spawn_part(/obj/structure/ms13_vehicle_part/stowage/recharge_station)
 	var/obj/item/stock_parts/cell/flat = new(station)
@@ -676,8 +681,8 @@
 		for(var/obj/structure/chair/ms13_vehicle_seat/seat in get_turf(frame))
 			TEST_ASSERT_EQUAL(seat.dir, new_facing, "A forward-facing truck seat did not turn with the vehicle.")
 
-	var/obj/structure/ms13_vehicle_part/engine/engine = front_left.vehicle.engine
-	var/obj/structure/ms13_vehicle_part/fuel_tank/tank = front_left.vehicle.fuel_tank
+	var/obj/structure/ms13_vehicle_part/engine/engine = locate() in front_left.vehicle.engines
+	var/obj/structure/ms13_vehicle_part/fuel_tank/tank = locate() in front_left.vehicle.fuel_tanks
 	var/fuel_before_emptying = tank.reagents.get_reagent_amount(/datum/reagent/fuel)
 	tank.reagents.remove_reagent(/datum/reagent/fuel, fuel_before_emptying)
 	TEST_ASSERT(!front_left.vehicle.has_motive_power(), "An empty fuel tank still provided motive power.")
@@ -715,8 +720,10 @@
 	vehicle.set_ignition(TRUE)
 	TEST_ASSERT(vehicle.start_engine(), "M113 engine failed to start.")
 	TEST_ASSERT(istype(vehicle.gearbox, /obj/structure/ms13_vehicle_part/gearbox/m113), "M113 did not receive its transmission.")
-	TEST_ASSERT(istype(vehicle.fuel_tank, /obj/structure/ms13_vehicle_part/fuel_tank/m113), "M113 did not receive its fuel cell.")
-	TEST_ASSERT(vehicle.gearbox.density && vehicle.fuel_tank.density && vehicle.engine.density, "M113 powerpack or fuel cell could be walked through.")
+	var/obj/structure/ms13_vehicle_part/engine/engine = locate() in vehicle.engines
+	var/obj/structure/ms13_vehicle_part/fuel_tank/tank = locate() in vehicle.fuel_tanks
+	TEST_ASSERT(istype(tank, /obj/structure/ms13_vehicle_part/fuel_tank/m113), "M113 did not receive its fuel cell.")
+	TEST_ASSERT(vehicle.gearbox.density && tank.density && engine.density, "M113 powerpack or fuel cell could be walked through.")
 	TEST_ASSERT_EQUAL(vehicle.running_gear_soundloop_type, /datum/looping_sound/ms13/vehicle_tracks, "M113 did not select tracked movement audio.")
 	TEST_ASSERT(vehicle.has_motive_power(), "A complete, fueled M113 did not have motive power.")
 
@@ -729,7 +736,7 @@
 		TEST_ASSERT(!track.density, "An M113 track prevented somebody standing over and attacking it.")
 		TEST_ASSERT(track.exterior_image, "An M113 track did not create an exterior-only clickable image.")
 	TEST_ASSERT_EQUAL(track_count, 4, "M113 did not assemble four independently damageable track units.")
-	TEST_ASSERT(istype(vehicle.engine, /obj/structure/ms13_vehicle_part/engine/m113), "M113 did not receive its Detroit diesel engine.")
+	TEST_ASSERT(istype(engine, /obj/structure/ms13_vehicle_part/engine/m113), "M113 did not receive its Detroit diesel engine.")
 
 	var/ramp_count = 0
 	for(var/obj/structure/window/ms13_vehicle_wall/solid/door/m113/ramp in vehicle.walls)

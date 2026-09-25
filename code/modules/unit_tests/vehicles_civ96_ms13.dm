@@ -14,7 +14,7 @@
 	var/datum/ms13_ground_vehicle/vehicle = pivot.vehicle
 	TEST_ASSERT(vehicle, "[vehicle_type] did not create its controller.")
 	TEST_ASSERT_EQUAL(length(vehicle.frames), rows * columns, "[vehicle_type] did not lay out its whole footprint.")
-	TEST_ASSERT(vehicle.engine && vehicle.gearbox && vehicle.fuel_tank, "[vehicle_type] is missing part of its drivetrain.")
+	TEST_ASSERT(length(vehicle.engines) && vehicle.gearbox && length(vehicle.fuel_tanks), "[vehicle_type] is missing part of its drivetrain.")
 	vehicle.set_ignition(TRUE)
 	TEST_ASSERT(vehicle.start_engine(), "[vehicle_type] engine failed to start.")
 	TEST_ASSERT(vehicle.has_motive_power(), "A complete [vehicle_type] could not drive.")
@@ -85,9 +85,9 @@
 		TEST_ASSERT(!turret.fire_at(target, gunner, null), "An unpowered autocannon fired.")
 		TEST_ASSERT_EQUAL(turret.ammo, ammo_before, "An unpowered turret attempt consumed ammunition.")
 		vehicle.set_ignition(TRUE)
-		var/battery_before = vehicle.battery.cell.charge
+		var/battery_before = vehicle.stored_charge()
 		TEST_ASSERT(turret.fire_at(target, gunner, null), "The buckled gunner could not fire the turret.")
-		TEST_ASSERT_EQUAL(vehicle.battery.cell.charge, battery_before - turret.shot_power_cost, "Powered turret firing did not consume its electrical charge.")
+		TEST_ASSERT_EQUAL(vehicle.stored_charge(), battery_before - turret.shot_power_cost, "Powered turret firing did not consume its electrical charge.")
 		TEST_ASSERT_EQUAL(turret.ammo, ammo_before - 1, "Firing the turret did not consume one round.")
 		gunner_seat.unbuckle_mob(gunner, TRUE)
 		TEST_ASSERT(!gunner_seat.turret_control, "The turret controls remained after the gunner unbuckled.")

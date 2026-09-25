@@ -101,7 +101,7 @@
 		Fail("Rail search did not find the complete connected loop.")
 	train.set_ignition(TRUE)
 	train.start_engine()
-	var/fuel_before = train.fuel_tank.reagents.total_volume
+	var/fuel_before = train.stored_fuel()
 	train.rail_route = route.Copy()
 	train.moving = TRUE
 	train.speed = 3
@@ -115,7 +115,7 @@
 			break
 	if(train.moving || train.speed || get_turf(tram) != locate(26, 35, test_z) || cargo.loc != tram.loc || length(headings) != 4 || driver.buckled != driver_seat || driver.loc != tram.loc)
 		Fail("Autopilot failed a full E/S/W/N/E loop, cargo transport, or its final stop.")
-	if(train.fuel_tank.reagents.total_volume >= fuel_before)
+	if(train.stored_fuel() >= fuel_before)
 		Fail("Rail movement did not consume normal vehicle fuel.")
 	if(train.handle_drive_input(train.dir) || train.moving)
 		Fail("Train accepted manual driving.")
@@ -325,7 +325,7 @@
 	net.add_machine(feeder)
 	var/obj/structure/ms13_vehicle_frame/tram/electric/car = allocate(/obj/structure/ms13_vehicle_frame/tram/electric, locate(20, 38, z))
 	var/datum/ms13_ground_vehicle/rail/electric/line = car.vehicle
-	if(line.engine || line.battery || line.fuel_tank || !istype(line.gearbox, /obj/structure/ms13_vehicle_part/gearbox/traction) || line.gear_count() != 1)
+	if(length(line.engines) || length(line.batteries) || length(line.fuel_tanks) || !istype(line.gearbox, /obj/structure/ms13_vehicle_part/gearbox/traction) || line.gear_count() != 1)
 		Fail("An electric car came with an engine, battery or tank, or more than one speed.")
 	if(!(feeder in line.feeders))
 		Fail("An electric car didn't find the feeder on its line.")
@@ -379,7 +379,7 @@
 	var/obj/structure/ms13_vehicle_frame/tram/blast_door/door = allocate(/obj/structure/ms13_vehicle_frame/tram/blast_door, locate(31, 30, z))
 	door.id = "ms13_test_blast_door"
 	var/datum/ms13_ground_vehicle/rail/electric/blast_door/drive = door.vehicle
-	if(length(drive.frames) != 3 || length(drive.walls) || length(drive.parts) != 1 || drive.battery)
+	if(length(drive.frames) != 3 || length(drive.walls) || length(drive.parts) != 1 || length(drive.batteries))
 		Fail("The blast door isn't just three frames and its motor.")
 	for(var/obj/structure/ms13_vehicle_frame/slab as anything in drive.frames)
 		if(!slab.density)
@@ -418,7 +418,8 @@
 /datum/unit_test/ms13_rail_vehicles/proc/check_equipment(test_z)
 	var/obj/structure/ms13_vehicle_frame/tram/car = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(48, 30, test_z))
 	var/datum/ms13_ground_vehicle/rail/line = car.vehicle
-	if(!istype(line.battery?.cell, /obj/item/stock_parts/cell/ms13_vehicle/storage))
+	var/obj/structure/ms13_vehicle_part/battery/battery = locate() in line.batteries
+	if(!istype(battery?.cell, /obj/item/stock_parts/cell/ms13_vehicle/storage))
 		Fail("A rail car was not built with a storage battery bank.")
 	var/list/doors = line.power_doors()
 	if(length(doors) != 2)
@@ -469,16 +470,16 @@
 	if(!welder.is_holding(torch) || !torch.get_fuel())
 		Fail("Taking the welding torch did not put a battery-fed torch in hand.")
 	torch.switched_on(welder)
-	var/charge = line.battery.cell.charge
-	if(!torch.use(2) || line.battery.cell.charge != charge - 2 * torch.charge_per_fuel)
+	var/charge = line.stored_charge()
+	if(!torch.use(2) || line.stored_charge() != charge - 2 * torch.charge_per_fuel)
 		Fail("The welding torch did not burn the battery's charge.")
 	welder.forceMove(locate(car.x + rig.hose_length + 2, car.y, test_z))
 	if(torch.loc != rig || torch.welding)
 		Fail("The welding torch was carried past its hose's reach.")
 	var/obj/structure/ms13_vehicle_part/smoke_generator/smoke = allocate(/obj/structure/ms13_vehicle_part/smoke_generator, get_turf(car))
 	line.start_engine()
-	var/fuel = line.fuel_tank.reagents.total_volume
-	if(!smoke.discharge() || line.fuel_tank.reagents.total_volume > fuel - smoke.fuel_cost || !(locate(/obj/effect/particle_effect/fluid/smoke) in get_step(smoke, smoke.dir)))
+	var/fuel = line.stored_fuel()
+	if(!smoke.discharge() || line.stored_fuel() > fuel - smoke.fuel_cost || !(locate(/obj/effect/particle_effect/fluid/smoke) in get_step(smoke, smoke.dir)))
 		Fail("The smoke generator did not burn fuel into a screen outside the hull.")
 	if(smoke.discharge())
 		Fail("The smoke generator laid a second screen straight away.")
@@ -676,7 +677,7 @@
 /datum/unit_test/ms13_rail_vehicles/proc/check_mounts(test_z)
 	var/obj/structure/ms13_vehicle_frame/jeep_front/jeep = allocate(/obj/structure/ms13_vehicle_frame/jeep_front, locate(20, 20, test_z))
 	var/datum/ms13_ground_vehicle/vehicle = jeep.vehicle
-	var/obj/structure/ms13_vehicle_part/engine/engine = vehicle.engine
+	var/obj/structure/ms13_vehicle_part/engine/engine = locate() in vehicle.engines
 	if(engine.density || !vehicle.blocks_vehicle(engine))
 		Fail("Walk-over engine did not block vehicle collisions independently of mob density.")
 	var/obj/structure/ms13_vehicle_part/exterior_equipment/camera/front_camera = jeep.spawn_part(/obj/structure/ms13_vehicle_part/exterior_equipment/camera)
@@ -702,7 +703,7 @@
 	seat.user_buckle_mob(driver, driver)
 	var/turf/wreck = get_turf(jeep)
 	jeep.deconstruct(FALSE)
-	if(!QDELETED(engine) || vehicle.engine || !QDELETED(seat) || driver.buckled || cargo.loc != wreck || driver.loc != wreck)
+	if(!QDELETED(engine) || length(vehicle.engines) || !QDELETED(seat) || driver.buckled || cargo.loc != wreck || driver.loc != wreck)
 		Fail("Destroyed frame retained supported hardware or lost its occupants/cargo.")
 	for(var/obj/structure/ms13_vehicle_part/part as anything in vehicle.parts)
 		if(get_turf(part) == wreck)

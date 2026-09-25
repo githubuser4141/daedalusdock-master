@@ -56,7 +56,8 @@
 
 /obj/structure/ms13_vehicle_part/welding_rig/examine(mob/user)
 	. = ..()
-	. += span_notice("It runs off the battery, [vehicle?.battery?.cell ? "at [round(vehicle.battery.cell.percent())]%" : "which is missing"]. The ignition has to be on.")
+	var/capacity = vehicle?.charge_capacity()
+	. += span_notice("It runs off the battery, [capacity ? "at [round(vehicle.stored_charge() / capacity * 100)]%" : "which is missing"]. The ignition has to be on.")
 
 /// The welding set's torch. It burns battery charge rather than fuel, and snaps back to the set past the hose's reach.
 /obj/item/weldingtool/ms13/vehicle
@@ -75,9 +76,9 @@
 
 /obj/item/weldingtool/ms13/vehicle/get_fuel()
 	var/datum/ms13_ground_vehicle/vehicle = rig?.vehicle
-	var/obj/item/stock_parts/cell/cell = vehicle?.has_electrical_power() && vehicle.battery.cell
-	max_fuel = cell ? round(cell.maxcharge / charge_per_fuel) : 0
-	return cell ? round(cell.charge / charge_per_fuel) : 0
+	var/live = vehicle?.has_electrical_power()
+	max_fuel = live ? round(vehicle.charge_capacity() / charge_per_fuel) : 0
+	return live ? round(vehicle.stored_charge() / charge_per_fuel) : 0
 
 /obj/item/weldingtool/ms13/vehicle/use(used = 0)
 	if(!isOn() || !check_fuel())
@@ -147,11 +148,10 @@
 	if(!vehicle?.engine_running)
 		to_chat(user, span_warning("Start the engine: the smoke generator works off the hot exhaust."))
 		return FALSE
-	var/obj/structure/ms13_vehicle_part/fuel_tank/tank = vehicle.fuel_tank
-	if(!tank?.reagents || tank.reagents.get_reagent_amount(/datum/reagent/fuel) < fuel_cost)
+	if(vehicle.stored_fuel() < fuel_cost)
 		to_chat(user, span_warning("There isn't enough fuel for a smoke screen."))
 		return FALSE
-	tank.draw_fuel(fuel_cost)
+	vehicle.draw_fuel(fuel_cost)
 	COOLDOWN_START(src, next_screen, cooldown)
 	do_smoke(spread, holder = src, location = get_step(src, dir), smoke_type = /obj/effect/particle_effect/fluid/smoke/ms13_vehicle)
 	playsound(src, 'sound/effects/smoke.ogg', 50, TRUE)

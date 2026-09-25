@@ -1104,10 +1104,11 @@
 		var/obj/item/ms13_vehicle_part_kit/wheel/wheel_kit = allocate(/obj/item/ms13_vehicle_part_kit/wheel)
 		wheel_kit.part.fit_to(wheel_spot[1], wheel_spot[2])
 		qdel(wheel_kit)
-	if(tank.reagents.total_volume || vehicle.battery?.cell || (locate(/obj/structure/ms13_vehicle_part/alternator) in vehicle.parts))
+	if(tank.reagents.total_volume || vehicle.charge_capacity() || (locate(/obj/structure/ms13_vehicle_part/alternator) in vehicle.parts))
 		Fail("Parts made by hand came with fuel, a battery or an alternator.")
 	tank.reagents.add_reagent(/datum/reagent/fuel, 50)
-	vehicle.battery.cell = new /obj/item/stock_parts/cell/ms13_vehicle(vehicle.battery)
+	var/obj/structure/ms13_vehicle_part/battery/battery_box = locate() in vehicle.batteries
+	battery_box.cell = new /obj/item/stock_parts/cell/ms13_vehicle(battery_box)
 	vehicle.set_ignition(TRUE)
 	if(!vehicle.start_engine() || !vehicle.has_motive_power())
 		Fail("A vehicle built up from its floor, with an engine, gearbox, fuel, a battery and wheels, wouldn't drive.")
@@ -1120,12 +1121,12 @@
 	mechanic.put_in_active_hand(wrench)
 	tank.wrench_act(mechanic, wrench)
 	var/obj/item/ms13_vehicle_part_kit/off = locate() in mechanic.held_items
-	if(off?.part != tank || vehicle.fuel_tank || tank.reagents.total_volume != 50)
+	if(off?.part != tank || (tank in vehicle.fuel_tanks) || tank.reagents.total_volume != 50)
 		Fail("A wrench didn't take the fuel tank off whole.")
 		return
 	tank.fit_to(back, EAST)
 	qdel(off)
-	if(vehicle.fuel_tank != tank || tank.reagents.total_volume != 50)
+	if(!(tank in vehicle.fuel_tanks) || tank.reagents.total_volume != 50)
 		Fail("A fuel tank bolted back on didn't come back as it was.")
 	window.wrench_act(mechanic, wrench)
 	var/obj/item/ms13_vehicle_wall_kit/panel = locate() in mechanic.held_items
@@ -1174,17 +1175,18 @@
 	var/turf/spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
 	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(spot)
 	var/datum/ms13_ground_vehicle/vehicle = front.vehicle
-	if(vehicle.battery.datum_flags & DF_ISPROCESSING)
+	var/obj/structure/ms13_vehicle_part/battery/battery = locate() in vehicle.batteries
+	if(battery.datum_flags & DF_ISPROCESSING)
 		Fail("A parked vehicle's battery was processing.")
 	vehicle.set_ignition(TRUE)
-	if(!(vehicle.battery.datum_flags & DF_ISPROCESSING))
+	if(!(battery.datum_flags & DF_ISPROCESSING))
 		Fail("Switching the ignition on didn't wake the battery.")
 	vehicle.wreck(0, 100, 100)
-	if(vehicle.battery.datum_flags & DF_ISPROCESSING)
+	if(battery.datum_flags & DF_ISPROCESSING)
 		Fail("A wreck's battery kept processing.")
-	if(vehicle.fuel_tank.reagents.total_volume > 5 || vehicle.battery.cell.charge)
+	if(vehicle.stored_fuel() > 5 || battery.cell.charge)
 		Fail("A wreck kept its fuel or its battery charge.")
-	var/obj/structure/ms13_vehicle_part/engine/engine = vehicle.engine
+	var/obj/structure/ms13_vehicle_part/engine/engine = locate() in vehicle.engines
 	if(!engine.broken)
 		Fail("A wreck's parts weren't broken.")
 	for(var/obj/structure/window/ms13_vehicle_wall/wall as anything in vehicle.walls)

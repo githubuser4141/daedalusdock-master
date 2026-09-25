@@ -31,9 +31,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/list/obj/structure/ms13_vehicle_frame/frames = list()
 	var/list/obj/structure/window/ms13_vehicle_wall/walls = list()
 	var/list/obj/structure/ms13_vehicle_part/parts = list()
-	var/obj/structure/ms13_vehicle_part/engine/engine
+	var/list/obj/structure/ms13_vehicle_part/engine/engines = list()
 	var/obj/structure/ms13_vehicle_part/gearbox/gearbox
-	var/obj/structure/ms13_vehicle_part/fuel_tank/fuel_tank
+	var/list/obj/structure/ms13_vehicle_part/fuel_tank/fuel_tanks = list()
+	/// The engine its speed_multiplier and fuel_per_tile are tuned for. Its engines' power and weight go against this one's.
+	var/obj/structure/ms13_vehicle_part/engine/rated_engine = /obj/structure/ms13_vehicle_part/engine
 	var/datum/looping_sound/running_gear_soundloop
 	var/running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_wheels
 	var/mob/living/driver
@@ -108,7 +110,56 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	if(brakes_mode && !moving)
 		// Braking mode is a fixed crawl, whatever the vehicle's top speed.
 		return max(1 SECONDS, delays[1])
-	return delays[clamp(gear, 1, length(delays))] / max(speed_multiplier, 0.1)
+	return delays[clamp(gear, 1, length(delays))] / max(speed_multiplier * power_factor(), 0.1)
+
+/// The floor tiles as loaded, and its engines.
+/datum/ms13_ground_vehicle/proc/total_mass()
+	. = length(frames) * mass_per_frame
+	for(var/obj/structure/ms13_vehicle_part/engine/engine as anything in engines)
+		. += engine.mass
+
+/// Power its running engines make, in rated engines.
+/datum/ms13_ground_vehicle/proc/engine_output()
+	. = 0
+	if(!engine_running)
+		return
+	for(var/obj/structure/ms13_vehicle_part/engine/engine as anything in engines)
+		if(engine.is_operational())
+			. += engine.power / initial(rated_engine.power)
+
+/// Speed against the rated engine's, from power to weight. Top speed goes as its cube root, as against drag.
+/datum/ms13_ground_vehicle/proc/power_factor()
+	var/output = engine_output()
+	// Coasting, or driven some other way.
+	if(!output)
+		return 1
+	var/rated_mass = length(frames) * mass_per_frame + initial(rated_engine.mass)
+	return (output * rated_mass / total_mass()) ** (1 / 3)
+
+/// Burns amount a tile for each rated engine's worth running. Out of fuel, they stop.
+/datum/ms13_ground_vehicle/proc/burn_fuel(amount)
+	if(!length(engines))
+		return
+	draw_fuel(amount * engine_output())
+	if(engine_running && !engine_output())
+		stop_engine()
+
+/datum/ms13_ground_vehicle/proc/has_fuel()
+	for(var/obj/structure/ms13_vehicle_part/fuel_tank/tank as anything in fuel_tanks)
+		if(tank.has_fuel())
+			return TRUE
+	return FALSE
+
+/datum/ms13_ground_vehicle/proc/stored_fuel()
+	. = 0
+	for(var/obj/structure/ms13_vehicle_part/fuel_tank/tank as anything in fuel_tanks)
+		. += tank.reagents?.get_reagent_amount(/datum/reagent/fuel)
+
+/// Draws amount from its tanks in turn.
+/datum/ms13_ground_vehicle/proc/draw_fuel(amount)
+	for(var/obj/structure/ms13_vehicle_part/fuel_tank/tank as anything in fuel_tanks)
+		// Every broken tank leaks, drawn on or not.
+		amount -= tank.draw_fuel(max(amount, 0))
 
 /datum/ms13_ground_vehicle/proc/get_all_parts()
 	. = list()
@@ -215,7 +266,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Something is turning the drive: here a running engine that works and has fuel.
 /datum/ms13_ground_vehicle/proc/drive_turning()
-	return engine_running && engine?.is_operational()
+	return engine_output() > 0
 
 /datum/ms13_ground_vehicle/proc/has_running_gear()
 	var/working_running_gear = 0
@@ -484,7 +535,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		var/recoil = work * (1 - efficiency) * (0.5 + resistance / 100)
 		self_damage = min(contact_integrity, contact.take_damage(recoil, BRUTE, BLUNT, FALSE, direction) || 0)
 	impact_energy_reserve = max(0, energy - work - 1.5 * self_damage)
-	var/mass_factor = max(0.1, length(frames) * mass_per_frame / 1000)
+	var/mass_factor = max(0.1, total_mass() / 1000)
 	speed = min(speed, CEILING(sqrt(impact_energy_reserve / (50 * mass_factor)), 1))
 	impact_speed_band = speed
 	if(!speed)
@@ -500,7 +551,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 
 /// Driving/gear changes replenish the speed-band estimate; repeated impacts at one band share it.
 /datum/ms13_ground_vehicle/proc/collision_energy()
-	var/nominal = 50 * max(0.1, length(frames) * mass_per_frame / 1000) * speed ** 2
+	var/nominal = 50 * max(0.1, total_mass() / 1000) * speed ** 2
 	if(isnull(impact_energy_reserve) || impact_speed_band != speed)
 		impact_energy_reserve = nominal
 		impact_speed_band = speed
@@ -510,8 +561,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 /datum/ms13_ground_vehicle/proc/try_shove_vehicle(datum/ms13_ground_vehicle/struck, direction)
 	if(being_pushed || struck.being_pushed || QDELETED(struck.pivot))
 		return FALSE
-	var/momentum = length(frames) * mass_per_frame * speed
-	var/resistance = length(struck.frames) * struck.mass_per_frame * (struck.brakes_mode ? 2 : 1)
+	var/momentum = total_mass() * speed
+	var/resistance = struck.total_mass() * (struck.brakes_mode ? 2 : 1)
 	if(momentum < resistance || !struck.can_move(direction))
 		return FALSE
 	struck.stop_motion()
@@ -552,7 +603,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 		passenger.forceMove(get_step(passenger, direction))
 	update_underneath(manifest)
 	if(!being_pushed)
-		engine?.consume_fuel(fuel_per_tile)
+		burn_fuel(fuel_per_tile)
 	alert_watchers()
 	crush_mines()
 	return TRUE
