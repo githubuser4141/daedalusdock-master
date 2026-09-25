@@ -5433,6 +5433,7 @@
 #include "mojave\code\modules\vehicles_ground\rail_vehicles.dm"
 #include "mojave\code\modules\vehicles_ground\rail_vehicles_tests.dm"
 #include "mojave\code\modules\vehicles_ground\soviet_vehicles.dm"
+#include "mojave\code\modules\vehicles_ground\udp_sedan.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_ai_awareness.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_equipment.dm"
 #include "mojave\code\modules\vehicles_ground\vehicle_kits.dm"
