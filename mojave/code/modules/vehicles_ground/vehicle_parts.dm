@@ -432,6 +432,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/fuel_tank)
 	icon_state = "fueltank_large_tank"
 	capacity = 140
 
+/obj/structure/ms13_vehicle_part/fuel_tank/train
+	icon_state = "fueltank_large_tank"
+	capacity = 500
+
 /**
  * A cabin light. It lights nothing outside: the vehicle turns its fixtures into per-tile light for
  * the people inside (see update_interior_lighting()). Click to switch it on or off.

@@ -430,9 +430,10 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 		),
 	)
 	mob_types = list(
-		/mob/living/simple_animal/hostile/netherworld/migo/ms13_impact,
-		/mob/living/simple_animal/hostile/zombie/ms13_impact,
-		/mob/living/simple_animal/hostile/zombie/ms13_impact,
+		/mob/living/simple_animal/hostile/ms13/cdda/nether/mi_go,
+		/mob/living/simple_animal/hostile/ms13/cdda/nether/mi_go/scout,
+		/mob/living/simple_animal/hostile/ms13/cdda/zombie,
+		/mob/living/simple_animal/hostile/ms13/cdda/zombie,
 		/mob/living/basic/ms13/ghoul,
 	)
 	feature_types = list(
@@ -463,9 +464,10 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	name = "alien seedpod (elite)"
 	elite = TRUE
 	mob_types = list(
-		/mob/living/simple_animal/hostile/netherworld/migo/ms13_impact,
-		/mob/living/simple_animal/hostile/netherworld/migo/ms13_impact,
-		/mob/living/simple_animal/hostile/zombie/ms13_impact,
+		/mob/living/simple_animal/hostile/ms13/cdda/nether/mi_go,
+		/mob/living/simple_animal/hostile/ms13/cdda/nether/mi_go/myrmidon,
+		/mob/living/simple_animal/hostile/ms13/cdda/zombie/brute,
+		/mob/living/simple_animal/hostile/ms13/cdda/zombie/shocker,
 		/mob/living/basic/ms13/ghoul/radioactive,
 	)
 	loot_types = list(

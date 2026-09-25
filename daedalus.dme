@@ -5310,6 +5310,7 @@
 #include "mojave\code\modules\mob\mob_defines.dm"
 #include "mojave\code\modules\mob\mob_projectiles.dm"
 #include "mojave\code\modules\mob\ms13mobs.dm"
+#include "mojave\code\modules\mob\creatures\cdda_monsters.dm"
 #include "mojave\code\modules\mob\creatures\ms13animals.dm"
 #include "mojave\code\modules\mob\living\carcass.dm"
 #include "mojave\code\modules\mob\living\emote.dm"
