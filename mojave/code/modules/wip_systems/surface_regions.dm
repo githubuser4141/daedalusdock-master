@@ -1,5 +1,6 @@
 /// Fixed, optional surface neighbours inspired by tgstation/tgstation#91920.
 /// Keep planetary travel separate from randomized space linkage and vertical caves/roofs.
+/// A neighbour is one surface map, or a list of maps stacked like map_file (its caves and roofs too), level beside level.
 /datum/map_config
 	var/surface_level = 2
 	var/list/surface_neighbors = list()
@@ -20,23 +21,31 @@
 		log_mapping("surface_level must index the central single-z map in map_file.")
 		return FALSE
 	for(var/direction in neighbors)
-		var/mapfile = neighbors[direction]
-		if(!(direction in list("north", "east", "south", "west")) || !istext(mapfile) || findtext(mapfile, "..") || findtext(mapfile, "/") || findtext(mapfile, "\\") || !fexists("_maps/[map_path]/[mapfile]"))
-			log_mapping("Invalid surface neighbor: [direction] = [mapfile]. Use an existing map filename in map_path.")
+		var/list/stack = neighbors[direction]
+		if(islist(stack) && length(stack) != length(map_file))
+			log_mapping("Surface neighbor [direction] must stack one map for each level in map_file.")
 			return FALSE
+		for(var/mapfile in (islist(stack) ? stack : list(stack)))
+			if(!(direction in list("north", "east", "south", "west")) || !istext(mapfile) || findtext(mapfile, "..") || findtext(mapfile, "/") || findtext(mapfile, "\\") || !fexists("_maps/[map_path]/[mapfile]"))
+				log_mapping("Invalid surface neighbor: [direction] = [mapfile]. Use an existing map filename in map_path.")
+				return FALSE
 	surface_level = central
 	surface_neighbors = neighbors.Copy()
 
 /datum/map_config/GetFullMapPaths()
 	. = ..()
 	for(var/direction in surface_neighbors)
-		. += "_maps/[map_path]/[surface_neighbors[direction]]"
+		var/list/stack = surface_neighbors[direction]
+		for(var/mapfile in (islist(stack) ? stack : list(stack)))
+			. += "_maps/[map_path]/[mapfile]"
 
 /datum/controller/subsystem/mapping
 	/// z text -> (cardinal direction text -> destination z). No implicit wrapping.
 	var/list/ms13_surface_links = list()
 	/// Actual loaded map rectangle, not world bounds (Mammoth is narrower than world.maxx).
 	var/list/ms13_surface_bounds
+	/// The surface z of each region, the centre's included; not their caves or roofs.
+	var/list/ms13_surface_levels = list()
 
 /datum/controller/subsystem/mapping/loadWorld()
 	. = ..()
@@ -67,19 +76,31 @@
 	ms13_surface_bounds = list(min_x, min_y, min_x + width - 1, min_y + height - 1)
 	var/central_z = station_start + config.surface_level - 1
 	var/datum/space_level/center = get_level(central_z)
-	center.set_linkage(null)
-	center.neigbours.Cut()
 	ms13_surface_links["[central_z]"] = list()
+	ms13_surface_levels = list(central_z)
 	var/list/directions = list("north" = NORTH, "east" = EAST, "south" = SOUTH, "west" = WEST)
 	for(var/direction in config.surface_neighbors)
-		var/list/region_traits = center.traits.Copy()
-		region_traits -= list(ZTRAIT_UP, ZTRAIT_DOWN, ZTRAIT_LINKAGE)
-		var/new_z = world.maxz + 1
+		var/list/stack = config.surface_neighbors[direction]
+		// A lone surface map has nothing above or below it. A stack keeps its levels' own traits, links up and down included.
+		var/list/level_traits = list()
+		for(var/list/traits as anything in (islist(stack) ? config.traits : list(center.traits)))
+			var/list/region_traits = traits.Copy()
+			region_traits -= (islist(stack) ? list(ZTRAIT_LINKAGE) : list(ZTRAIT_UP, ZTRAIT_DOWN, ZTRAIT_LINKAGE))
+			level_traits += list(region_traits)
+		var/first_z = world.maxz + 1
 		var/list/failed = list()
-		LoadGroup(failed, "[config.map_name] [direction]", config.map_path, config.surface_neighbors[direction], list(region_traits), region_traits)
+		LoadGroup(failed, "[config.map_name] [direction]", config.map_path, stack, level_traits, level_traits[1])
 		if(length(failed))
-			CRASH("Unable to load surface region: [config.surface_neighbors[direction]]")
-		ms13_link_surface_region(central_z, new_z, directions[direction])
+			CRASH("Unable to load surface region: [english_list(failed)]")
+		var/surface_offset = islist(stack) ? config.surface_level - 1 : 0
+		ms13_surface_levels += first_z + surface_offset
+		// Each level crosses to the one beside it: surface to surface, cave to cave, roof to roof.
+		for(var/level in 1 to length(level_traits))
+			var/center_z = central_z - surface_offset + level - 1
+			var/datum/space_level/beside = get_level(center_z)
+			beside.set_linkage(null)
+			beside.neigbours.Cut()
+			ms13_link_surface_region(center_z, first_z + level - 1, directions[direction])
 
 /datum/controller/subsystem/mapping/proc/ms13_link_surface_region(center_z, neighbor_z, direction)
 	LAZYINITLIST(ms13_surface_links["[center_z]"])
@@ -180,8 +201,13 @@
 			Fail("Configured neighboring maps were not loaded and linked.")
 		for(var/direction in loaded_neighbors)
 			var/neighbor_z = loaded_neighbors[direction]
-			if(SSmapping.level_trait(neighbor_z, ZTRAIT_UP) || SSmapping.level_trait(neighbor_z, ZTRAIT_DOWN))
-				Fail("A horizontal region inherited a vertical connection.")
+			if(!(neighbor_z in SSmapping.ms13_surface_levels))
+				Fail("A neighboring region's surface wasn't counted as one.")
+			// A lone map has no levels above or below. A stack's line up with the centre's, and cross to them too.
+			for(var/trait in list(ZTRAIT_UP, ZTRAIT_DOWN))
+				var/offset = SSmapping.level_trait(neighbor_z, trait)
+				if(offset && (!SSmapping.level_trait(central_z, trait) || SSmapping.ms13_surface_links["[neighbor_z + offset]"]?["[turn(text2num(direction), 180)]"] != central_z + offset))
+					Fail("A neighboring region's level [trait] doesn't line up with the centre's.")
 	var/list/saved_links = SSmapping.ms13_surface_links
 	var/list/saved_bounds = SSmapping.ms13_surface_bounds
 	SSmapping.ms13_surface_links = list()

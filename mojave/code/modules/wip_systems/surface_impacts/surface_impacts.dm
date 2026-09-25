@@ -100,7 +100,7 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 
 /// The open ground: the surface level and the regions around it, never a basement or an upper storey.
 /datum/ms13_surface_impact/proc/is_impact_level(z_level)
-	return z_level == ms13_surface_z() || !isnull(SSmapping.ms13_surface_links["[z_level]"])
+	return z_level == ms13_surface_z() || (z_level in SSmapping.ms13_surface_levels)
 
 /// The map's central ground level (its config's surface_level).
 /proc/ms13_surface_z()

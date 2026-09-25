@@ -4,10 +4,11 @@
 	"map_path": "Mammoth",
 	"surface_level": 2,
 	"surface_neighbors": {
-		"north": "Mammoth_north.dmm",
-		"east": "Mammoth_east.dmm",
-		"south": "Mammoth_south.dmm",
-		"west": "Mammoth_west.dmm"
+		"north": [
+			"Mammoth_north_below.dmm",
+			"Mammoth_north.dmm",
+			"Mammoth_north_above.dmm"
+		]
 	},
 	"map_file": [
 		"Mammoth_below.dmm",
