@@ -56,12 +56,11 @@
 		user.emote("custom", message = "[user.friendly_verb_continuous] [src].")
 		return FALSE
 	else
-		if(user.obj_damage)
-			. = attack_generic(user, user.obj_damage, user.melee_damage_type, BLUNT, TRUE, user.armor_penetration)
-		else
-			. = attack_generic(user, rand(user.melee_damage_lower,user.melee_damage_upper), user.melee_damage_type, BLUNT,TRUE, user.armor_penetration)
+		// MOJAVE EDIT - the smash sounds as hard as it lands (mojave/code/game/distant_sound.dm)
+		var/force = user.obj_damage || rand(user.melee_damage_lower, user.melee_damage_upper)
+		. = attack_generic(user, force, user.melee_damage_type, BLUNT, TRUE, user.armor_penetration)
 		if(.)
-			playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
+			playsound_hit(src, 'sound/effects/meteorimpact.ogg', 50, force)
 
 /obj/attack_animal(mob/living/simple_animal/user, list/modifiers)
 	if(!user.melee_damage_upper && !user.obj_damage)
@@ -71,12 +70,11 @@
 		var/play_soundeffect = TRUE
 		if(user.environment_smash)
 			play_soundeffect = FALSE
-		if(user.obj_damage)
-			. = attack_generic(user, user.obj_damage, user.melee_damage_type, BLUNT, play_soundeffect, user.armor_penetration)
-		else
-			. = attack_generic(user, rand(user.melee_damage_lower,user.melee_damage_upper), user.melee_damage_type, BLUNT, play_soundeffect, user.armor_penetration)
+		// MOJAVE EDIT - the smash sounds as hard as it lands (mojave/code/game/distant_sound.dm)
+		var/force = user.obj_damage || rand(user.melee_damage_lower, user.melee_damage_upper)
+		. = attack_generic(user, force, user.melee_damage_type, BLUNT, play_soundeffect, user.armor_penetration)
 		if(. && !play_soundeffect)
-			playsound(src, 'sound/effects/meteorimpact.ogg', 100, TRUE)
+			playsound_hit(src, 'sound/effects/meteorimpact.ogg', 50, force)
 		if(user.client)
 			log_combat(user, src, "attacked")
 

@@ -9,13 +9,41 @@
  * Called by playsound() for every sound: a loud one with baked distant versions (distant_sound_versions.dm, made by
  * tools/distant_sounds) carries on its own, out as far as its kind does. Gunfire, engines, monsters, the hivemind,
  * structures taking a beating. Explosions go their own way (shake_the_room() below).
+ *
+ * Played to reach further or less far than usual, it carries further or less far in step: a hard blow (ms13_hit_scale()).
  */
 /proc/carry_sound(turf/turf_source, sound_file, vol, extrarange)
 	if(vol < DISTANT_SOUND_MIN_VOLUME)
 		return
 	var/list/versions = GLOB.distant_sound_versions["[sound_file]"]
 	if(versions)
-		playsound_distant(turf_source, sound_file, min(vol * 0.8, 60), versions[3], near_vol = vol, near_max = SOUND_RANGE + extrarange)
+		playsound_distant(turf_source, sound_file, min(vol * 0.8, 60), versions[3] * (SOUND_RANGE + extrarange) / SOUND_RANGE, near_vol = vol, near_max = SOUND_RANGE + extrarange)
+
+/// A blow this hard sounds as every hit used to: a ghoul's claw, a pipe swung at a door.
+#define MS13_SOLID_HIT 25
+
+/// Set while a blow's sounds play (take_damage(), playsound_hit()): how hard it landed, before armor.
+GLOBAL_VAR(ms13_hit_force)
+
+/**
+ * How much louder, and how much further, a blow sounds than its sound usually plays. Sound pressure goes as the square
+ * root of a blow's energy: a solid MS13_SOLID_HIT hit sounds as every hit used to, one four times as hard twice as loud
+ * and far, which is as loud as the usual volume 50 hit sound can play. 1 for anything that isn't a blow.
+ */
+/proc/ms13_hit_scale()
+	if(isnull(GLOB.ms13_hit_force))
+		return 1
+	// A blow too light to hurt still taps.
+	return min(sqrt(max(GLOB.ms13_hit_force, 1) / MS13_SOLID_HIT), 2)
+
+/// Plays a blow's sound, as hard as it landed.
+/proc/playsound_hit(atom/source, soundin, vol, force)
+	var/heard_force = GLOB.ms13_hit_force
+	GLOB.ms13_hit_force = force
+	playsound(source, soundin, vol, TRUE)
+	GLOB.ms13_hit_force = heard_force
+
+#undef MS13_SOLID_HIT
 
 /**
  * Loud sounds carry. Past where a sound can normally be heard, listeners out to far_range still hear it, from the
@@ -189,4 +217,23 @@
 		var/fire_sound = initial(gun_type.fire_sound)
 		if(fire_sound && findtext("[gun_type]", "/ms13") && !findtext("[fire_sound]", "suppressed") && !GLOB.distant_sound_versions["[fire_sound]"])
 			Fail("[gun_type]'s fire sound has no distant versions: run tools/distant_sounds/make_distant_sounds.py.")
+	// A blow sounds as hard as it lands: a claw as hits always did, a charging hellpig twice as loud and far, no further.
+	var/obj/structure/ms13_hit_probe/probe = allocate(/obj/structure/ms13_hit_probe, ear)
+	probe.take_damage(100)
+	if(probe.heard_force != 100 || !isnull(GLOB.ms13_hit_force))
+		Fail("A blow's sound didn't hear how hard it landed, or kept hearing it after.")
+	var/list/scales = list()
+	for(var/force in list(25, 6.25, 100, 300))
+		GLOB.ms13_hit_force = force
+		scales += ms13_hit_scale()
+	GLOB.ms13_hit_force = null
+	if(scales[1] != 1 || scales[2] != 0.5 || scales[3] != 2 || scales[4] != 2 || ms13_hit_scale() != 1)
+		Fail("Blows sounded [english_list(scales)] times as loud at 25, 6.25, 100 and 300 force, not 1, 0.5, 2 and 2.")
+
+/obj/structure/ms13_hit_probe
+	max_integrity = 1000
+	var/heard_force
+
+/obj/structure/ms13_hit_probe/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
+	heard_force = GLOB.ms13_hit_force
 #endif

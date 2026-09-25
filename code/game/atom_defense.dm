@@ -8,7 +8,11 @@
 	if(atom_integrity <= 0)
 		CRASH("[src] taking damage while having <= 0 integrity")
 	if(sound_effect)
+		// MOJAVE EDIT - it sounds as hard as it landed, armor or no (mojave/code/game/distant_sound.dm)
+		var/heard_force = GLOB.ms13_hit_force
+		GLOB.ms13_hit_force = damage_amount
 		play_attack_sound(damage_amount, damage_type, damage_flag)
+		GLOB.ms13_hit_force = heard_force
 	if(resistance_flags & INDESTRUCTIBLE)
 		return
 

@@ -51,6 +51,11 @@
 	if (!turf_source || !soundin || !vol)
 		return
 
+	var/hit_scale = ms13_hit_scale() // MOJAVE EDIT - a blow sounds, and carries, as hard as it landed (mojave/code/game/distant_sound.dm)
+	if(hit_scale != 1)
+		vol = min(vol * hit_scale, 100)
+		extrarange += SOUND_RANGE * (hit_scale - 1)
+
 	if(vol < SOUND_AUDIBLE_VOLUME_MIN) // never let sound go below SOUND_AUDIBLE_VOLUME_MIN or bad things will happen
 		return
 
