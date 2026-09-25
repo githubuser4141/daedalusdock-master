@@ -131,7 +131,8 @@
 		// A route exists but a moving crowd can occupy its next tile; make room and repath.
 		step_rand(src)
 		return
-	if(!target && !corpse_target_ref && (length(network.territory) >= 12 || length(network.frontier)))
+	// Wandering, it waits for a way out, unless it's shut in a vehicle: then it batters its way out.
+	if(!target && !corpse_target_ref && (length(network.territory) >= 12 || length(network.frontier)) && !get_ms13_ground_vehicle_at(src))
 		for(var/obj/machinery/door/door in orange(1, src))
 			if(begin_door_pry(door))
 				return
@@ -475,7 +476,7 @@
 	for(var/obj/structure/ms13_hivemind/terrain/growth as anything in network.territory)
 		var/turf/candidate = get_turf(growth)
 		var/distance = get_dist(src, candidate)
-		if(distance >= roam_min_distance && distance <= roam_range)
+		if(distance >= roam_min_distance && distance <= roam_range && !get_ms13_ground_vehicle_at(candidate))
 			candidates += candidate
 	if(length(candidates))
 		return pick(candidates)
@@ -555,7 +556,7 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/DestroyObjectsInDirection(direction)
 	var/turf/destination = get_step(src, direction)
-	if(!destination || !environment_smash)
+	if(!destination || !environment_smash || smash_own_edge(direction))
 		return
 	for(var/obj/structure/ms13_hivemind/friendly in destination)
 		if(friendly.network == network && friendly.density)

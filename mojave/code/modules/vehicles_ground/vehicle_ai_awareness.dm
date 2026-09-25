@@ -83,6 +83,20 @@
 		if(ms13_hidden_in_vehicle(rider, src) && !ms13_besieging(src, rider))
 			. -= rider
 
+/// Smashes whatever on its own tile's edge that way is keeping it in, like the hull of a vehicle it's got inside.
+/// TRUE if there was something.
+/mob/living/simple_animal/hostile/proc/smash_own_edge(direction)
+	for(var/obj/obstacle in loc)
+		if(obstacle.density && (obstacle.flags_1 & ON_BORDER_1) && (obstacle.dir & direction) && !obstacle.CanAllowThrough(src, direction) && (ismachinery(obstacle) || isstructure(obstacle)))
+			obstacle.attack_animal(src)
+			return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/DestroyObjectsInDirection(direction)
+	if(environment_smash >= ENVIRONMENT_SMASH_STRUCTURES && smash_own_edge(direction))
+		return
+	return ..()
+
 /mob/living/simple_animal/hostile/DestroyPathToTarget()
 	var/obj/structure/window/ms13_vehicle_wall/panel = ms13_besieging(src, target) && ms13_breach_panel(src, target)
 	if(!panel)
@@ -194,6 +208,14 @@
 	controller.queue_behavior(melee_type, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 	if(controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION] || controller.blackboard[BB_BASIC_MOB_CURRENT_TARGET] != rider)
 		Fail("With the door down, a ghoul didn't go on in for its rider.")
+
+	// Got inside, a smasher that wants out batters the hull on its own tile's edge.
+	dog.forceMove(get_turf(rear_left))
+	dog.environment_smash = ENVIRONMENT_SMASH_STRUCTURES
+	left_before = left_door.get_integrity()
+	dog.DestroyObjectsInDirection(WEST)
+	if(left_door.get_integrity() >= left_before)
+		Fail("A creature shut inside a car didn't batter its way out through the door beside it.")
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in vehicle.frames.Copy())
 		qdel(frame)
 #endif

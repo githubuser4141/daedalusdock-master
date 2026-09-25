@@ -213,6 +213,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return FALSE
 	if(locate(/obj/effect/landmark) in target || locate(/obj/docking_port) in target)
 		return FALSE
+	// Not under a vehicle: it drives off, and converters would try to reach it inside.
+	if(get_ms13_ground_vehicle_at(target))
+		return FALSE
 	return TRUE
 
 /datum/ms13_terrain_hivemind/proc/claim_turf(turf/target, spend_resources = TRUE)
@@ -1578,6 +1581,9 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 			continue
 		var/turf/candidate = locate(x + x_offset, y + y_offset, z)
 		if(!isopenturf(candidate) || candidate.density || istype(candidate, /turf/open/space) || istype(candidate, /turf/open/chasm) || istype(candidate, /turf/open/lava) || istype(candidate, /turf/open/openspace))
+			continue
+		// Inside a vehicle is shut away behind its hull: getting there means breaking in.
+		if(get_ms13_ground_vehicle_at(candidate))
 			continue
 		// Prefer destinations beyond the growth so a crowd disperses out of its spawn room.
 		if(attempt <= 12 && network.is_territory(candidate))
