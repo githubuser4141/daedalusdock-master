@@ -67,3 +67,24 @@
 /obj/projectile/bullet/ms13/c4570SP
 	damage = 45
 	armor_penetration = 20*/
+
+#ifdef UNIT_TESTS
+/// The armor ratings in bullet_math.dm still stop the rounds they're for, at the muzzle.
+/datum/unit_test/ms13_armor_ratings
+	name = "BULLETS: Armor Ratings Stop The Rounds They're For"
+
+/datum/unit_test/ms13_armor_ratings/Run()
+	var/list/ratings = list(
+		"[ARMOR_HANDGUNS]" = list(/obj/projectile/bullet/ms13/c22/hv, /obj/projectile/bullet/ms13/c9mm/ap, /obj/projectile/bullet/ms13/c45/ap, /obj/projectile/bullet/ms13/c10mm/hv, /obj/projectile/bullet/ms13/a357/hv),
+		"[ARMOR_SHOTGUNS]" = list(/obj/projectile/bullet/pellet/ms13/buckshot, /obj/projectile/bullet/pellet/ms13/flechette, /obj/projectile/bullet/ms13/slug),
+		"[ARMOR_MAGNUMS]" = list(/obj/projectile/bullet/ms13/m44/hv, /obj/projectile/bullet/ms13/m12mm/fmj, /obj/projectile/bullet/ms13/a357/ap),
+		"[ARMOR_RIFLES]" = list(/obj/projectile/bullet/ms13/a556/ap, /obj/projectile/bullet/ms13/a762, /obj/projectile/bullet/ms13/a308/ap, /obj/projectile/bullet/ms13/c4570/ap),
+		"[ARMOR_HEAVY_RIFLES]" = list(/obj/projectile/bullet/ms13/a762/ap, /obj/projectile/bullet/ms13/a308/hv, /obj/projectile/bullet/ms13/c4570/hv, /obj/projectile/bullet/ms13/a556/hv),
+		"[ARMOR_ANTI_MATERIEL]" = list(/obj/projectile/bullet/ms13/a50MG/hv, /obj/projectile/bullet/ms13/a50MG/ap),
+	)
+	for(var/rating in ratings)
+		for(var/round_type in ratings[rating])
+			var/obj/projectile/round = allocate(round_type)
+			if(ms13_armor_stopping_power(text2num(rating), round) < round.get_penetration_power())
+				Fail("[rating] armor no longer stops [round_type]: its power is [round(round.get_penetration_power(), 0.1)].")
+#endif

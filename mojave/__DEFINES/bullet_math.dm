@@ -286,6 +286,26 @@ GLOBAL_LIST_INIT(bulletStandardFragmentAngles, list(
 
 // End Bullet Armors
 
+// Begin Armor Ratings
+// The least PUNCTURE armor (what bullets test) that stops a class of round outright: its stopping power
+// (ms13_armor_stopping_power()) meets the round's penetration power at the muzzle (get_penetration_power()). Further
+// off rounds slow and stop sooner. For a barrier, a vehicle panel or a creature: default_armor = list(PUNCTURE =
+// ARMOR_RIFLES, ...). A creature also takes that much off as a share, as armor does. Worked out from the ammo in
+// mojave/items/guns/projectiles; the ms13_armor_ratings test checks they still hold if the ammo changes.
+/// .22, 9mm, .45, 10mm and .357 (bar .357 AP): pistols, and the SMGs, which fire the same.
+#define ARMOR_HANDGUNS 40
+/// Buckshot, flechettes and slugs.
+#define ARMOR_SHOTGUNS 45
+/// .44 and 12.7mm, bar 12.7mm high velocity, and .357 AP.
+#define ARMOR_MAGNUMS 60
+/// 5.56, 7.62, .308 and .45-70, bar 7.62 AP and high velocity .308 and .45-70.
+#define ARMOR_RIFLES 90
+/// Every rifle round short of .50, AP and high velocity included.
+#define ARMOR_HEAVY_RIFLES 120
+/// .50 BMG, any load.
+#define ARMOR_ANTI_MATERIEL 250
+// End Armor Ratings
+
 // Begin Bullet Damages
 
 #define SLUG_DAMAGE 80
