@@ -148,6 +148,7 @@ code/modules/mob/inventory.dm,
 code/game/sound.dm,
 code/datums/actions/mobs/charge.dm,
 code/modules/unit_tests/novaflower_burn.dm,
+code/game/objects/effects/effect_system/fluid_spread/effects_smoke.dm,
 
 
 */
