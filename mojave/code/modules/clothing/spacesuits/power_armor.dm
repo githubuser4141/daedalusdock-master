@@ -32,8 +32,7 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor)
 	// AI EDIT: disabled, not fixed - see the note on /obj/item/clothing/head/helmet/ms13/init_fov() in helmet.dm
 
 /obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor/Destroy()
-	if(suit.helmet)
-		suit.helmet = null
+	suit?.helmet = null
 	suit = null
 	. = ..()
 
@@ -345,7 +344,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 			return
 		if(do_after(user, src, 5 SECONDS))
 			qdel(I)
-			helmet = new helmettype(src)
+			MakeHelmet() // links helmet.suit
 			to_chat(user, span_notice("You have successfully repaired [src]'s helmet."))
 			new /obj/item/light/bulb/broken(drop_location())
 			return
