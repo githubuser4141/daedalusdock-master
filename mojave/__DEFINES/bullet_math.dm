@@ -568,6 +568,13 @@ TYPEINFO_DEF(/obj/projectile)
 /atom/proc/get_bullet_occupant()
 	return null
 
+/// Whoever's shut inside a locker, crate, bin or the like, for a round that gets through its sides to hit.
+/obj/get_bullet_occupant()
+	var/list/inside = list()
+	for(var/mob/living/hiding in contents)
+		inside += hiding
+	return length(inside) ? pick(inside) : null
+
 /**
  * The one place a bullet hit resolves. Takes the target's share out of the round, lets the target apply it
  * through its normal bullet_act(), then sends the remainder on if the target let it through.

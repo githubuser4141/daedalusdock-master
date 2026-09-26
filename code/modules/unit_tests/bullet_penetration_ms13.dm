@@ -28,6 +28,17 @@
 	rifle.speed *= 3
 	TEST_ASSERT(ms13_bullet_stop_fraction(log_stop, 0.1, rifle) > fast_fraction, "A slowed round penetrated as well as a fast one.")
 
+/// A round through the side of a locker hits whoever's shut inside it.
+/datum/unit_test/bullet_through_containers/Run()
+	var/obj/structure/closet/locker = ALLOCATE_BOTTOM_LEFT()
+	var/mob/living/carbon/human/consistent/hiding = ALLOCATE_BOTTOM_LEFT()
+	locker.close()
+	hiding.forceMove(locker)
+	var/brute_before = hiding.getBruteLoss()
+	var/obj/projectile/bullet/ms13/a762/bullet = ALLOCATE_BOTTOM_LEFT()
+	bullet.penetrating_hit(locker, BODY_ZONE_CHEST, FALSE)
+	TEST_ASSERT(hiding.getBruteLoss() > brute_before, "A rifle round through a locker missed whoever was hiding in it.")
+
 /// A round's damage is shared between everything it hits, never added to.
 /datum/unit_test/bullet_damage_conservation/Run()
 	var/obj/structure/window/ms13_vehicle_wall/solid/plate = ALLOCATE_BOTTOM_LEFT()
