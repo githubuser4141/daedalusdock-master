@@ -256,11 +256,6 @@
 	log_pickup_and_drop = TRUE
 	slowdown = 0.75 //A fall back in case someone forgets to define slowdown at the gun level
 	wield_info = /datum/wield_info/default/inhands
-	var/jamming_chance = 20
-	var/unjam_chance = 10
-	var/jamming_increment = 5
-	var/jammed = FALSE
-	var/can_jam = FALSE
 	var/has_scope = FALSE
 	var/scope_range = 0
 	// bolt_locked is declared on the shared /obj/item/gun/ballistic parent (see weapons/ballistic/_ballistic.dm)
@@ -286,38 +281,6 @@
 
 	if(chambered && bolt_locked == TRUE) //this makes all our rifles chambered, bolt open
 		icon_state = "[initial(icon_state)]_empty"
-
-/obj/item/gun/ballistic/rifle/ms13/attack_self(mob/user)
-	if(can_jam)
-		if(jammed)
-			if(prob(unjam_chance))
-				jammed = FALSE
-				unjam_chance = 10
-			else
-				unjam_chance += 10
-				to_chat(user, span_warning("[src] is jammed!"))
-				playsound(user,'sound/weapons/jammed.ogg', 75, TRUE)
-				return FALSE
-	..()
-
-/obj/item/gun/ballistic/rifle/ms13/do_chamber_update(empty_chamber = TRUE, from_firing = TRUE, chamber_next_round = TRUE)
-	if(can_jam && from_firing && chambered?.loaded_projectile)
-		if(prob(jamming_chance))
-			jammed = TRUE
-		jamming_chance += jamming_increment
-		jamming_chance = clamp(jamming_chance, 0, 100)
-	return ..()
-
-/* Have fun, until we get our own or show interest in using this widespread.
-obj/item/gun/ballistic/rifle/ms13/attackby(obj/item/item, mob/user, params)
-	. = ..()
-	if(can_jam)
-		if(bolt_locked)
-			if(istype(item, /obj/item/gun_maintenance_supplies))
-				if(do_after(user, src, 10 SECONDS))
-					user.visible_message(span_notice("[user] finishes maintenance of [src]."))
-					jamming_chance = 10
-					qdel(item) */
 
 //Loaders/Ammo boxes
 /obj/item/ammo_box/ms13
