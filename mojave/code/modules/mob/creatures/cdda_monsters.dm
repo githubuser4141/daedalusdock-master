@@ -259,6 +259,9 @@
 	attack_sound = 'mojave/sound/wip/necromorphs/brute_attack_1.ogg'
 	deathsound = 'mojave/sound/wip/necromorphs/brute_death.ogg'
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/cdda/zombie/hulk)
+	default_armor = list(PUNCTURE = ARMOR_MAGNUMS, BLUNT = 50, SLASH = 25)
+
 /mob/living/simple_animal/hostile/ms13/cdda/zombie/hulk
 	name = "zombie hulk"
 	desc = "A mountain of dead flesh twice a man's height, with fists like sledgehammers."

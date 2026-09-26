@@ -740,7 +740,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech)
 	return TRUE
 
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/durand)
-	default_armor = list(BLUNT = 40, PUNCTURE = 35, SLASH = 0, LASER = 15, ENERGY = 10, BOMB = 20, BIO = 0, FIRE = 100, ACID = 100)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_SHOTGUNS, SLASH = 50, LASER = 15, ENERGY = 10, BOMB = 20, BIO = 0, FIRE = 100, ACID = 100)
 
 /obj/vehicle/sealed/ms13_mech/durand
 	name = "\improper Durand"
@@ -753,7 +753,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/durand)
 	mass = 3000
 
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/gygax)
-	default_armor = list(BLUNT = 25, PUNCTURE = 20, SLASH = 0, LASER = 30, ENERGY = 15, BOMB = 0, BIO = 0, FIRE = 100, ACID = 100)
+	default_armor = list(BLUNT = 25, PUNCTURE = ARMOR_HANDGUNS, SLASH = 50, LASER = 30, ENERGY = 15, BOMB = 0, BIO = 0, FIRE = 100, ACID = 100)
 
 /obj/vehicle/sealed/ms13_mech/gygax
 	name = "\improper Gygax"
@@ -766,7 +766,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/gygax)
 	mass = 1500
 
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley)
-	default_armor = list(BLUNT = 40, PUNCTURE = 20, SLASH = 0, LASER = 10, ENERGY = 20, BOMB = 40, BIO = 0, FIRE = 100, ACID = 100)
+	default_armor = list(BLUNT = 40, PUNCTURE = ARMOR_HANDGUNS - 20, SLASH = 50, LASER = 10, ENERGY = 20, BOMB = 40, BIO = 0, FIRE = 100, ACID = 100)
 
 /obj/vehicle/sealed/ms13_mech/ripley
 	name = "\improper Ripley MK-I"
@@ -783,7 +783,7 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley)
 	turnsound = 'sound/mecha/powerloader_turn2.ogg'
 
 TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
-	default_armor = list(BLUNT = 40, PUNCTURE = 30, SLASH = 0, LASER = 30, ENERGY = 30, BOMB = 60, BIO = 0, FIRE = 100, ACID = 100)
+	default_armor = list(BLUNT = 40, PUNCTURE = ARMOR_HANDGUNS - 10, SLASH = 50, LASER = 30, ENERGY = 30, BOMB = 60, BIO = 0, FIRE = 100, ACID = 100)
 
 /obj/vehicle/sealed/ms13_mech/ripley/mk2
 	name = "\improper Ripley MK-II"

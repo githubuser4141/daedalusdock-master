@@ -1,3 +1,7 @@
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/handy)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS - 20, BLUNT = 25, SLASH = 30)
+	default_subarmor = list(CUTTING = 5)
+
 /mob/living/simple_animal/hostile/ms13/robot/handy
 	name = "Mr. Handy"
 	desc = "A standard model Mr. Handy unit. It's long lost any rational wires in its circuits."
@@ -11,8 +15,6 @@
 	move_to_delay = 3
 	speed = 1
 	sharpness = NONE
-	//wound_bonus = 2
-	//bare_wound_bonus 0
 	speak_emote = list("states", "says")
 	attack_verb_continuous = "pinches"
 	attack_verb_simple = "pinch"
@@ -80,8 +82,6 @@
 	melee_damage_upper = 30
 	armor_penetration = 10 // AI EDIT: armour_penetration -> armor_penetration (DD's real spelling for this var)
 	sharpness = SHARP_EDGED
-	//wound_bonus = 6
-	//bare_wound_bonus 6
 	attack_verb_continuous = "saws"
 	attack_verb_simple = "saw"
 	attack_sound = 'sound/weapons/circsawhit.ogg'
@@ -99,6 +99,10 @@
 	casingtype = /obj/item/ammo_casing/ms13/a762/junk/handy
 	projectilesound = 'mojave/sound/ms13weapons/chinesearfire.ogg'
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/handy/gutsy)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS - 10, BLUNT = 25, SLASH = 50)
+	default_subarmor = list(CUTTING = 5, PIERCING = 5)
+
 /mob/living/simple_animal/hostile/ms13/robot/handy/gutsy
 	name = "Mr. Gutsy"
 	desc = "A militarized version of the Handy model. Equiped with a compact plasma rifle, it's a dangerous foe."
@@ -110,8 +114,6 @@
 	melee_damage_upper = 30
 	subtractible_armour_penetration = 15
 	sharpness = SHARP_EDGED
-	//wound_bonus = 8
-	//bare_wound_bonus 10
 	minimum_distance = MS13_AI_ENGAGE_RANGE
 	retreat_distance = null
 	move_to_delay = 1

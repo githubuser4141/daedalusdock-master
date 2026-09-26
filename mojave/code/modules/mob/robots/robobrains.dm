@@ -1,3 +1,7 @@
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/robobrain)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS, BLUNT = 25, SLASH = 50)
+	default_subarmor = list(CUTTING = 5)
+
 /mob/living/simple_animal/hostile/ms13/robot/robobrain
 	name = "robobrain"
 	desc = "A pre-war military robot, using human brains as a computer. Extremely advanced, able to manipulate most weapons. This variant is able to unleash a radiation beam at its target."
@@ -40,6 +44,10 @@
 	do_sparks(3, TRUE, src)
 	playsound(src, 'mojave/sound/ms13npc/robot_death.ogg', 60, TRUE)
 	qdel(src)
+
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/robobrain/heavy)
+	default_armor = list(PUNCTURE = ARMOR_SHOTGUNS, BLUNT = 35, SLASH = 50)
+	default_subarmor = list(CUTTING = 10, PIERCING = 5)
 
 /mob/living/simple_animal/hostile/ms13/robot/robobrain/heavy
 	name = "heavy robobrain"

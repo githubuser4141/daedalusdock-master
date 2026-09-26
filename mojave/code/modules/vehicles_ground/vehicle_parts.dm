@@ -1,5 +1,5 @@
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
-	default_armor = list(BLUNT = 20, PUNCTURE = 20, SLASH = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 100, FIRE = 30, ACID = 20)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_HANDGUNS - 20, SLASH = 50, LASER = 10, ENERGY = 10, BOMB = 25, BIO = 100, FIRE = 30, ACID = 20)
 
 /datum/looping_sound/ms13/vehicle_engine
 	start_sound = 'mojave/sound/ms13machines/engine_start.ogg'
@@ -257,12 +257,16 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
  * The engine burns fuel drawn from the vehicle's fuel tanks. More engines drive it faster, for their weight, and burn
  * fuel for their power (see power_factor()).
  */
+
+TYPEINFO_DEF(/obj/structure/ms13_vehicle_part/engine)
+	default_armor = list(PUNCTURE = ARMOR_RIFLES, BLUNT = 50, SLASH = 50)
+
 /obj/structure/ms13_vehicle_part/engine
 	name = "vehicle engine"
 	desc = "A combustion engine."
 	icon_state = "carengine_static"
 	layer = OBJ_LAYER
-	max_integrity = 200
+	max_integrity = 100
 	fitting_time = 8 SECONDS
 	/// Kilowatts.
 	var/power = 75

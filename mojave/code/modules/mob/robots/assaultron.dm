@@ -1,3 +1,7 @@
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/assaultron)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS, BLUNT = 50, SLASH = 50)
+	default_subarmor = list(CUTTING = 5, PIERCING = 5)
+
 /mob/living/simple_animal/hostile/ms13/robot/assaultron
 	name = "assaultron"
 	desc = "A robot designed with a sole concept in mind. Combat efficiency. It boasts a strong range laser attack, and dangerous piercing blade hands."
@@ -17,8 +21,6 @@
 	move_to_delay = 2.5
 	loot = list(/obj/item/stack/sheet/ms13/scrap_steel/two, /obj/effect/decal/cleanable/robot_debris, /obj/item/stack/sheet/ms13/scrap_electronics/two, /obj/item/stack/sheet/ms13/scrap_parts/two, /obj/item/stack/sheet/ms13/circuits/two)
 	speed = 1
-	//wound_bonus = 8
-	//bare_wound_bonus 8
 	sharpness = SHARP_IMPALING
 	attack_verb_continuous = "stabs"
 	attack_verb_simple = "stab"

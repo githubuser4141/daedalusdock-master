@@ -56,6 +56,10 @@ GLOBAL_LIST_INIT(sentrybot_dying_sound, list(
 									'mojave/sound/ms13npc/sentrybot/death5.ogg' = 1.5 SECONDS,
 									))
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/sentrybot)
+	default_armor = list(PUNCTURE = ARMOR_MAGNUMS, BLUNT = 50, SLASH = 50)
+	default_subarmor = list(CRUSHING = 5, CUTTING = 10, PIERCING = 10)
+
 /mob/living/simple_animal/hostile/ms13/robot/sentrybot
 	name = "sentry bot"
 	desc = "A robot with the scariest arsenal you seen so far, it's a pretty good idea if you stopped looking at it."

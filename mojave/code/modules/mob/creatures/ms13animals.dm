@@ -325,6 +325,9 @@
 
 //mirelurk
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/mirelurk)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS, BLUNT = 35, SLASH = 75)
+
 /mob/living/simple_animal/hostile/ms13/mirelurk
 	name = "mirelurk"
 	desc = "A large mutated crab monster, lurks its prey from the deep, keen to meat and a vital food source for many roamers."
@@ -472,6 +475,9 @@
 		ranged_cooldown = world.time + ranged_cooldown_time
 
 //radscorpion
+
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/radscorpion)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS - 10, BLUNT = 15, SLASH = 50)
 
 /mob/living/simple_animal/hostile/ms13/radscorpion
 	name = "radscorpion"
@@ -692,6 +698,9 @@
 
 //tunneler - idk what this was but cool sprite :flushed:
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/tunneler)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS - 20, BLUNT = 25, SLASH = 50)
+
 /mob/living/simple_animal/hostile/ms13/tunneler
 	name = "tunneler"
 	desc = "A preadatory cave lurker, a native species to the area, youre unsure what it could be..."
@@ -718,6 +727,9 @@
 	offsety = 5
 
 //yaoguai
+
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/yaoguai)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS, BLUNT = 50, SLASH = 25)
 
 /mob/living/simple_animal/hostile/ms13/yaoguai
 	name = "yao guai"
@@ -749,6 +761,9 @@
 
 //hellpig - pig from hell, very good mount if you have 100 human flesh - prolly gonna be ooooh wee mojave sun sekrit mount wowza
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/hellpig)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS, BLUNT = 50, SLASH = 25)
+
 /mob/living/simple_animal/hostile/ms13/hellpig
 	name = "hellpig"
 	desc = "A massive mutated pig. Wild and deadly."
@@ -778,8 +793,6 @@
 	speed = 2
 	move_to_delay = 3.35
 	sharpness = NONE
-	//wound_bonus = 10
-	//bare_wound_bonus 8
 	butcher_results = list(/obj/item/ms13/hide/large/hellpig = 2, /obj/item/food/meat/slab/ms13/carcass/large/hellpig/front = 1, /obj/item/food/meat/slab/ms13/carcass/large/hellpig/back = 1, /obj/item/food/meat/slab/ms13/carcass/large/hellpig/leg = 4)
 	//Sorry, no taming
 	//food_type = list(/obj/item/food/meat/slab/human)

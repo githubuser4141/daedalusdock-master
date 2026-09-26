@@ -1,5 +1,6 @@
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
-	default_armor = list(BLUNT = 40, PUNCTURE = 50, SLASH = 30, LASER = 30, ENERGY = 20, BOMB = 20, BIO = 100, FIRE = 60, ACID = 40)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_HANDGUNS - 20, SLASH = 50, LASER = 30, ENERGY = 20, BOMB = 20, BIO = 100, FIRE = 60, ACID = 40)
+	default_subarmor = list(CUTTING = 5)
 
 /**
  * One side's worth of vehicle hull - a directional/border object. Extends the game's existing window
@@ -86,9 +87,10 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	var/dealt = plate.take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration)
 	if(!QDELETED(plate))
 		plate.resolving_bullet_hit = FALSE
+	// The plate's share is damage dealt too, so a blow it soaks whole still lands (and sounds) as one.
 	if(dealt <= plate_left)
-		return
-	return ..(damage_amount * (dealt - plate_left) / dealt, damage_type, damage_flag, FALSE, attack_dir, armor_penetration, allow_break)
+		return dealt
+	return dealt + ..(damage_amount * (dealt - plate_left) / dealt, damage_type, damage_flag, FALSE, attack_dir, armor_penetration, allow_break)
 
 /obj/structure/window/ms13_vehicle_wall/attackby(obj/item/used_item, mob/user, params)
 	if(!istype(used_item, /obj/item/ms13_vehicle_armor))
@@ -253,7 +255,9 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	exterior_image.overlays = addon ? list(addon_appearance(-exterior_pixel_x, -exterior_pixel_y)) : list()
 
 TYPEINFO_DEF(/obj/item/ms13_vehicle_armor)
-	default_armor = list(BLUNT = 60, PUNCTURE = 80, SLASH = 60, LASER = 40, ENERGY = 30, BOMB = 40, BIO = 100, FIRE = 60, ACID = 40)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_RIFLES, SLASH = 50, LASER = 30, ENERGY = 20, BOMB = 40, BIO = 100, FIRE = 60, ACID = 40)
+	default_subarmor = list(CUTTING = 10)
+
 /// Add-on armor for a vehicle hull. Use it on an outer hull panel to bolt it on; a crowbar prises it off again.
 /obj/item/ms13_vehicle_armor
 	name = "steel appliqué plate"
@@ -271,12 +275,12 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor)
 	return ..()
 
 TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
-	default_armor = list(BLUNT = 40, PUNCTURE = 160, SLASH = 70, LASER = 70, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 80, ACID = 60)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_HEAVY_RIFLES + 30, SLASH = 70, LASER = 70, ENERGY = 50, BOMB = 50, BIO = 100, FIRE = 80, ACID = 60)
 /// Hard against shot, brittle against blows.
 /obj/item/ms13_vehicle_armor/ceramic
 	name = "ceramic add-on armor module"
 	desc = "Ceramic tiles in a composite backing, made to bolt over a hull. Very hard against shot, but blows shatter it. Use it on an outer hull panel to fit it."
-	max_integrity = 400
+	max_integrity = 300
 	plate_color = "#b3a47f"
 
 /// Bolts plate_type over every outer hull panel, as a factory up-armor kit would.
@@ -531,7 +535,7 @@ TYPEINFO_DEF(/obj/item/ms13_vehicle_armor/ceramic)
 // counterparts under the same names.
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/civ96) // mt lb armor
-	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 50, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 60, ACID = 50)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_RIFLES - 20, SLASH = 75, LASER = 50, ENERGY = 40, BOMB = 30, BIO = 100, FIRE = 60, ACID = 50)
 
 /// A vision block or firing port: you only see out with your face to it, and it lets almost no light in.
 /obj/structure/window/ms13_vehicle_wall/civ96
@@ -548,7 +552,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/civ96) // mt lb armor
 	full_hull_art = TRUE
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96) // mt lb armor
-	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_RIFLES - 10, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
 
 /// Light armor: stops rifle rounds, not heavy machine guns.
 /obj/structure/window/ms13_vehicle_wall/solid/civ96
@@ -571,7 +575,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/civ96/tank)
 	bullet_damage_ratio = 0.05
 
 TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/civ96) // mt lb armor
-	default_armor = list(BLUNT = 50, PUNCTURE = 65, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
+	default_armor = list(BLUNT = 50, PUNCTURE = ARMOR_RIFLES - 10, SLASH = 75, LASER = 70, ENERGY = 50, BOMB = 40, BIO = 100, FIRE = 60, ACID = 60)
 
 /// A hull hatch. Keeps its art while open, drawn faint so it's still there to click shut.
 /obj/structure/window/ms13_vehicle_wall/solid/door/civ96

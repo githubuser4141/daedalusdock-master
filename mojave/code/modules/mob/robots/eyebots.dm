@@ -1,5 +1,8 @@
 // Neutral eyebot for patrolling and aesthetics, but still can bonk you.
 
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/ms13/robot/eyebot)
+	default_armor = list(PUNCTURE = ARMOR_HANDGUNS - 20, BLUNT = 25, SLASH = 25)
+
 /mob/living/simple_animal/hostile/retaliate/ms13/robot/eyebot
 	name = "eyebot"
 	desc = "An eye shaped roaming radio broadcaster. It is equipped with a basic laser with no visible motives. Rumour says they document your every move."

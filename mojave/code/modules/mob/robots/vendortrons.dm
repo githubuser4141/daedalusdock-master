@@ -1,3 +1,7 @@
+TYPEINFO_DEF(/mob/living/simple_animal/hostile/retaliate/trader/ms13)
+	default_armor = list(PUNCTURE = ARMOR_MAGNUMS, BLUNT = 50, SLASH = 50)
+	default_subarmor = list(CUTTING = 5, PIERCING = 10)
+
 /mob/living/simple_animal/hostile/retaliate/trader/ms13
 	name = "vendortron"
 	desc = "You shouldn't be seeing this...."
@@ -7,8 +11,6 @@
 	health = 350
 	melee_damage_lower = 15
 	melee_damage_upper = 15
-	//wound_bonus = 0
-	//bare_wound_bonus 0
 	sharpness = NONE
 	attack_verb_continuous = "smacks"
 	attack_verb_simple = "smack"
