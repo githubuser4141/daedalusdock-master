@@ -178,7 +178,8 @@ TYPEINFO_DEF(/obj/item/organ/muscle/chest)
 
 /obj/item/organ/proc/update_strength_density()
 	if(istype(src, /obj/item/organ/muscle) || istype(src, /obj/item/organ/bone))
-		maxHealth = initial(maxHealth) * get_strength_density()
+		// On damage's own grid: rounded damage can otherwise land just under a fractional max and never kill it.
+		maxHealth = round(initial(maxHealth) * get_strength_density(), DAMAGE_PRECISION)
 		damage = min(damage, maxHealth)
 
 /// A missing muscle floors performance at MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR instead of 0 - refresh
