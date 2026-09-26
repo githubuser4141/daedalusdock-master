@@ -144,6 +144,14 @@
 /mob/living/proc/get_load_mult()
 	return max(1 - get_body_special_offset(SPECIAL_STRENGTH) * SPECIAL_STRENGTH_LOAD, 0)
 
+/// Strength as the body puts it to work: its own, or a power armor frame's.
+/mob/living/proc/get_body_strength()
+	return SPECIAL_BASELINE + get_body_special_offset(SPECIAL_STRENGTH)
+
+/// How long this body takes to force thing by main strength, for how tough it is (BLUNT armor) and how strong they are.
+/mob/living/proc/force_time(obj/thing)
+	return SPECIAL_STRENGTH_FORCE_TIME * (1 + thing.returnArmor().getRating(BLUNT) / 100) * SPECIAL_STRENGTH_FORCE / max(get_body_strength(), 1)
+
 /// How far this mob's Strength outweighs other's, in steps of SPECIAL_STRENGTH_CONTEST_STEP. Negative if it's weaker.
 /mob/living/proc/strength_edge(mob/living/other)
 	return round((get_body_special_offset(SPECIAL_STRENGTH) - other.get_body_special_offset(SPECIAL_STRENGTH)) / SPECIAL_STRENGTH_CONTEST_STEP, 1)

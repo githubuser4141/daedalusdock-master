@@ -176,7 +176,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 /obj/machinery/door/unpowered/ms13/open()
 	if(!density)
 		return TRUE
-	if(operating)
+	if(operating || swing_blocker())
 		return
 	operating = TRUE
 	set_opacity(0)
@@ -239,6 +239,10 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		return FALSE
 	add_fingerprint(M)
 	if(density)
+		var/obj/blocker = swing_blocker()
+		if(blocker)
+			to_chat(M, span_warning("[src] won't open: [blocker] is up against it."))
+			return FALSE
 		open()
 	else
 		close()
@@ -259,8 +263,8 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	if(!bolted && run_motor())
 		add_fingerprint(M)
 		return
-	// A dead motor's gearing drags: it takes a good haul to move by hand.
-	if(do_after(M, time = motorised ? 3 SECONDS : 1 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+	// A dead motor's gearing drags: it takes a good haul to move by hand. One off its latch swings at a touch.
+	if(is_busted() || do_after(M, time = motorised ? 3 SECONDS : 1 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
 		try_to_activate_door(M)
 
 /obj/machinery/door/unpowered/ms13/attackby(obj/item/I, mob/living/M, params)
@@ -273,7 +277,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		to_chat(M, span_warning("The [name] is locked."))
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
-	if(!(I.item_flags & NOBLUDGEON || LOCKING_ITEM) && !(M.combat_mode) && do_after(M, time = 1.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS))
+	if(!(I.item_flags & NOBLUDGEON || LOCKING_ITEM) && !(M.combat_mode) && (is_busted() || do_after(M, time = 1.5 SECONDS, interaction_key = DOAFTER_SOURCE_DOORS)))
 		open = TRUE
 		try_to_activate_door(M)
 		return TRUE
@@ -288,6 +292,67 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 // AI EDIT: Bumped() doesn't exist in DD - renamed to BumpedBy() (code/game/atom/atoms.dm), same single-arg signature
 /obj/machinery/door/unpowered/ms13/BumpedBy(atom/movable/AM)
 	return
+
+/// Share of its integrity a door's latch gives at: then it won't lock, and swings at a touch.
+#define MS13_DOOR_BUSTED 0.25
+/// What a door flung open does to whoever's standing where it swings.
+#define MS13_DOOR_SLAM_DAMAGE 15
+
+/// The way the door swings open. The art swings every door across a north-south way away from the viewer.
+/obj/machinery/door/unpowered/ms13/proc/swing_dir()
+	return (dir & (NORTH|SOUTH)) ? NORTH : turn(dir, 180)
+
+/// Anything solid standing the way the door swings, which holds it shut.
+/obj/machinery/door/unpowered/ms13/proc/swing_blocker()
+	for(var/obj/thing in get_step(src, swing_dir()))
+		if(thing.density)
+			return thing
+
+/obj/machinery/door/unpowered/ms13/proc/is_busted()
+	return atom_integrity <= max_integrity * MS13_DOOR_BUSTED
+
+/obj/machinery/door/unpowered/ms13/update_integrity(new_value, damage_flag, allow_break)
+	var/was_busted = is_busted()
+	. = ..()
+	if(!was_busted && is_busted())
+		bust()
+
+/// Battered past holding, the latch gives: the lock falls off and nothing keeps the door shut.
+/obj/machinery/door/unpowered/ms13/proc/bust()
+	locked = FALSE
+	lock_locked = FALSE
+	bolted = FALSE
+	RemoveElement(/datum/element/lockpickable)
+	if(lock)
+		lock.item_lock_locked = FALSE
+		lock.lock_open = TRUE
+		lock.forceMove(drop_location())
+		lock = null
+	visible_message(span_warning("[src]'s latch gives way!"))
+	update_appearance()
+
+/// Hit off its latch, or hit again once it's off, a door flies open away from the blow.
+/obj/machinery/door/unpowered/ms13/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration, allow_break)
+	. = ..()
+	if(. && density && is_busted() && !QDELETED(src) && !(attack_dir & swing_dir()))
+		slam_open()
+
+/// Flies open, into whoever's standing the way it swings: they're hurt and thrown back. FALSE if it's blocked.
+/obj/machinery/door/unpowered/ms13/proc/slam_open()
+	playsound(src, 'sound/effects/bang.ogg', 70, TRUE)
+	if(!open())
+		var/obj/blocker = swing_blocker()
+		if(blocker)
+			visible_message(span_warning("[src] slams into [blocker] and holds."))
+		return FALSE
+	var/turf/beyond = get_step(src, swing_dir())
+	for(var/mob/living/victim in beyond)
+		victim.visible_message(span_danger("[src] slams into [victim], throwing [victim.p_them()] back!"), span_userdanger("[src] slams into you!"))
+		victim.apply_damage(MS13_DOOR_SLAM_DAMAGE, BRUTE)
+		victim.Knockdown(2 SECONDS)
+		victim.throw_at(get_ranged_target_turf(victim, swing_dir(), 2), 2, 1)
+		log_combat(src, victim, "slammed into")
+	return TRUE
 
 /// Watts a door motor needs spare on its line, and draws for each swing.
 #define MS13_DOOR_MOTOR_DRAW 500
@@ -331,6 +396,9 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	else if(!density)
 		to_chat(user, span_warning("Close [src] first."))
 		return ITEM_INTERACT_BLOCKING
+	else if(is_busted())
+		to_chat(user, span_warning("[src]'s latch is broken. It won't lock."))
+		return ITEM_INTERACT_BLOCKING
 	else
 		lock.lock_open = FALSE
 		lock.item_lock_locked = TRUE
@@ -346,6 +414,9 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		return ITEM_INTERACT_BLOCKING
 	if(!(ms13_flags_1 & LOCKABLE_1) || !can_be_picked)
 		to_chat(user, span_warning("[new_lock] won't fit [src]."))
+		return ITEM_INTERACT_BLOCKING
+	if(is_busted())
+		to_chat(user, span_warning("[src]'s latch is broken. A lock won't hold it."))
 		return ITEM_INTERACT_BLOCKING
 	if(!do_after(user, src, 3 SECONDS, DO_PUBLIC, display = new_lock) || lock || !user.temporarilyRemoveItemFromInventory(new_lock))
 		return ITEM_INTERACT_BLOCKING
@@ -804,4 +875,54 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/frame)
 	allocated += door
 	if(!istype(door, /obj/machinery/door/unpowered/ms13/wood) || door.dir != NORTH || !door.motorised || !QDELETED(frame) || !QDELETED(planks))
 		Fail("Panelling a frame with planks didn't make a wooden door, facing its way and keeping its motor.")
+#endif
+
+#ifdef UNIT_TESTS
+/// Something solid where a door swings holds it shut. The blow that knocks it off its latch flings it open into whoever's
+/// behind it, as does any blow after; then it won't lock and swings free. A strong body hauls shutters by hand.
+/datum/unit_test/ms13_door_forcing
+	name = "DOORS: Barricaded, Broken Open By Force, And Hauled"
+
+/datum/unit_test/ms13_door_forcing/Run()
+	var/obj/machinery/door/unpowered/ms13/wood/door = allocate(/obj/machinery/door/unpowered/ms13/wood, locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z))
+	var/turf/beyond = get_step(door, door.swing_dir())
+	var/from_front = turn(door.swing_dir(), 180)
+	var/obj/structure/crate = allocate(/obj/structure, beyond)
+	crate.density = TRUE
+	if(door.open() || !door.density)
+		Fail("A door opened into something solid standing where it swings.")
+	qdel(crate)
+
+	qdel(door.take_lock(allocate(/obj/item/ms13/lock)))
+	door.lock.item_lock_locked = TRUE
+	door.AddElement(/datum/element/lockpickable, difficulty = 10)
+	door.take_damage(door.max_integrity * 0.1, BRUTE, NONE, FALSE, from_front)
+	if(!door.density)
+		Fail("A door flew open before it was off its latch.")
+	var/mob/living/carbon/human/consistent/behind = allocate(/mob/living/carbon/human/consistent, beyond)
+	door.take_damage(door.max_integrity * 0.7, BRUTE, NONE, FALSE, from_front)
+	sleep(1 SECONDS)
+	if(QDELETED(door))
+		Fail("The test broke its door outright.")
+		return
+	if(door.density || door.lock || door.lock_locked)
+		Fail("A door hit off its latch didn't lose its lock and fly open.")
+	if(behind.loc == beyond || !behind.getBruteLoss())
+		Fail("A door flung open didn't hurt and throw back whoever was behind it.")
+	door.close()
+	if(door.fit_lock(behind, allocate(/obj/item/ms13/lock)) != ITEM_INTERACT_BLOCKING)
+		Fail("A lock went onto a door whose latch was broken.")
+	door.take_damage(1, BRUTE, NONE, FALSE, door.swing_dir())
+	if(!door.density)
+		Fail("A broken door flew open toward whoever hit it.")
+	door.take_damage(1, BRUTE, NONE, FALSE, from_front)
+	if(door.density)
+		Fail("A broken door hit again didn't fly open.")
+
+	var/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/solo/shutters = allocate(/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/solo, locate(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z))
+	var/integrity = shutters.get_integrity()
+	shutters.haul()
+	sleep(1.5 SECONDS)
+	if(shutters.density || shutters.get_integrity() >= integrity)
+		Fail("Hauled shutters didn't open, or weren't bent doing it.")
 #endif

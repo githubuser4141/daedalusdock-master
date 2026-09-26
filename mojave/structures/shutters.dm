@@ -75,6 +75,26 @@ TYPEINFO_DEF(/obj/machinery/door/poddoor/shutters/ms13)
 	if(!user.combat_mode && !(I.item_flags & NOBLUDGEON))
 		return attack_hand(user)
 
+/// Share of its integrity shutters lose to being hauled by hand.
+#define MS13_SHUTTER_HAUL_DAMAGE 0.05
+
+/// A strong body, or power armor, hauls the shutters open or shut by hand. Indestructible ones won't give.
+/obj/machinery/door/poddoor/shutters/ms13/attack_hand(mob/living/user, list/modifiers)
+	if(!isliving(user) || user.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK) || operating || (resistance_flags & INDESTRUCTIBLE))
+		return ..()
+	if(user.get_body_strength() < SPECIAL_STRENGTH_FORCE)
+		to_chat(user, span_warning("[src] won't budge for you."))
+		return TRUE
+	user.visible_message(span_warning("[user] starts hauling [src] [density ? "open" : "shut"]!"), span_notice("You start hauling [src] [density ? "open" : "shut"]..."))
+	if(do_after(user, src, user.force_time(src), DO_PUBLIC) && !operating)
+		haul()
+	return TRUE
+
+/// Forced open or shut against its gearing, which bends it a little.
+/obj/machinery/door/poddoor/shutters/ms13/proc/haul()
+	take_damage(max_integrity * MS13_SHUTTER_HAUL_DAMAGE, BRUTE, NONE, FALSE)
+	INVOKE_ASYNC(src, density ? TYPE_PROC_REF(/obj/machinery/door, open) : TYPE_PROC_REF(/obj/machinery/door, close))
+
 /obj/machinery/door/poddoor/shutters/ms13/default_deconstruction_screwdriver(mob/user, icon_state_open, icon_state_closed, obj/item/screwdriver)
 	return
 

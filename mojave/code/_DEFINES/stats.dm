@@ -25,6 +25,10 @@
 
 /// Each point of Strength off baseline makes what you carry and drag slow you this much less, or more.
 #define SPECIAL_STRENGTH_LOAD 0.1
+/// Strength (the body's, or a power armor frame's) it takes to haul shutters by hand.
+#define SPECIAL_STRENGTH_FORCE 8
+/// How long that takes at SPECIAL_STRENGTH_FORCE on something with no BLUNT armor; armor slows it, Strength speeds it.
+#define SPECIAL_STRENGTH_FORCE_TIME (3 SECONDS)
 /// Points of Strength between two people that make one step's difference in a grab, or +1 to a shove.
 #define SPECIAL_STRENGTH_CONTEST_STEP 3
 /// Each point of Strength off baseline speeds metabolism this much: hunger, and how hard drugs hit and how soon they overdose.
