@@ -23,3 +23,27 @@
 			update_appearance()
 		return TRUE
 	return ..()
+
+/// A long gun slings over a suit that takes guns, however big it is. Suit storage otherwise stops at bulky, and MS13's
+/// rifles and shotguns are huge, so every loadout that slung one lost it at spawn.
+/datum/species/can_equip(obj/item/I, slot, disable_warning, mob/living/carbon/human/H, bypass_equip_delay_self = FALSE, ignore_equipped = FALSE)
+	if(slot == ITEM_SLOT_SUITSTORE && istype(I, /obj/item/gun) && !(slot & no_equip_flags) && H.wear_suit && is_type_in_list(I, H.wear_suit.allowed))
+		return (ignore_equipped || !H.get_item_by_slot(slot)) && !HAS_TRAIT(I, TRAIT_NODROP)
+	return ..()
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_slung_long_guns
+	name = "GUNS: Long Guns Sling Over Armor"
+
+/datum/unit_test/ms13_slung_long_guns/Run()
+	var/mob/living/carbon/human/consistent/trooper = allocate(/mob/living/carbon/human/consistent)
+	trooper.equip_to_slot_or_del(allocate(/obj/item/clothing/suit/armor/ms13/ncr), ITEM_SLOT_OCLOTHING)
+	var/obj/item/gun/ballistic/automatic/ms13/semi/service/rifle = allocate(/obj/item/gun/ballistic/automatic/ms13/semi/service)
+	if(rifle.w_class <= WEIGHT_CLASS_BULKY)
+		Fail("The service rifle isn't a long gun any more; pick another for this test.")
+	if(!trooper.equip_to_slot_if_possible(rifle, ITEM_SLOT_SUITSTORE, disable_warning = TRUE))
+		Fail("A service rifle wouldn't sling over NCR armor.")
+	var/obj/item/gun/ballistic/automatic/ms13/semi/service/second = allocate(/obj/item/gun/ballistic/automatic/ms13/semi/service)
+	if(trooper.equip_to_slot_if_possible(second, ITEM_SLOT_SUITSTORE, disable_warning = TRUE))
+		Fail("Two long guns slung over one suit.")
+#endif
