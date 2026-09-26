@@ -18,6 +18,10 @@
 #define SPECIAL_MAXIMUM 10
 /// Points to spend across all seven at character setup, as in Fallout: every one at baseline, and five more.
 #define SPECIAL_POINTS 40
+/// The fewest and most points an attribute takes at setup, given what species and traits add to it (modifier), so it
+/// stays within SPECIAL_MINIMUM to SPECIAL_MAXIMUM: a -2 starts two down, buys back up to 8, and dumping it saves less.
+#define SPECIAL_POINTS_MIN(modifier) (SPECIAL_MINIMUM + max(-(modifier), 0))
+#define SPECIAL_POINTS_MAX(modifier) (SPECIAL_MAXIMUM - max((modifier), 0))
 
 /// Each point of Strength off baseline makes what you carry and drag slow you this much less, or more.
 #define SPECIAL_STRENGTH_LOAD 0.1

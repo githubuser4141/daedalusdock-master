@@ -7,8 +7,13 @@
  * finer, chancier things. Each of its three stats leans on SPECIAL (/datum/rpg_stat/var/special_attributes), and Luck
  * bends every roll's odds of a critical.
  *
- * Every attribute starts at SPECIAL_BASELINE. Points are spent on them at character setup (special_preferences.dm);
- * species and other sources add modifiers on top. Nothing comes from jobs.
+ * Every attribute starts at SPECIAL_BASELINE. Points are spent on them at character setup (special_preferences.dm),
+ * and modifiers (attribute = amount) go on top, which is how code makes someone better or worse at one:
+ * - special_modifiers on a /datum/species or a /datum/quirk (a trait, picked at setup or added in code). Setup shows
+ *   them and shifts what points buy to match (SPECIAL_POINTS_MIN/MAX).
+ * - special_modifiers on a /datum/perk, or set_special_modifier(source, amounts) for anything else, in play.
+ * - A mob type's own starting SPECIAL: ms13_stats = a /datum/ms13_stats subtype.
+ * Nothing comes from jobs.
  */
 /mob/living
 	/// This character's own SPECIAL. Set it to a /datum/ms13_stats subtype in code to start them off different.
@@ -238,9 +243,35 @@
 	/// Character sheet stats and skills it's better or worse at: stat or skill type = amount.
 	var/list/rpg_modifiers
 
+/datum/species/human
+	special_modifiers = list(SPECIAL_ENDURANCE = 1, SPECIAL_STRENGTH = -1)
+
 /datum/species/on_species_gain(mob/living/carbon/C, datum/species/old_species, pref_load)
 	. = ..()
 	C.special_changed()
+
+/datum/quirk
+	/// SPECIAL the trait gives or takes while held: attribute = amount.
+	var/list/special_modifiers
+
+/datum/quirk/add_to_holder(mob/living/new_holder, quirk_transfer = FALSE, client/client_source)
+	. = ..()
+	if(. && special_modifiers)
+		quirk_holder.set_special_modifier("trait: [name]", special_modifiers)
+
+/datum/quirk/remove_from_current_holder(quirk_transfer = FALSE)
+	if(special_modifiers && !QDELETED(quirk_holder))
+		quirk_holder.set_special_modifier("trait: [name]", null)
+	return ..()
+
+/// A species' or trait's special_modifiers by type, off a copy made once.
+/proc/special_modifiers_of(path)
+	var/static/list/by_type = list()
+	if(path && !(path in by_type))
+		var/datum/made = new path
+		by_type[path] = made.vars["special_modifiers"]
+		qdel(made)
+	return by_type[path]
 
 /mob/living/proc/get_species_rpg_modifier(path)
 	return 0
@@ -425,6 +456,11 @@
 		O.bullet_hit_chance = istype(O, /obj/item/organ/muscle) ? 100 : 0
 	if(person.get_bullet_transfer_fraction(into_strong, arm) <= weakling.get_bullet_transfer_fraction(into_weak, weak_arm))
 		Fail("Dense muscle didn't soak more of a round than light muscle.")
+	// A muscle's max off the whole numbers, at Strength 4: full damage still has to destroy it.
+	person.set_special_base(SPECIAL_STRENGTH, 4)
+	muscle.setOrganDamage(muscle.maxHealth)
+	if(!(muscle.organ_flags & ORGAN_DEAD))
+		Fail("Muscle at full damage under Strength 4 wasn't destroyed.")
 	person.set_special_base(SPECIAL_INTELLIGENCE, 9)
 	if(abs(special_crafting_mult(person) - (1 - 4 * SPECIAL_INTELLIGENCE_CRAFT_SPEED)) > 0.001)
 		Fail("Intelligence didn't speed up crafting.")
@@ -433,13 +469,13 @@
 	if(brute.get_special(SPECIAL_STRENGTH) != 8 || brute.get_special(SPECIAL_LUCK) != SPECIAL_BASELINE || brute.stamina.maximum != weakling.stamina.maximum + 3 * SPECIAL_ENDURANCE_STAMINA)
 		Fail("SPECIAL set on a type in code didn't take.")
 
-	var/fine_motor_before = person.stats.get_skill_modifier(/datum/rpg_skill/fine_motor)
-	person.dna.species.special_modifiers = list(SPECIAL_STRENGTH = 2)
-	person.dna.species.rpg_modifiers = list(/datum/rpg_skill/fine_motor = 2)
-	if(person.get_special(SPECIAL_STRENGTH) != 10 || person.stats.get_skill_modifier(/datum/rpg_skill/fine_motor) != fine_motor_before + 2)
+	// A plain human, as the test stand-in leaves its species' SPECIAL out.
+	var/mob/living/carbon/human/local = allocate(/mob/living/carbon/human)
+	var/fine_motor_before = local.stats.get_skill_modifier(/datum/rpg_skill/fine_motor)
+	local.dna.species.special_modifiers = list(SPECIAL_STRENGTH = 2)
+	local.dna.species.rpg_modifiers = list(/datum/rpg_skill/fine_motor = 2)
+	if(local.get_special(SPECIAL_STRENGTH) != SPECIAL_BASELINE + 2 || local.stats.get_skill_modifier(/datum/rpg_skill/fine_motor) != fine_motor_before + 2)
 		Fail("A species' modifiers didn't apply to SPECIAL or the character sheet.")
-	person.dna.species.special_modifiers = null
-	person.dna.species.rpg_modifiers = null
 
 	var/datum/roll_result/lucky = new
 	lucky.roll = 15
@@ -453,6 +489,10 @@
 	unlucky.apply_luck(-4)
 	if(lucky.outcome != CRIT_SUCCESS || unlucky.outcome != CRIT_FAILURE)
 		Fail("Luck didn't widen the window a roll crits in.")
+
+/// The tests' stand-in human is average whatever its species adds, so tests of anything else see average numbers.
+/mob/living/carbon/human/consistent/get_species_special(attribute)
+	return 0
 
 /datum/ms13_stats/unit_test_brute
 	strength = 8
