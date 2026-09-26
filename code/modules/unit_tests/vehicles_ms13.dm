@@ -197,6 +197,33 @@
 	vehicle.brakes_mode = FALSE
 	TEST_ASSERT_EQUAL(vehicle.gear_delay(vehicle.gear_count()), vehicle.gearbox.gear_delays[vehicle.gear_count()] / vehicle.speed_multiplier, "Vehicle speed multiplier was not applied.")
 
+/// Braking to a stand holds the vehicle there while the brake key stays held; let go and press it again to back up.
+/datum/unit_test/ms13_vehicle_brake_hold
+	name = "VEHICLES: Brakes Bring It To A Stand And Hold It There"
+
+/datum/unit_test/ms13_vehicle_brake_hold/Run()
+	var/obj/structure/ms13_vehicle_frame/jeep_front/front = new(locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z))
+	var/datum/ms13_ground_vehicle/jeep/vehicle = front.vehicle
+	vehicle.set_ignition(TRUE)
+	TEST_ASSERT(vehicle.start_engine(), "Jeep engine failed to start.")
+	var/brake_dir = turn(vehicle.dir, 180)
+	vehicle.speed = 1
+	vehicle.travel_dir = vehicle.dir
+	vehicle.moving = TRUE
+	vehicle.movement_generation++
+	vehicle.apply_throttle(brake_dir)
+	TEST_ASSERT(!vehicle.moving && !vehicle.speed, "Braking from the first band didn't bring the vehicle to a stand.")
+	var/turf/stood = get_turf(front)
+	vehicle.apply_throttle(brake_dir)
+	TEST_ASSERT(!vehicle.moving && get_turf(front) == stood, "A held brake backed the vehicle up as soon as it stood.")
+	vehicle.brake_held_until = world.time - 1
+	vehicle.next_move_time = 0
+	vehicle.apply_throttle(brake_dir)
+	TEST_ASSERT(vehicle.moving || get_turf(front) != stood, "Pressing the brake again after letting go didn't back the vehicle up.")
+	vehicle.stop_motion()
+	for(var/atom/movable/component as anything in (vehicle.get_all_parts() | vehicle.get_manifest()))
+		qdel(component)
+
 /datum/unit_test/ms13_vehicle_electrical
 	name = "VEHICLES: Battery, Ignition, Lights And Driver Cameras"
 

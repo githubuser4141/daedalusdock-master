@@ -95,6 +95,11 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	var/next_brake_time = 0
 	/// Brakes held on until the vehicle stops.
 	var/braking = FALSE
+	/// Braked to a stand, the vehicle stays stood while that brake key's held, however long: it has to be let go this
+	/// long before the same key backs the vehicle up (a held key repeats far faster).
+	var/brake_hold = 0.5 SECONDS
+	var/brake_hold_dir
+	var/brake_held_until = 0
 	var/brake_sound = 'sound/machines/hiss.ogg'
 	var/brake_sound_volume = 35
 
@@ -636,8 +641,15 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	// Brakes are mechanical: no fuel, ignition, or intact drivetrain is needed to slow down.
 	if(speed && direction != travel_dir)
 		brake_step()
+		if(!speed)
+			brake_hold_dir = direction
+			brake_held_until = world.time + brake_hold
 		next_acceleration_time = world.time + acceleration_delay
 		return TRUE
+	if(!speed && direction == brake_hold_dir && world.time <= brake_held_until)
+		brake_held_until = world.time + brake_hold
+		return TRUE
+	brake_hold_dir = null
 	// Stopping to crawl in brakes mode: the throttle does nothing until it has.
 	if(moving && brakes_mode)
 		return TRUE
