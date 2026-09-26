@@ -208,6 +208,13 @@
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		. = max(., sign * (frame.forward_offset - bogie.forward_offset))
 
+/// Opens the train doors on the line that the front of the car, reach tiles ahead of the bogie, gets to within about a second.
+/datum/ms13_ground_vehicle/rail/proc/open_doors_ahead(reach)
+	for(var/index in 1 to min(length(rail_route), reach + CEILING(velocity, 1) + 2))
+		for(var/obj/machinery/door/poddoor/door in rail_route[index])
+			if(door.ms13_train_door)
+				door.let_train_through()
+
 /// Where the route turns off the straight within reach of the front of the car: the index in rail_route of the first
 /// tile off it, or null. Onto another level or region the line runs straight on.
 /datum/ms13_ground_vehicle/rail/proc/corner_ahead(obj/structure/ms13_vehicle_frame/bogie, reach)
@@ -355,6 +362,7 @@
 	if(direction == dir || direction == turn(dir, 180))
 		travel_dir = direction
 	var/reach = lead_reach(bogie)
+	open_doors_ahead(reach)
 	var/turn_at = corner_ahead(bogie, reach)
 	if(turn_at)
 		// The front has reached a corner: whatever is left above turning speed comes off here, then it swings onto the new line.
@@ -437,6 +445,56 @@
 			playsound(pivot, brake_sound, brake_sound_volume, TRUE)
 		stop_motion()
 		arrived()
+
+/**
+ * Train doors: shutters across a rail line that stay shut but for a rail car. A car on its route opens them ahead of it
+ * (open_doors_ahead()), along with every train door beside them, and each shuts once nothing on wheels is left in its
+ * doorway. Map the /train shutters below, or set ms13_train_door on any blast door or shutter.
+ */
+/obj/machinery/door/poddoor
+	var/ms13_train_door = FALSE
+
+/obj/machinery/door/poddoor/examine(mob/user)
+	. = ..()
+	if(ms13_train_door)
+		. += span_notice("It opens for trains.")
+
+/// A rail car is coming: this door and every train door joined to it open, and shut once their doorways are clear.
+/obj/machinery/door/poddoor/proc/let_train_through()
+	var/list/gate = list(src)
+	for(var/index = 1, index <= length(gate), index++)
+		var/obj/machinery/door/poddoor/door = gate[index]
+		if(door.density)
+			INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
+		addtimer(CALLBACK(door, PROC_REF(shut_behind_train)), MS13_TRAIN_DOOR_LINGER, TIMER_UNIQUE | TIMER_OVERRIDE)
+		for(var/direction in GLOB.cardinals)
+			for(var/obj/machinery/door/poddoor/next in get_step(door, direction))
+				if(next.ms13_train_door && !(next in gate))
+					gate += next
+
+/obj/machinery/door/poddoor/proc/shut_behind_train()
+	if(locate(/obj/structure/ms13_vehicle_frame) in get_turf(src))
+		addtimer(CALLBACK(src, PROC_REF(shut_behind_train)), MS13_TRAIN_DOOR_LINGER, TIMER_UNIQUE | TIMER_OVERRIDE)
+		return
+	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/machinery/door, close))
+
+/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/left/train
+	ms13_train_door = TRUE
+
+/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/mid/train
+	ms13_train_door = TRUE
+
+/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/right/train
+	ms13_train_door = TRUE
+
+/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/solo/train
+	ms13_train_door = TRUE
+
+/obj/machinery/door/poddoor/shutters/ms13/vertical/red/mid/train
+	ms13_train_door = TRUE
+
+/obj/machinery/door/poddoor/shutters/ms13/vertical/red/top/train
+	ms13_train_door = TRUE
 
 /// Rigid, ordinary vehicle formations; the front-left pivot follows the guide rail.
 /obj/structure/ms13_vehicle_frame/tram

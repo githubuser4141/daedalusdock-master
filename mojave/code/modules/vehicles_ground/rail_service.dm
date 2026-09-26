@@ -16,6 +16,8 @@
 #define MS13_RAIL_PING_RANGE 8
 /// How often a car held up behind another looks again.
 #define MS13_RAIL_WAIT_INTERVAL 1 SECONDS
+/// How long a train door stays open after a car last asked, and how often it looks again while one's in the doorway.
+#define MS13_TRAIN_DOOR_LINGER (2 SECONDS)
 
 /// Rail cars, by their pivot, for call buttons to find.
 GLOBAL_LIST_EMPTY(ms13_rail_cars)

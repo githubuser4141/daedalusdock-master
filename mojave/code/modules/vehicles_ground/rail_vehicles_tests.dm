@@ -174,6 +174,7 @@
 	clear_vehicle(offset_vehicle)
 	check_route_terminal(test_z)
 	check_smooth_running(test_z)
+	check_train_doors(test_z)
 	check_equipment(test_z)
 	check_crossings()
 	check_electric()
@@ -667,6 +668,45 @@
 		line.movement_tick(line.movement_generation)
 	if(line.moving || line.halting || get_turf(line.rail_frame()) == locate(12, 45, test_z))
 		Fail("The emergency stop did not bring the car to a standstill short of its destination.")
+	clear_vehicle(line)
+
+/// Train doors across the line open ahead of a car, beside the line too, let it through, and shut behind it.
+/datum/unit_test/ms13_rail_vehicles/proc/check_train_doors(test_z)
+	for(var/y in 15 to 45)
+		allocate(/obj/structure/ms13_rail, locate(53, y, test_z))
+	var/obj/structure/ms13_rail/stop = allocate(/obj/structure/ms13_rail/station, locate(53, 15, test_z))
+	var/list/gate = list()
+	for(var/x in 51 to 54)
+		gate += allocate(/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/mid/train, locate(x, 30, test_z))
+	var/obj/machinery/door/poddoor/side_door = gate[1]
+	var/obj/structure/ms13_vehicle_frame/tram/runner = allocate(/obj/structure/ms13_vehicle_frame/tram, locate(53, 45, test_z))
+	var/datum/ms13_ground_vehicle/rail/line = runner.vehicle
+	if(!side_door.density || !line.depart_for(get_turf(stop)))
+		Fail("A train door stood open, or the car would not set off for it.")
+		clear_vehicle(line)
+		return
+	for(var/tick in 1 to 30)
+		if(side_door.operating || !side_door.density || !line.moving)
+			break
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	// The test steps the car itself: every step it took also queued one of the car's own, which would all run while it waits.
+	line.movement_generation++
+	sleep(1.5 SECONDS)
+	if(side_door.density)
+		Fail("Train doors didn't open ahead of a car coming down the line.")
+	for(var/tick in 1 to 60)
+		if(!line.moving)
+			break
+		line.next_move_time = 0
+		line.movement_tick(line.movement_generation)
+	if(get_turf(line.rail_frame()) != get_turf(stop))
+		Fail("A car didn't get through the train doors to its stop.")
+	sleep(MS13_TRAIN_DOOR_LINGER + 1.5 SECONDS)
+	for(var/obj/machinery/door/poddoor/door as anything in gate)
+		if(!door.density)
+			Fail("A train door stayed open with the car gone.")
+			break
 	clear_vehicle(line)
 
 /datum/unit_test/ms13_rail_vehicles/proc/clear_vehicle(datum/ms13_ground_vehicle/vehicle)
