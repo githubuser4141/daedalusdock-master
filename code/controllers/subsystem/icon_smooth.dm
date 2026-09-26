@@ -9,7 +9,6 @@ SUBSYSTEM_DEF(icon_smooth)
 	///Blueprints assemble an image of what pipes/manifolds/wires look like on initialization, and thus should be taken after everything's been smoothed
 	var/list/blueprint_queue = list()
 	var/list/smooth_queue = list()
-	var/list/deferred = list()
 	var/list/deferred_by_source = list()
 
 /datum/controller/subsystem/icon_smooth/fire()
@@ -25,21 +24,13 @@ SUBSYSTEM_DEF(icon_smooth)
 		cached.len--
 		if(QDELETED(smoothing_atom) || !(smoothing_atom.smoothing_flags & SMOOTH_QUEUED))
 			continue
-		if(smoothing_atom.initialized)
-			smoothing_atom.smooth_icon()
-		else
-			deferred += smoothing_atom
+		smoothing_atom.smooth_icon()
 		if (MC_TICK_CHECK)
 			return
-
-	if (!cached.len && deferred.len)
-		smooth_queue = deferred
-		deferred = cached
 
 /datum/controller/subsystem/icon_smooth/Initialize()
 	hibernate_checks = list(
 		NAMEOF(src, smooth_queue),
-		NAMEOF(src, deferred),
 		NAMEOF(src, blueprint_queue),
 		NAMEOF(src, deferred_by_source)
 	)
@@ -100,7 +91,9 @@ SUBSYSTEM_DEF(icon_smooth)
 		can_fire = TRUE
 
 /datum/controller/subsystem/icon_smooth/proc/add_to_queue(atom/thing)
-	if(thing.smoothing_flags & SMOOTH_QUEUED)
+	// Uninitialized (e.g. ChangeTurf'd mid template load): its Initialize() queues it, deferred with the rest of its
+	// mapload. Queued now, it'd skip that and smooth against neighbors still holding unparsed smoothing_groups text.
+	if(!thing.initialized || (thing.smoothing_flags & SMOOTH_QUEUED))
 		return
 	thing.smoothing_flags |= SMOOTH_QUEUED
 	// If we're currently locked into mapload BY something
@@ -120,4 +113,3 @@ SUBSYSTEM_DEF(icon_smooth)
 	smooth_queue -= thing
 	if(blueprint_queue)
 		blueprint_queue -= thing
-	deferred -= thing
