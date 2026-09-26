@@ -398,3 +398,75 @@ Sunlight System
 
 #undef SUN_FALLOFF
 #undef hardSun
+
+/**
+ * Flat-lit ground (base lighting: the wasteland) and dynamically lit ground (rooms, caves) meet at walls, and a wall is
+ * lit by its own area alone: one left flat-lit glowed inside a dark room, one in the dark area was black from outside.
+ * Walls on the seam go dark with the room, and dynamic turfs are lit on the corners they share with open flat-lit ground,
+ * so walls and doorways fade from the daylight into the dark.
+ * ponytail: worked out once, at round start (a scan of every dark turf, ~2s on Mammoth) or when a room is made; a wall
+ * knocked down later doesn't let more light in.
+ */
+/datum/lighting_corner/var/ms13_daylit = FALSE
+
+/datum/controller/subsystem/lighting/Initialize(timeofday)
+	if(!initialized)
+		for(var/area/place as anything in GLOB.areas)
+			if(place.area_lighting == AREA_LIGHTING_DYNAMIC)
+				ms13_light_seams(place.get_contained_turfs())
+	return ..()
+
+/// Brings flat-lit walls round these turfs into their dark area, and lets the daylight in on them.
+/proc/ms13_light_seams(list/turfs)
+	for(var/turf/tile in turfs)
+		var/area/room = tile.loc
+		// Most turfs are deep in their own area, with no seam to see to.
+		var/on_seam = FALSE
+		for(var/turf/next as anything in RANGE_TURFS(1, tile))
+			var/area/other = next.loc
+			if(other == room)
+				continue
+			on_seam = TRUE
+			if(other.area_has_base_lighting && isclosedturf(next) && !isclosedturf(tile) && room.area_lighting == AREA_LIGHTING_DYNAMIC)
+				next.change_area(other, room)
+				next.ms13_let_in_daylight()
+		if(on_seam)
+			tile.ms13_let_in_daylight()
+		CHECK_TICK
+
+/// Lights this dynamically lit turf's corners that touch open flat-lit ground, as brightly as that ground is lit.
+/turf/proc/ms13_let_in_daylight()
+	var/area/here = loc
+	if(always_lit || here.area_lighting != AREA_LIGHTING_DYNAMIC)
+		return
+	var/near_daylight = FALSE
+	for(var/dir in GLOB.alldirs)
+		if(ms13_daylight_at(get_step(src, dir)))
+			near_daylight = TRUE
+			break
+	if(!near_daylight)
+		return
+	// lighting_source.dm's GENERATE_MISSING_CORNERS, which it keeps to itself.
+	if(!lighting_corner_NE)
+		lighting_corner_NE = new /datum/lighting_corner(x, y, z)
+	if(!lighting_corner_SE)
+		lighting_corner_SE = new /datum/lighting_corner(x, y - 1, z)
+	if(!lighting_corner_SW)
+		lighting_corner_SW = new /datum/lighting_corner(x - 1, y - 1, z)
+	if(!lighting_corner_NW)
+		lighting_corner_NW = new /datum/lighting_corner(x - 1, y, z)
+	lighting_corners_initialised = TRUE
+	for(var/datum/lighting_corner/corner as anything in list(lighting_corner_NE, lighting_corner_SE, lighting_corner_SW, lighting_corner_NW))
+		if(corner.ms13_daylit)
+			continue
+		for(var/turf/master in list(corner.master_NE, corner.master_SE, corner.master_SW, corner.master_NW))
+			var/daylight = ms13_daylight_at(master)
+			if(daylight)
+				corner.ms13_daylit = TRUE
+				corner.update_lumcount(daylight, daylight, daylight)
+				break
+
+/// How brightly open flat-lit ground at tile is lit, 0 to 1; 0 for walls and dynamically lit ground.
+/proc/ms13_daylight_at(turf/tile)
+	var/area/place = tile?.loc
+	return (place?.area_has_base_lighting && !isclosedturf(tile)) ? place.base_lighting_alpha / 255 : 0

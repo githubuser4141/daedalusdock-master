@@ -2,6 +2,9 @@
 /datum/unit_test/ms13_house_power/Run()
 	var/list/room = block(run_loc_floor_bottom_left, run_loc_floor_top_right)
 	var/area/old_area = get_area(run_loc_floor_bottom_left)
+	var/list/old_areas = list()
+	for(var/turf/tile as anything in block(locate(run_loc_floor_bottom_left.x - 1, run_loc_floor_bottom_left.y - 1, run_loc_floor_bottom_left.z), locate(run_loc_floor_top_right.x + 1, run_loc_floor_top_right.y + 1, run_loc_floor_top_right.z)))
+		old_areas[tile] = tile.loc
 	var/mob/living/carbon/human/consistent/electrician = allocate(/mob/living/carbon/human/consistent)
 	var/list/old_types = list()
 	for(var/turf/tile as anything in room)
@@ -24,6 +27,14 @@
 	TEST_ASSERT_EQUAL(house.area_lighting, AREA_LIGHTING_DYNAMIC, "The generated house remained statically lit.")
 	TEST_ASSERT_EQUAL(house.luminosity, 0, "The generated house remained fullbright.")
 	TEST_ASSERT_EQUAL(get_area(run_loc_floor_bottom_left), house, "The room wasn't moved into the house area.")
+	TEST_ASSERT_EQUAL(get_area(get_step(run_loc_floor_top_right, EAST)), house, "The house's wall stayed lit by the ground outside it.")
+	// Flat-lit ground in the house lights the tile beside it on just the corners they share.
+	var/turf/middle = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/daylit = get_step(middle, EAST)
+	daylit.change_area(house, old_area)
+	middle.ms13_let_in_daylight()
+	TEST_ASSERT(middle.lighting_corner_SE?.ms13_daylit && !middle.lighting_corner_SW.ms13_daylit, "A house tile wasn't lit on just the side it shares with daylit ground.")
+	daylit.change_area(old_area, house)
 	var/list/gear = find_gear(room)
 	var/obj/machinery/ms13/fusion_generator/generator = gear[1]
 	var/obj/machinery/power/apc/ms13/box = gear[2]
@@ -77,8 +88,9 @@
 
 	QDEL_LIST(gear)
 	clear_cables(room)
+	for(var/turf/tile as anything in old_areas)
+		tile.change_area(tile.loc, old_areas[tile])
 	for(var/turf/tile as anything in room)
-		tile.change_area(get_area(tile), old_area)
 		tile.ChangeTurf(old_types[tile])
 
 /// list(generator, box) in room.

@@ -217,6 +217,9 @@ SUBSYSTEM_DEF(ms13_house_power)
 					LAZYREMOVE(light_switch.area.light_switches, light_switch)
 				light_switch.area = house
 				LAZYADD(house.light_switches, light_switch)
+	// At round start, lighting does this for every room at once.
+	if(SSlighting.initialized)
+		ms13_light_seams(building)
 	house.reg_in_areas_in_z()
 	return house
 
