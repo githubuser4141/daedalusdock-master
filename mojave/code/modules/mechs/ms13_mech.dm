@@ -919,12 +919,12 @@ TYPEINFO_DEF(/obj/vehicle/sealed/ms13_mech/ripley/mk2)
 	if(!hit_through(mech, pilot, SOUTH) || hit_through(mech, pilot, NORTH))
 		Fail("Rounds through a mech's back plate didn't hit its pilot, or ones on its front plate did.")
 
-	// A civilian Gygax's front plate doesn't stop a rifle round.
+	// A civilian Gygax's front plate is proof against handguns (twice ARMOR_HANDGUNS, head on), not a heavy rifle round.
 	var/obj/vehicle/sealed/ms13_mech/gygax/gygax = allocate(/obj/vehicle/sealed/ms13_mech/gygax, locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z))
 	gygax.setDir(NORTH)
 	var/mob/living/carbon/human/guard = allocate(/mob/living/carbon/human/consistent)
 	gygax.mob_enter(guard, TRUE)
-	var/obj/projectile/bullet/ms13/a762/rifle_round = new(get_step(gygax, NORTH))
+	var/obj/projectile/bullet/ms13/a762/ap/rifle_round = new(get_step(gygax, NORTH))
 	rifle_round.setDir(SOUTH)
 	rifle_round.penetrating_hit(gygax, BODY_ZONE_CHEST)
 	qdel(rifle_round)
