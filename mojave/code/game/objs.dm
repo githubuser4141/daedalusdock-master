@@ -165,6 +165,106 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 	ms13_rewire()
 	return ..()
 
+/*
+ * How heavy things are, in kilograms. Strength 5 drags up to 200, Strength 10 up to 400, a power armor frame 520.
+ * heft = 0 keeps a subtype where it stands.
+ */
+/obj/structure/table/ms13/wood
+	heft = 30
+/obj/structure/table/ms13/wood/bar
+	heft = 0
+/obj/structure/table/ms13/metal
+	heft = 45
+/obj/structure/table/ms13/metal/small
+	heft = 20
+/obj/structure/table/ms13/metal/heavy
+	heft = 90
+/obj/structure/table/ms13/no_smooth/wood
+	heft = 30
+/obj/structure/table/ms13/no_smooth/metal
+	heft = 45
+/obj/structure/table/ms13/no_smooth/large
+	heft = 60
+/obj/structure/table/ms13/no_smooth/dice
+	heft = 30
+/obj/structure/table/ms13/no_smooth/cable_reel
+	heft = 60
+/obj/structure/table/ms13/crafting
+	heft = 120
+
+/obj/structure/chair/ms13
+	heft = 10
+/obj/structure/chair/comfy/ms13
+	heft = 25
+/obj/structure/chair/office/ms13
+	heft = 15
+/obj/structure/chair/sofa
+	heft = 50
+/obj/structure/chair/pew
+	heft = 80
+/obj/structure/bed/ms13
+	heft = 40
+/obj/structure/bed/ms13/mattress
+	heft = 15
+/obj/structure/bed/ms13/medical
+	heft = 60
+/obj/structure/bed/ms13/sleepingbag
+	heft = 0
+
+/obj/structure/closet/ms13
+	heft = 60
+/obj/structure/closet/ms13/enclave
+	heft = 80
+/obj/structure/closet/ms13/fridge
+	heft = 100
+/obj/structure/closet/ms13/grave
+	heft = 0
+/obj/structure/closet/ms13/wall
+	heft = 0
+/obj/structure/closet/crate/ms13
+	heft = 35
+/obj/structure/closet/crate/ms13/woodcrate/compact
+	heft = 15
+/obj/structure/closet/crate/ms13/vault_tec/compact
+	heft = 15
+/obj/structure/closet/crate/ms13/vault_tec/big
+	heft = 60
+/obj/structure/closet/crate/ms13/footlocker
+	heft = 20
+/obj/structure/closet/crate/ms13/cash_register
+	heft = 0
+/obj/structure/filingcabinet/ms13
+	heft = 50
+/obj/structure/dresser/ms13
+	heft = 50
+/obj/structure/ms13/storage/bookshelf
+	heft = 40
+/obj/structure/ms13/storage/large
+	heft = 80
+/obj/structure/ms13/storage/shelf
+	heft = 30
+/obj/structure/ms13/storage/store
+	heft = 60
+/obj/structure/ms13/storage/trashcan
+	heft = 15
+/obj/structure/ms13/storage/washingmachine
+	heft = 70
+/obj/structure/safe/ms13
+	heft = 400
+/obj/structure/safe/ms13/wall
+	heft = 0
+
+/obj/structure/ms13/tv
+	heft = 25
+/obj/structure/ms13/jukebox
+	heft = 150
+/obj/structure/ms13/barrel
+	heft = 60
+/obj/machinery/vending/ms13
+	heft = 300
+/obj/machinery/griddle
+	heft = 90
+
 #ifdef UNIT_TESTS
 /// Heavy things drag, slowly, for the strong enough, and settle anchored again; walking into one doesn't shove it.
 /datum/unit_test/ms13_heft
