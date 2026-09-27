@@ -203,12 +203,6 @@
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/desert)
-"alu" = (
-/obj/item/stack/sheet/ms13/scrap_copper/two,
-/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "alz" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 1
@@ -1357,6 +1351,14 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
+"bnc" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "bnv" = (
 /obj/effect/decal/cleanable/glass{
 	dir = 8
@@ -1901,6 +1903,14 @@
 /obj/structure/ms13/rug/rubber,
 /turf/open/floor/ms13/tile/large/navy,
 /area/ms13/desert)
+"bLk" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/turf/open/floor/ms13/cdda/t_floor,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "bLm" = (
 /obj/structure/table/ms13/metal/grate,
 /obj/effect/spawner/random/ms13/melee/lowrandom,
@@ -1966,6 +1976,15 @@
 /obj/structure/chair/ms13/metal/red/broken,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"bOE" = (
+/obj/structure/ms13/cdda/f_sofa,
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "bPl" = (
 /obj/structure/table/ms13/wood/constructed,
 /obj/structure/closet/crate/ms13/cash_register{
@@ -2116,6 +2135,11 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"bVH" = (
+/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "bVI" = (
 /obj/structure/closet/ms13/metal,
 /obj/effect/spawner/random/ms13/ammo/lowrandom,
@@ -2208,15 +2232,6 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"bZY" = (
-/obj/structure/ms13/cdda/f_rack_wood,
-/obj/machinery/light/ms13/bulb{
-	dir = 4
-	},
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "caa" = (
 /obj/machinery/button/ms13{
 	id = "robco_factory_wh4"
@@ -2923,15 +2938,6 @@
 /obj/effect/spawner/random/ms13/locked/random/lowchance,
 /turf/open/floor/ms13/concrete,
 /area/ms13/desert)
-"cHJ" = (
-/obj/structure/ms13/cdda/f_toilet,
-/obj/structure/mirror/ms13{
-	pixel_y = 32
-	},
-/turf/open/indestructible/hoteltile,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "cHS" = (
 /obj/effect/turf_decal/trimline/red/filled/warning{
 	dir = 8
@@ -3218,6 +3224,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"cXU" = (
+/obj/structure/table/ms13/wood,
+/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "cYf" = (
 /obj/structure/table/ms13/wood/bar,
 /obj/effect/spawner/random/ms13/currency/mammoth/prewar/lowrandom,
@@ -4571,6 +4583,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"ebv" = (
+/obj/item/stack/sheet/ms13/scrap_copper/two,
+/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "ecu" = (
 /obj/structure/window/fulltile/ms13/glass,
 /obj/structure/table/ms13/low_wall/siding,
@@ -4643,6 +4661,12 @@
 	},
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/desert)
+"eiU" = (
+/obj/item/stack/sheet/ms13/scrap_copper/two,
+/turf/open/floor/ms13/concrete,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "ejn" = (
 /obj/structure/ms13/barricade,
 /obj/structure/ms13/rug/red,
@@ -6102,6 +6126,15 @@
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/desert)
+"fwg" = (
+/obj/structure/ms13/tv/rad_king{
+	dir = 4
+	},
+/obj/structure/table/ms13/wood,
+/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "fwq" = (
 /obj/structure/ms13/cdda/f_counter,
 /obj/effect/spawner/random/ms13/food/random,
@@ -6141,6 +6174,13 @@
 /obj/structure/chair/ms13/metal/stool,
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/desert)
+"fyh" = (
+/obj/structure/ms13/cdda/t_gutter,
+/obj/structure/ms13/cdda/f_air_conditioner,
+/turf/open/floor/plating/ms13/ground/cdda/t_grass,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "fyj" = (
 /obj/structure/chair/ms13/metal/folding{
 	dir = 4
@@ -6464,12 +6504,6 @@
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"fKX" = (
-/obj/item/stack/sheet/ms13/rubber/two,
-/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "fLZ" = (
 /obj/structure/ms13/fence/wire/barb,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -6719,13 +6753,6 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"fVr" = (
-/obj/item/stack/sheet/ms13/scrap_alu,
-/obj/item/stack/sheet/ms13/scrap_copper/two,
-/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "fVs" = (
 /obj/structure/bed/ms13/bedframe/wood,
 /obj/structure/bed/ms13/mattress/dirty,
@@ -7236,6 +7263,14 @@
 	},
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
+"gqd" = (
+/obj/structure/chair/office/ms13/red{
+	dir = 8
+	},
+/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "gqQ" = (
 /obj/structure/ms13/phone/black,
 /obj/item/radio/ms13/ham/receiver{
@@ -7713,6 +7748,15 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"gOU" = (
+/obj/structure/ms13/cdda/f_rack_wood,
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "gPa" = (
 /obj/effect/spawner/random/ms13/power_armor/parts,
 /obj/structure/ms13/storage/vent,
@@ -7954,12 +7998,6 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"haX" = (
-/obj/structure/ms13/cdda/f_solar_unit,
-/turf/open/space/basic,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "hbf" = (
 /obj/structure/chair/ms13/wood,
 /obj/structure/ms13/rug/yellow{
@@ -8233,11 +8271,6 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/desert)
-"hsg" = (
-/turf/open/floor/ms13/cdda/t_carpet_yellow,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "hsC" = (
 /obj/structure/ms13/storage/shelf/wood/alt{
 	dir = 1
@@ -8643,6 +8676,13 @@
 /obj/structure/bed/ms13/sleepingbag/red,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"hLO" = (
+/obj/structure/table/ms13/wood,
+/obj/item/plate/large,
+/turf/open/floor/ms13/cdda/t_carpet_red,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "hLU" = (
 /obj/structure/flora/ms13/cdda/t_grass_long,
 /obj/machinery/ms13/agriculture/soil,
@@ -8796,6 +8836,12 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete,
 /area/ms13/desert)
+"hRJ" = (
+/obj/item/stack/sheet/ms13/scrap_copper/two,
+/turf/open/floor/plating/ms13/ground/cdda/t_grass,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "hRQ" = (
 /obj/structure/ms13/vehicle_ruin/van{
 	dir = 4
@@ -9227,6 +9273,14 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"ijI" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "ijJ" = (
 /obj/effect/spawner/random/ms13/drink/alcohol,
 /obj/structure/table/ms13/no_smooth/wood,
@@ -9910,14 +9964,6 @@
 /area/ms13/desert{
 	name = "Titan Station"
 	})
-"iQY" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/turf/open/floor/plating/ms13/ground/cdda/t_grass,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "iRa" = (
 /obj/structure/closet/crate/ms13/footlocker{
 	dir = 1
@@ -10048,14 +10094,6 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/desert)
-"iXj" = (
-/obj/machinery/light/ms13{
-	dir = 8
-	},
-/turf/open/indestructible/hoteltile,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "iXn" = (
 /obj/structure/ms13/wall_decor/clock,
 /obj/machinery/vending/ms13/sarsaparilla,
@@ -10330,13 +10368,6 @@
 /obj/structure/ms13/storage/vent,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/desert)
-"jjf" = (
-/obj/structure/table/ms13/wood,
-/obj/item/plate/large,
-/turf/open/floor/ms13/cdda/t_carpet_red,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "jjh" = (
 /obj/machinery/light/ms13,
 /turf/open/floor/wood/ms13/carpet/shaggy,
@@ -10800,12 +10831,6 @@
 /area/ms13/farmhouse{
 	name = "Grassland"
 	})
-"jBT" = (
-/obj/item/plate_shard,
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "jCo" = (
 /obj/structure/closet/ms13/metal,
 /obj/effect/spawner/random/ms13/clothing/under,
@@ -10838,6 +10863,14 @@
 /obj/machinery/light/ms13,
 /turf/open/floor/ms13/concrete,
 /area/ms13/desert)
+"jDy" = (
+/obj/machinery/light/ms13{
+	dir = 8
+	},
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "jDT" = (
 /obj/structure/chair/ms13/wood,
 /obj/effect/landmark/start/ms13/dry_hunter,
@@ -11013,15 +11046,6 @@
 /obj/machinery/ms13/terminal,
 /turf/open/floor/ms13/tile,
 /area/ms13/desert)
-"jLX" = (
-/obj/structure/ms13/cdda/f_sofa,
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/turf/open/floor/ms13/cdda/t_carpet_yellow,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "jLZ" = (
 /turf/open/floor/plating/ms13/ground/cdda/t_sidewalk,
 /area/ms13/farmhouse{
@@ -11250,6 +11274,12 @@
 /obj/effect/spawner/random/ms13/melee/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"jZk" = (
+/obj/item/stack/sheet/ms13/scrap_alu,
+/turf/open/floor/plating/ms13/ground/cdda/t_grass,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "kaa" = (
 /obj/item/bodybag/ms13,
 /obj/item/bodybag/ms13,
@@ -11479,6 +11509,14 @@
 "klW" = (
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/desert)
+"kmv" = (
+/obj/machinery/light/ms13{
+	dir = 8
+	},
+/turf/open/indestructible/hoteltile,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "kmw" = (
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/machinery/light/ms13{
@@ -12096,6 +12134,11 @@
 /obj/structure/table/ms13/low_wall/siding/green,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"kRF" = (
+/turf/open/floor/plating/ms13/ground/cdda/t_sidewalk,
+/area/ms13/desert{
+	name = "Grassland"
+	})
 "kRX" = (
 /obj/structure/closet/ms13/metal,
 /obj/effect/spawner/random/ms13/tools/tool,
@@ -12962,14 +13005,6 @@
 /area/ms13/farmhouse{
 	name = "Grassland"
 	})
-"lKp" = (
-/obj/machinery/light/ms13{
-	dir = 1
-	},
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "lKC" = (
 /obj/structure/chair/sofa/corp,
 /turf/open/floor/ms13/concrete,
@@ -13236,6 +13271,12 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"lZd" = (
+/obj/structure/ms13/cdda/f_sofa,
+/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "lZK" = (
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/machinery/light/ms13{
@@ -13243,6 +13284,14 @@
 	},
 /turf/open/floor/ms13/tile/large/cafeteria,
 /area/ms13/desert)
+"lZL" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/turf/open/floor/plating/ms13/ground/cdda/t_grass,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "mah" = (
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
@@ -13349,6 +13398,12 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"mfB" = (
+/obj/machinery/light/ms13/bulb,
+/turf/open/floor/ms13/cdda/t_floor,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "mfK" = (
 /obj/structure/chair/office/ms13/red,
 /obj/structure/ms13/trash/papers{
@@ -13503,14 +13558,6 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"mmb" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "mme" = (
 /obj/structure/chair/ms13/metal/red{
 	dir = 4
@@ -13875,14 +13922,6 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/desert)
-"mFj" = (
-/obj/machinery/light/ms13{
-	dir = 4
-	},
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "mFE" = (
 /obj/item/shovel/ms13,
 /turf/open/floor/ms13/concrete,
@@ -13909,6 +13948,14 @@
 /obj/effect/spawner/random/ms13/clothing/under,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"mGa" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/turf/open/floor/ms13/cdda/t_floor,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "mGq" = (
 /obj/item/ammo_casing/ms13/spent,
 /turf/open/floor/ms13/concrete/industrial,
@@ -14254,6 +14301,14 @@
 /obj/machinery/light/ms13/bulb/industrial,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
+"mYk" = (
+/obj/structure/chair/ms13/wood{
+	dir = 4
+	},
+/turf/open/floor/ms13/cdda/t_carpet_red,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "mYR" = (
 /obj/structure/railing/ms13/solo/industrial{
 	dir = 8
@@ -14293,11 +14348,6 @@
 /obj/structure/ms13/pot/plant,
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/desert)
-"nah" = (
-/turf/open/floor/ms13/cdda/t_carpet_red,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "nam" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -14759,14 +14809,6 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"nwC" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/turf/open/floor/ms13/cdda/t_floor,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "nxk" = (
 /obj/effect/spawner/random/ms13/drugs/lowrandom,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -15031,6 +15073,12 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
+"nNC" = (
+/obj/item/stack/sheet/ms13/rubber/two,
+/turf/open/floor/plating/ms13/ground/cdda/t_grass,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "nND" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 4
@@ -15361,6 +15409,12 @@
 /obj/effect/spawner/random/ms13/drink/soda,
 /turf/open/floor/ms13/ceramic,
 /area/ms13/desert)
+"ocI" = (
+/obj/structure/ms13/cdda/f_solar_unit,
+/turf/open/space/basic,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "ocR" = (
 /obj/structure/chair/ms13/metal/broken{
 	dir = 4
@@ -15411,12 +15465,6 @@
 /obj/effect/spawner/random/ms13/guaranteed/crafting/electrical,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"ogP" = (
-/obj/structure/table/ms13/wood,
-/turf/open/floor/ms13/cdda/t_carpet_yellow,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "ohe" = (
 /obj/machinery/light/ms13,
 /turf/open/floor/ms13/concrete/bricks,
@@ -15470,6 +15518,9 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/desert)
+"ojP" = (
+/turf/open/floor/plating/ms13/ground/cdda/t_sidewalk,
+/area/ms13/desert)
 "oka" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
@@ -15503,14 +15554,6 @@
 /obj/structure/ms13/trash/bricks,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"omf" = (
-/obj/structure/chair/ms13/wood{
-	dir = 8
-	},
-/turf/open/floor/ms13/cdda/t_carpet_red,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "omm" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 4
@@ -16193,13 +16236,6 @@
 /obj/effect/spawner/random/ms13/crafting/electrical,
 /turf/open/floor/ms13/concrete,
 /area/ms13/desert)
-"oUS" = (
-/obj/structure/table/ms13/wood,
-/obj/item/plate,
-/turf/open/floor/ms13/cdda/t_carpet_red,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "oUU" = (
 /obj/machinery/door/unpowered/ms13/metal{
 	dir = 8
@@ -16224,14 +16260,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"oVo" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 8
-	},
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "oVq" = (
 /obj/structure/chair/ms13/wood/padded,
 /obj/effect/landmark/start/ms13/clinician,
@@ -17311,12 +17339,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
-"pSo" = (
-/obj/item/stack/sheet/ms13/scrap_alu,
-/turf/open/floor/plating/ms13/ground/cdda/t_grass,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "pSv" = (
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/ms13/concrete/bricks,
@@ -17648,12 +17670,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"qiG" = (
-/obj/structure/table/ms13/wood,
-/turf/open/floor/ms13/cdda/t_carpet_red,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "qiJ" = (
 /obj/structure/ms13/storage/trashcan,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -18110,11 +18126,11 @@
 /obj/item/pickaxe/ms13,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
-"qDj" = (
-/obj/structure/chair/office/ms13/red{
-	dir = 8
+"qDz" = (
+/obj/machinery/light/ms13{
+	dir = 1
 	},
-/turf/open/floor/ms13/cdda/t_carpet_yellow,
+/turf/open/floor/ms13/cdda/t_floor_waxed,
 /area/ms13/farmhouse{
 	name = "Grassland"
 	})
@@ -18272,6 +18288,12 @@
 	},
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/desert)
+"qKQ" = (
+/obj/item/plate_shard,
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "qLa" = (
 /obj/structure/ms13/pipes/horizontal/single/down{
 	dir = 1
@@ -18326,6 +18348,13 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/desert)
+"qMg" = (
+/obj/item/stack/sheet/ms13/scrap_alu,
+/obj/item/stack/sheet/ms13/scrap_copper/two,
+/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "qMn" = (
 /obj/structure/sign/poster/ms13/pinup_3{
 	pixel_x = -13
@@ -18500,6 +18529,14 @@
 /obj/effect/spawner/random/ms13/locked/random/medchance,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"qSl" = (
+/obj/machinery/light/ms13{
+	dir = 1
+	},
+/turf/closed/wall/ms13/wood/cdda/t_wood_wall_orange,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "qSo" = (
 /obj/effect/turf_decal/ms13/road/horizontalline,
 /turf/open/floor/plating/ms13/ground/road,
@@ -18520,11 +18557,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"qSU" = (
-/turf/open/floor/plating/ms13/ground/cdda/t_sidewalk,
-/area/ms13/desert{
-	name = "Grassland"
-	})
 "qSZ" = (
 /obj/structure/ms13/brickstack,
 /turf/open/floor/ms13/tile/full/black,
@@ -18801,6 +18833,14 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"riS" = (
+/obj/structure/chair/ms13/wood{
+	dir = 8
+	},
+/turf/open/floor/ms13/cdda/t_carpet_red,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "rjg" = (
 /obj/structure/chair/ms13/metal{
 	dir = 1
@@ -19327,6 +19367,12 @@
 	},
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/desert)
+"rFb" = (
+/obj/item/stack/sheet/ms13/scrap_alu,
+/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "rFh" = (
 /mob/living/basic/ms13/hostile_animal/mantis,
 /obj/structure/ms13/trash/papers/one{
@@ -19481,6 +19527,12 @@
 "rLU" = (
 /turf/open/floor/ms13/tile,
 /area/ms13/desert)
+"rMw" = (
+/obj/item/stack/sheet/ms13/rubber/two,
+/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "rMM" = (
 /obj/structure/table/ms13/no_smooth/counter/wood/crafted{
 	dir = 1
@@ -19964,12 +20016,6 @@
 /obj/structure/ms13/rug/mat,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"shP" = (
-/obj/item/stack/sheet/ms13/scrap_alu,
-/turf/open/floor/plating/ms13/ground/cdda/t_concrete,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "sij" = (
 /obj/structure/chair/comfy/ms13/armchair{
 	dir = 4
@@ -20031,14 +20077,6 @@
 /obj/effect/spawner/random/ms13/food/packaged,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
-"skX" = (
-/obj/structure/chair/ms13/wood{
-	dir = 4
-	},
-/turf/open/floor/ms13/cdda/t_carpet_red,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "slf" = (
 /turf/closed/wall/ms13/scrap/blue,
 /area/ms13/desert)
@@ -20870,9 +20908,6 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"taO" = (
-/turf/open/floor/plating/ms13/ground/cdda/t_sidewalk,
-/area/ms13/desert)
 "tbm" = (
 /obj/structure/ms13/fence/vertical/wire/east,
 /turf/open/floor/ms13/concrete,
@@ -20884,12 +20919,6 @@
 /obj/effect/spawner/random/ms13/locked/guaranteed/random,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/desert)
-"tbV" = (
-/obj/item/stack/sheet/ms13/scrap_copper/two,
-/turf/open/floor/ms13/concrete,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "tcm" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 1
@@ -21105,13 +21134,6 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/ms13/metal/pipe,
 /area/ms13/desert)
-"tlT" = (
-/obj/structure/ms13/cdda/t_gutter,
-/obj/structure/ms13/cdda/f_air_conditioner,
-/turf/open/floor/plating/ms13/ground/cdda/t_grass,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "tmC" = (
 /obj/structure/chair/ms13/metal/red/unfinished{
 	dir = 8
@@ -21452,15 +21474,6 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
-"tBN" = (
-/obj/structure/ms13/tv/rad_king{
-	dir = 4
-	},
-/obj/structure/table/ms13/wood,
-/turf/open/floor/ms13/cdda/t_carpet_yellow,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "tBT" = (
 /obj/machinery/door/unpowered/ms13/wood/red{
 	dir = 1
@@ -21668,12 +21681,6 @@
 	},
 /turf/open/floor/ms13/concrete/small,
 /area/ms13/desert)
-"tKU" = (
-/obj/structure/ms13/cdda/f_sofa,
-/turf/open/floor/ms13/cdda/t_carpet_yellow,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "tLt" = (
 /obj/structure/ms13/cdda/f_crate_c,
 /obj/effect/spawner/random/ms13/armor/tier3,
@@ -21806,6 +21813,11 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"tSF" = (
+/turf/open/floor/ms13/cdda/t_carpet_red,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "tSN" = (
 /obj/structure/filingcabinet/ms13/empty,
 /obj/structure/ms13/storage/vent,
@@ -22036,14 +22048,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"uco" = (
-/obj/machinery/light/ms13{
-	dir = 8
-	},
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "ucC" = (
 /obj/machinery/light/ms13/bulb/industrial{
 	dir = 8
@@ -22391,6 +22395,13 @@
 /obj/machinery/door/unpowered/ms13/seethrough/mirrored/metal,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
+"uru" = (
+/obj/structure/table/ms13/wood,
+/obj/item/plate,
+/turf/open/floor/ms13/cdda/t_carpet_red,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "ury" = (
 /obj/structure/sign/poster/ms13/vacation,
 /obj/structure/chair/ms13/overlaypickup/plastic,
@@ -22461,14 +22472,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"uwC" = (
-/obj/machinery/light/ms13{
-	dir = 1
-	},
-/turf/closed/wall/ms13/wood/cdda/t_wood_wall_orange,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "uwD" = (
 /obj/structure/ms13/storage/large/showcase,
 /obj/effect/spawner/random/ms13/tools/fishing,
@@ -22561,12 +22564,6 @@
 /obj/machinery/light/ms13/bulb,
 /turf/open/floor/ms13/tile/brown,
 /area/ms13/desert)
-"uCu" = (
-/obj/item/stack/sheet/ms13/rubber/two,
-/turf/open/floor/plating/ms13/ground/cdda/t_grass,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "uDe" = (
 /obj/structure/ms13/storage/vent,
 /obj/machinery/vending/ms13/cigarettes,
@@ -22595,6 +22592,12 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
+"uFJ" = (
+/obj/structure/table/ms13/wood,
+/turf/open/floor/ms13/cdda/t_carpet_red,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "uFK" = (
 /obj/structure/table/ms13/no_smooth/wood/low,
 /obj/effect/spawner/random/ms13/medical/lowrandom,
@@ -23238,12 +23241,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
-"vkh" = (
-/obj/machinery/light/ms13/bulb,
-/turf/open/floor/ms13/cdda/t_floor,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "vks" = (
 /obj/structure/ms13/rug/mat/rubber,
 /obj/structure/ms13/rug/mat/rubber,
@@ -23323,6 +23320,12 @@
 	},
 /turf/open/floor/wood/ms13/carpet/shaggy,
 /area/ms13/desert)
+"voJ" = (
+/obj/structure/ms13/storage/shelf,
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "voX" = (
 /obj/structure/ms13/trash/food/dinner,
 /turf/open/floor/ms13/tile/large/checkered,
@@ -24051,6 +24054,14 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/desert)
+"vVx" = (
+/obj/machinery/light/ms13{
+	dir = 4
+	},
+/turf/open/floor/ms13/cdda/t_floor_waxed,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "vVT" = (
 /obj/item/mop/ms13{
 	pixel_x = -18;
@@ -24607,12 +24618,6 @@
 /obj/item/mop/ms13,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/desert)
-"wyY" = (
-/obj/structure/ms13/storage/shelf,
-/turf/open/floor/ms13/cdda/t_floor_waxed,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "wza" = (
 /obj/effect/decal/cleanable/glass{
 	dir = 1
@@ -26058,6 +26063,15 @@
 /obj/effect/spawner/random/ms13/crafting/highrandom,
 /turf/open/floor/ms13/concrete,
 /area/ms13/desert)
+"xOb" = (
+/obj/structure/ms13/cdda/f_toilet,
+/obj/structure/mirror/ms13{
+	pixel_y = 32
+	},
+/turf/open/indestructible/hoteltile,
+/area/ms13/farmhouse{
+	name = "Grassland"
+	})
 "xOe" = (
 /obj/structure/ms13/rug/red,
 /turf/open/floor/wood/ms13/common,
@@ -26372,14 +26386,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"ycv" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 4
-	},
-/turf/open/floor/ms13/cdda/t_floor,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "ycz" = (
 /obj/structure/table/ms13/no_smooth/counter/wood{
 	dir = 4
@@ -26492,12 +26498,6 @@
 /obj/effect/spawner/random/ms13/currency/drought/lowrandom,
 /turf/open/floor/wood/ms13/carpet/green,
 /area/ms13/desert)
-"yhT" = (
-/obj/item/stack/sheet/ms13/scrap_copper/two,
-/turf/open/floor/plating/ms13/ground/cdda/t_grass,
-/area/ms13/farmhouse{
-	name = "Grassland"
-	})
 "yil" = (
 /obj/structure/railing/ms13/solo,
 /obj/structure/stairs/west,
@@ -29491,17 +29491,17 @@ bvJ
 bvJ
 bvJ
 bvJ
-taO
-taO
-taO
-taO
-taO
-taO
-taO
-taO
-qSU
-qSU
-qSU
+ojP
+ojP
+ojP
+ojP
+ojP
+ojP
+ojP
+ojP
+kRF
+kRF
+kRF
 jLZ
 jLZ
 jLZ
@@ -29803,7 +29803,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 kxf
 kxf
@@ -30105,7 +30105,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 kxf
 kxf
@@ -30407,7 +30407,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 cCN
 rvu
@@ -30709,7 +30709,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -31011,7 +31011,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -31313,7 +31313,7 @@ scU
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -31615,7 +31615,7 @@ scU
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -31917,7 +31917,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -32219,7 +32219,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -32521,7 +32521,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -32823,7 +32823,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -33125,7 +33125,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -33427,7 +33427,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -33729,7 +33729,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -34031,7 +34031,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -34082,7 +34082,7 @@ eQo
 kxf
 kxf
 guf
-nwC
+mGa
 jyw
 jyw
 jyw
@@ -34092,7 +34092,7 @@ jyw
 jyw
 jyw
 jyw
-vkh
+mfB
 guf
 kxf
 kxf
@@ -34333,7 +34333,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -34635,7 +34635,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -34937,7 +34937,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -34993,7 +34993,7 @@ jyw
 jyw
 oNK
 jyw
-ycv
+bLk
 jyw
 jyw
 rPP
@@ -35239,7 +35239,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -35541,7 +35541,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -35843,7 +35843,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -36145,7 +36145,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -36447,7 +36447,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 auk
 bQP
 cdg
@@ -36749,7 +36749,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -37051,7 +37051,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -37353,7 +37353,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 auk
 bQP
 cdg
@@ -37655,7 +37655,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 auk
 bQP
 cdg
@@ -37708,7 +37708,7 @@ kxf
 kxf
 rTn
 gBq
-tbV
+eiU
 rRZ
 kxf
 kxf
@@ -37957,7 +37957,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -38259,7 +38259,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -38561,7 +38561,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -38863,7 +38863,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -38915,7 +38915,7 @@ kxf
 kxf
 guf
 gnC
-uco
+jDy
 aKK
 aKK
 guf
@@ -38923,8 +38923,8 @@ aKK
 aKK
 guf
 naM
-oVo
-wyY
+ijI
+voJ
 guf
 kxf
 kxf
@@ -39165,7 +39165,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -39226,7 +39226,7 @@ aKK
 obp
 aKK
 aKK
-wyY
+voJ
 guf
 kxf
 kxf
@@ -39467,7 +39467,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -39523,12 +39523,12 @@ aKK
 aKK
 aKK
 guf
-mmb
+bnc
 aKK
 guf
 aUO
 aKK
-wyY
+voJ
 guf
 kxf
 kxf
@@ -39769,7 +39769,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -40071,7 +40071,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -40130,8 +40130,8 @@ guf
 aKK
 aKK
 guf
-cHJ
-iXj
+xOb
+kmv
 dHg
 guf
 kxf
@@ -40373,7 +40373,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -40436,7 +40436,7 @@ oEc
 dHg
 dHg
 guf
-tlT
+fyh
 kxf
 bQP
 cdg
@@ -40675,7 +40675,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -40727,12 +40727,12 @@ kxf
 kxf
 guf
 gnC
-oVo
+ijI
 guf
 aKK
 aKK
 aKK
-jBT
+qKQ
 guf
 jtB
 eEQ
@@ -40977,7 +40977,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -41279,7 +41279,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -41333,14 +41333,14 @@ upT
 aKK
 aKK
 guf
-lKp
-skX
-nah
+qDz
+mYk
+tSF
 aKK
 sbQ
-ogP
-hsg
-tBN
+cXU
+bVH
+fwg
 guf
 kxf
 kxf
@@ -41581,7 +41581,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -41636,13 +41636,13 @@ xwF
 aKK
 guf
 aKK
-jjf
-qiG
+hLO
+uFJ
 aKK
-qDj
-hsg
-tKU
-hsg
+gqd
+bVH
+lZd
+bVH
 guf
 kxf
 kxf
@@ -41883,7 +41883,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -41937,14 +41937,14 @@ guf
 tkO
 aKK
 guf
-jBT
-oUS
-jjf
+qKQ
+uru
+hLO
 aKK
-hsg
-hsg
-tKU
-hsg
+bVH
+bVH
+lZd
+bVH
 guf
 kxf
 kxf
@@ -42185,7 +42185,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -42239,16 +42239,16 @@ guf
 guf
 guf
 guf
-lKp
-omf
-omf
+qDz
+riS
+riS
 aKK
-hsg
+bVH
 guf
 guf
-jLX
+bOE
 guf
-iQY
+lZL
 kxf
 bQP
 cdg
@@ -42487,7 +42487,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 vzu
@@ -42789,7 +42789,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -42847,7 +42847,7 @@ aKK
 aKK
 aKK
 aKK
-mFj
+vVx
 aKK
 aKK
 aKK
@@ -43091,7 +43091,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -43393,7 +43393,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -43438,7 +43438,7 @@ kxf
 kxf
 kxf
 kxf
-pSo
+jZk
 kxf
 kxf
 kxf
@@ -43695,7 +43695,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -43737,9 +43737,9 @@ kxf
 kxf
 kxf
 kxf
-uCu
+nNC
 kxf
-yhT
+hRJ
 kxf
 kxf
 kxf
@@ -43997,7 +43997,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -44039,11 +44039,11 @@ kxf
 kxf
 kxf
 kxf
-alu
+ebv
 fnI
 fnI
-fKX
-fVr
+rMw
+qMg
 fnI
 kxf
 kxf
@@ -44057,7 +44057,7 @@ aKK
 aKK
 guf
 jqI
-bZY
+gOU
 jqI
 guf
 kxf
@@ -44299,7 +44299,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -44341,10 +44341,10 @@ kxf
 kxf
 kxf
 kxf
-shP
-fKX
+rFb
+rMw
 fnI
-alu
+ebv
 fnI
 fnI
 kxf
@@ -44601,7 +44601,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -44645,10 +44645,10 @@ kxf
 kxf
 fnI
 fnI
-fKX
+rMw
 fnI
-haX
-alu
+ocI
+ebv
 kxf
 kxf
 kxf
@@ -44903,7 +44903,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -45205,7 +45205,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -45507,7 +45507,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -45809,7 +45809,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -46111,7 +46111,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 oFd
 bQP
 cdg
@@ -46413,7 +46413,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -46715,7 +46715,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -47017,7 +47017,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -47319,7 +47319,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -47621,7 +47621,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -47923,7 +47923,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -48225,7 +48225,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -48527,7 +48527,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -48829,7 +48829,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -49131,7 +49131,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -49433,7 +49433,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -49735,7 +49735,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -50037,7 +50037,7 @@ bvJ
 bvJ
 dUp
 dUp
-qSU
+kRF
 kxf
 bQP
 cdg
@@ -57639,7 +57639,7 @@ kxf
 kxf
 kxf
 kxf
-uwC
+qSl
 asT
 tzu
 tzu
@@ -58247,7 +58247,7 @@ sTO
 asT
 tzu
 aft
-uwC
+qSl
 tzu
 tzu
 hKp
@@ -58545,7 +58545,7 @@ kxf
 kxf
 kxf
 kxf
-uwC
+qSl
 vMo
 tzu
 asT
@@ -60361,7 +60361,7 @@ sTO
 sTO
 sTO
 rOs
-uwC
+qSl
 blj
 tzu
 hKN
@@ -61263,7 +61263,7 @@ kxf
 kxf
 kxf
 kxf
-uwC
+qSl
 rOs
 rOs
 rOs
@@ -62173,7 +62173,7 @@ sTO
 sTO
 sCc
 sTO
-uwC
+qSl
 qZd
 tzu
 wsC

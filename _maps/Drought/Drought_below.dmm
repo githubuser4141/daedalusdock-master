@@ -86,6 +86,16 @@
 /obj/effect/spawner/random/ms13/power_armor/lowrandom,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"aE" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 4
+	},
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "aF" = (
 /obj/effect/turf_decal/ms13/covering/tiles/white,
 /turf/closed/wall/ms13/concrete,
@@ -99,6 +109,7 @@
 /area/ms13/underground/mountain)
 "aJ" = (
 /obj/structure/ms13/pipes/vent,
+/obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "aL" = (
@@ -137,6 +148,18 @@
 "aQ" = (
 /turf/open/floor/ms13/metal/grate/border,
 /area/ms13/underground/mountain_bunker)
+"aR" = (
+/obj/machinery/light/ms13{
+	dir = 8
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
+"aW" = (
+/obj/structure/ms13_rail,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "aY" = (
 /mob/living/simple_animal/hostile/ms13/robot/handy/gutsy,
 /turf/open/floor/ms13/concrete,
@@ -149,9 +172,6 @@
 /obj/item/paper_bin/ms13{
 	pixel_y = 6
 	},
-/obj/item/pen/ms13{
-	pixel_y = 8
-	},
 /obj/item/ms13/fluff/chems,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
@@ -159,6 +179,12 @@
 /obj/structure/ms13/tank/chemical/huge,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/town)
+"be" = (
+/obj/item/trash/ms13/trash_pile/medtrash4,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "bf" = (
 /obj/structure/ms13/rug/rubber{
 	dir = 4
@@ -194,10 +220,20 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"bm" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 8
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "bn" = (
 /obj/structure/ms13/barrel/quadruple/yellow/one,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"bt" = (
+/obj/structure/ms13/trash/food/misc,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "bu" = (
 /mob/living/basic/ms13/robot/handy,
 /turf/open/floor/ms13/tile/full/white,
@@ -242,6 +278,10 @@
 /obj/structure/ms13/bonepile,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"bT" = (
+/obj/effect/turf_decal/ms13/covering/tiles/white,
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker)
 "bU" = (
 /obj/structure/ms13/cave_decor/support/wall/broken,
 /obj/structure/closet/ms13/metal,
@@ -250,6 +290,18 @@
 /obj/effect/spawner/random/ms13/clothing/shoe,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"bW" = (
+/obj/structure/ms13_rail,
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/machinery/power/ms13_rail_feeder{
+	dir = 4
+	},
+/turf/open/floor/ms13/concrete/industrial/walkway{
+	dir = 1
+	},
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "bZ" = (
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb{
 	dir = 4
@@ -264,6 +316,12 @@
 /obj/effect/spawner/random/ms13/power_armor/parts,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"cg" = (
+/obj/structure/bodycontainer/ms13/morgue{
+	dir = 8
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "ci" = (
 /obj/structure/ms13/cave_decor/support,
 /obj/structure/ms13/lamp/mining_lamp{
@@ -305,6 +363,10 @@
 /obj/effect/spawner/random/ms13/gun/lowunique,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"ct" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "cu" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/guaranteed/crafting/electrical,
@@ -352,6 +414,13 @@
 /obj/effect/spawner/random/ms13/locked/random/highchance,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"cF" = (
+/obj/machinery/ms13/fusion_generator/petrol{
+	power_gen = 25000
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "cH" = (
 /obj/structure/noticeboard/ms13/cork,
 /turf/open/floor/wood/ms13/wide,
@@ -361,6 +430,12 @@
 /obj/effect/spawner/random/ms13/smokeable/general,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"cJ" = (
+/obj/machinery/door/unpowered/ms13/metal/red{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile,
+/area/ms13/underground/mountain_bunker)
 "cL" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
@@ -412,6 +487,14 @@
 	},
 /turf/open/floor/ms13/metal/plate,
 /area/ms13/underground/mountain_bunker)
+"dh" = (
+/obj/structure/closet/ms13/metal,
+/obj/effect/spawner/random/ms13/clothing/backpack,
+/obj/effect/spawner/random/ms13/clothing/backpack,
+/obj/effect/spawner/random/ms13/clothing/mask,
+/obj/effect/spawner/random/ms13/clothing/mask,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "di" = (
 /obj/structure/ms13/cave_decor/support/beams,
 /obj/structure/ms13/trash/papers/three,
@@ -441,12 +524,19 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"dq" = (
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain)
 "dr" = (
 /obj/structure/ms13/storage/large/shelf/wood{
 	dir = 4
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"dt" = (
+/obj/machinery/door/airlock/ms13/brotherhood,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "du" = (
 /obj/effect/spawner/random/ms13/melee/unique,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -574,6 +664,15 @@
 /obj/effect/spawner/random/ms13/crafting/highrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"ei" = (
+/obj/structure/mirror/ms13{
+	pixel_y = 35
+	},
+/obj/structure/sink/ms13{
+	pixel_y = 14
+	},
+/turf/open/floor/ms13/tile,
+/area/ms13/underground/mountain_bunker)
 "ek" = (
 /obj/structure/railing/ms13/sewer{
 	dir = 1
@@ -584,6 +683,9 @@
 /obj/structure/railing/ms13/sewer,
 /turf/open/floor/ms13/metal/pipe,
 /area/ms13/underground/mountain_bunker)
+"el" = (
+/turf/closed/wall/ms13/dungeon,
+/area/ms13/desert)
 "en" = (
 /obj/machinery/shower/ms13{
 	dir = 8
@@ -602,6 +704,10 @@
 /obj/effect/spawner/random/ms13/melee/lowrandom,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"eu" = (
+/obj/effect/landmark/start/ms13/scribe,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "ew" = (
 /obj/structure/ms13/lamp/makeshift{
 	pixel_y = 4
@@ -722,6 +828,10 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"fj" = (
+/obj/machinery/ms13/agriculture/soil,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "fk" = (
 /obj/structure/ms13/rug/mat/vulgar/getfucked{
 	dir = 4
@@ -764,6 +874,7 @@
 /area/ms13/underground/mountain)
 "fr" = (
 /obj/structure/ms13/pipes/horizontal/box,
+/obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
 "fs" = (
@@ -809,6 +920,14 @@
 /obj/effect/spawner/random/ms13/medical/highrandom,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"fB" = (
+/obj/structure/ms13/storage/large/shelf{
+	dir = 4
+	},
+/obj/effect/spawner/random/ms13/medical/surgical,
+/obj/effect/spawner/random/ms13/medical/surgical,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "fC" = (
 /obj/effect/turf_decal/ms13/graffiti/clueless/green,
 /turf/closed/indestructible/rock/ms13/drought,
@@ -866,6 +985,11 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/underground/mountain)
+"fU" = (
+/obj/structure/ms13/rug/rubber,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "fV" = (
 /obj/structure/ms13/trash/papers/three,
 /obj/structure/ms13/trash/glass/basic,
@@ -892,12 +1016,11 @@
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
 "gb" = (
-/obj/effect/decal/cleanable/blood/drip{
-	pixel_x = 3;
-	pixel_y = 14
+/obj/machinery/door/airlock/ms13/brotherhood/hpaladin{
+	dir = 4
 	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "gd" = (
 /obj/structure/ms13/wall_decor/flag/arizona,
 /obj/effect/spawner/random/ms13/tools/radio,
@@ -920,6 +1043,12 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"gi" = (
+/obj/structure/ms13/wall_decor/clock{
+	dir = 4
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "gk" = (
 /obj/structure/closet/crate/ms13/footlocker{
 	dir = 4
@@ -955,6 +1084,11 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"gs" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "gw" = (
 /obj/structure/chair/ms13/metal/broken{
 	dir = 8
@@ -963,7 +1097,8 @@
 /area/ms13/town)
 "gx" = (
 /obj/effect/spawner/random/ms13/melee/lowrandom,
-/turf/open/floor/plating/ms13/ground/desert,
+/obj/structure/ms13_rail,
+/turf/open/floor/ms13/concrete/industrial/walkway,
 /area/ms13/desert)
 "gy" = (
 /obj/structure/railing/ms13/solo/industrial{
@@ -980,6 +1115,12 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/town)
+"gB" = (
+/obj/effect/decal/cleanable/blood/old{
+	pixel_x = 5
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "gC" = (
 /obj/structure/ms13/storage/shelf/wood/alt{
 	dir = 1
@@ -1006,6 +1147,7 @@
 /obj/structure/ms13/pipes/horizontal/down/single{
 	dir = 1
 	},
+/obj/structure/reagent_dispensers/fueltank,
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/town)
 "gK" = (
@@ -1126,6 +1268,10 @@
 /obj/machinery/light/ms13,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/underground/mountain_bunker)
+"hv" = (
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/t45,
+/turf/open/floor/ms13/metal/grate/border/warning,
+/area/ms13/underground/mountain_bunker)
 "hw" = (
 /obj/structure/ms13/skeleton,
 /obj/effect/spawner/random/ms13/medical/lowrandom,
@@ -1158,6 +1304,14 @@
 "hH" = (
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/underground/mountain)
+"hI" = (
+/obj/machinery/light/ms13{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "hK" = (
 /obj/structure/ms13/rug/fancy{
 	dir = 4
@@ -1177,6 +1331,10 @@
 /obj/effect/spawner/random/ms13/seeds/random,
 /obj/effect/spawner/random/ms13/seeds/random,
 /turf/open/floor/wood/ms13/wide,
+/area/ms13/town)
+"hP" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "hR" = (
 /obj/effect/turf_decal/ms13/covering/tiles/white,
@@ -1217,17 +1375,23 @@
 /area/ms13/town)
 "hY" = (
 /obj/structure/table/ms13/metal/alt,
-/obj/item/folder/ms13/brown{
-	pixel_x = 3;
-	pixel_y = 3
-	},
-/obj/item/folder/ms13/brown{
-	pixel_x = -3;
-	pixel_y = 2
-	},
-/obj/item/folder/ms13/brown,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"ib" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/table/ms13/metal/grate,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/obj/effect/spawner/random/ms13/guaranteed/tools/farming,
+/obj/effect/spawner/random/ms13/guaranteed/tools/farming,
+/obj/effect/spawner/random/ms13/guaranteed/tools/farming,
+/obj/effect/spawner/random/ms13/tools/tool,
+/obj/effect/spawner/random/ms13/tools/tool,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "id" = (
 /obj/structure/stairs/north,
 /turf/open/floor/ms13/concrete/industrial,
@@ -1247,10 +1411,30 @@
 /obj/structure/ms13/wall_decor/cross,
 /turf/open/floor/ms13/tile,
 /area/ms13/underground/mountain_bunker)
+"in" = (
+/obj/effect/turf_decal/ms13/covering/tiles/white,
+/obj/effect/turf_decal/ms13/graffiti/deadinside,
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker)
 "iq" = (
 /obj/structure/ms13/pipes/horizontal/single/down,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"ir" = (
+/obj/structure/ms13/trash/papers/two{
+	dir = 1
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/concrete,
+/area/ms13/town)
+"is" = (
+/obj/structure/closet/ms13/metal,
+/obj/effect/spawner/random/ms13/clothing/under,
+/obj/effect/spawner/random/ms13/clothing/under,
+/obj/effect/spawner/random/ms13/clothing/under,
+/obj/effect/spawner/random/ms13/clothing/under,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "it" = (
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -1321,6 +1505,13 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"iI" = (
+/obj/structure/chair/office/ms13/green/broken{
+	dir = 8
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "iK" = (
 /obj/structure/chair/sofa/corp/left{
 	dir = 4
@@ -1420,6 +1611,15 @@
 /obj/effect/spawner/random/ms13/locked/random/medchance,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"js" = (
+/obj/structure/ms13_vehicle_frame/tram/train/electric{
+	dir = 4;
+	id_tag = "bos_tram"
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "jv" = (
 /obj/effect/turf_decal/trimline/yellow/line,
 /turf/open/floor/ms13/metal/grate,
@@ -1454,6 +1654,10 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"jE" = (
+/obj/machinery/ms13/agriculture/soil,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "jF" = (
 /obj/structure/ms13/trash/bricks{
 	dir = 10
@@ -1727,6 +1931,17 @@
 /obj/effect/spawner/random/ms13/guaranteed/medical/highrandom,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"lm" = (
+/obj/structure/ms13/rug/rubber{
+	dir = 4
+	},
+/obj/structure/bed/ms13/bedframe/cot,
+/obj/structure/bed/ms13/mattress/stale,
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "lp" = (
 /obj/effect/turf_decal/ms13/graffiti/ghouls,
 /turf/closed/wall/ms13/adobe,
@@ -1758,6 +1973,12 @@
 /obj/structure/ms13/skeleton,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/underground/mountain)
+"lz" = (
+/obj/structure/ms13/rug/rubber{
+	dir = 4
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "lE" = (
 /mob/living/simple_animal/hostile/ms13/robot/handy/gun,
 /turf/open/floor/ms13/concrete,
@@ -1832,6 +2053,12 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"mk" = (
+/obj/structure/bodycontainer/ms13/morgue{
+	dir = 8
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "mn" = (
 /obj/structure/table/ms13/metal/grate,
 /obj/effect/spawner/random/ms13/guaranteed/tools/tool,
@@ -1901,6 +2128,9 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"mH" = (
+/turf/open/floor/ms13/concrete/industrial/walkway,
+/area/ms13/desert)
 "mL" = (
 /obj/item/ms13/brick{
 	pixel_x = 7;
@@ -1920,6 +2150,13 @@
 	dir = 8
 	},
 /turf/open/floor/ms13/metal/grate,
+/area/ms13/underground/mountain_bunker)
+"mR" = (
+/obj/structure/ms13/rug/rubber{
+	dir = 4
+	},
+/obj/machinery/light/ms13/bulb,
+/turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker)
 "mS" = (
 /obj/structure/ms13/barrel/quadruple/red/one,
@@ -1959,6 +2196,12 @@
 /obj/machinery/light/ms13,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"nf" = (
+/obj/machinery/light/ms13{
+	dir = 8
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "nh" = (
 /obj/structure/table/ms13/metal/heavy,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -2043,15 +2286,38 @@
 /obj/effect/spawner/random/ms13/melee/unique,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"nF" = (
+/obj/structure/closet/ms13/metal,
+/obj/effect/spawner/random/ms13/clothing/hat,
+/obj/effect/spawner/random/ms13/clothing/hat,
+/obj/effect/spawner/random/ms13/clothing/hat,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "nG" = (
 /mob/living/simple_animal/hostile/ms13/robot/handy/gutsy,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"nK" = (
+/obj/structure/table/ms13/no_smooth/counter/metal/bend{
+	dir = 4
+	},
+/obj/effect/spawner/random/ms13/medical/lowrandom,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
+"nM" = (
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "nO" = (
 /obj/structure/ms13/cave_decor/support/wall/broken,
 /obj/effect/spawner/random/ms13/crafting/precious,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"nP" = (
+/obj/structure/ms13/toilet{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile,
+/area/ms13/underground/mountain_bunker)
 "nQ" = (
 /turf/open/floor/ms13/metal/plate,
 /area/ms13/town)
@@ -2116,6 +2382,10 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"of" = (
+/obj/effect/turf_decal/ms13/covering/tiles/white,
+/turf/closed/wall/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
 "oh" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
@@ -2170,6 +2440,9 @@
 /obj/effect/spawner/random/ms13/medical/lowrandom,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"ov" = (
+/turf/closed/wall/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
 "ow" = (
 /obj/structure/stairs/west,
 /obj/structure/railing/ms13/solo{
@@ -2259,6 +2532,12 @@
 /obj/effect/spawner/random/ms13/ammo/highrandom,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"oZ" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "pa" = (
 /obj/structure/ms13/skeleton,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -2274,6 +2553,10 @@
 /obj/structure/bed/ms13/mattress/filthy,
 /obj/structure/ms13/wall_decor/flag/enclave,
 /turf/open/floor/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
+"pg" = (
+/obj/structure/table/ms13/metal/small,
+/turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker)
 "ph" = (
 /obj/effect/decal/cleanable/blood/old{
@@ -2500,6 +2783,11 @@
 /mob/living/simple_animal/hostile/ms13/radscorpion,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"qM" = (
+/obj/structure/bed/ms13/medical/surgery,
+/obj/structure/ms13/wall_decor/clock,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "qN" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 8
@@ -2508,6 +2796,15 @@
 /obj/effect/spawner/random/ms13/crafting/highrandom,
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
+"qO" = (
+/obj/structure/ms13_rail,
+/obj/structure/ms13_rail/station,
+/turf/open/floor/ms13/concrete/industrial/walkway{
+	dir = 1
+	},
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "qP" = (
 /obj/structure/ms13/pa_jack,
 /obj/effect/spawner/random/ms13/power_armor/lowrandom,
@@ -2545,6 +2842,12 @@
 /obj/structure/ms13/barricade,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"ra" = (
+/obj/structure/ms13_rail/station,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "rb" = (
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
@@ -2568,6 +2871,11 @@
 /obj/structure/ms13/pipes/horizontal/brown,
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
+"ro" = (
+/obj/effect/turf_decal/ms13/covering/tiles/white,
+/obj/effect/turf_decal/ms13/graffiti/dontopen,
+/turf/closed/wall/ms13/vault,
 /area/ms13/underground/mountain_bunker)
 "rp" = (
 /obj/machinery/door/unpowered/ms13/wood{
@@ -2609,6 +2917,13 @@
 /obj/effect/spawner/random/ms13/locked/guaranteed/random,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"ru" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 4
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/concrete,
+/area/ms13/town)
 "rv" = (
 /obj/structure/ms13/lamp/makeshift{
 	pixel_y = 4
@@ -2642,6 +2957,10 @@
 /obj/effect/spawner/random/ms13/currency/drought/prewar/lowrandom,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"rH" = (
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "rI" = (
 /obj/structure/bodycontainer/ms13/morgue{
 	dir = 8
@@ -2665,6 +2984,27 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"rO" = (
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
+"rP" = (
+/obj/structure/closet/crate/ms13/vault_tec/pristine,
+/obj/structure/railing/ms13/solo{
+	dir = 8
+	},
+/obj/effect/spawner/random/ms13/guaranteed/gun/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/gun/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/gun/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "rQ" = (
 /obj/structure/ms13/rug/rubber{
 	dir = 4
@@ -2694,6 +3034,12 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"sa" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 9
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "sd" = (
 /obj/structure/ms13/storage/shelf/wood/alt,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -2809,6 +3155,15 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"sW" = (
+/obj/structure/table/ms13/no_smooth/counter/metal{
+	dir = 1
+	},
+/obj/machinery/light/ms13,
+/obj/effect/spawner/random/ms13/guaranteed/medical/lowrandom,
+/obj/effect/spawner/random/ms13/medical/highrandom,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "sX" = (
 /obj/structure/closet/crate/ms13/army,
 /obj/effect/spawner/random/ms13/gun/lowrandom,
@@ -2869,6 +3224,13 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"tq" = (
+/obj/structure/chair/office/ms13/green/broken{
+	dir = 4
+	},
+/obj/effect/landmark/start/ms13/paladin,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "tr" = (
 /obj/structure/ms13/storage/shelf{
 	dir = 1
@@ -2945,6 +3307,14 @@
 /mob/living/basic/ms13/hostile_animal/giantant,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"tI" = (
+/obj/item/reagent_containers/glass/bucket/ms13,
+/obj/item/reagent_containers/glass/bucket/ms13,
+/obj/item/reagent_containers/glass/bucket/ms13,
+/obj/item/reagent_containers/glass/bucket/ms13,
+/obj/item/reagent_containers/glass/bucket/ms13,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "tJ" = (
 /turf/closed/wall/ms13/craftable/scrap,
 /area/ms13/town)
@@ -2958,6 +3328,11 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"tQ" = (
+/obj/structure/ms13/storage/vent,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "tR" = (
 /obj/structure/table/ms13/metal/alt,
 /obj/machinery/ms13/terminal{
@@ -3023,6 +3398,15 @@
 /obj/machinery/light/ms13,
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
+"um" = (
+/obj/structure/ms13_rail,
+/obj/structure/ms13_vehicle_frame/tram/blast_door{
+	id_tag = "bos_blast_door"
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "uo" = (
 /obj/structure/ms13/pipes/horizontal/down/single{
 	dir = 1
@@ -3052,6 +3436,11 @@
 "uz" = (
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"uB" = (
+/obj/structure/ms13/pipes/horizontal/down/single,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
 "uC" = (
 /obj/structure/railing/ms13/solo{
 	dir = 4
@@ -3080,6 +3469,15 @@
 /obj/effect/spawner/random/ms13/food/packaged,
 /obj/effect/spawner/random/ms13/food/packaged,
 /turf/open/floor/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
+"uK" = (
+/obj/structure/table/ms13/metal/grate,
+/obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
+/obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
+/obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
+/obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
+/obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
+/turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker)
 "uL" = (
 /obj/machinery/light/ms13/bulb,
@@ -3155,10 +3553,35 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"vk" = (
+/obj/item/card/id/ms13/bos,
+/obj/item/card/id/ms13/bos,
+/obj/item/card/id/ms13/bos,
+/obj/item/clothing/suit/armor/ms13/combat/bos,
+/obj/item/clothing/suit/armor/ms13/combat/bos,
+/obj/item/clothing/shoes/ms13/military/bos,
+/obj/item/clothing/shoes/ms13/military/bos,
+/obj/item/clothing/head/helmet/ms13/combat/bos,
+/obj/item/clothing/head/helmet/ms13/combat/bos,
+/obj/item/clothing/under/ms13/bos,
+/obj/item/clothing/under/ms13/bos,
+/obj/item/clothing/under/ms13/bos/officer,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "vn" = (
 /obj/structure/ms13/cave_decor/minecart,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"vo" = (
+/obj/structure/table/ms13/no_smooth/counter/metal{
+	dir = 8
+	},
+/obj/item/ms13/fluff/microscope{
+	pixel_y = 9
+	},
+/obj/item/ms13/fluff/chems,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "vq" = (
 /obj/structure/ms13/storage/shelf/wood/alt{
 	dir = 1
@@ -3166,6 +3589,10 @@
 /obj/effect/spawner/random/ms13/melee/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"vr" = (
+/obj/structure/ms13/trash/books/pile_alt,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "vs" = (
 /obj/structure/ms13/storage/shelf/wood/alt,
 /obj/effect/spawner/random/ms13/ammo/lowrandom,
@@ -3208,6 +3635,18 @@
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"vC" = (
+/obj/structure/closet/crate/ms13/medical,
+/obj/effect/spawner/random/ms13/medical/bloodbag,
+/obj/effect/spawner/random/ms13/medical/bloodbag,
+/obj/effect/spawner/random/ms13/guaranteed/medical/bloodbag,
+/obj/effect/spawner/random/ms13/guaranteed/medical/bloodbag,
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/obj/effect/spawner/random/ms13/medical/highrandom,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "vD" = (
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/ms13/concrete/industrial,
@@ -3273,6 +3712,11 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"vR" = (
+/obj/effect/turf_decal/ms13/covering/tiles/white,
+/obj/structure/sign/warning/electricshock,
+/turf/closed/wall/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
 "vS" = (
 /obj/structure/railing/ms13/solo/industrial{
 	dir = 8
@@ -3285,6 +3729,11 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"vV" = (
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "vX" = (
 /obj/structure/chair/ms13/metal/unfinished,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -3455,6 +3904,12 @@
 /obj/structure/ms13/turfdecor/drought,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/underground/mountain)
+"wT" = (
+/obj/structure/sign/warning/electricshock,
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "wV" = (
 /obj/machinery/button/ms13{
 	dir = 4
@@ -3477,6 +3932,12 @@
 /obj/effect/spawner/random/ms13/tools/farming,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"xa" = (
+/obj/machinery/door/unpowered/ms13/metal/red{
+	dir = 4
+	},
+/turf/open/floor/ms13/tile,
+/area/ms13/underground/mountain_bunker)
 "xc" = (
 /obj/structure/ms13/storage/shelf/wood/alt,
 /obj/effect/spawner/random/ms13/tools/tool,
@@ -3519,6 +3980,10 @@
 /obj/structure/chair/ms13/overlaypickup/plastic,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"xx" = (
+/obj/item/trash/ms13/trash_pile/medtrash0,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "xz" = (
 /obj/structure/bed/ms13/mattress/yellowed,
 /obj/structure/ms13/lamp/mining_lamp{
@@ -3611,11 +4076,24 @@
 /obj/structure/ms13/departure,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"ya" = (
+/obj/effect/turf_decal/ms13/covering/tiles/blue,
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker)
 "yc" = (
 /obj/machinery/door/unpowered/ms13/metal{
 	dir = 4
 	},
 /turf/open/floor/ms13/concrete/industrial,
+/area/ms13/town)
+"yf" = (
+/obj/structure/ms13/cave_decor/support/wall,
+/obj/structure/ms13/turfdecor/drought,
+/obj/structure/ms13/lamp/mining_lamp{
+	pixel_y = 30
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "yh" = (
 /obj/structure/table/ms13/metal/small,
@@ -3660,6 +4138,9 @@
 /obj/structure/noticeboard/ms13/cork,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"yw" = (
+/turf/closed/wall/ms13/dungeon,
+/area/ms13/underground/mountain)
 "yx" = (
 /obj/structure/ms13/rug/mat/vulgar/shittown{
 	dir = 1
@@ -3695,6 +4176,12 @@
 /obj/effect/spawner/random/ms13/crafting/household,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"yK" = (
+/obj/structure/ms13_rail,
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "yN" = (
 /obj/structure/table/ms13/metal/alt,
 /obj/effect/spawner/random/ms13/medical/lowrandom,
@@ -3711,6 +4198,10 @@
 /obj/structure/bed/ms13/mattress/old,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"yT" = (
+/obj/structure/ms13/trash/wood,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "yV" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/armor/lowrandom,
@@ -3756,6 +4247,10 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"zg" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "zh" = (
 /obj/structure/chair/ms13/overlaypickup/plastic,
 /obj/structure/ms13/wall_decor/clock,
@@ -3766,6 +4261,9 @@
 /obj/structure/noticeboard/ms13/cork,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"zk" = (
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/desert)
 "zn" = (
 /obj/structure/ms13/turfdecor/drought{
 	pixel_x = -4;
@@ -3773,6 +4271,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"zq" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 4
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "zs" = (
 /obj/structure/closet/crate/ms13/woodcrate/compact,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -3800,6 +4304,22 @@
 /obj/structure/table/ms13/wood/constructed,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"zA" = (
+/obj/structure/table/ms13/metal/alt,
+/obj/item/paper_bin/ms13{
+	pixel_y = 3;
+	pixel_x = 6
+	},
+/obj/item/paper/ms13{
+	pixel_y = 10;
+	pixel_x = -6
+	},
+/obj/item/paper/ms13/paperslip{
+	pixel_y = 4;
+	pixel_x = -2
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "zD" = (
 /obj/structure/bed/ms13/bedframe/cot,
 /obj/structure/bed/ms13/sleepingbag/green,
@@ -3864,6 +4384,11 @@
 /obj/structure/ms13/wall_decor/calendar,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"zY" = (
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "zZ" = (
 /obj/effect/spawner/random/ms13/guaranteed/crafting/electrical,
 /turf/open/floor/ms13/concrete/industrial,
@@ -3977,6 +4502,18 @@
 /obj/structure/ms13/pipes/horizontal/valve,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"AP" = (
+/obj/structure/railing/ms13/solo,
+/obj/structure/railing/ms13/solo{
+	dir = 8
+	},
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/obj/structure/closet/crate/ms13/woodcrate,
+/obj/effect/spawner/random/ms13/power_armor/t45_parts,
+/turf/open/floor/ms13/metal/grate/border/warning,
+/area/ms13/underground/mountain_bunker)
 "AS" = (
 /obj/structure/ms13/storage/shelf/wood,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -4112,6 +4649,9 @@
 "BQ" = (
 /turf/closed/wall/ms13/craftable/scrap,
 /area/ms13/underground/mountain)
+"BS" = (
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker)
 "BU" = (
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 5
@@ -4137,6 +4677,11 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain)
+"Cb" = (
+/turf/closed/wall/ms13/dungeon,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "Cc" = (
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/plating/ms13/ground/sidewalk,
@@ -4218,12 +4763,17 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "Cx" = (
-/obj/effect/decal/cleanable/blood/drip{
-	pixel_x = -10
+/obj/structure/railing/ms13/solo,
+/obj/structure/railing/ms13/solo{
+	dir = 4
 	},
-/obj/effect/spawner/random/ms13/melee/lowrandom,
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/obj/structure/closet/crate/ms13/woodcrate,
+/obj/effect/spawner/random/ms13/power_armor/t51_parts,
+/turf/open/floor/ms13/metal/grate/border/warning,
+/area/ms13/underground/mountain_bunker)
 "CA" = (
 /obj/structure/table/ms13/crafting/ammobench,
 /obj/structure/noticeboard/ms13/cork,
@@ -4289,6 +4839,14 @@
 /obj/effect/spawner/random/ms13/smokeable/highrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"CV" = (
+/obj/machinery/light/ms13{
+	dir = 8
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "CX" = (
 /turf/open/floor/ms13/concrete/industrial/walkway,
 /area/ms13/underground/mountain)
@@ -4347,6 +4905,9 @@
 /obj/structure/ladder/ms13,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Ds" = (
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "Dt" = (
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -4364,6 +4925,9 @@
 "DF" = (
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
+"DG" = (
+/turf/closed/wall/ms13/concrete,
+/area/ms13/desert)
 "DH" = (
 /obj/structure/closet/crate/ms13/medical,
 /obj/effect/spawner/random/ms13/medical/bloodbag,
@@ -4545,6 +5109,13 @@
 /obj/structure/ms13/turfdecor/drought,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"ED" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/table/ms13/metal/grate,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "EF" = (
 /obj/structure/closet/crate/ms13/footlocker,
 /obj/effect/spawner/random/ms13/ammo/lowrandom,
@@ -4631,10 +5202,22 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"Fg" = (
+/obj/machinery/light/ms13{
+	dir = 1
+	},
+/obj/structure/chair/ms13/metal,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "Fj" = (
 /obj/effect/spawner/random/ms13/medical/herbal,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Fm" = (
+/obj/effect/spawner/random/ms13/tools/tool,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "Fo" = (
 /obj/structure/closet/crate/ms13/woodcrate/compact/sarsaparilla,
 /obj/effect/spawner/random/ms13/seeds/random,
@@ -4673,6 +5256,10 @@
 /obj/structure/noticeboard/ms13/cork,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"FC" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/town)
 "FE" = (
 /obj/effect/spawner/random/ms13/crafting/precious,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -4704,6 +5291,14 @@
 	dir = 1
 	},
 /area/ms13/town)
+"FO" = (
+/obj/machinery/door/unpowered/ms13/metal/red{
+	dir = 1
+	},
+/obj/effect/spawner/random/ms13/locked/random/lowchance,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "FP" = (
 /obj/machinery/light/ms13{
 	dir = 1
@@ -4833,6 +5428,19 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"GB" = (
+/obj/item/stack/sheet/ms13/scrap,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/desert)
+"GC" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/underground/mountain)
+"GG" = (
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "GH" = (
 /obj/structure/ms13/rug/yellow,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -4922,6 +5530,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Hr" = (
+/obj/structure/ms13/wall_decor/flag/bos,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "Ht" = (
 /obj/structure/table/ms13/metal/heavy,
 /obj/machinery/light/ms13,
@@ -4970,6 +5584,22 @@
 /obj/structure/ms13/wall_decor/poster/fallout,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"HC" = (
+/obj/structure/ms13_rail_call_button{
+	pixel_y = 3;
+	pixel_x = 23;
+	id_tag = "bos_tram"
+	},
+/obj/structure/ms13_rail_call_button{
+	pixel_y = -6;
+	pixel_x = 23;
+	id_tag = s
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "HH" = (
 /obj/structure/table/ms13/wood/constructed,
 /obj/effect/spawner/random/ms13/food/junkfood_canned,
@@ -4989,6 +5619,22 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"HR" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/machinery/power/apc/ms13/always_on{
+	dir = 4;
+	pixel_y = 0;
+	pixel_x = 22
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
+"HT" = (
+/obj/structure/closet/ms13/wall/firstaid,
+/obj/effect/spawner/random/ms13/medical/lowrandom,
+/obj/effect/spawner/random/ms13/guaranteed/medical/lowrandom,
+/obj/effect/landmark/start/ms13/initiate,
+/turf/open/floor/ms13/tile,
+/area/ms13/underground/mountain_bunker)
 "HU" = (
 /obj/structure/mirror/ms13{
 	pixel_y = 35
@@ -5008,6 +5654,15 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"HY" = (
+/obj/structure/ms13/storage/vent,
+/obj/structure/ms13/wall_decor/flag/bos,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
+"HZ" = (
+/obj/structure/ms13/trash/food/dinner,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Ia" = (
 /obj/structure/ms13/tank/pipe,
 /turf/open/floor/ms13/concrete,
@@ -5097,12 +5752,29 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"IC" = (
+/obj/structure/closet/ms13/metal,
+/obj/effect/spawner/random/ms13/currency/drought/prewar/lowrandom,
+/obj/effect/spawner/random/ms13/clothing/shoe,
+/obj/effect/spawner/random/ms13/clothing/shoe,
+/obj/effect/spawner/random/ms13/clothing/shoe,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "ID" = (
 /obj/structure/ms13/storage/large/medical{
 	dir = 4
 	},
 /turf/open/floor/ms13/tile/long,
 /area/ms13/town)
+"IE" = (
+/obj/effect/mob_spawn/corpse/human/ms13/nomad,
+/obj/effect/decal/cleanable/blood/old{
+	pixel_x = -8;
+	pixel_y = -7
+	},
+/obj/structure/ms13_rail,
+/turf/open/floor/ms13/concrete/industrial/walkway,
+/area/ms13/desert)
 "IF" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 4
@@ -5121,6 +5793,10 @@
 /obj/structure/table/ms13/low_wall/concrete,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"IK" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "IL" = (
 /obj/structure/noticeboard/ms13/cork,
 /turf/open/floor/ms13/concrete,
@@ -5207,6 +5883,19 @@
 /obj/effect/spawner/random/ms13/food/random,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"Js" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/obj/structure/ms13/storage/shelf{
+	dir = 4
+	},
+/obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
+/obj/effect/spawner/random/ms13/guaranteed/tools/lights,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/obj/effect/spawner/random/ms13/guaranteed/tools/tool,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Jt" = (
 /obj/machinery/ms13/fusion_generator,
 /turf/open/floor/ms13/metal/plate,
@@ -5305,6 +5994,12 @@
 	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"JT" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 6
+	},
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "JU" = (
 /obj/structure/ms13/trash/wood{
 	dir = 8
@@ -5319,6 +6014,12 @@
 /obj/effect/spawner/random/ms13/locked/random/highchance,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"JX" = (
+/obj/structure/table/ms13/no_smooth/counter/metal/bend,
+/obj/structure/ms13/storage/vent,
+/obj/effect/spawner/random/ms13/medical/surgical,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "JY" = (
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
 /turf/open/floor/ms13/concrete,
@@ -5333,6 +6034,13 @@
 /obj/structure/bed/ms13/mattress/yellowed,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"Kf" = (
+/obj/structure/ms13/storage/large/shelf{
+	dir = 4
+	},
+/obj/effect/spawner/random/ms13/drugs/prewar,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Kg" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 8
@@ -5350,6 +6058,11 @@
 /obj/structure/ms13/bonepile,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Kl" = (
+/obj/structure/ms13/wall_decor/calendar,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Ku" = (
 /obj/structure/ms13/pipes/horizontal,
 /turf/open/floor/ms13/metal/pipe{
@@ -5392,6 +6105,15 @@
 /obj/effect/spawner/random/ms13/currency/drought/prewar/highrandom,
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
+"KL" = (
+/obj/structure/ms13_rail/station,
+/obj/structure/ms13_vehicle_frame/tram/blast_door{
+	id_tag = "bos_blast_door"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "KN" = (
 /obj/structure/table/ms13/metal/grate,
 /obj/structure/noticeboard/ms13/cork,
@@ -5414,6 +6136,10 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"KR" = (
+/obj/structure/ms13_rail,
+/turf/open/floor/ms13/concrete/industrial/walkway,
+/area/ms13/desert)
 "KS" = (
 /obj/structure/ms13/storage/large/medical{
 	dir = 1
@@ -5421,6 +6147,13 @@
 /obj/effect/spawner/random/ms13/medical/highrandom,
 /turf/open/floor/ms13/tile/long/blue,
 /area/ms13/town)
+"KT" = (
+/obj/machinery/ms13/fusion_generator/petrol{
+	power_gen = 10000
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "KV" = (
 /mob/living/basic/ms13/hostile_animal/radroach/glowie,
 /turf/open/floor/ms13/concrete/industrial,
@@ -5429,6 +6162,10 @@
 /obj/structure/ms13/barrel/single/red/three,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/town)
+"KX" = (
+/obj/structure/railing/ms13/solo,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "KY" = (
 /obj/structure/ms13/rug/rubber{
 	dir = 4
@@ -5445,6 +6182,22 @@
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/town)
+"La" = (
+/obj/structure/closet/crate/ms13/vault_tec/pristine,
+/obj/structure/railing/ms13/solo{
+	dir = 8
+	},
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/obj/item/ammo_box/magazine/ms13/r20,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "Lb" = (
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/structure/ms13/wall_decor/clock,
@@ -5465,6 +6218,12 @@
 	},
 /turf/open/floor/ms13/metal/grate/border,
 /area/ms13/town)
+"Le" = (
+/obj/machinery/door/airlock/ms13/brotherhood,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "Lh" = (
 /mob/living/basic/ms13/hostile_animal/giantant,
 /obj/structure/ms13/bonepile,
@@ -5519,6 +6278,9 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"LA" = (
+/turf/closed/indestructible/rock/ms13/drought,
+/area/ms13/desert)
 "LB" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/crafting/precious,
@@ -5592,6 +6354,27 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"LS" = (
+/obj/structure/table/ms13/no_smooth/counter/metal{
+	dir = 4
+	},
+/obj/structure/ms13/chem_set{
+	pixel_x = 1
+	},
+/obj/item/reagent_containers/cup/beaker/plastic{
+	pixel_y = -7
+	},
+/obj/item/reagent_containers/cup/beaker/plastic{
+	pixel_y = -7
+	},
+/obj/item/reagent_containers/cup/beaker/plastic{
+	pixel_y = -7
+	},
+/obj/item/reagent_containers/cup/beaker/plastic{
+	pixel_y = -7
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "LT" = (
 /obj/structure/bed/ms13/mattress/yellowed,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -5601,6 +6384,11 @@
 /obj/effect/spawner/random/ms13/gun/lowunique,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"LW" = (
+/obj/structure/table/ms13/metal/alt,
+/obj/effect/spawner/random/ms13/medical/lowrandom,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "LY" = (
 /obj/structure/table/ms13/no_smooth/counter/metal/bend{
 	dir = 8
@@ -5657,6 +6445,9 @@
 /obj/machinery/ms13/terminal/crafted,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/town)
+"Mq" = (
+/turf/closed/wall/ms13/dungeon,
+/area/ms13/underground/mountain_bunker)
 "Mr" = (
 /obj/structure/ms13/pipes/vertical/west/corner/single,
 /turf/closed/wall/ms13/brick/gray,
@@ -5675,6 +6466,16 @@
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/town)
+"Mw" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
+"Mx" = (
+/obj/structure/chair/office/ms13/green/broken{
+	dir = 8
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "MA" = (
 /obj/structure/table/ms13/metal/alt,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -5717,6 +6518,14 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"MT" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/town)
+"MU" = (
+/obj/structure/ms13/trash/books,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "MV" = (
 /obj/effect/decal/cleanable/blood/drip{
 	pixel_x = -10
@@ -5804,6 +6613,10 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/underground/mountain)
+"Np" = (
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
 "Nq" = (
 /turf/open/floor/ms13/metal/grate/border{
 	dir = 1
@@ -5821,6 +6634,10 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"Nz" = (
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/t51,
+/turf/open/floor/ms13/metal/grate/border/warning,
+/area/ms13/underground/mountain_bunker)
 "NB" = (
 /obj/structure/ms13/rug/rubber{
 	dir = 4
@@ -5979,6 +6796,12 @@
 	},
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/town)
+"Ol" = (
+/obj/structure/ms13_rail,
+/turf/open/floor/ms13/concrete/industrial/walkway{
+	dir = 1
+	},
+/area/ms13/desert)
 "Om" = (
 /obj/structure/ms13/pipes/vertical/west/random,
 /turf/open/floor/ms13/concrete,
@@ -6038,9 +6861,18 @@
 /obj/machinery/door/unpowered/ms13/metal,
 /turf/open/floor/ms13/tile,
 /area/ms13/town)
+"OK" = (
+/obj/item/stack/sheet/ms13/scrap_steel/two,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "OL" = (
 /turf/closed/wall/ms13/adobe,
 /area/ms13/drylanders)
+"OM" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/effect/landmark/start/ms13/knight,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "ON" = (
 /obj/structure/ms13/storage/shelf/wood/alt{
 	dir = 1
@@ -6069,6 +6901,16 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"OV" = (
+/obj/structure/closet/crate/ms13/vault_tec/pristine,
+/obj/structure/railing/ms13/solo{
+	dir = 8
+	},
+/obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/proto_service,
+/obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/proto_service,
+/obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/proto_service,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "OY" = (
 /obj/structure/closet/ms13/wall/firstaid,
 /obj/structure/table/ms13/metal/alt,
@@ -6130,6 +6972,10 @@
 /obj/structure/ms13/cave_decor/sign_left/sign_right,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Pw" = (
+/obj/effect/spawner/random/ms13/food/trash,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/desert)
 "Py" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 4
@@ -6246,6 +7092,10 @@
 /obj/structure/ms13/barrel/quadruple/yellow/one,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/underground/mountain)
+"Qn" = (
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/concrete/industrial,
+/area/ms13/town)
 "Qo" = (
 /obj/structure/ms13/barrel/double/yellow/one,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -6297,6 +7147,15 @@
 /obj/structure/table/ms13/metal/grate,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"QG" = (
+/obj/structure/table/ms13/metal/grate,
+/obj/effect/spawner/random/ms13/guaranteed/seeds/random,
+/obj/effect/spawner/random/ms13/guaranteed/seeds/random,
+/obj/effect/spawner/random/ms13/guaranteed/seeds/random,
+/obj/effect/spawner/random/ms13/guaranteed/seeds/random,
+/obj/effect/spawner/random/ms13/guaranteed/seeds/random,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "QH" = (
 /obj/structure/table/ms13/no_smooth/wood/square,
 /obj/item/candle/ms13{
@@ -6445,6 +7304,15 @@
 /obj/effect/spawner/random/ms13/medical/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"Rt" = (
+/obj/structure/table/ms13/no_smooth/counter/metal{
+	dir = 4
+	},
+/obj/effect/spawner/random/ms13/guaranteed/medical/highrandom,
+/obj/effect/spawner/random/ms13/guaranteed/medical/highrandom,
+/obj/effect/spawner/random/ms13/medical/lowrandom,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "Rv" = (
 /obj/structure/closet/ms13/fridge,
 /obj/effect/spawner/random/ms13/food/random,
@@ -6470,6 +7338,15 @@
 /mob/living/basic/ms13/hostile_animal/molerat/young,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"RO" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/table/ms13/metal/grate,
+/obj/effect/spawner/random/ms13/guaranteed/tools/lights,
+/obj/effect/spawner/random/ms13/guaranteed/tools/lights,
+/obj/effect/spawner/random/ms13/guaranteed/tools/lights,
+/obj/effect/spawner/random/ms13/guaranteed/tools/lights,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "RP" = (
 /obj/structure/table/ms13/wood/constructed/cobbled,
 /obj/effect/spawner/random/ms13/melee/tier3,
@@ -6541,6 +7418,10 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
+"So" = (
+/obj/structure/railing/ms13/solo/industrial,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "Ss" = (
 /obj/structure/ms13/wall_decor/poster/you,
 /turf/open/floor/ms13/metal/grate,
@@ -6597,6 +7478,13 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"SG" = (
+/obj/structure/table/ms13/metal/grate,
+/obj/effect/spawner/random/ms13/guaranteed/tools/radio,
+/obj/effect/spawner/random/ms13/guaranteed/tools/radio,
+/obj/effect/spawner/random/ms13/guaranteed/tools/radio,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "SK" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 8
@@ -6687,6 +7575,11 @@
 /obj/effect/spawner/random/ms13/smokeable/general,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"Th" = (
+/obj/structure/ms13/trash/papers,
+/obj/item/trash/ms13/trash_pile,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Ti" = (
 /obj/structure/closet/crate/ms13/woodcrate,
 /obj/effect/spawner/random/ms13/seeds/unique,
@@ -6732,6 +7625,13 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Tu" = (
+/obj/structure/closet/crate/ms13/woodcrate,
+/obj/effect/spawner/random/ms13/guaranteed/currency/drought/tier3,
+/obj/effect/spawner/random/ms13/guaranteed/currency/drought/tier3,
+/obj/effect/spawner/random/ms13/guaranteed/currency/drought/tier3,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "Tw" = (
 /obj/structure/ms13/storage/shelf/wood/alt{
 	dir = 8
@@ -6794,12 +7694,29 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"TS" = (
+/obj/effect/spawner/random/ms13/tools/farming,
+/obj/effect/spawner/random/ms13/tools/farming,
+/obj/effect/spawner/random/ms13/tools/farming,
+/obj/effect/spawner/random/ms13/tools/farming,
+/obj/structure/table/ms13/metal/grate,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/desert)
 "TU" = (
 /obj/machinery/door/unpowered/ms13/seethrough/grate{
 	dir = 8
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"TV" = (
+/obj/machinery/light/ms13/bulb,
+/turf/open/floor/ms13/tile,
+/area/ms13/underground/mountain_bunker)
+"TX" = (
+/obj/structure/ms13_rail,
+/obj/structure/stairs/south,
+/turf/open/floor/ms13/concrete/industrial/walkway,
+/area/ms13/desert)
 "TY" = (
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 6
@@ -6857,6 +7774,13 @@
 "Up" = (
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/underground/mountain)
+"Us" = (
+/obj/structure/ms13/pipes/horizontal/down/single{
+	dir = 1
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/concrete,
+/area/ms13/underground/mountain_bunker)
 "Uu" = (
 /obj/structure/ms13/turfdecor/drought,
 /mob/living/basic/ms13/ghoul/radioactive,
@@ -6902,6 +7826,22 @@
 /obj/structure/ms13/rug/mat/vulgar/shittown,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"UG" = (
+/obj/structure/table/ms13/no_smooth/counter/metal,
+/obj/item/paper_bin/ms13{
+	pixel_y = 6;
+	pixel_x = -13
+	},
+/obj/item/storage/firstaid/ms13/bag/filled{
+	pixel_y = 2;
+	pixel_x = 9
+	},
+/obj/item/storage/firstaid/ms13/bag/filled{
+	pixel_y = 10;
+	pixel_x = 9
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "UH" = (
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain)
@@ -6980,6 +7920,10 @@
 	},
 /turf/open/floor/ms13/tile/long,
 /area/ms13/town)
+"Vk" = (
+/obj/structure/ms13/trash/cardboard,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Vl" = (
 /obj/structure/ms13/pipes/vertical/east/corner/down,
 /turf/open/floor/ms13/concrete,
@@ -7055,6 +7999,24 @@
 /obj/effect/spawner/random/ms13/gun/lowrandom,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"VO" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/machinery/door/unpowered/ms13/seethrough/grate,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
+"VP" = (
+/obj/structure/table/ms13/no_smooth/counter/metal{
+	dir = 4
+	},
+/obj/machinery/ms13/terminal/wasteland{
+	dir = 4
+	},
+/obj/machinery/light/ms13{
+	dir = 8
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "VU" = (
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
@@ -7115,6 +8077,12 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"Wu" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "Wv" = (
 /obj/structure/ms13/cave_decor/stalagmite,
 /obj/structure/ms13/cave_decor/boards/drought/westeast,
@@ -7127,6 +8095,17 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Wy" = (
+/obj/structure/closet/crate/ms13/vault_tec/pristine,
+/obj/structure/railing/ms13/solo{
+	dir = 8
+	},
+/obj/effect/spawner/random/ms13/guaranteed/melee/tier3,
+/obj/effect/spawner/random/ms13/guaranteed/melee/tier3,
+/obj/effect/spawner/random/ms13/guaranteed/melee/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/melee/tier2,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "WA" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 8
@@ -7178,6 +8157,13 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"WL" = (
+/obj/machinery/light/ms13,
+/obj/structure/closet/crate/ms13/woodcrate,
+/obj/effect/spawner/random/ms13/guaranteed/drugs/tier3,
+/obj/effect/spawner/random/ms13/guaranteed/drugs/tier2,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "WP" = (
 /obj/structure/closet/crate/ms13/woodcrate/compact,
 /obj/effect/spawner/random/ms13/drink/alcohol,
@@ -7186,6 +8172,14 @@
 /obj/effect/spawner/random/ms13/drink/alcohol_uncommon,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"WR" = (
+/obj/structure/ms13/cave_decor/support/wall,
+/turf/closed/wall/ms13/wood,
+/area/ms13/underground/mountain)
+"WW" = (
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "WX" = (
 /obj/machinery/ms13/plant_machinery/broken,
 /turf/open/floor/ms13/metal/grate,
@@ -7198,12 +8192,32 @@
 /mob/living/simple_animal/hostile/ms13/robot/protectron/reinforced,
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/town)
+"Xa" = (
+/obj/structure/ms13/trash/books/pile,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
+"Xc" = (
+/obj/machinery/light/ms13{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Xf" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored{
 	dir = 1
 	},
 /turf/open/floor/ms13/tile/long/blue,
 /area/ms13/town)
+"Xg" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/machinery/power/apc/ms13/always_on{
+	dir = 4;
+	pixel_y = 0;
+	pixel_x = 22
+	},
+/obj/structure/table/ms13/metal/grate,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "Xi" = (
 /obj/structure/ms13/rug/rubber,
 /mob/living/basic/ms13/hostile_animal/molerat,
@@ -7281,6 +8295,10 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"XE" = (
+/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "XF" = (
 /obj/structure/ms13/storage/shelf,
 /turf/open/floor/ms13/tile/long,
@@ -7391,7 +8409,6 @@
 "Yr" = (
 /obj/structure/table/ms13/wood/constructed/cobbled,
 /obj/item/ms13/fluff/ruined_book,
-/obj/item/pen/ms13/pencil,
 /obj/item/candle/ms13{
 	pixel_x = 8;
 	pixel_y = 8
@@ -7413,6 +8430,11 @@
 /obj/structure/ms13/bonepile,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Yw" = (
+/obj/machinery/light/ms13,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker)
 "Yy" = (
 /obj/structure/table/ms13/metal/small,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -7448,6 +8470,14 @@
 /mob/living/basic/ms13/robot/handy,
 /turf/open/floor/ms13/tile/long/blue,
 /area/ms13/town)
+"YK" = (
+/obj/structure/ms13_rail,
+/turf/open/floor/ms13/concrete/industrial/walkway{
+	dir = 1
+	},
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "YL" = (
 /obj/structure/ms13/turfdecor/drought,
 /obj/effect/spawner/random/ms13/tools/farming,
@@ -7457,9 +8487,6 @@
 /obj/structure/table/ms13/no_smooth/counter/metal,
 /obj/item/paper_bin/ms13{
 	pixel_y = 6
-	},
-/obj/item/pen/ms13{
-	pixel_y = 8
 	},
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/town)
@@ -7493,6 +8520,13 @@
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"YW" = (
+/obj/machinery/door/unpowered/ms13/metal/red{
+	dir = 8
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "YZ" = (
 /mob/living/simple_animal/hostile/ms13/robot/protectron,
 /turf/open/floor/ms13/concrete,
@@ -7590,6 +8624,14 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"ZI" = (
+/obj/structure/ms13/lamp/medical_lamp{
+	dir = 1
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/ms13/wall_decor/flag/bos,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "ZJ" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 8
@@ -7624,6 +8666,13 @@
 /obj/effect/spawner/random/ms13/gun/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"ZS" = (
+/obj/machinery/door/unpowered/ms13/metal/red{
+	dir = 4
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker)
 "ZV" = (
 /obj/structure/ms13/cave_decor/support/wall/broken,
 /obj/structure/closet/crate/ms13/woodcrate/compact,
@@ -13401,7 +14450,7 @@ HW
 np
 TJ
 gw
-nq
+MT
 sE
 HW
 uD
@@ -13839,7 +14888,7 @@ vu
 nQ
 nQ
 VU
-VU
+Qn
 vu
 uD
 uD
@@ -16114,7 +17163,7 @@ nq
 iC
 nq
 nq
-nq
+MT
 mY
 HW
 uD
@@ -16152,7 +17201,7 @@ uD
 ma
 ma
 vL
-nZ
+GC
 ma
 ma
 uD
@@ -22190,7 +23239,7 @@ lh
 lh
 lh
 LC
-GN
+hP
 GN
 ET
 lh
@@ -25037,7 +26086,7 @@ GY
 cq
 uz
 uz
-uz
+cq
 uz
 uD
 uD
@@ -25236,10 +26285,10 @@ uD
 uD
 jy
 uz
-cq
+uD
 uz
 Hq
-uz
+uD
 uD
 uD
 uD
@@ -25431,19 +26480,19 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uz
-uz
-uz
-uz
-uz
-uD
-uD
-uD
+BS
+BS
+BS
+Mq
+Mq
+Mq
+Mq
+Mq
+Mq
+Mq
+Mq
+Mq
+BS
 uD
 uD
 uD
@@ -25633,19 +26682,19 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-Pl
-uz
-uz
-uz
-uD
-uD
-uD
-uD
+ya
+JX
+VP
+vo
+LS
+Rt
+nK
+of
+ei
+Nn
+cJ
+nP
+BS
 uD
 uD
 uD
@@ -25835,19 +26884,19 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uz
-cq
-uz
-uD
-uD
-uD
-uD
-uD
+ya
+UG
+iI
+nM
+nM
+Mx
+sW
+of
+HT
+TV
+ov
+ov
+BS
 uD
 uD
 uD
@@ -26037,19 +27086,19 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uz
-uz
-uD
-uD
-uD
-uD
-uD
-uD
+ya
+qM
+fU
+nM
+eu
+nM
+Ds
+of
+ei
+Nn
+cJ
+nP
+BS
 uD
 uD
 uD
@@ -26239,21 +27288,21 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-JF
-uz
-tB
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+ya
+ZI
+Mw
+nM
+vC
+mk
+cg
+of
+xa
+ov
+ov
+ov
+BS
+BS
+BS
 uD
 uD
 uD
@@ -26441,21 +27490,21 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-uz
-uz
-uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+BS
+bT
+ZS
+ov
+ov
+ov
+ov
+of
+HY
+Ds
+of
+tI
+fB
+LW
+BS
 uD
 uD
 uD
@@ -26644,20 +27693,20 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-GK
-iA
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+ro
+zg
+ov
+tq
+lm
+vR
+KT
+nM
+Ds
+of
+gi
+nM
+LW
+BS
 JF
 uz
 uD
@@ -26846,20 +27895,20 @@ uz
 vx
 uD
 uD
-uD
-uD
-uD
-uz
-uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+in
+zg
+ov
+zA
+nM
+of
+Xg
+Mw
+zg
+of
+nM
+nM
+IK
+BS
 Zy
 Ls
 uz
@@ -27048,20 +28097,20 @@ uz
 uz
 uD
 uD
-uD
-uD
-uD
-uz
+bT
+zg
+ov
+ov
 gb
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+ov
+of
+Xc
+zg
+FO
+Mw
+nM
+Yw
+BS
 uD
 uz
 uz
@@ -27250,20 +28299,20 @@ Hh
 uD
 uD
 uD
-uD
-uD
-uD
-Pl
-uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+bT
+Fg
+Mw
+Mw
+Mw
+Mw
+VO
+gs
+zg
+of
+Kl
+nM
+uK
+BS
 uD
 uD
 uz
@@ -27435,14 +28484,14 @@ uD
 (99,1,1) = {"
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-tj
+zY
+zY
+zY
+zY
+zY
+zY
+zY
+uz
 jC
 uz
 uz
@@ -27452,20 +28501,20 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uz
-WG
-uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+bT
+pg
+Mw
+nM
+nM
+nM
+XE
+nM
+zg
+of
+tQ
+nM
+SG
+BS
 uD
 uD
 uD
@@ -27635,17 +28684,17 @@ uD
 uD
 "}
 (100,1,1) = {"
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+dq
+dq
+zY
+vV
+vV
+CV
+vV
+be
+zY
 Gs
-Gs
+WR
 gG
 Gs
 Gs
@@ -27653,21 +28702,21 @@ uD
 uD
 uD
 uD
-uD
-uD
-uD
-uD
-uz
-uz
-uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+BS
+bT
+of
+YW
+ov
+ov
+ov
+ov
+of
+YW
+of
+ib
+RO
+BS
+BS
 uD
 uD
 uD
@@ -27837,39 +28886,39 @@ uD
 uD
 "}
 (101,1,1) = {"
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+dq
+cF
+ED
+vV
+vV
+YK
+vV
+vV
+zY
 uD
 zE
 uz
 sL
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uz
+BS
+BS
+BS
+BS
+BS
+bT
+Ds
+Kf
+Mw
+nM
+of
 Cx
-uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+vk
+Js
+Mw
+ov
+ov
+BS
+BS
+BS
 uD
 uD
 uD
@@ -28039,37 +29088,37 @@ uD
 uD
 "}
 (102,1,1) = {"
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+dq
+HR
+Wu
+Wu
+Wu
+bW
+Wu
+Wu
+zY
 uD
 Pl
 uz
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-Zy
-uz
-uz
-uD
-uD
-uD
-uD
+BS
+BS
+nf
+nM
+dt
+Ds
+Ds
+Ds
+nM
+OM
+nM
+of
+Nz
+nM
+nM
+Mw
+KX
+Tu
+BS
 uD
 uD
 uD
@@ -28241,37 +29290,37 @@ uD
 uD
 "}
 (103,1,1) = {"
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uz
-uz
-uD
-uD
-uD
-uD
+dq
+dq
+wT
+vV
+vV
+YK
+vV
+Wu
+zY
+BS
+BS
+BS
+BS
+Th
+nM
+nM
+dt
+Ds
+Ds
+Ds
+lz
+nM
+mR
+of
+hv
+nM
+nM
+nM
+KX
+WL
+BS
 uD
 uD
 uD
@@ -28445,35 +29494,35 @@ uD
 (104,1,1) = {"
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-JF
-uD
-uD
-uD
-uD
+zY
+vV
+js
+qO
+vV
+Wu
+zY
+Vk
+nf
+nM
+OK
+nM
+MU
+nM
+BS
+BS
+bT
+is
+IC
+dh
+nF
+of
+AP
+OV
+La
+Wy
+rP
+BS
+BS
 uD
 uD
 uD
@@ -28647,35 +29696,35 @@ uD
 (105,1,1) = {"
 uD
 uD
+zY
+hI
+vV
+YK
+vV
+Wu
+Le
+nM
+nM
+lz
+vr
+nM
+lz
+yT
+BS
 uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+BS
+BS
+BS
+BS
+BS
+BS
+BS
+BS
+BS
+BS
+BS
+BS
+BS
 uD
 uD
 uD
@@ -28849,21 +29898,21 @@ uD
 (106,1,1) = {"
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+zY
+Hr
+vV
+YK
+vV
+Wu
+Le
+HZ
+nM
+nM
+xx
+nM
+nM
+bt
+BS
 uD
 uD
 uD
@@ -29051,21 +30100,21 @@ uD
 (107,1,1) = {"
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
+zY
+vV
+vV
+YK
+vV
+Wu
+zY
+WW
+OK
+nM
+Xa
+WW
+nM
+nM
+BS
 uD
 rb
 rb
@@ -29253,22 +30302,22 @@ uD
 (108,1,1) = {"
 uD
 uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-rb
+zY
+vV
+vV
+YK
+vV
+HC
+zY
+BS
+fj
+fj
+fj
+nM
+QG
+BS
+BS
+LA
 rb
 rb
 uD
@@ -29454,23 +30503,23 @@ uD
 "}
 (109,1,1) = {"
 uD
-rb
-rb
-rb
-rb
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-uD
-rb
-rb
-rb
-rb
-rb
+zY
+zY
+zY
+rO
+YK
+rO
+zY
+zY
+Cb
+jE
+jE
+jE
+zk
+TS
+el
+LA
+LA
 rb
 rb
 rb
@@ -29656,21 +30705,21 @@ uD
 "}
 (110,1,1) = {"
 xY
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-uD
-uD
-uD
-rb
-rb
-rb
+zY
+yK
+aW
+KL
+YK
+ra
+um
+aW
+Cb
+yw
+yw
+yw
+el
+el
+el
 Ju
 rb
 rb
@@ -29858,6 +30907,15 @@ uD
 "}
 (111,1,1) = {"
 xY
+Cb
+Cb
+Cb
+rO
+YK
+rO
+Cb
+Cb
+Cb
 rb
 rb
 rb
@@ -29866,16 +30924,7 @@ rb
 rb
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+rH
 rb
 rb
 rb
@@ -30061,17 +31110,17 @@ uD
 (112,1,1) = {"
 xY
 rb
+aR
+rb
+GB
+Ol
+zk
+oZ
+aR
 rb
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+gY
 rb
 rb
 rb
@@ -30263,6 +31312,17 @@ uD
 (113,1,1) = {"
 xY
 rb
+GG
+So
+zk
+Ol
+zk
+aE
+zq
+rb
+rb
+zq
+zq
 rb
 rb
 rb
@@ -30283,18 +31343,7 @@ rb
 rb
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+Fm
 rb
 rb
 rb
@@ -30466,6 +31515,18 @@ uD
 xY
 rb
 rb
+So
+zk
+Ol
+zk
+zk
+zk
+GB
+zk
+zk
+zk
+DG
+DG
 rb
 rb
 rb
@@ -30483,21 +31544,9 @@ rb
 rb
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+zk
+DG
+DG
 rb
 rb
 rb
@@ -30667,39 +31716,39 @@ uD
 (115,1,1) = {"
 xY
 rb
-rb
-rb
 gY
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+So
+Pw
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
+KR
 gx
-rb
-Gy
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+KR
+IE
+KR
+KR
+KR
+TX
+mH
+DG
+DG
+DG
 rb
 rb
 rb
@@ -30870,18 +31919,18 @@ uD
 xY
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+So
+GB
+zk
+GB
+zk
+zk
+zk
+zk
+zk
+zk
+DG
+DG
 rb
 rb
 rb
@@ -30899,9 +31948,9 @@ rb
 rb
 rb
 rb
-rb
-rb
-rb
+zk
+DG
+DG
 rb
 rb
 rb
@@ -31074,14 +32123,14 @@ rb
 rb
 rb
 rb
+bm
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+bm
+bm
+bm
+bm
+bm
+bm
 gY
 rb
 rb
@@ -31282,21 +32331,21 @@ rb
 rb
 rb
 rb
+rH
 rb
 rb
 rb
 rb
 rb
+sa
+ct
+ct
+ct
+ct
+gB
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+rH
 rb
 rb
 rb
@@ -31480,17 +32529,17 @@ rb
 rb
 rb
 rb
+Gy
+ct
+ct
+ct
 rb
 rb
 rb
 rb
-rb
-rb
-rb
-rb
-rb
-rb
-rb
+ct
+ct
+JT
 rb
 rb
 rb
@@ -31683,12 +32732,12 @@ rb
 rb
 rb
 rb
+gY
 rb
 rb
 rb
 rb
-rb
-rb
+Ju
 rb
 rb
 rb
@@ -32321,7 +33370,7 @@ uD
 uD
 uD
 uz
-uz
+Np
 uz
 uD
 uD
@@ -32929,7 +33978,7 @@ uD
 uD
 uD
 uz
-uz
+Np
 uz
 uz
 uz
@@ -33867,7 +34916,7 @@ VJ
 kY
 oU
 qf
-Bj
+Us
 pJ
 mQ
 WD
@@ -34271,7 +35320,7 @@ cn
 DF
 DF
 qf
-bx
+uB
 Ej
 PD
 Ae
@@ -37184,7 +38233,7 @@ Vg
 aF
 Cn
 Cn
-Vg
+FC
 vu
 uD
 uD
@@ -38122,7 +39171,7 @@ GN
 Zf
 oc
 sp
-Wd
+ir
 GN
 jU
 vu
@@ -41244,7 +42293,7 @@ uD
 uD
 uD
 vu
-MW
+ru
 MW
 Fe
 GN
@@ -43886,7 +44935,7 @@ VU
 Pm
 SN
 VU
-VU
+Qn
 vu
 uD
 uD
@@ -52014,7 +53063,7 @@ nq
 Se
 ql
 HW
-kS
+yf
 nq
 nq
 sd
