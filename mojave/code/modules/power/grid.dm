@@ -39,6 +39,7 @@
 	var/live = avail > 0
 	if(live != ms13_was_live)
 		ms13_was_live = live
+		ms13_rewire()
 		for(var/obj/machinery/power/ms13_rail_feeder/feeder in nodes)
 			SEND_SIGNAL(feeder, COMSIG_MS13_LINE_POWER_CHANGED, live)
 
