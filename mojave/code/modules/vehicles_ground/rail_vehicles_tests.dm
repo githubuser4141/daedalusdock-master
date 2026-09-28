@@ -409,6 +409,11 @@
 	door.toggle()
 	if(!run_to_stand(drive, shut))
 		Fail("The blast door did not slide shut again.")
+	var/obj/structure/ms13_rail_call_button/door_caller = allocate(/obj/structure/ms13_rail_call_button, locate(35, 31, z))
+	door_caller.id_tag = door.id
+	door_caller.attack_hand(bystander)
+	if(!run_to_stand(drive, locate(31, door_middle + door_length, z)))
+		Fail("A rail call button given the blast door's id didn't slide it open.")
 	clear_vehicle(drive)
 
 	// Frames blown off a running car, its pivot and the one on the rail among them, aren't held by the wreck left.

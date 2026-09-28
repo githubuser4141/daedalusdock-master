@@ -1125,7 +1125,7 @@
 /obj/structure/ms13_rail_call_button{
 	pixel_y = -5;
 	pixel_x = 25;
-	id_tag = s
+	id_tag = "bos_blast_door"
 	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain)
@@ -2188,10 +2188,14 @@
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
 "mh" = (
-/obj/structure/ms13_rail/station,
+/obj/structure/ms13_rail/blast_door,
 /obj/structure/ms13_rail,
-/turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/underground/mountain_bunker)
+/turf/open/floor/ms13/concrete/industrial/walkway{
+	dir = 1
+	},
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "mi" = (
 /obj/machinery/button/ms13,
 /obj/machinery/light/ms13{
@@ -4548,7 +4552,8 @@
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
 "zp" = (
-/turf/open/floor/plating/ms13/ground/desert,
+/obj/structure/ms13_rail/blast_door,
+/turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker)
 "zr" = (
 /obj/machinery/door/unpowered/ms13/metal/red{
@@ -4750,9 +4755,9 @@
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
 "Az" = (
-/obj/structure/ms13_rail,
-/obj/structure/ms13_rail/station,
-/turf/open/floor/plating/ms13/ground/desert,
+/obj/structure/ms13_rail/blast_door,
+/obj/structure/ms13_rail/blast_door/stop,
+/turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
 	name = "Brotherhood Tram"
 	})
@@ -5463,7 +5468,7 @@
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
 "EO" = (
-/obj/structure/ms13_rail,
+/obj/structure/ms13_rail/blast_door,
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
 	name = "Brotherhood Tram"
@@ -7251,12 +7256,6 @@
 /obj/effect/spawner/random/ms13/medical/lowrandom,
 /turf/open/floor/ms13/tile/long,
 /area/ms13/town)
-"OZ" = (
-/obj/structure/ms13_rail,
-/turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/underground/mountain_bunker{
-	name = "Brotherhood Tram"
-	})
 "Pa" = (
 /obj/machinery/door/poddoor/shutters/ms13/vertical/red/mid{
 	id = "car_junk_storage1"
@@ -9113,11 +9112,13 @@
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
 "ZZ" = (
-/obj/structure/ms13_rail,
 /obj/structure/ms13_vehicle_frame/tram/blast_door{
-	id_tag = "bos_blast_door"
+	id_tag = "bos_blast_door";
+	id = "bos_blast_door"
 	},
-/turf/open/floor/plating/ms13/ground/desert,
+/obj/structure/ms13_rail/blast_door,
+/obj/structure/ms13_rail/station,
+/turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
 	name = "Brotherhood Tram"
 	})
@@ -31146,11 +31147,11 @@ gU
 gU
 Az
 EO
-eG
+mh
 EO
 ZZ
-OZ
-mh
+EO
+zp
 zp
 zp
 Af

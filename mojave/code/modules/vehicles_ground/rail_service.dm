@@ -202,6 +202,7 @@ GLOBAL_LIST_EMPTY(ms13_rail_cars)
 		playsound(pivot, thrust_sound, 40, TRUE)
 
 /// Calls a car to the stop beside it: the nearest idle car on the line comes, unless one on service calls there anyway.
+/// Given a blast door's id as its id_tag, it works that door instead.
 /obj/structure/ms13_rail_call_button
 	name = "rail call button"
 	desc = "Calls a car to this stop."
@@ -210,13 +211,24 @@ GLOBAL_LIST_EMPTY(ms13_rail_cars)
 	anchored = TRUE
 	density = FALSE
 	/// A stop this close counts as its own.
-	var/reach = 5
+	var/reach = 8
 
 /obj/structure/ms13_rail_call_button/attack_hand(mob/living/user, list/modifiers)
 	. = ..()
 	if(.)
 		return
 	playsound(src, 'sound/machines/click.ogg', 40, TRUE)
+	if(id_tag)
+		var/found_door = FALSE
+		var/door_moving = FALSE
+		for(var/obj/structure/ms13_vehicle_frame/tram/blast_door/door as anything in GLOB.ms13_blast_doors)
+			if(door.id == id_tag)
+				found_door = TRUE
+				if(door.toggle())
+					door_moving = TRUE
+		if(found_door)
+			balloon_alert(user, door_moving ? "door moving" : "door won't move!")
+			return TRUE
 	var/obj/structure/ms13_rail/stop = own_stop()
 	if(!stop)
 		balloon_alert(user, "no stop nearby!")
