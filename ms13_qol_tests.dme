@@ -2,6 +2,7 @@
 #define UNIT_TESTS
 #include "daedalus.dme"
 TEST_FOCUS(/datum/unit_test/ms13_hive_recovery)
+TEST_FOCUS(/datum/unit_test/ms13_hive_obstacles)
 TEST_FOCUS(/datum/unit_test/ms13_necromorph_remains)
 TEST_FOCUS(/datum/unit_test/ms13_hive_combat)
 TEST_FOCUS(/datum/unit_test/ms13_terrain_hiveminds)
@@ -19,6 +20,8 @@ TEST_FOCUS(/datum/unit_test/ms13_rail_vehicles)
 TEST_FOCUS(/datum/unit_test/ms13_named_map_areas)
 TEST_FOCUS(/datum/unit_test/ms13_utility_power)
 TEST_FOCUS(/datum/unit_test/ms13_wildlife)
+TEST_FOCUS(/datum/unit_test/ms13_wildlife_opportunities)
+TEST_FOCUS(/datum/unit_test/ms13_wildlife_species)
 TEST_FOCUS(/datum/unit_test/ms13_wildlife_route)
 TEST_FOCUS(/datum/unit_test/ms13_flora_ecology)
 TEST_FOCUS(/datum/unit_test/ms13_mob_packs)

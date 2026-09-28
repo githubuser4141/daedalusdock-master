@@ -517,7 +517,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return FALSE
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/remains = corpse
 	if(istype(remains) && remains.revivable_hive_corpse)
-		var/revival_cost = get_unit_cost(remains.type)
+		var/revival_cost = get_unit_revival_cost(remains.type)
 		if(length(units) >= max_units || resources < revival_cost || !remains.revive(TRUE))
 			return FALSE
 		resources -= revival_cost
@@ -746,13 +746,13 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	persistent_unit_corpses = TRUE
 	// Absolute values: health, melee bounds, structure damage, movement delay, healing/sec, biomass.
 	strain_stats = list(
-		MS13_HIVE_ROLE_SCOUT = list("health" = 70, "damage_lower" = 14, "damage_upper" = 28, "obj_damage" = 15, "move_delay" = 1, "regeneration" = 2, "cost" = 20),
-		MS13_HIVE_ROLE_SOLDIER = list("health" = 100, "damage_lower" = 20, "damage_upper" = 40, "obj_damage" = 25, "move_delay" = 3, "regeneration" = 2, "cost" = 20),
-		MS13_HIVE_ROLE_RANGED = list("health" = 90, "damage_lower" = 14, "damage_upper" = 28, "obj_damage" = 20, "move_delay" = 3, "regeneration" = 2, "cost" = 45),
-		MS13_HIVE_ROLE_HEAVY = list("health" = 250, "damage_lower" = 40, "damage_upper" = 80, "obj_damage" = 90, "move_delay" = 5, "regeneration" = 2, "cost" = 90, "ram_damage" = 135),
-		MS13_HIVE_ROLE_INFECTOR = list("health" = 125, "damage_lower" = 15, "damage_upper" = 30, "obj_damage" = 20, "move_delay" = 3, "regeneration" = 2, "cost" = 60),
-		"hauler" = list("health" = 135, "damage_lower" = 14, "damage_upper" = 28, "obj_damage" = 25, "move_delay" = 3, "regeneration" = 2, "cost" = 45),
-		"climber" = list("health" = 85, "damage_lower" = 18, "damage_upper" = 30, "obj_damage" = 20, "move_delay" = 1, "regeneration" = 2, "cost" = 40),
+		MS13_HIVE_ROLE_SCOUT = list("health" = 35, "damage_lower" = 14, "damage_upper" = 28, "obj_damage" = 15, "move_delay" = 1, "regeneration" = 2, "cost" = 20),
+		MS13_HIVE_ROLE_SOLDIER = list("health" = 135, "damage_lower" = 30, "damage_upper" = 45, "obj_damage" = 30, "move_delay" = 3, "regeneration" = 2, "cost" = 20),
+		MS13_HIVE_ROLE_RANGED = list("health" = 115, "damage_lower" = 20, "damage_upper" = 30, "obj_damage" = 20, "move_delay" = 3, "regeneration" = 2, "cost" = 45),
+		MS13_HIVE_ROLE_HEAVY = list("health" = 280, "damage_lower" = 50, "damage_upper" = 80, "obj_damage" = 90, "move_delay" = 5, "regeneration" = 2, "cost" = 90, "ram_damage" = 150),
+		MS13_HIVE_ROLE_INFECTOR = list("health" = 100, "damage_lower" = 15, "damage_upper" = 30, "obj_damage" = 20, "move_delay" = 3, "regeneration" = 2, "cost" = 60),
+		"hauler" = list("health" = 135, "damage_lower" = 20, "damage_upper" = 30, "obj_damage" = 25, "move_delay" = 3, "regeneration" = 2, "cost" = 45),
+		"climber" = list("health" = 85, "damage_lower" = 20, "damage_upper" = 30, "obj_damage" = 20, "move_delay" = 1, "regeneration" = 2, "cost" = 40),
 		"ambusher" = list("health" = 140, "damage_lower" = 25, "damage_upper" = 45, "obj_damage" = 30, "move_delay" = 2, "regeneration" = 2, "cost" = 55),
 		"siege" = list("health" = 400, "damage_lower" = 45, "damage_upper" = 90, "obj_damage" = 130, "move_delay" = 6, "regeneration" = 2, "cost" = 150, "ram_damage" = 220),
 		"regenerator" = list("health" = 275, "damage_lower" = 35, "damage_upper" = 70, "obj_damage" = 90, "move_delay" = 4, "regeneration" = 8, "cost" = 120, "ram_damage" = 120),
@@ -1430,6 +1430,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	SSmove_manager.stop_looping(src)
 	STOP_PROCESSING(SSobj, src)
 	. = ..()
+	if(!QDELETED(src) && !gibbed && hive_splats_on_death)
+		playsound(src, 'sound/effects/splat.ogg', 35, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		gib()
+		return
 	if(!QDELETED(src) && revivable_hive_corpse)
 		if(network)
 			network.units -= src
@@ -1500,7 +1504,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(handle_corpse_work())
 		roam_target = null
 		return TRUE
-	if(handle_roaming())
+	var/roaming = handle_roaming()
+	if(roam_target || handle_hive_idle_destruction() || roaming)
 		return TRUE
 	return ..()
 

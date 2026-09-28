@@ -79,7 +79,11 @@
 // A conduit is the existing wired, cell-less utility box with an explicit mapper-facing purpose.
 /obj/machinery/power/apc/ms13/conduit
 	name = "remote power conduit"
-	desc = "A wired area power conduit. Click to flip its breaker, or operate it remotely with a switch or terminal sharing its circuit ID."
+	desc = "An industrial area power switch rated for plant voltage. Click to flip its breaker, or operate it remotely with a switch or terminal sharing its circuit ID."
+
+// This is industrial switchgear, not the household fusebox that burns out on plant voltage.
+/obj/machinery/power/apc/ms13/conduit/suffer_grid(datum/powernet/line)
+	return FALSE
 
 /obj/machinery/power/apc/ms13/conduit/interact(mob/user)
 	if(!can_interact(user) || !can_use(user) || (machine_stat & MAINT) || failure_timer)

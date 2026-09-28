@@ -59,6 +59,8 @@
 		for(var/obj/structure/stairs/stairs in gate)
 			if(stairs.dir == direction && stairs.isTerminator())
 				return get_step(GetAbove(gate), direction)
+	// The upper entrance is normally an open hole, with rails only on the stairs below.
+	if(ms13_rail_at(gate) || isopenspaceturf(gate))
 		var/turf/below = GetBelow(gate)
 		if(ms13_rail_at(below))
 			for(var/obj/structure/stairs/stairs in below)
@@ -94,6 +96,7 @@
 	return ..()
 
 /datum/ms13_ground_vehicle/rail
+	running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_rail
 	battery_cell = /obj/item/stock_parts/cell/ms13_vehicle/storage
 	alternator_type = /obj/structure/ms13_vehicle_part/alternator/truck
 	speed_multiplier = 8
@@ -222,7 +225,10 @@
 
 /datum/ms13_ground_vehicle/rail/do_move(direction, bypass_cooldown = FALSE)
 	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
-	if(!bogie || !rail_at(get_step(bogie, direction)))
+	if(!bogie)
+		return FALSE
+	var/turf/gate = get_step(bogie, direction)
+	if(!rail_at(gate) && !rail_at(ms13_rail_link(gate, direction, FALSE)))
 		return FALSE
 	. = climb_incline(direction, bypass_cooldown)
 	if(isnull(.))
@@ -236,8 +242,8 @@
 			stop_motion()
 
 /// How far the hull reaches ahead of bogie, the way the car is going.
-/datum/ms13_ground_vehicle/rail/proc/lead_reach(obj/structure/ms13_vehicle_frame/bogie)
-	var/sign = travel_dir == turn(dir, 180) ? -1 : 1
+/datum/ms13_ground_vehicle/rail/proc/lead_reach(obj/structure/ms13_vehicle_frame/bogie, direction = travel_dir)
+	var/sign = direction == turn(dir, 180) ? -1 : 1
 	. = 0
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
 		. = max(., sign * (frame.forward_offset - bogie.forward_offset))
@@ -329,13 +335,16 @@
 		var/turf/current = queue[index]
 		for(var/direction in GLOB.cardinals)
 			var/turf/neighbor = get_step(current, direction)
-			if(!neighbor || parents[neighbor] || !(any_rail ? ms13_rail_at(neighbor) : rail_at(neighbor)))
+			if(!neighbor || parents[neighbor])
+				continue
+			var/turf/far_end = ms13_rail_link(neighbor, direction)
+			var/connected_end = far_end && (any_rail ? ms13_rail_at(far_end) : rail_at(far_end))
+			if(!(any_rail ? ms13_rail_at(neighbor) : rail_at(neighbor)) && !connected_end)
 				continue
 			parents[neighbor] = current
 			queue += neighbor
 			// Onto an incline or a region's crossing line: the line carries on at the far end.
-			var/turf/far_end = ms13_rail_link(neighbor, direction)
-			if(far_end && !parents[far_end] && (any_rail ? ms13_rail_at(far_end) : rail_at(far_end)))
+			if(connected_end && !parents[far_end])
 				parents[far_end] = neighbor
 				queue += far_end
 	return parents

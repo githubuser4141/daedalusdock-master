@@ -326,6 +326,8 @@
 	net.add_machine(feeder)
 	var/obj/structure/ms13_vehicle_frame/tram/electric/car = allocate(/obj/structure/ms13_vehicle_frame/tram/electric, locate(20, 38, z))
 	var/datum/ms13_ground_vehicle/rail/electric/line = car.vehicle
+	if(line.running_gear_soundloop_type != /datum/looping_sound/ms13/vehicle_rail)
+		Fail("An electric car did not select its rail movement loop.")
 	if(length(line.engines) || length(line.batteries) || length(line.fuel_tanks) || !istype(line.gearbox, /obj/structure/ms13_vehicle_part/gearbox/traction) || line.gear_count() != 1)
 		Fail("An electric car came with an engine, battery or tank, or more than one speed.")
 	if(!(feeder in line.feeders))
@@ -395,6 +397,10 @@
 	for(var/obj/structure/ms13_vehicle_frame/slab as anything in drive.frames)
 		if(!slab.density)
 			Fail("A blast door frame can be walked through.")
+		if(slab.icon != 'icons/obj/doors/blastdoor.dmi' || slab.icon_state != "closed" || slab.roof.icon_state != "closed")
+			Fail("A blast door slab retained vehicle floor or roof art.")
+	if(drive.running_gear_soundloop_type != /datum/looping_sound/ms13/vehicle_blast_door)
+		Fail("Trains and blast doors did not select their distinct movement loops.")
 	var/list/door_stops = drive.find_stops(drive.find_rail_routes())
 	if(length(door_stops) != 2 || (locate(/obj/structure/ms13_rail/station) in door_stops))
 		Fail("A blast door didn't find just the two stops on its own track.")
@@ -415,6 +421,33 @@
 	door_caller.attack_hand(bystander)
 	if(!run_to_stand(drive, locate(31, door_middle + door_length, z)))
 		Fail("A rail call button given the blast door's id didn't slide it open.")
+	clear_vehicle(drive)
+
+	// No station markers: a five-tile door must park wholly inside its nine-tile wall pocket.
+	for(var/y in 20 to 28)
+		allocate(/obj/structure/ms13_rail/blast_door, locate(40, y, z))
+	var/turf/pocket_wall = locate(40, 19, z)
+	pocket_wall.ChangeTurf(/turf/closed/indestructible)
+	pocket_wall = locate(40, 29, z)
+	pocket_wall.ChangeTurf(/turf/closed/indestructible)
+	door_feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(40, 24, z))
+	net.add_machine(door_feeder)
+	net.avail = 1000000
+	door = allocate(/obj/structure/ms13_vehicle_frame/tram/blast_door, locate(40, 20, z))
+	door.id = "ms13_test_door_pocket"
+	drive = door.vehicle
+	var/obj/machinery/button/ms13/wall_button = allocate(/obj/machinery/button/ms13, locate(42, 20, z))
+	wall_button.id = door.id
+	wall_button.setup_device()
+	// This isolated z-level has line power but no area APC for the wall button.
+	wall_button.use_power = NO_POWER_USE
+	wall_button.set_machine_stat(NONE)
+	for(var/destination_y in list(26, 22))
+		wall_button.device.next_activate = 0
+		var/obj/item/assembly/control/control = wall_button.device
+		control.cooldown = FALSE
+		if(!wall_button.try_activate_button(bystander) || !run_to_stand(drive, locate(40, destination_y, z)))
+			Fail("An ID-linked wall button could not park the whole blast door inside its track ends.")
 	clear_vehicle(drive)
 
 	// Frames blown off a running car, its pivot and the one on the rail among them, aren't held by the wreck left.
@@ -567,11 +600,14 @@
 		Fail("The route board did not draw the lower line a level down, in place, joined at the incline.")
 	if(!run_line(line, low_stop) || car.z != lower || cargo.z != lower || rider.z != lower)
 		Fail("The car did not run back down the incline to the lower stop.")
-	// Drought uses normal stairs under rails rather than dedicated paired rail inclines.
+	// Drought has rails on the lower stairs, but only open space at their upper entrance.
 	for(var/level in list(lower, upper))
 		var/turf/gate = locate(20, 31, level)
 		qdel(locate(/obj/structure/ms13_rail/ramp) in gate)
-		allocate(/obj/structure/ms13_rail, gate)
+		if(level == lower)
+			allocate(/obj/structure/ms13_rail, gate)
+		else
+			gate.ChangeTurf(/turf/open/openspace)
 	var/obj/structure/stairs/stairs = allocate(/obj/structure/stairs/north, locate(20, 31, lower))
 	if(!run_line(line, high_stop) || cargo.z != upper || rider.z != upper)
 		Fail("Rails laid on ordinary stairs did not carry the whole train to the upper stop.")
@@ -582,6 +618,15 @@
 			below = listed
 	if(!below || below["level"] != -1 || length(board["links"]) != 1)
 		Fail("The route board did not show the stair-linked lower stop on its own floor.")
+	if(!(get_turf(low_stop) in line.find_rail_routes(TRUE)))
+		Fail("Line power did not connect through the open stair entrance.")
+	var/turf/open_gate = locate(20, 31, upper)
+	if(ms13_rail_link(open_gate, NORTH, FALSE) || ms13_rail_link(open_gate, EAST, FALSE))
+		Fail("The open stair entrance accepted a descent from the wrong direction.")
+	open_gate = open_gate.ChangeTurf(/turf/open/floor/plating)
+	if(get_turf(low_stop) in line.find_rail_routes())
+		Fail("A covered stair entrance still connected the lower line.")
+	open_gate.ChangeTurf(/turf/open/openspace)
 	if(!run_line(line, low_stop) || cargo.z != lower || rider.z != lower)
 		Fail("Rails laid on ordinary stairs did not carry the whole train back down.")
 	qdel(stairs)

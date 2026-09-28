@@ -1,5 +1,44 @@
 // Shared movement/conversion regressions plus the hive themes and separate Marker content.
 
+/datum/unit_test/ms13_hive_obstacles
+	name = "MOJAVE SUN: Hive Directional Barricades And Last Resort Destruction"
+
+/datum/unit_test/ms13_hive_obstacles/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/unit = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier, origin, network)
+	unit.toggle_ai(AI_OFF)
+	for(var/direction in GLOB.cardinals)
+		for(var/on_own_tile in list(FALSE, TRUE))
+			var/obj/structure/ms13/barricade/barricade = allocate(/obj/structure/ms13/barricade, on_own_tile ? origin : get_step(origin, direction))
+			barricade.setDir(on_own_tile ? direction : REVERSE_DIR(direction))
+			TEST_ASSERT(!unit.Move(get_step(origin, direction), direction), "A directional barricade did not block the test approach.")
+			var/before = barricade.get_integrity()
+			TEST_ASSERT(unit.DestroyObjectsInDirection(direction) && barricade.get_integrity() < before, "A slasher failed to damage a barricade on its entry or exit edge.")
+			qdel(barricade)
+	var/obj/structure/closet/crate/obstacle = allocate(/obj/structure/closet/crate, get_step(origin, NORTH))
+	obstacle.modify_max_integrity(10000)
+	obstacle.update_integrity(10000)
+	obstacle.density = FALSE
+	TEST_ASSERT(!unit.hive_attack_obstacle(obstacle), "Routine path clearing selected nonblocking, expensive clutter.")
+	var/before = obstacle.get_integrity()
+	TEST_ASSERT(unit.handle_hive_idle_destruction() && obstacle.get_integrity() < before, "An otherwise idle slasher cannot damage a tough nonblocking object.")
+	TEST_ASSERT(!unit.target && !unit.handle_hive_idle_destruction(), "Last-resort destruction seized combat priority or bypassed its attack cooldown.")
+	COOLDOWN_RESET(unit, hive_breach_cooldown)
+	unit.roam_target = get_step(origin, EAST)
+	TEST_ASSERT(!unit.handle_hive_idle_destruction(), "Destruction interrupts a patrol.")
+	unit.roam_target = null
+	unit.target = obstacle
+	TEST_ASSERT(!unit.handle_hive_idle_destruction(), "Destruction interrupts an existing combat target.")
+	unit.target = null
+	obstacle.damage_deflection = 10000
+	TEST_ASSERT(!unit.handle_hive_idle_destruction(), "Idle destruction attacks an object it cannot damage.")
+	obstacle.damage_deflection = 0
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/small = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout, origin, network)
+	TEST_ASSERT(!small.handle_hive_idle_destruction(), "A small swarmer inherited large-unit idle destruction.")
+
 /datum/unit_test/ms13_hive_recovery
 	name = "MOJAVE SUN: Hive Failed Jobs Release And Retry"
 
@@ -159,8 +198,15 @@
 	network.resources = 500
 	network.mob_health = 1
 	network.mob_damage_upper = 1
+	var/turf/swarmer_site = get_step(origin, WEST)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/swarmer = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout, swarmer_site, network)
+	TEST_ASSERT(!swarmer.hive_challenge_sound && !swarmer.deathsound && swarmer.hive_splats_on_death, "A swarmer uses a large necromorph's roar or death sound.")
+	swarmer.hive_network_lost()
+	swarmer.death()
+	TEST_ASSERT(QDELETED(swarmer) && (locate(/obj/effect/decal/cleanable/blood/gibs) in swarmer_site), "A swarmer did not splat into gibs after losing its Marker.")
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/brute = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy, origin, network)
-	TEST_ASSERT(brute.maxHealth == 250 && brute.melee_damage_upper == 80 && brute.obj_damage == 90, "Absolute strain stats still depend on the network's base multipliers.")
+	var/list/brute_stats = network.get_strain_stats(brute.type)
+	TEST_ASSERT(brute.maxHealth == brute_stats["health"] && brute.melee_damage_upper == brute_stats["damage_upper"] && brute.obj_damage == brute_stats["obj_damage"], "Absolute strain stats still depend on the network's base multipliers.")
 	brute.on_stamina_update()
 	TEST_ASSERT_EQUAL(brute.move_to_delay, 5, "Stamina updates discard the configured strain movement delay.")
 	TEST_ASSERT(network.get_unit_cost(brute.type) > network.get_unit_cost(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier), "Special units cost the same as a basic strain.")
@@ -176,7 +222,8 @@
 	sleep(0.3 SECONDS)
 	TEST_ASSERT(brute.stat == CONSCIOUS && brute.health == brute.maxHealth && (brute in network.units), "Reanimation does not restore an active, healthy unit.")
 	TEST_ASSERT(brute.lying_angle == 0 && brute.transform.a == standing.a && brute.transform.b == standing.b && brute.transform.d == standing.d && brute.transform.e == standing.e, "Reanimation does not restore the upright sprite transform.")
-	TEST_ASSERT_EQUAL(network.resources, resources_before - network.get_unit_cost(brute.type), "Reanimation bypasses the strain resource cost.")
+	TEST_ASSERT_EQUAL(network.resources, resources_before - network.get_unit_revival_cost(brute.type), "Reanimation bypasses the reduced strain revival cost.")
+	TEST_ASSERT(network.get_unit_revival_cost(brute.type) < network.get_unit_cost(brute.type), "Repairing an intact body costs as much as a new conversion.")
 	brute.death()
 	brute.apply_damage(brute.hive_corpse_damage_limit, BRUTE)
 	TEST_ASSERT(QDELETED(brute), "Damaging necromorph remains cannot permanently destroy them.")
@@ -800,6 +847,15 @@
 	marker_grid.avail = 0
 	projector.process(1)
 	TEST_ASSERT_EQUAL(emp_probe.pulses, 1, "An EMP can be retriggered without another full arming period.")
+	marker_grid.avail = 100000
+	marker_grid.load = 0
+	projector.process(1)
+	marker.containment_started_at = world.time - marker.containment_emp_arm_time
+	var/mob/living/carbon/human/consistent/shield_operator = new(get_turf(projector))
+	projector.attack_hand(shield_operator)
+	TEST_ASSERT(!projector.enabled && !marker.is_suppressed(), "Clicking the projector did not release containment.")
+	TEST_ASSERT_EQUAL(emp_probe.pulses, 2, "Switching off fully charged containment did not release exactly one EMP.")
+	qdel(shield_operator)
 	qdel(emp_probe)
 	// Every kind of haunting runs clean, even on someone with no client to show it to.
 	var/mob/living/carbon/human/consistent/haunted = new(get_step(origin, NORTH))

@@ -16,10 +16,22 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 	falloff_distance = 2
 
 /datum/looping_sound/ms13/vehicle_wheels
-	mid_sounds = list('sound/vehicles/skateboard_roll.ogg' = 1)
-	mid_length = 1 SECONDS
+	mid_sounds = list('mojave/sound/ms13machines/vehicle_road_loop.ogg' = 1)
+	mid_length = 2 SECONDS
 	volume = 18
-	vary = TRUE
+	falloff_distance = 1
+
+/datum/looping_sound/ms13/vehicle_rail
+	mid_sounds = list('mojave/sound/ms13machines/vehicle_rail_loop.ogg' = 1)
+	mid_length = 2 SECONDS
+	volume = 28
+	extra_range = 2
+	falloff_distance = 2
+
+/datum/looping_sound/ms13/vehicle_blast_door
+	mid_sounds = list('mojave/sound/ms13machines/vehicle_blast_door_loop.ogg' = 1)
+	mid_length = 2 SECONDS
+	volume = 30
 	falloff_distance = 1
 
 /datum/looping_sound/ms13/vehicle_tracks

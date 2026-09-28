@@ -2,6 +2,7 @@
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	var/datum/action/cooldown/mob_cooldown/charge/ms13_hive/hive_charge
 	var/hive_challenge_sound
+	var/hive_splats_on_death = FALSE
 	COOLDOWN_DECLARE(hive_challenge_cooldown)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/configure_hive_combat()
@@ -15,6 +16,7 @@
 			hive_challenge_sound = 'mojave/sound/by_nc/tgmc_xenomorphs/roar1.ogg'
 	else if(istype(network, /datum/ms13_terrain_hivemind/necromorph))
 		var/static/list/role_audio = list(
+			MS13_HIVE_ROLE_SCOUT = list('sound/effects/blobattack.ogg', null, null),
 			MS13_HIVE_ROLE_SOLDIER = list('mojave/sound/wip/necromorphs/slasher_attack_1.ogg', 'mojave/sound/wip/necromorphs/slasher_death_1.ogg', 'mojave/sound/wip/necromorphs/slasher_shout_1.ogg'),
 			MS13_HIVE_ROLE_RANGED = list('mojave/sound/wip/necromorphs/lurker_attack_1.ogg', 'mojave/sound/wip/necromorphs/lurker_death_1.ogg', 'mojave/sound/wip/necromorphs/lurker_shout_1.ogg'),
 			MS13_HIVE_ROLE_HEAVY = list('mojave/sound/wip/necromorphs/brute_attack_1.ogg', 'mojave/sound/wip/necromorphs/brute_death.ogg', 'mojave/sound/wip/necromorphs/brute_shout_1.ogg'),
@@ -26,6 +28,9 @@
 		attack_sound = audio[1]
 		deathsound = audio[2]
 		hive_challenge_sound = audio[3]
+		if(unit_role == MS13_HIVE_ROLE_SCOUT)
+			hive_splats_on_death = TRUE
+			revivable_hive_corpse = FALSE
 		if(unit_role == MS13_HIVE_ROLE_HEAVY || unit_role == "siege" || unit_role == "regenerator")
 			hive_charge = new
 	if(hive_charge)

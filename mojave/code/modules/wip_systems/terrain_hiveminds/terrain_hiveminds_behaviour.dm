@@ -613,7 +613,8 @@
 	if(destination.density)
 		return hive_breach_obstacle(destination)
 	for(var/obj/obstacle in destination)
-		if(!obstacle.density || obstacle.CanAllowThrough(src, direction) || !obstacle.Adjacent(src) || obstacle.IsObscured())
+		// Entry tests use the edge facing the mover, just like turf.Enter().
+		if(!obstacle.density || obstacle.CanPass(src, REVERSE_DIR(direction)) || !Adjacent(obstacle) || obstacle.IsObscured())
 			continue
 		if((ismachinery(obstacle) || isstructure(obstacle)) && hive_breach_obstacle(obstacle))
 			return TRUE

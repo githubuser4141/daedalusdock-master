@@ -157,10 +157,22 @@
 #ifdef UNIT_TESTS
 /datum/unit_test/ms13_marker_lighting
 	name = "MS13 lighting: APC startup, occasional Marker flickers and recovery"
+	var/area/powered_area
+	var/list/saved_channels
+
+/datum/unit_test/ms13_marker_lighting/Destroy()
+	. = ..() // APC deletion powers its area off too; restore after fixture cleanup.
+	if(powered_area && saved_channels)
+		powered_area.power_light = saved_channels[1]
+		powered_area.power_equip = saved_channels[2]
+		powered_area.power_environ = saved_channels[3]
+		powered_area.power_change()
 
 /datum/unit_test/ms13_marker_lighting/Run()
 	var/turf/site = run_loc_floor_bottom_left
 	var/area/test_area = get_area(site)
+	powered_area = test_area
+	saved_channels = list(test_area.power_light, test_area.power_equip, test_area.power_environ)
 	var/obj/machinery/power/apc/ms13/conduit/box = allocate(/obj/machinery/power/apc/ms13/conduit, site)
 	box.area = test_area
 	box.always_powered = TRUE
@@ -182,6 +194,9 @@
 	SSatoms.map_loader_begin(REF(src))
 	var/obj/structure/ms13_hivemind/core/marker/mapped_marker = new(site)
 	mapped_marker.light_flicker_radius = 2
+	mapped_marker.containment_emp_arm_time = 12 SECONDS
+	mapped_marker.containment_emp_heavy_range = 3
+	mapped_marker.containment_emp_light_range = 6
 	SSatoms.map_loader_stop(REF(src))
 	SSatoms.InitializeAtoms(list(mapped_marker))
 	var/obj/structure/ms13_hivemind/core/marker/marker = locate() in site
@@ -191,6 +206,8 @@
 	hive.territory_limit = 0
 	if(marker == mapped_marker || marker.light_flicker_radius != 2 || marker.influence_radius != 30)
 		Fail("A mapped lighting radius was lost during Marker creation or changed its other influence.")
+	if(marker.containment_emp_arm_time != 12 SECONDS || marker.containment_emp_heavy_range != 3 || marker.containment_emp_light_range != 6)
+		Fail("A mapped Marker lost its containment charge time or EMP ranges.")
 	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human/consistent, site)
 	var/obj/item/flashlight/ms13/handheld = allocate(/obj/item/flashlight/ms13, holder)
 	var/original_power = handheld.light_power

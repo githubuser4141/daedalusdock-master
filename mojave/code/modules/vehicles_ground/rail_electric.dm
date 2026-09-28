@@ -199,7 +199,10 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/tram/blast_door)
 /obj/structure/ms13_vehicle_frame/tram/blast_door
 	name = "blast door"
 	desc = "A massive armored slab that slides along a track set into the floor."
-	icon_state = "frame_steel"
+	icon = 'icons/obj/doors/blastdoor.dmi'
+	icon_state = "closed"
+	roof_damaged_icon = null
+	opacity = TRUE
 	density = TRUE
 	max_integrity = 3000
 	vehicle_controller_type = /datum/ms13_ground_vehicle/rail/electric/blast_door
@@ -217,6 +220,9 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 /obj/structure/ms13_vehicle_frame/blast_door_slab
 	name = "blast door"
 	desc = "A massive armored slab that slides along a track set into the floor."
+	icon = 'icons/obj/doors/blastdoor.dmi'
+	icon_state = "closed"
+	roof_damaged_icon = null
 	density = TRUE
 	max_integrity = 3000
 	opacity = 1
@@ -224,8 +230,9 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 /obj/structure/ms13_vehicle_frame/tram/blast_door/build_car()
 	// Mapped with an id_tag, like an airlock, it answers to that.
 	id ||= id_tag
+	roof.icon_state = "closed"
 	for(var/back in 1 to car_length - 1)
-		add_segment(-back, 0, "frame_steel", "roof_steel")
+		add_segment(-back, 0, "closed", "closed")
 	GLOB.ms13_blast_doors += src
 
 /obj/structure/ms13_vehicle_frame/tram/blast_door/Destroy()
@@ -242,7 +249,19 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 	for(var/obj/structure/ms13_rail/stop as anything in drive.find_stops(drive.find_rail_routes()))
 		ends += get_turf(stop)
 	if(length(ends) != 2)
-		ends = drive.line_ends()
+		var/list/track_ends = drive.line_ends()
+		if(length(track_ends) != 2)
+			return FALSE
+		ends = list()
+		// An unmarked track ends at the leading slab, not at the middle of the door.
+		for(var/index in 1 to 2)
+			var/turf/end = track_ends[index]
+			var/direction = get_dir(track_ends[3 - index], end)
+			if(direction != drive.dir && direction != turn(drive.dir, 180))
+				return FALSE
+			ends += get_ranged_target_turf(end, turn(direction, 180), drive.lead_reach(drive.rail_frame(), direction))
+		if(get_dir(ends[1], ends[2]) != get_dir(track_ends[1], track_ends[2]))
+			return FALSE // The track is too short to park the whole door at two distinct positions.
 	if(length(ends) != 2)
 		return FALSE
 	var/turf/here = get_turf(drive.rail_frame())
@@ -266,7 +285,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 	// Shoves whoever is in the way rather than hurting them, and stops against someone it can't shove.
 	ram_damage_base = 2
 	ram_damage_per_speed = 0
-	running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_tracks
+	running_gear_soundloop_type = /datum/looping_sound/ms13/vehicle_blast_door
 	thrust_sound = 'mojave/sound/ms13machines/doorblast_open.ogg'
 
 /datum/ms13_ground_vehicle/rail/electric/blast_door/can_run_over(mob/living/victim)

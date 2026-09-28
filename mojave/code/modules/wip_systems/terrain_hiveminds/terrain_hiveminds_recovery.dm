@@ -8,6 +8,11 @@
 		return stats["cost"]
 	return unit_type == converter_mob_type ? converter_unit_cost : unit_cost
 
+/// Repairing an existing body costs a quarter of making that strain from a new host.
+/datum/ms13_terrain_hivemind/proc/get_unit_revival_cost(unit_type)
+	var/list/stats = get_strain_stats(unit_type)
+	return max(0, isnull(stats?["revive_cost"]) ? CEILING(get_unit_cost(unit_type) / 4, 1) : stats["revive_cost"])
+
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	var/revivable_hive_corpse = FALSE
 	var/hive_reanimate_after = 0
@@ -124,8 +129,11 @@
 	return TRUE
 
 /// Test the same armor/deflection as attack_animal, including native wall-smash exceptions.
-/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_hive_damage_obstacle(atom/obstacle, damage, ramming = FALSE)
-	if(!obstacle || QDELETED(obstacle) || !obstacle.density || istype(obstacle, /turf/closed/indestructible) || (obstacle.resistance_flags & INDESTRUCTIBLE) || hive_goal_blocked(obstacle))
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_hive_damage_obstacle(atom/obstacle, damage, ramming = FALSE, last_resort = FALSE)
+	if(!obstacle || QDELETED(obstacle) || (!last_resort && !obstacle.density) || istype(obstacle, /turf/closed/indestructible) || (obstacle.resistance_flags & INDESTRUCTIBLE) || hive_goal_blocked(obstacle))
+		return FALSE
+	var/obj/item/item = obstacle
+	if(istype(item) && !(item.obj_flags & CAN_BE_HIT))
 		return FALSE
 	var/obj/structure/ms13_hivemind/friendly = obstacle
 	if(istype(friendly) && friendly.network == network)
@@ -146,29 +154,44 @@
 	if(!obstacle.uses_integrity)
 		return FALSE
 	var/effective_damage = obstacle.run_atom_armor(damage, melee_damage_type, BLUNT, get_dir(obstacle, src), armor_penetration)
-	return effective_damage >= DAMAGE_PRECISION && obstacle.get_integrity() <= effective_damage * hive_max_breach_hits
+	return effective_damage >= DAMAGE_PRECISION && (last_resort || obstacle.get_integrity() <= effective_damage * hive_max_breach_hits)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/CanSmashTurfs(turf/obstacle)
 	return ..() && can_hive_damage_obstacle(obstacle)
 
-/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_attack_obstacle(atom/obstacle, ram_damage)
-	if(!can_hive_damage_obstacle(obstacle, ram_damage, !isnull(ram_damage)))
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_attack_obstacle(atom/obstacle, ram_damage, last_resort = FALSE)
+	if(!can_hive_damage_obstacle(obstacle, ram_damage, !isnull(ram_damage), last_resort))
 		return FALSE
 	if(hive_breach_target?.resolve() != obstacle)
 		hive_breach_target = WEAKREF(obstacle)
 		hive_breach_hits = 0
 	hive_breach_hits++
 	var/old_integrity = obstacle.get_integrity()
+	var/was_dense = obstacle.density
 	if(!isnull(ram_damage))
 		obstacle.attack_generic(src, ram_damage, melee_damage_type, BLUNT, TRUE, armor_penetration)
 	else
 		obstacle.attack_animal(src)
-	if(QDELETED(obstacle) || !obstacle.density || obstacle.get_integrity() < old_integrity)
+	if(QDELETED(obstacle) || (was_dense && !obstacle.density) || obstacle.get_integrity() < old_integrity)
 		hive_route_progress_at = world.time
-		if(!QDELETED(obstacle) && obstacle.density && hive_breach_hits >= hive_max_breach_hits)
+		if(!QDELETED(obstacle) && hive_breach_hits >= hive_max_breach_hits)
 			hive_avoid_goal(obstacle)
 			hive_breach_target = null
 		return TRUE
 	// Special defenses can still veto a hit after the armor check.
 	hive_avoid_goal(obstacle)
+	return FALSE
+
+/// No persistent combat target: hunting, hauling, healing and a viable patrol always get the next turn.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_hive_idle_destruction()
+	if(!istype(network, /datum/ms13_terrain_hivemind/necromorph) || (!istype(src, /mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier) && !istype(src, /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy)))
+		return FALSE
+	if(!isturf(loc) || target || roam_target || corpse_target_ref || incapacitated() || !COOLDOWN_FINISHED(src, hive_breach_cooldown))
+		return FALSE
+	for(var/obj/obstacle in range(1, src))
+		if(!isturf(obstacle.loc) || !Adjacent(obstacle) || obstacle.IsObscured())
+			continue
+		if(hive_attack_obstacle(obstacle, last_resort = TRUE))
+			COOLDOWN_START(src, hive_breach_cooldown, 2 SECONDS)
+			return TRUE
 	return FALSE

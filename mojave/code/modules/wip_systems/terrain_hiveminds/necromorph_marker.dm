@@ -96,6 +96,9 @@
 		var/datum/ms13_terrain_hivemind/necromorph/marker/hive = new(get_turf(src), 120)
 		var/obj/structure/ms13_hivemind/core/marker/registered_core = hive.core
 		registered_core.light_flicker_radius = light_flicker_radius
+		registered_core.containment_emp_arm_time = containment_emp_arm_time
+		registered_core.containment_emp_heavy_range = containment_emp_heavy_range
+		registered_core.containment_emp_light_range = containment_emp_light_range
 		return INITIALIZE_HINT_QDEL
 	name = "Marker"
 	power_feed = new(get_turf(src), src)
@@ -114,7 +117,8 @@
 	. += span_notice("A cable node beneath it can draw 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles on this floor.")
 	. += span_notice((is_suppressed() ? "Its signal is suppressed. Power and public radio remain available." : "Its signal is uncontained. An operating Marker suppression projector within four tiles can contain it."))
 	if(suppressed)
-		. += span_warning("Containment feedback: [world.time - containment_started_at >= containment_emp_arm_time ? "charged — containment loss will release a massive EMP" : "building charge"].")
+		var/seconds_remaining = CEILING(max(0, containment_emp_arm_time - (world.time - containment_started_at)) / (1 SECONDS), 1)
+		. += span_warning("Containment feedback: [seconds_remaining ? "charging — [seconds_remaining] seconds of uninterrupted containment remain before an EMP can discharge" : "charged — containment loss will release a massive EMP"].")
 
 /obj/structure/ms13_hivemind/core/marker/proc/is_suppressed()
 	var/contained = FALSE
@@ -136,6 +140,8 @@
 		if(release_emp)
 			visible_message(span_userdanger("[src] discharges a massive electromagnetic pulse as its containment collapses!"))
 			empulse(get_turf(src), containment_emp_heavy_range, containment_emp_light_range, TRUE)
+		else if(!suppressed)
+			visible_message(span_notice("[src]'s containment feedback dissipates before fully charging. No electromagnetic pulse is released."))
 	return suppressed
 
 /// The Marker's hum. Its sound goes in mid_sounds, and mid_length is how long that sound runs (deciseconds), so each
@@ -146,7 +152,7 @@
 	// Never loud, but carrying: a slow fade out to 17 + extra_range tiles, heard through walls with each one halving it
 	// (ms13_wall_muffle()), so it's still there a few rooms off, dimly.
 	volume = 32
-	extra_range = 52 // just enough to reach the BoS base
+	extra_range = 60 // just enough to reach the BoS base
 	falloff_distance = 3
 	falloff_exponent = 2
 
@@ -186,14 +192,29 @@
 			continue
 		if(corpse.z != z && !(corpse.z == z + 1 && HasAbove(z)) && !(corpse.z == z - 1 && HasBelow(z)))
 			continue
-		if(!network.is_convertible_corpse(corpse) || LAZYLEN(corpse.grabbed_by) || network.get_corpse_claim(corpse))
+		if(!network.is_convertible_corpse(corpse))
 			continue
-		if(length(network.units) >= network.max_units || network.resources < network.unit_cost)
+		if(length(network.units) >= network.max_units)
 			break
-		// Do not consume a corpse unless its tile is suitable for the newborn (no vehicles/dense blockers).
-		if(!network.get_unit_spawn_turf(get_turf(corpse)))
+		var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/remains = corpse
+		var/reviving = istype(remains) && remains.revivable_hive_corpse
+		if(!reviving && (LAZYLEN(corpse.grabbed_by) || network.get_corpse_claim(corpse)))
 			continue
-		if(network.advance_corpse_conversion(corpse, src, 1, 1))
+		// Player-held bodies stay put. A hive worker carrying an intact unit need not tend it first.
+		var/held_by_person = FALSE
+		for(var/obj/item/hand_item/grab/grab as anything in corpse.grabbed_by)
+			var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler = grab.assailant
+			if(!istype(hauler) || hauler.network != network)
+				held_by_person = TRUE
+		if(held_by_person)
+			continue
+		// Existing bodies stand up where they fell; only new births need a free spawn tile.
+		if(!reviving && !network.get_unit_spawn_turf(get_turf(corpse)))
+			continue
+		var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/worker = network.get_corpse_claim(corpse)
+		if(network.advance_corpse_conversion(corpse, src, 1, 1, claim = !reviving))
+			if(reviving && istype(worker))
+				worker.clear_corpse_task()
 			if(++remade >= corpses_per_pulse)
 				break
 
@@ -521,4 +542,21 @@
 	allocate(/obj/structure/ms13_hivemind/terrain, site, network)
 	if(!(network.advance_corpse_conversion(corpse, network, 1, 1) && corpse.stat == CONSCIOUS))
 		Fail("Owned hivemind mass does not override both sunlight and observation.")
+	// The actual pulse must revive a reserved body with only the cheaper repair budget.
+	var/obj/structure/ms13_hivemind/core/marker/marker = allocate(/obj/structure/ms13_hivemind/core/marker, get_step(site, SOUTH), network)
+	network.core = marker
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler/worker = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler, get_step(site, NORTH), network)
+	worker.toggle_ai(AI_OFF)
+	corpse.death()
+	corpse.hive_reanimate_after = 0
+	network.claim_corpse(corpse, worker)
+	worker.corpse_target_ref = WEAKREF(corpse)
+	worker.try_make_grab(corpse)
+	// A dense object sharing the body must not be treated as a failed newborn spawn.
+	allocate(/obj/structure/closet/crate, site)
+	network.resources = network.get_unit_revival_cost(corpse.type)
+	COOLDOWN_RESET(marker, influence_cooldown)
+	marker.process(1)
+	if(corpse.stat != CONSCIOUS || network.resources != 0 || worker.corpse_target_ref || length(corpse.grabbed_by) || network.get_corpse_claim(corpse))
+		Fail("The Marker could not automatically revive and release a claimed body on its reduced budget.")
 #endif

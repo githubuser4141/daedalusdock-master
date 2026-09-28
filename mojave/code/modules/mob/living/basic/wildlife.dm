@@ -1,6 +1,8 @@
 // Den ecology is opt-in. Existing placed animals retain their original controller.
 GLOBAL_LIST_EMPTY(ms13_wildlife)
 
+#include "wildlife_species.dm"
+
 /obj/effect/spawner/ms13/wildlife_den
 	parent_type = /obj/effect
 	name = "wildlife den - wolves"
@@ -10,6 +12,8 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	anchored = TRUE
 	/// Use an existing basic animal; its combat stats, sounds and butcher drops are preserved.
 	var/animal_type = /mob/living/basic/ms13/hostile_animal/wolf
+	/// Pick one species per den, once per round; replenishment keeps that species.
+	var/list/animal_pool
 	var/population = 3
 	var/respawn_delay = 20 MINUTES
 	var/patrol_radius = 12
@@ -19,17 +23,16 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	var/recover_health = 0.85
 	var/healing_per_second = 2
 	var/meal_interval = 5 MINUTES
-	/// Relative size, used for predation; never hunt same-species or larger den wildlife.
-	var/animal_size = 3
-	var/eats_meat = TRUE
-	var/eats_plants = FALSE
-	var/noise_flee_chance = 65
-	var/list/prey_types = list(/mob/living/basic/ms13/hostile_animal/molerat, /mob/living/basic/ms13/hostile_animal/gecko, /mob/living/basic/ms13/hostile_animal/pigrat, /mob/living/basic/ms13/hostile_animal/radroach)
 	var/list/members = list()
 	var/next_spawn = 0
 
 /obj/effect/spawner/ms13/wildlife_den/Initialize(mapload)
 	. = ..()
+	if(length(animal_pool))
+		animal_type = pick_weight(animal_pool)
+	if(!ispath(animal_type, /mob/living/basic))
+		stack_trace("Invalid wildlife animal_type [animal_type] at [AREACOORD(src)]")
+		return INITIALIZE_HINT_QDEL
 	population = clamp(round(population), 0, 12)
 	territory_radius = clamp(round(territory_radius), 0, 15)
 	patrol_radius = clamp(round(patrol_radius), max(territory_radius, 1), 30)
@@ -39,9 +42,6 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	retreat_health = clamp(retreat_health, 0, 0.9)
 	recover_health = clamp(recover_health, retreat_health + 0.05, 1)
 	healing_per_second = clamp(healing_per_second, 0, 20)
-	if(!ispath(animal_type, /mob/living/basic/ms13/hostile_animal))
-		stack_trace("Invalid wildlife animal_type [animal_type] at [AREACOORD(src)]")
-		return INITIALIZE_HINT_QDEL
 	return INITIALIZE_HINT_LATELOAD
 
 /obj/effect/spawner/ms13/wildlife_den/LateInitialize()
@@ -107,61 +107,39 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	name = "wildlife den - hellpig"
 	animal_type = /mob/living/basic/ms13/hostile_animal/hellpig
 	population = 1
-	animal_size = 6
-	noise_flee_chance = 0
-	eats_plants = TRUE
-	prey_types = list(/mob/living/basic/ms13/hostile_animal/molerat, /mob/living/basic/ms13/hostile_animal/gecko, /mob/living/basic/ms13/hostile_animal/pigrat, /mob/living/basic/ms13/hostile_animal/wolf)
 
 /obj/effect/spawner/ms13/wildlife_den/yaoguai
 	name = "wildlife den - yao guai"
 	animal_type = /mob/living/basic/ms13/hostile_animal/yaoguai
 	population = 1
-	animal_size = 5
-	noise_flee_chance = 10
-	eats_plants = TRUE
 
 /obj/effect/spawner/ms13/wildlife_den/boar
 	name = "wildlife den - boars"
 	animal_type = /mob/living/basic/ms13/hostile_animal/boar
-	animal_size = 3
-	noise_flee_chance = 40
-	eats_meat = FALSE
-	eats_plants = TRUE
 
 /obj/effect/spawner/ms13/wildlife_den/molerat
 	name = "wildlife den - molerats"
 	animal_type = /mob/living/basic/ms13/hostile_animal/molerat
-	animal_size = 1
 	territory_radius = 2
-	noise_flee_chance = 90
-	eats_meat = FALSE
-	eats_plants = TRUE
 
 /obj/effect/spawner/ms13/wildlife_den/gecko
 	name = "wildlife den - geckos"
 	animal_type = /mob/living/basic/ms13/hostile_animal/gecko
-	animal_size = 2
-	noise_flee_chance = 75
-	prey_types = list(/mob/living/basic/ms13/hostile_animal/radroach, /mob/living/basic/ms13/hostile_animal/mantis)
 
 /obj/effect/spawner/ms13/wildlife_den/radroach
 	name = "wildlife den - radroaches"
 	animal_type = /mob/living/basic/ms13/hostile_animal/radroach
 	population = 4
-	animal_size = 1
 	territory_radius = 1
-	noise_flee_chance = 95
-	eats_meat = FALSE
-	eats_plants = TRUE
 
-// Region folders are inert; place their named predator/prey subtypes.
+// Region folders are inert. Old type paths remain compatible; names describe species, not fixed roles.
 /obj/effect/spawner/ms13/wildlife_den/drought
-	name = "Drought den - choose a predator or prey subtype"
+	name = "Drought den - choose a species"
 	population = 0
 
 /obj/effect/spawner/ms13/wildlife_den/drought/predator/wolves
 	parent_type = /obj/effect/spawner/ms13/wildlife_den
-	name = "Drought predator den - desert wolves"
+	name = "Drought den - desert wolves"
 	desc = "A small pack ranging between the desert's sheltered hollows."
 	population = 2
 	patrol_radius = 14
@@ -169,7 +147,7 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /obj/effect/spawner/ms13/wildlife_den/drought/predator/hellpig
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/hellpig
-	name = "Drought predator den - hellpig"
+	name = "Drought den - hellpig"
 	desc = "A solitary apex omnivore guarding a broad desert territory."
 	territory_radius = 5
 	patrol_radius = 10
@@ -177,7 +155,7 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/gecko
-	name = "Drought predator den - golden geckos"
+	name = "Drought den - golden geckos"
 	desc = "A pair of golden geckos hunting insects around sun-warmed rocks."
 	animal_type = /mob/living/basic/ms13/hostile_animal/gecko/golden
 	population = 2
@@ -186,7 +164,7 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /obj/effect/spawner/ms13/wildlife_den/drought/prey/molerats
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/molerat
-	name = "Drought prey den - molerat burrow"
+	name = "Drought den - molerat burrow"
 	desc = "A colony foraging for roots close to its burrow."
 	population = 4
 	patrol_radius = 8
@@ -194,28 +172,26 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /obj/effect/spawner/ms13/wildlife_den/drought/prey/pigrats
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/molerat
-	name = "Drought prey den - pigrat burrow"
+	name = "Drought den - pigrat burrow"
 	desc = "A small colony browsing tough desert vegetation."
 	animal_type = /mob/living/basic/ms13/hostile_animal/pigrat
-	animal_size = 2
 	patrol_radius = 9
-	noise_flee_chance = 80
 
 /obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/radroach
-	name = "Drought prey den - radroach nest"
+	name = "Drought den - radroach nest"
 	desc = "A compact insect colony feeding on scrub and fungi."
 	population = 5
 	patrol_radius = 6
 	respawn_delay = 12 MINUTES
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth
-	name = "Mammoth den - choose a predator or prey subtype"
+	name = "Mammoth den - choose a species"
 	population = 0
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth/predator/wolves
 	parent_type = /obj/effect/spawner/ms13/wildlife_den
-	name = "Mammoth predator den - timber wolves"
+	name = "Mammoth den - timber wolves"
 	desc = "A wolf pack patrolling snow-covered woodland around its home."
 	territory_radius = 5
 	patrol_radius = 14
@@ -223,33 +199,31 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth/predator/yaoguai
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/yaoguai
-	name = "Mammoth predator den - yao guai"
+	name = "Mammoth den - yao guai"
 	desc = "A solitary bear that hunts boars and smaller wildlife and browses woodland plants."
 	territory_radius = 5
 	patrol_radius = 10
 	respawn_delay = 30 MINUTES
-	prey_types = list(/mob/living/basic/ms13/hostile_animal/boar, /mob/living/basic/ms13/hostile_animal/molerat, /mob/living/basic/ms13/hostile_animal/pigrat, /mob/living/basic/ms13/hostile_animal/gecko)
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth/predator/ice_geckos
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/gecko
-	name = "Mammoth predator den - ice geckos"
+	name = "Mammoth den - ice geckos"
 	desc = "Cold-adapted geckos that supplement small prey with woodland forage."
 	animal_type = /mob/living/basic/ms13/hostile_animal/gecko/ice
 	population = 2
 	territory_radius = 3
 	patrol_radius = 8
-	eats_plants = TRUE
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth/prey/boars
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/boar
-	name = "Mammoth prey den - woodland boars"
+	name = "Mammoth den - woodland boars"
 	desc = "A small herd browsing bushes and low tree foliage."
 	territory_radius = 2
 	patrol_radius = 10
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth/prey/molerats
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/molerat
-	name = "Mammoth prey den - sheltered molerat burrow"
+	name = "Mammoth den - sheltered molerat burrow"
 	desc = "A sheltered colony foraging close to home in the cold."
 	population = 4
 	patrol_radius = 7
@@ -257,7 +231,7 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /obj/effect/spawner/ms13/wildlife_den/mammoth/prey/pigrats
 	parent_type = /obj/effect/spawner/ms13/wildlife_den/drought/prey/pigrats
-	name = "Mammoth prey den - woodland pigrats"
+	name = "Mammoth den - woodland pigrats"
 	desc = "A colony browsing roots and undergrowth beneath the snow."
 	population = 4
 	patrol_radius = 8
@@ -340,6 +314,7 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /datum/ai_controller/basic_controller/ms13_wildlife/proc/start_job(new_job, atom/target)
 	clear_job()
+	var/mob/living/basic/animal = pawn
 	job = new_job
 	job_target = WEAKREF(target)
 	job_deadline = world.time + 45 SECONDS
@@ -348,9 +323,11 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	last_target_health = isliving(target) ? astype(target, /mob/living).health : null
 	if(job == "hunt")
 		set_blackboard_key(BB_BASIC_MOB_CURRENT_TARGET, target)
-		queue_behavior(/datum/ai_behavior/basic_melee_attack/ms13_wildlife, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
+		var/attack_behavior = animal.wildlife_ranged ? /datum/ai_behavior/basic_ranged_attack/ms13_wildlife : /datum/ai_behavior/basic_melee_attack/ms13_wildlife
+		queue_behavior(attack_behavior, BB_BASIC_MOB_CURRENT_TARGET, BB_TARGETING_STRATEGY, BB_BASIC_MOB_CURRENT_TARGET_HIDING_LOCATION)
 	else
-		queue_behavior(/datum/ai_behavior/ms13_wildlife_travel, target)
+		var/travel_behavior = job == "escape" ? /datum/ai_behavior/ms13_wildlife_travel/escape : /datum/ai_behavior/ms13_wildlife_travel
+		queue_behavior(travel_behavior, target)
 
 /datum/ai_controller/basic_controller/ms13_wildlife/proc/ignored(atom/target)
 	return ignored_targets[REF(target)] > world.time
@@ -360,18 +337,55 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 		return
 	aggressor_ref = WEAKREF(attacker)
 	aggressor_until = world.time + 45 SECONDS
+	// A previously unreachable attacker can now reach us. Reconsider it instead of ignoring fresh injuries.
+	ignored_targets -= REF(attacker)
+	frightened_until = 0
 	next_decision = 0
 
+/// Rough risk estimate, not a combat simulation. Injury never makes a large animal look harmless.
+/datum/ai_controller/basic_controller/ms13_wildlife/proc/combat_strength(mob/living/animal, include_allies = FALSE)
+	if(QDELETED(animal) || animal.stat != CONSCIOUS)
+		return 0
+	var/damage = 20
+	var/size = 2
+	var/mob/living/basic/basic = animal
+	var/mob/living/simple_animal/simple = animal
+	if(istype(basic))
+		damage = (basic.melee_damage_lower + basic.melee_damage_upper) / 2
+		size = basic.wildlife_size
+	else if(istype(simple))
+		damage = (simple.melee_damage_lower + simple.melee_damage_upper) / 2
+	var/strength = max(animal.health, animal.maxHealth * 0.5) * max(damage, 5) * max(size / 2, 1)
+	if(!include_allies || !istype(basic))
+		return strength
+	// ponytail: local risk heuristic; allies contribute half strength, with no shared target orders.
+	// Bounded to visible neighbours; use a combat forecast only if these balance estimates prove inadequate.
+	for(var/mob/living/basic/ally in view(3, animal))
+		if(ally == animal || ally.client || ally.stat != CONSCIOUS || (!istype(ally, animal.type) && !istype(animal, ally.type)))
+			continue
+		var/datum/ai_controller/basic_controller/ms13_wildlife/controller = ally.ai_controller
+		if(!istype(controller) || controller.retreating || world.time < controller.frightened_until)
+			continue
+		var/obj/effect/spawner/ms13/wildlife_den/den = controller.den_ref?.resolve()
+		if(!den || ally.health <= ally.maxHealth * den.retreat_health || get_dist(den, animal) > den.leash_radius)
+			continue
+		if(!animal.IsReachableBy(ally) && !length(SSpathfinder.jps_pathfind_now(ally, animal, max_steps = 5, mintargetdist = 1)))
+			continue
+		strength += combat_strength(ally) * 0.5
+	return strength
+
 /datum/ai_controller/basic_controller/ms13_wildlife/proc/is_prey(mob/living/target)
+	var/mob/living/basic/animal = pawn
 	var/obj/effect/spawner/ms13/wildlife_den/den = den_ref?.resolve()
-	if(!den?.eats_meat || QDELETED(target) || target == pawn || ishuman(target) || !(target.mob_biotypes & MOB_ORGANIC) || istype(target, den.animal_type))
+	if(!den || !animal.wildlife_eats_meat || QDELETED(target) || target == pawn || ishuman(target) || !(target.mob_biotypes & MOB_ORGANIC) || !(target.mob_biotypes & MOB_BEAST) || (target.mob_biotypes & MOB_ROBOTIC))
+		return FALSE
+	if(istype(target, animal.type) || istype(animal, target.type))
 		return FALSE
 	var/datum/ai_controller/basic_controller/ms13_wildlife/other = target.ai_controller
-	if(istype(other))
-		var/obj/effect/spawner/ms13/wildlife_den/other_den = other.den_ref?.resolve()
-		if(other_den && (other_den == den || other_den.animal_size >= den.animal_size))
-			return FALSE
-	return is_type_in_list(target, den.prey_types)
+	if(istype(other) && other.den_ref?.resolve() == den)
+		return FALSE
+	// Scavenging an existing carcass does not require winning a fight against its living species.
+	return target.stat == DEAD || combat_strength(animal, TRUE) >= combat_strength(target, TRUE) * animal.wildlife_hunt_ratio
 
 /datum/ai_controller/basic_controller/ms13_wildlife/proc/can_hunt(mob/living/target)
 	var/obj/effect/spawner/ms13/wildlife_den/den = den_ref?.resolve()
@@ -384,7 +398,8 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	if(target == aggressor_ref?.resolve() && world.time < aggressor_until)
 		return TRUE
 	if(ishuman(target))
-		return get_dist(den, target) <= den.territory_radius
+		var/mob/living/basic/animal = pawn
+		return animal.wildlife_hostile_to_people || get_dist(den, target) <= den.territory_radius
 	return world.time >= hungry_at && is_prey(target)
 
 /datum/targeting_strategy/generic/ms13_wildlife/should_attack_mob(mob/living/pawn, datum/ai_controller/basic_controller/ms13_wildlife/controller, mob/living/target)
@@ -428,6 +443,17 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 		retreating = TRUE
 	if(retreating && animal.health >= animal.maxHealth * den.recover_health)
 		retreating = FALSE
+	var/mob/living/attacker = aggressor_ref?.resolve()
+	if(can_hunt(attacker) && (attacker in view(7, animal)))
+		if(retreating || combat_strength(animal, TRUE) < combat_strength(attacker, TRUE))
+			if(job == "escape" && target && get_dist(target, attacker) > get_dist(animal, attacker))
+				return
+			if(choose_patrol(TRUE, get_turf(attacker)))
+				return
+		// Cornered animals defend themselves, including at home and regardless of diet.
+		if(job != "hunt" || target != attacker)
+			start_job("hunt", attacker)
+		return
 	if(!retreating && world.time < frightened_until)
 		if(job != "escape")
 			clear_job()
@@ -450,11 +476,13 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	var/datum/targeting_strategy/strategy = GET_TARGETING_STRATEGY(blackboard[BB_TARGETING_STRATEGY])
 	var/mob/living/threat
 	for(var/mob/living/candidate in view(7, animal))
-		if(strategy.can_attack(animal, candidate, 7) && (ishuman(candidate) || candidate == aggressor_ref?.resolve()))
+		if((ishuman(candidate) || candidate == aggressor_ref?.resolve()) && strategy.can_attack(animal, candidate, 7))
 			threat = candidate
 			break
 	if(threat && (job != "hunt" || target != threat))
 		start_job("hunt", threat)
+		return
+	if(threat)
 		return
 	if(job == "hunt")
 		var/mob/living/victim = job_target?.resolve()
@@ -462,34 +490,67 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 			begin_haul(victim)
 		else if(!can_hunt(victim))
 			clear_job()
-		else
-			return
 	if(job == "haul")
 		var/mob/living/food = food_ref?.resolve()
 		if(!edible_corpse(food) || !animal.is_grabbing(food) || get_dist(animal, food) > 1)
 			clear_job(TRUE)
-	if(job)
-		return
+		else
+			return // Finish a meal already secured unless safety interrupts it above.
+	// Compare nearby opportunities by need, distance and risk; no species-specific action sequence.
+	var/best_score = 18
+	var/best_job
+	var/atom/best_target
 	if(world.time >= hungry_at)
+		var/hunger = 1 + min(2, (world.time - hungry_at) / den.meal_interval)
 		for(var/mob/living/food in view(7, animal))
 			if(edible_corpse(food) && !ignored(food))
-				begin_haul(food)
-				return
-		for(var/mob/living/prey in view(7, animal))
-			if(strategy.can_attack(animal, prey, 7))
-				start_job("hunt", prey)
-				return
-		if(den.eats_plants)
+				var/score = 80 * hunger - 4 * get_dist(animal, food) + (food == target ? 15 : 0)
+				if(score > best_score)
+					best_score = score
+					best_job = "fetch"
+					best_target = food
+			else if(strategy.can_attack(animal, food, 7))
+				var/score = 65 * hunger - 4 * get_dist(animal, food) - 25 * food.health / max(animal.health, 1) + (food == target ? 15 : 0)
+				if(score > best_score)
+					best_score = score
+					best_job = "hunt"
+					best_target = food
+		if(animal.wildlife_eats_plants)
 			for(var/obj/structure/flora/plant in view(7, animal))
 				if(!ignored(plant) && plant.ms13_can_graze() && get_dist(den, plant) <= den.leash_radius)
-					start_job("graze", plant)
-					return
-	choose_patrol()
+					var/score = 60 * hunger - 3 * get_dist(animal, plant) + (plant == target ? 15 : 0)
+					if(score > best_score)
+						best_score = score
+						best_job = "graze"
+						best_target = plant
+	if(best_target)
+		if(job != best_job || target != best_target)
+			if(best_job == "fetch")
+				begin_haul(best_target)
+			else
+				start_job(best_job, best_target)
+		return
+	if(!job)
+		if(prob(25))
+			next_decision = world.time + rand(4, 12) SECONDS
+		else
+			choose_patrol()
 
 /datum/ai_controller/basic_controller/ms13_wildlife/proc/choose_patrol(escaping = FALSE, turf/away_from)
 	var/obj/effect/spawner/ms13/wildlife_den/den = den_ref?.resolve()
 	if(!den)
-		return
+		return FALSE
+	if(escaping && away_from)
+		// Check every adjacent exit before deciding we are cornered. Never flee through the threat.
+		for(var/direction in shuffle(GLOB.alldirs))
+			var/turf/exit = get_step(pawn, direction)
+			if(!exit || ignored(exit) || !ms13_ecology_clear_tile(exit) || get_dist(exit, away_from) <= get_dist(pawn, away_from))
+				continue
+			if(!length(SSpathfinder.jps_pathfind_now(pawn, exit, max_steps = 2, mintargetdist = 0, exclude = away_from)))
+				continue
+			start_job("escape", exit)
+			return TRUE
+		return FALSE
 	// Bounded attempts: a sealed den must not spend a whole tick searching its surroundings.
 	for(var/i in 1 to 8)
 		var/turf/center = escaping ? get_turf(pawn) : get_turf(den)
@@ -500,10 +561,11 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 		if(away_from && get_dist(destination, away_from) <= get_dist(pawn, away_from))
 			continue
 		start_job(escaping ? "escape" : "patrol", destination)
-		return
+		return TRUE
+	return FALSE
 
 /datum/ai_controller/basic_controller/ms13_wildlife/proc/edible_corpse(mob/living/food)
-	if(!is_prey(food) || food.stat != DEAD || !isturf(food.loc) || food.z != pawn.z || food.buckled)
+	if(QDELETED(food) || food.stat != DEAD || !is_prey(food) || !isturf(food.loc) || food.z != pawn.z || food.buckled)
 		return FALSE
 	var/datum/ai_controller/owner = food.ms13_wildlife_claim?.resolve()
 	if(owner && owner != src)
@@ -572,12 +634,16 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 				hungry_at = world.time + den.meal_interval
 			clear_job()
 		else
+			var/escaping = job == "escape"
 			clear_job()
-			next_decision = world.time + rand(2 SECONDS, 5 SECONDS)
+			next_decision = escaping ? 0 : world.time + rand(2 SECONDS, 5 SECONDS)
 
 /datum/ai_behavior/ms13_wildlife_travel
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_REQUIRE_REACH | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
 	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/ms13_wildlife_travel/escape
+	required_distance = 0
 
 /datum/ai_behavior/ms13_wildlife_travel/setup(datum/ai_controller/controller, atom/destination)
 	controller.set_move_target(destination)
@@ -594,6 +660,16 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 
 /datum/ai_behavior/basic_melee_attack/ms13_wildlife
 	action_cooldown = 1.5 SECONDS
+
+/datum/ai_behavior/basic_ranged_attack/ms13_wildlife
+	required_distance = 7
+	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
+	action_cooldown = 1.5 SECONDS
+
+/datum/ai_behavior/basic_ranged_attack/ms13_wildlife/finish_action(datum/ai_controller/basic_controller/ms13_wildlife/controller, succeeded, target_key, targeting_strategy_key, hiding_location_key)
+	. = ..()
+	if(!succeeded && !controller.changing_job)
+		controller.clear_job(TRUE)
 
 /datum/ai_behavior/basic_melee_attack/ms13_wildlife/finish_action(datum/ai_controller/basic_controller/ms13_wildlife/controller, succeeded, target_key, targeting_strategy_key, hiding_location_key)
 	. = ..()
@@ -619,7 +695,8 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	if(volume * ms13_wall_muffle(source, get_turf(pawn)) < 40)
 		return FALSE
 	noise_cooldown = world.time + 20 SECONDS
-	if(!prob(den.noise_flee_chance))
+	var/mob/living/basic/animal = pawn
+	if(!prob(animal.wildlife_noise_flee_chance))
 		return FALSE
 	frightened_until = world.time + 12 SECONDS
 	noise_source = WEAKREF(source)
@@ -628,33 +705,33 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 	return TRUE
 
 // Basic-mob bullet_act does not call its parent signal. Damage comparisons also avoid provoking on petting or healing.
-/mob/living/basic/ms13/hostile_animal/proc/ms13_wildlife_attacked(mob/living/attacker, old_health)
+/mob/living/basic/proc/ms13_wildlife_attacked(mob/living/attacker, old_health)
 	if(health >= old_health || !istype(ai_controller, /datum/ai_controller/basic_controller/ms13_wildlife))
 		return
 	var/datum/ai_controller/basic_controller/ms13_wildlife/controller = ai_controller
 	controller.provoke(attacker)
 
-/mob/living/basic/ms13/hostile_animal/attacked_by(obj/item/item, mob/living/attacker, datum/special_attack/special)
+/mob/living/basic/attacked_by(obj/item/item, mob/living/attacker, datum/special_attack/special)
 	var/old_health = health
 	. = ..()
 	ms13_wildlife_attacked(attacker, old_health)
 
-/mob/living/basic/ms13/hostile_animal/attack_hand(mob/living/carbon/human/user, list/modifiers)
+/mob/living/basic/attack_hand(mob/living/carbon/human/user, list/modifiers)
 	var/old_health = health
 	. = ..()
 	ms13_wildlife_attacked(user, old_health)
 
-/mob/living/basic/ms13/hostile_animal/attack_basic_mob(mob/living/basic/user, list/modifiers)
+/mob/living/basic/attack_basic_mob(mob/living/basic/user, list/modifiers)
 	var/old_health = health
 	. = ..()
 	ms13_wildlife_attacked(user, old_health)
 
-/mob/living/basic/ms13/hostile_animal/attack_animal(mob/living/simple_animal/user, list/modifiers)
+/mob/living/basic/attack_animal(mob/living/simple_animal/user, list/modifiers)
 	var/old_health = health
 	. = ..()
 	ms13_wildlife_attacked(user, old_health)
 
-/mob/living/basic/ms13/hostile_animal/bullet_act(obj/projectile/projectile, def_zone, piercing_hit = FALSE)
+/mob/living/basic/bullet_act(obj/projectile/projectile, def_zone, piercing_hit = FALSE)
 	var/old_health = health
 	. = ..()
 	if(isliving(projectile.firer))

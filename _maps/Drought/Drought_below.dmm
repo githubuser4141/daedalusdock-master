@@ -8,6 +8,7 @@
 /obj/structure/railing/ms13/solo/industrial{
 	dir = 4
 	},
+/obj/item/stack/sheet/ms13/wood/plank,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -2281,6 +2282,7 @@
 /area/ms13/underground/mountain)
 "lx" = (
 /obj/effect/turf_decal/ms13/graffiti/do_not,
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -5271,6 +5273,14 @@
 /obj/machinery/light/ms13/bulb,
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/town)
+"As" = (
+/obj/structure/ms13_rail/blast_door,
+/obj/structure/ms13_rail/blast_door/stop,
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "BoS Mines"
+	})
 "Av" = (
 /obj/machinery/door/unpowered/ms13/metal,
 /obj/effect/spawner/random/ms13/locked/random/highchance,
@@ -5412,8 +5422,8 @@
 	},
 /obj/structure/ms13_rail/blast_door,
 /obj/structure/ms13_vehicle_frame/tram/blast_door{
-	id_tag = "bos_blast_door";
-	id = "bos_blast_door"
+	id_tag = "bos_blast_mines";
+	id = "bos_blast_mines"
 	},
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
@@ -6166,6 +6176,7 @@
 	id_tag = "bos_blast_mines";
 	id = "bos_blast_mines"
 	},
+/obj/structure/ms13/storage/large/shelf,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "Brotherhood Tram"
@@ -6471,9 +6482,7 @@
 /turf/closed/mineral/random/ms13/drought,
 /area/ms13/underground/mountain)
 "GM" = (
-/obj/structure/window/reinforced/fulltile/ms13/glass,
-/obj/structure/table/ms13/low_wall/vault,
-/turf/open/floor/ms13/tile/full/navy,
+/turf/closed/indestructible/ms13/metal,
 /area/ms13/underground/mountain_bunker{
 	name = "Brotherhood Tram"
 	})
@@ -7084,7 +7093,6 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "Kd" = (
-/obj/effect/spawner/random/ms13/food/trash,
 /obj/machinery/light/ms13/bulb{
 	dir = 1
 	},
@@ -8275,6 +8283,10 @@
 /obj/machinery/light/ms13/bulb/industrial,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"Qj" = (
+/obj/effect/spawner/ms13/wildlife_den/drought/prey/molerats,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
 "Qk" = (
 /obj/structure/ms13/storage/large/shelf/wood{
 	dir = 4
@@ -8632,6 +8644,12 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"Sc" = (
+/obj/effect/spawner/random/ms13/food/trash,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "Sd" = (
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 8
@@ -8904,6 +8922,13 @@
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
+	})
+"TA" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/railing/ms13/solo/industrial,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
 	})
 "TB" = (
 /obj/structure/table/ms13/wood/constructed/cobbled,
@@ -9808,6 +9833,12 @@
 /obj/machinery/door/unpowered/ms13/metal/alt,
 /turf/open/floor/ms13/tile,
 /area/ms13/underground/mountain_bunker)
+"Yk" = (
+/obj/item/stack/sheet/ms13/wood/scrap_wood/two,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain_bunker{
+	name = "BoS Mines"
+	})
 "Yl" = (
 /obj/effect/turf_decal/trimline/yellow/line{
 	dir = 1
@@ -10062,6 +10093,7 @@
 /area/ms13/underground/mountain)
 "ZE" = (
 /obj/structure/cable/smart_cable/color/yellow,
+/obj/item/stack/sheet/ms13/wood/plank,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -15652,7 +15684,7 @@ yK
 yK
 yK
 uz
-uz
+Qj
 yK
 yK
 yK
@@ -20042,7 +20074,7 @@ uD
 (50,1,1) = {"
 uD
 yK
-uz
+Qj
 uz
 yK
 qm
@@ -27517,7 +27549,7 @@ uD
 uD
 Tl
 Tl
-we
+Yk
 we
 Di
 Tl
@@ -27720,7 +27752,7 @@ uD
 Tl
 tG
 tG
-vJ
+As
 wU
 Bg
 tG
@@ -28731,7 +28763,7 @@ yY
 bD
 QN
 Tl
-GM
+gU
 vA
 gU
 gU
@@ -29540,7 +29572,7 @@ gU
 mM
 gU
 jR
-dF
+Sc
 dF
 gU
 Gs
@@ -30140,7 +30172,7 @@ yK
 uD
 "}
 (100,1,1) = {"
-uD
+GM
 gU
 gU
 jR
@@ -30342,7 +30374,7 @@ yK
 uD
 "}
 (101,1,1) = {"
-uD
+GM
 ea
 Uq
 jR
@@ -30544,10 +30576,10 @@ yK
 uD
 "}
 (102,1,1) = {"
-uD
+GM
 CW
 CW
-jR
+TA
 jR
 yq
 jR
@@ -30746,14 +30778,14 @@ yK
 uD
 "}
 (103,1,1) = {"
-uD
+GM
 ln
 aH
-ca
+dF
 dF
 eG
 dF
-Ut
+jR
 gU
 ln
 ln
@@ -31167,7 +31199,7 @@ NN
 DG
 UN
 ln
-yK
+ln
 ln
 ln
 ln
@@ -31573,7 +31605,7 @@ BT
 ln
 yK
 rb
-rb
+sJ
 yK
 yK
 yK
@@ -32176,9 +32208,9 @@ Af
 Af
 Af
 Af
+sJ
+sJ
 Ju
-rb
-rb
 rb
 rb
 qy
@@ -32375,11 +32407,11 @@ Al
 Af
 Af
 Af
-rb
-rb
-rb
-rb
-rb
+sJ
+sJ
+sJ
+sJ
+sJ
 fU
 rb
 rb
@@ -32577,10 +32609,10 @@ rb
 rb
 rb
 gY
-rb
-rb
-rb
-rb
+sJ
+sJ
+sJ
+sJ
 gY
 rb
 rb

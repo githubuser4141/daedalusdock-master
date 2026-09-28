@@ -1,8 +1,19 @@
 /datum/unit_test/ms13_terminal_controls
 	name = "MS13 terminal: remote power, shutters, motors, blast doors and cameras"
+	var/area/control_area
+	var/old_requires_power
+
+/datum/unit_test/ms13_terminal_controls/Destroy()
+	. = ..()
+	if(control_area)
+		control_area.requires_power = old_requires_power
+		control_area.power_change()
 
 /datum/unit_test/ms13_terminal_controls/Run()
 	var/turf/origin = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	control_area = get_area(origin)
+	old_requires_power = control_area.requires_power
+	control_area.requires_power = FALSE // Other power tests may leave the shared room's channels off.
 	var/mob/living/carbon/human/operator = allocate(/mob/living/carbon/human/consistent, get_step(origin, WEST))
 	var/obj/machinery/ms13/terminal/control/console = allocate(/obj/machinery/ms13/terminal/control, origin)
 	console.signal_id_1 = "terminal-test"
@@ -14,7 +25,7 @@
 	if(console.doc_title_2 != "Custom mapper instructions" || console.doc_content_2 != "Keep this text.")
 		Fail("Loading terminal documents discarded a custom mapper entry.")
 	if(!console.terminal_available(operator))
-		Fail("An adjacent operator cannot use the terminal.")
+		Fail("An adjacent operator cannot use the terminal: machine [console.machine_stat]/[console.is_operational], active [console.active], broken [console.broken], operator [operator.stat]/[operator.mobility_flags], reach [console.IsReachableBy(operator)], topic [operator.canUseTopic(console, USE_CLOSE|USE_DEXTERITY)].")
 	console.password_needed = TRUE
 	if(console.terminal_available(operator) || console.activate_link("signal_one", operator))
 		Fail("A locked terminal accepts remote commands.")
@@ -43,6 +54,14 @@
 	box.area = powered_area
 	box.id_tag = console.id
 	box.set_machine_stat(NONE)
+	var/datum/powernet/plant_line = new
+	allocated += plant_line
+	plant_line.ms13_voltage = MS13_VOLTAGE_HIGH
+	plant_line.ms13_ripple = 1
+	for(var/tick in 1 to 40)
+		box.suffer_grid(plant_line)
+	if((box.machine_stat & BROKEN) || box.surged)
+		Fail("An industrial conduit inherited household fusebox burnout on plant voltage.")
 	box.operating = TRUE
 	box.always_powered = TRUE
 	box.lighting = APC_CHANNEL_ON
