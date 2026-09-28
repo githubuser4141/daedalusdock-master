@@ -72,6 +72,15 @@ const ApcContent = (props) => {
   const channelArray = data.powerChannels || [];
   const malfStatus = malfMap[data.malfStatus] || malfMap[0];
   const adjustedCellChange = data.powerCellStatus / 100;
+  const breakerButton = (
+    <Button
+      icon={data.isOperating ? 'power-off' : 'times'}
+      content={data.isOperating ? 'On' : 'Off'}
+      selected={data.isOperating && !locked}
+      disabled={locked}
+      onClick={() => act('breaker')}
+    />
+  );
   if (data.failTime > 0) {
     return (
       <NoticeBox>
@@ -107,21 +116,15 @@ const ApcContent = (props) => {
           <LabeledList.Item
             label={data.utilityBox ? 'Incoming Feed' : 'Main Breaker'}
             color={externalPowerStatus.color}
-            buttons={
-              <Button
-                icon={data.isOperating ? 'power-off' : 'times'}
-                content={data.isOperating ? 'On' : 'Off'}
-                selected={data.isOperating && !locked}
-                disabled={locked}
-                onClick={() => act('breaker')}
-              />
-            }
+            buttons={!data.utilityBox && breakerButton}
           >
             [ {externalPowerStatus.externalPowerText} ]
           </LabeledList.Item>
           {!!data.utilityBox && (
-            <LabeledList.Item label="Backup Power">
-              None — circuits drop immediately with the feed or breaker
+            <LabeledList.Item label="Breaker" buttons={breakerButton}>
+              {data.isOperating
+                ? 'On — the feed goes through to the room'
+                : 'Off — the room gets nothing'}
             </LabeledList.Item>
           )}
           {!data.utilityBox && (

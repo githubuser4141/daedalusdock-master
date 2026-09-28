@@ -11,7 +11,9 @@
 	name = "ground"
 	desc = "Solid, unremarkable ground."
 	simulated = TRUE
-	initial_gas = null // no pre-seeded air - real neighboring zones equalize into it naturally on merge
+	// Air like the ground's: a smaller map (Drought) leaves thousands of these along its edges, and airless they'd thin
+	// out the whole surface's air that reaches them.
+	initial_gas = OPENTURF_DEFAULT_ATMOS
 
 /datum/controller/subsystem/mapping/proc/seal_planetary_gaps()
 	for(var/z in 1 to length(z_list))

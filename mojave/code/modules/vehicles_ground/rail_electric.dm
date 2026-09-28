@@ -182,7 +182,7 @@
 GLOBAL_LIST_EMPTY(ms13_blast_doors)
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/tram/blast_door)
-	default_armor = list(BLUNT = 95, PUNCTURE = 900, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
+	default_armor = list(BLUNT = 95, PUNCTURE = 300, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
 
 /**
  * A blast door: a dense steel slab on a guide rail, driven by a traction motor off a rail feeder. It slides to the far
@@ -200,7 +200,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/tram/blast_door)
 	max_integrity = 3000
 	vehicle_controller_type = /datum/ms13_ground_vehicle/rail/electric/blast_door
 	segment_type = /obj/structure/ms13_vehicle_frame/blast_door_slab
-	car_length = 3
+	car_length = 5
 	car_width = 1
 	/// Buttons with this id open and close it.
 	var/id
@@ -208,15 +208,18 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/tram/blast_door)
 	var/turf/heading
 
 TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
-	default_armor = list(BLUNT = 95, PUNCTURE = 900, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
+	default_armor = list(BLUNT = 95, PUNCTURE = 300, SLASH = 100, LASER = 90, ENERGY = 70, BOMB = 70, BIO = 100, FIRE = 80, ACID = 80)
 
 /obj/structure/ms13_vehicle_frame/blast_door_slab
 	name = "blast door"
 	desc = "A massive armored slab that slides along a track set into the floor."
 	density = TRUE
 	max_integrity = 3000
+	opacity = 1
 
 /obj/structure/ms13_vehicle_frame/tram/blast_door/build_car()
+	// Mapped with an id_tag, like an airlock, it answers to that.
+	id ||= id_tag
 	for(var/back in 1 to car_length - 1)
 		add_segment(-back, 0, "frame_steel", "roof_steel")
 	GLOB.ms13_blast_doors += src
@@ -231,7 +234,11 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 	var/datum/ms13_ground_vehicle/rail/electric/blast_door/drive = vehicle
 	if(!istype(drive))
 		return FALSE
-	var/list/ends = drive.line_ends()
+	var/list/ends = list()
+	for(var/obj/structure/ms13_rail/stop as anything in drive.find_stops(drive.find_rail_routes()))
+		ends += get_turf(stop)
+	if(length(ends) != 2)
+		ends = drive.line_ends()
 	if(length(ends) != 2)
 		return FALSE
 	var/turf/here = get_turf(drive.rail_frame())
@@ -244,6 +251,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_frame/blast_door_slab)
 	return drive.depart_for(destination)
 
 /datum/ms13_ground_vehicle/rail/electric/blast_door
+	blast_door_track = TRUE
 	speed_multiplier = 1
 	mass_per_frame = 20000
 	required_running_gear = 0

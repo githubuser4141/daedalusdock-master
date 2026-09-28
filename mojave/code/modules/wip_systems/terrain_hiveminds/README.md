@@ -135,12 +135,17 @@ floor first are not supported. Roof/floor-hole movement needs linked map z-level
 All Marker-specific code is in `necromorph_marker.dm`. Spawn it through the hive admin menu's
 **Necromorph Marker (power/public radio)** entry or place
 `/obj/structure/ms13_hivemind/core/marker` in the map editor. It starts a necromorph network.
-Existing cult pylon artwork is a placeholder, not a newly imported Marker asset.
+Its sprite is DS13's giant Marker (`mojave/icons/wip/terrain_hivemind/marker_giant.dmi`, see
+`DS13_ATTRIBUTION.md`): pulsing while uncontained, dormant while suppressed.
 
-- Its 30-tile, same-floor influence gives conscious player humans private, harmless phantom attacks,
-  sometimes visually replacing another human. No actual damage or forged player attack logs.
-- Every 10 seconds it examines up to 32 corpses using a rotating scan and can convert one suitable
-  unclaimed corpse away from biomass. Rebirth requires resources, unit capacity and a clear spawn tile.
+- Within 30 tiles on its floor it gets into conscious players' heads, more often and worse the nearer
+  they are, and at most once in 45 seconds each: whispers far off; voices and things moving behind them
+  nearer; glimpses of something watching nearer still; beside it, a rare phantom lunge. Only the victim
+  sees or hears them, and nothing is hurt or logged as a real attack.
+- Every 10 seconds it looks over every corpse within 45 tiles, on its floor and those just above and
+  below, and remakes up to three suitable unclaimed ones away from biomass. Rebirth requires resources,
+  unit capacity and a clear spawn tile. Nearly all its necromorphs come this way: one grown from nothing
+  needs 60 tiles of growth, 200 resources and nineteen corpses remade for each.
 - A cable node beneath the Marker receives 250 kW. Destroying the Marker removes its power output
   and public-channel relay. No cell or APC bypass is involved.
 - The relay carries public radio globally. Unsuppressed, it occasionally adds unsettling messages

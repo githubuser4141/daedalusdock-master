@@ -13,6 +13,8 @@
 	absorption_capacity = 100
 	grind_results = null
 	merge_type = /obj/item/stack/medical/suture/ms13/tourniquet
+	// Binds a cut or a puncture off; a bruise it can't help.
+	stitchable_wounds = list(WOUND_CUT, WOUND_PIERCE)
 
 /obj/item/stack/medical/suture/ms13/tourniquet/belt
 	name = "belt"

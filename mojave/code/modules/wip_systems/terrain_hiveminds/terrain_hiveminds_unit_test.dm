@@ -517,6 +517,7 @@
 	var/obj/effect/ms13_marker_emp_test_probe/emp_probe = new(origin)
 	TEST_ASSERT(marker && marker.power_feed && marker.radio_relay, "The Marker did not create its power and public-radio components.")
 	TEST_ASSERT(!marker.is_suppressed(), "The Marker starts suppressed without a powered projector.")
+	TEST_ASSERT(marker.hum?.is_active(), "An uncontained Marker isn't humming.")
 	TEST_ASSERT(FREQ_COMMON in marker.radio_relay.freq_listening, "The Marker does not relay the public channel.")
 	var/obj/machinery/power/ms13_marker_suppressor/projector = new(get_step(origin, WEST))
 	var/datum/powernet/marker_grid = new
@@ -533,6 +534,7 @@
 	projector.process(1)
 	TEST_ASSERT_EQUAL(marker_grid.load, 50000, "Containment did not charge the grid 50 kW.")
 	TEST_ASSERT(marker.is_suppressed(), "A powered nearby projector does not suppress the Marker.")
+	TEST_ASSERT(!marker.hum.is_active(), "A suppressed Marker kept humming.")
 	marker.power_feed.process(1)
 	TEST_ASSERT_EQUAL(marker_grid.newavail, unsuppressed_marker_output, "Suppression changed Marker power production.")
 	marker_network.resources = 100
@@ -551,6 +553,7 @@
 	marker_grid.avail = 0
 	projector.process(1)
 	TEST_ASSERT(!marker.is_suppressed(), "Containment persists after power failure.")
+	TEST_ASSERT(marker.hum.is_active(), "The Marker's hum didn't return when its containment failed.")
 	TEST_ASSERT_EQUAL(emp_probe.pulses, 0, "Brief containment generated an EMP.")
 	TEST_ASSERT(isnull(marker.containment_started_at), "A short failure retained accumulated containment time.")
 	for(var/cycle in 1 to 3)
@@ -579,10 +582,29 @@
 	projector.process(1)
 	TEST_ASSERT_EQUAL(emp_probe.pulses, 1, "An EMP can be retriggered without another full arming period.")
 	qdel(emp_probe)
+	// Every kind of haunting runs clean, even on someone with no client to show it to.
+	var/mob/living/carbon/human/consistent/haunted = new(get_step(origin, NORTH))
+	for(var/haunting in 1 to 10)
+		qdel(new /datum/hallucination/ms13_marker(haunted, TRUE, 1))
+	qdel(haunted)
 	COOLDOWN_RESET(marker, influence_cooldown)
-	marker.corpse_scan_cursor = GLOB.dead_mob_list.Find(remote_corpse)
 	marker.process(1)
 	TEST_ASSERT(QDELETED(remote_corpse) && length(marker_network.units) == 1, "An uncontained Marker did not remotely resurrect a corpse away from biomass.")
+	// Only a big enough Marker grows one from nothing: the first freely, then one for every nineteen of the dead remade.
+	TEST_ASSERT_EQUAL(marker_network.grown_from_corpses, 1, "A remade corpse wasn't counted.")
+	var/turf/growing_spot = get_step(remote_turf, EAST)
+	var/growing_type = /mob/living/simple_animal/hostile/ms13/terrain_hivemind
+	marker_network.resources = marker_network.max_resources
+	TEST_ASSERT(!marker_network.grow_from_nothing(growing_type, growing_spot), "A small Marker grew a necromorph from nothing.")
+	marker_network.thin_air_min_territory = 0
+	var/mob/living/grown = marker_network.grow_from_nothing(growing_type, growing_spot)
+	TEST_ASSERT(grown, "A Marker couldn't grow its first necromorph from nothing.")
+	qdel(grown)
+	TEST_ASSERT(!marker_network.grow_from_nothing(growing_type, growing_spot), "A Marker grew a second necromorph from nothing without the dead to earn it.")
+	marker_network.grown_from_corpses = 38
+	grown = marker_network.grow_from_nothing(growing_type, growing_spot)
+	TEST_ASSERT(grown, "A Marker couldn't grow another from nothing once it had remade enough of the dead.")
+	qdel(grown)
 	TEST_ASSERT(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/climber in marker_network.evolved_mob_types, "Evolution does not unlock the roof climber.")
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/ambusher = new(remote_turf, marker_network)
 	TEST_ASSERT(!ambusher.hibernating && ambusher.can_scale_roofs, "The ambusher lay dormant before leaving the nest, or can't climb.")

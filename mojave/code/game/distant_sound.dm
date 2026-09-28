@@ -108,8 +108,9 @@ GLOBAL_VAR(ms13_hit_force)
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
  * limit of hearing it at all.
  */
-/// Each wall between a sound and whoever hears it halves it. Past a few it's lost in the stone.
-#define SOUND_WALL_MUFFLE 0.5
+/// Each wall between a sound and whoever hears it takes a quarter off: most walls out here are thin, and a creature
+/// on the other side is still heard. Past a few, it goes no quieter.
+#define SOUND_WALL_MUFFLE 0.75
 #define SOUND_WALLS_HEARD_THROUGH 3
 
 /// Walls between source and listener, counting up to SOUND_WALLS_HEARD_THROUGH: solid turfs, and turfs with something
@@ -134,7 +135,7 @@ GLOBAL_VAR(ms13_hit_force)
 	// Through walls it's quieter, and duller, as if from further off.
 	var/walls = ms13_walls_between(turf_source, ear)
 	vol *= SOUND_WALL_MUFFLE ** walls
-	remoteness = min(remoteness + 0.25 * walls, 1)
+	remoteness = min(remoteness + 0.15 * walls, 1)
 	var/baked = distant_version(soundin, remoteness)
 	if(baked)
 		SEND_SOUND(src, make_distant_sound(turf_source, ear, baked, vol, remoteness, vary, TRUE))

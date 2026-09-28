@@ -120,18 +120,154 @@
 			"total_positions": 0
 		},
 		"initiate": {
-			"spawn_positions": 0,
-			"total_positions": 0
+			"spawn_positions": 1,
+			"total_positions": 1
 		},
 		"knight": {
-			"spawn_positions": 0,
-			"total_positions": 0
+			"spawn_positions": 1,
+			"total_positions": 1
 		},
 		"paladin": {
+			"spawn_positions": 1,
+			"total_positions": 1
+		},
+		"scribe": {
+			"spawn_positions": 1,
+			"total_positions": 1
+		},
+		"chieftain": {
 			"spawn_positions": 0,
 			"total_positions": 0
 		},
-		"scribe": {
+		"dryfolk": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"headtaker": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"hunter": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"shaman": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"captain": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"head_of_personnel": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"head_of_security": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"warden": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"security_officer": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"prisoner": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"chief_engineer": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"station_engineer": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"atmospheric_technician": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"augur": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"acolyte": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"paramedic": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"chemist": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"virologist": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"psychologist": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"quartermaster": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"cargo_technician": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"shaft_miner": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"detective": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"botanist": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"cook": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"chaplain": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"curator": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"janitor": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"lawyer": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"clown": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"assistant": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"ai": {
+			"spawn_positions": 0,
+			"total_positions": 0
+		},
+		"cyborg": {
 			"spawn_positions": 0,
 			"total_positions": 0
 		}

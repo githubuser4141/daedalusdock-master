@@ -133,6 +133,30 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 			lamp.flicker()
 	return FALSE
 
+/obj/machinery/power/apc/ms13/Initialize(mapload)
+	. = ..()
+	// Mapped ones wait for house power, which claims their rooms once everything's loaded.
+	if(SSms13_house_power.initialized)
+		claim_room()
+
+/**
+ * In a room that runs without power (most of the map), a box's feed and breaker would do nothing, and the breaker
+ * would switch the room's lights with nothing feeding them. So it makes the room need power, run off it: its own
+ * building if it stands in one, like a box put up by hand, else the whole area it's in.
+ */
+/obj/machinery/power/apc/ms13/proc/claim_room()
+	if(always_powered || !area || area.requires_power)
+		return
+	var/list/room = SSms13_house_power.room_at(get_turf(src))
+	if(room)
+		if(area.apc == src)
+			area.apc = null
+		area = SSms13_house_power.make_house_area(room)
+		area.apc = src
+	else
+		area.requires_power = TRUE
+	update()
+
 /// A fusebox that just works, with no generator or cabling.
 /obj/machinery/power/apc/ms13/always_on
 	always_powered = TRUE
@@ -190,4 +214,32 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 		Fail("A crafted utility box went up unfinished.")
 	if(!box.terminal || box.area?.apc != box)
 		Fail("A crafted utility box had no terminal, or its area didn't know it.")
+
+/// A box in a room that ran without power makes it need power, and with nothing feeding it the room stays dark whichever
+/// way its breaker is thrown.
+/datum/unit_test/ms13_utility_box_claims_room
+	name = "POWER: A Utility Box Makes Its Room Run Off It"
+
+/datum/unit_test/ms13_utility_box_claims_room/Run()
+	var/area/room = get_area(run_loc_floor_bottom_left)
+	// Mapped in, the way the map loads it.
+	SSatoms.map_loader_begin(REF(src))
+	var/obj/machinery/power/apc/ms13/box = new(run_loc_floor_bottom_left)
+	SSatoms.map_loader_stop(REF(src))
+	SSatoms.InitializeAtoms(list(box))
+	if(!room.requires_power)
+		Fail("A utility box left its room running without power.")
+	box.process(2)
+	if(room.powered(AREA_USAGE_LIGHT))
+		Fail("A utility box with nothing feeding it lit its room.")
+	box.toggle_breaker()
+	box.toggle_breaker()
+	if(room.powered(AREA_USAGE_LIGHT))
+		Fail("Throwing a utility box's breaker lit its room with nothing feeding it.")
+	qdel(box)
+	room.requires_power = FALSE
+	room.power_light = TRUE
+	room.power_equip = TRUE
+	room.power_environ = TRUE
+	room.power_change()
 #endif

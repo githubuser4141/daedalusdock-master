@@ -153,6 +153,8 @@
 	amount = 1
 	merge_type = /obj/item/stack/medical/splint/ms13
 	novariants = TRUE
+	// It never had one, so heal_carbon() never splinted anything with it: without a slowdown there's no splint.
+	splint_slowdown = 1
 	w_class = WEIGHT_CLASS_SMALL
 	//grid_width = 64
 	//grid_height = 32
@@ -172,6 +174,7 @@
 	self_delay = 6 SECONDS
 	other_delay = 4 SECONDS
 	merge_type = /obj/item/stack/medical/splint/ms13/wooden
+	splint_slowdown = 2
 
 // Healing Powder //
 
@@ -241,3 +244,30 @@
 /obj/item/stack/medical/ms13/balm/Initialize()
 	. = ..()
 	AddElement(/datum/element/item_scaling, 0.55, 1)
+
+#ifdef UNIT_TESTS
+/// A splint goes on a chest too, a suture closes a big bruise a stitch at a time, and a bandage uses one gauze, not two.
+/datum/unit_test/ms13_field_dressing
+	name = "MEDICAL: Splints, Sutures And Gauze Take To What Brute Leaves"
+
+/datum/unit_test/ms13_field_dressing/Run()
+	var/mob/living/carbon/human/consistent/patient = allocate(/mob/living/carbon/human/consistent)
+	patient.zone_selected = BODY_ZONE_CHEST
+	var/obj/item/stack/medical/splint/ms13/wooden/splint = allocate(/obj/item/stack/medical/splint/ms13/wooden)
+	if(!splint.heal(patient, patient) || !patient.get_bodypart(BODY_ZONE_CHEST).splint)
+		Fail("A wooden splint wouldn't go on a chest.")
+
+	patient.zone_selected = BODY_ZONE_R_ARM
+	var/obj/item/bodypart/arm = patient.get_bodypart(BODY_ZONE_R_ARM)
+	var/datum/wound/bruise = arm.create_wound(WOUND_BRUISE, 40)
+	var/obj/item/stack/medical/suture/ms13/suture = allocate(/obj/item/stack/medical/suture/ms13)
+	if(!suture.heal(patient, patient) || bruise.damage != 25)
+		Fail("A suture didn't close a stitch's worth of a big bruise.")
+
+	patient.zone_selected = BODY_ZONE_L_ARM
+	var/obj/item/stack/medical/gauze/ms13/gauze = allocate(/obj/item/stack/medical/gauze/ms13)
+	var/gauze_before = gauze.amount
+	gauze.try_heal(patient, patient, TRUE)
+	if(!patient.get_bodypart(BODY_ZONE_L_ARM).bandage || gauze.amount != gauze_before - 1)
+		Fail("Bandaging an arm didn't use exactly one gauze.")
+#endif

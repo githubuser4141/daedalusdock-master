@@ -27,6 +27,8 @@ SUBSYSTEM_DEF(ms13_house_power)
 	var/list/houses = list()
 
 /datum/controller/subsystem/ms13_house_power/Initialize(timeofday)
+	for(var/obj/machinery/power/apc/ms13/box in INSTANCES_OF(/obj/machinery/power/apc))
+		box.claim_room()
 	var/list/visited = list()
 	for(var/area/ms13/place in GLOB.areas.Copy())
 		var/list/seeds = list()

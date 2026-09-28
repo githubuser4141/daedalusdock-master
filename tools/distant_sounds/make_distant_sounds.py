@@ -39,10 +39,10 @@ CATEGORIES = [
          code=r"fire_sound\s*=\s*'(mojave/sound/ms13vehicles/[^']+)'"),
     dict(name="gunfire", reach=8, bake="gunfire", files=["mojave/sound/ms13npc/sentrybot/*_fire.ogg", "mojave/sound/ms13npc/sentrybot/laser_gatling.ogg"],
          code=r"(?:fire_sound|projectilesound|fallback_fire_sound)\s*=\s*'([^']+\.(?:ogg|wav))'"),
-    dict(name="hivemind", reach=4, loudness=0.25, bake="gunfire", files=[
+    dict(name="hivemind", reach=6, loudness=0.5, bake="gunfire", files=[
         "mojave/sound/wip/necromorphs/*.ogg", "mojave/sound/by_nc/tgmc_xenomorphs/*.ogg"]),
     # Creatures carry quietly: eerie far off, fading as it goes, rather than as loud as a gunshot.
-    dict(name="monster", reach=3, loudness=0.25, bake="gunfire", files=[
+    dict(name="monster", reach=5, loudness=0.5, bake="gunfire", files=[
         "mojave/sound/ms13npc/*_attack*.ogg", "mojave/sound/ms13npc/*_death*.ogg", "mojave/sound/ms13npc/brahmin_moo*.ogg"]),
     dict(name="engine", reach=5, bake="gunfire", files=[
         "mojave/sound/ms13machines/engine_*.ogg", "sound/effects/tank_treads.ogg", "sound/mecha/mechstep.ogg"]),

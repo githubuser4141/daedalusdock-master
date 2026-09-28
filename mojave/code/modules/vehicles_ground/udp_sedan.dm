@@ -36,28 +36,36 @@
 	vehicle = new vehicle_controller_type
 	vehicle.pivot = src
 	vehicle.frames += src
-	// It lays out back and right of here, the way it faces or else whichever way there's room.
-	var/blocker
-	for(var/facing in list(dir, turn(dir, 90), turn(dir, 180), turn(dir, -90)))
-		blocker = find_blocker(facing)
-		if(!blocker)
-			setDir(facing)
-			vehicle.dir = facing
+	// It lays out back and right of here, the way it faces or else whichever way there's room. With no room any way
+	// round it goes in over whatever's in the way, so long as it stays on the map.
+	var/list/facings = list(dir, turn(dir, 90), turn(dir, 180), turn(dir, -90))
+	var/facing
+	for(var/edge_only in list(FALSE, TRUE))
+		for(var/try_facing in facings)
+			if(!find_blocker(try_facing, edge_only))
+				facing = try_facing
+				break
+		if(facing)
 			break
-	if(blocker)
-		visible_message(span_warning("There's no room for [src] here, any way round: [blocker] is in the way."))
+	if(!facing)
+		visible_message(span_warning("There's no room for [src] here: it would run off the edge of the map."))
 		return INITIALIZE_HINT_QDEL
+	setDir(facing)
+	vehicle.dir = facing
 	build_body()
 	furnish()
 	vehicle.update_interior_lighting()
 
-/// What's in the way of laying it out facing facing: a wall, something solid, or the edge of the map. Null if nothing.
-/obj/structure/ms13_vehicle_frame/udp_car/proc/find_blocker(facing)
+/// What's in the way of laying it out facing facing: a wall, something solid, or the edge of the map (only that, if
+/// edge_only). Null if nothing.
+/obj/structure/ms13_vehicle_frame/udp_car/proc/find_blocker(facing, edge_only = FALSE)
 	for(var/row in 1 to length(tile_rows))
 		for(var/column in 1 to length(tile_rows[1]))
 			var/turf/spot = vehicle.get_relative_turf(1 - row, column - 1, facing)
 			if(!spot)
 				return "the edge of the map"
+			if(edge_only)
+				continue
 			if(spot.density)
 				return spot
 			// Anyone standing there comes along for the ride.

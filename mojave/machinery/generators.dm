@@ -25,6 +25,7 @@
 	max_integrity = 50000
 	flags_1 = INDESTRUCTIBLE
 	use_power = NO_POWER_USE
+	heft = 400
 	/// Mapper-set starting state: GENERATOR_ON, GENERATOR_OFF or GENERATOR_BROKEN.
 	var/generator_state = GENERATOR_ON
 	/// Watts added to the powernet each tick while running in perfect condition.

@@ -254,7 +254,7 @@ GLOBAL_LIST_EMPTY(ms13_rail_cars)
 /obj/structure/ms13_rail_call_button/proc/own_stop()
 	var/best_distance = INFINITY
 	for(var/obj/structure/ms13_rail/candidate in range(reach, src))
-		if(candidate.is_station && get_dist(src, candidate) < best_distance)
+		if(candidate.is_station && !candidate.blast_door_track && get_dist(src, candidate) < best_distance)
 			best_distance = get_dist(src, candidate)
 			. = candidate
 

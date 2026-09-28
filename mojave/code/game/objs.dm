@@ -58,6 +58,9 @@
 #define MS13_HEFT_PER_SLOWDOWN 60
 /// Kilograms each point of Strength (the body's, or a power armor frame's) can drag at all.
 #define MS13_HEFT_PER_STRENGTH 40
+/// Straining to budge something heavier than that: how long it takes, and the brute a strain at twice the limit tears.
+#define MS13_STRAIN_TIME (2 SECONDS)
+#define MS13_STRAIN_HURT 15
 
 GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 
@@ -68,6 +71,8 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 
 /datum/element/ms13_heavy
 	element_flags = ELEMENT_DETACH
+	/// Thing -> who just strained it loose, to be let grab it.
+	var/list/strained = list()
 
 /datum/element/ms13_heavy/Attach(obj/target)
 	. = ..()
@@ -90,9 +95,34 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 
 /datum/element/ms13_heavy/proc/check_grab(obj/source, mob/living/grabber)
 	SIGNAL_HANDLER
-	if(source.heft > grabber.get_body_strength() * MS13_HEFT_PER_STRENGTH)
+	var/limit = grabber.get_body_strength() * MS13_HEFT_PER_STRENGTH
+	if(source.heft <= limit || strained[source] == grabber)
+		return
+	if(source.heft > limit * 2)
 		to_chat(grabber, span_warning("[source] is too heavy for you to budge."))
-		return COMSIG_ATOM_NO_GRAB
+	else if(!DOING_INTERACTION(grabber, source))
+		INVOKE_ASYNC(src, PROC_REF(strain), source, grabber, limit)
+	return COMSIG_ATOM_NO_GRAB
+
+/**
+ * Up to twice what they can drag, someone can strain to get it moving. The further over, the less likely it budges
+ * and the likelier they tear something doing it, worse the further over.
+ */
+/datum/element/ms13_heavy/proc/strain(obj/source, mob/living/grabber, limit)
+	var/overshoot = (source.heft - limit) / limit
+	grabber.visible_message(span_warning("[grabber] strains against [source]!"), span_warning("You strain against [source]..."))
+	if(!do_after(grabber, source, MS13_STRAIN_TIME, interaction_key = source))
+		return
+	if(prob(overshoot * 100))
+		var/zone = pick(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_CHEST)
+		grabber.apply_damage(MS13_STRAIN_HURT * overshoot, BRUTE, zone)
+		to_chat(grabber, span_danger("Something tears in your [parse_zone(zone)]!"))
+	if(!prob((1 - overshoot) * 100))
+		to_chat(grabber, span_warning("[source] won't budge."))
+		return
+	strained[source] = grabber
+	grabber.try_make_grab(source)
+	strained -= source
 
 /datum/element/ms13_heavy/proc/check_move(obj/source, atom/newloc)
 	SIGNAL_HANDLER
@@ -281,7 +311,7 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 	if(wardrobe.loc != start)
 		Fail("Walking into something heavy shoved it along.")
 	var/mob/living/carbon/human/consistent/weakling = allocate(/mob/living/carbon/human/consistent, get_step(start, SOUTH))
-	weakling.set_special_base(SPECIAL_STRENGTH, 2)
+	weakling.set_special_base(SPECIAL_STRENGTH, 1)
 	if(weakling.try_make_grab(wardrobe) || !wardrobe.anchored)
 		Fail("Someone too weak got a grip on something too heavy for them, or left it loose trying.")
 	if(hauler.try_make_grab(bolted))
@@ -298,6 +328,15 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 	qdel(grip)
 	if(!wardrobe.anchored)
 		Fail("Something heavy stayed loose once let go.")
+
+	// At twice what someone can drag, straining at it never budges it and always tears something.
+	var/mob/living/carbon/human/consistent/strainer = allocate(/mob/living/carbon/human/consistent, get_step(wardrobe, NORTH))
+	strainer.set_special_base(SPECIAL_STRENGTH, 3)
+	wardrobe.heft = strainer.get_body_strength() * MS13_HEFT_PER_STRENGTH * 2
+	strainer.try_make_grab(wardrobe)
+	sleep(MS13_STRAIN_TIME + 1 SECONDS)
+	if(LAZYLEN(wardrobe.grabbed_by) || !strainer.getBruteLoss())
+		Fail("Straining at twice someone's limit budged it, or didn't hurt them.")
 
 /// A heavy machine runs where it was wired in; moved, only on a live cable knot.
 /datum/unit_test/ms13_heft_wiring

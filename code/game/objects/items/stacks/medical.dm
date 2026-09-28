@@ -63,11 +63,13 @@
 	if(use_sound)
 		playsound(loc, use_sound, 50)
 
+	var/amount_before = amount // MOJAVE EDIT - a bandage or splint put on is split off the stack already; don't take another
 	if(!heal(patient, user))
 		return ITEM_INTERACT_BLOCKING
 
 	log_combat(user, patient, "healed", src.name)
-	use(1)
+	if(amount == amount_before)
+		use(1)
 
 	if(repeating && amount > 0)
 		try_heal(patient, user, TRUE)
@@ -259,6 +261,8 @@
 	use_sound = 'sound/effects/sneedle.ogg'
 
 	dynamically_set_name = TRUE
+	/// Wounds it can close. MOJAVE EDIT - bruises too: most of what brute leaves.
+	var/list/stitchable_wounds = list(WOUND_CUT, WOUND_PIERCE, WOUND_BRUISE)
 
 /obj/item/stack/medical/suture/heal_carbon(mob/living/carbon/C, mob/user, brute, burn)
 	var/obj/item/bodypart/affecting = C.get_bodypart(deprecise_zone(user.zone_selected), TRUE)
@@ -271,14 +275,14 @@
 		return FALSE
 
 	var/wound_desc
+	// MOJAVE EDIT - any wound of the kinds it closes, a big one a stitch at a time; was cuts and punctures of 15 or less
 	for(var/datum/wound/W as anything in shuffle(affecting.wounds))
-		if(W.damage <= 0 || W.wound_type != WOUND_CUT && W.wound_type != WOUND_PIERCE)
+		if(W.damage <= 0 || !(W.wound_type in stitchable_wounds))
 			continue
-		if(W.damage <= 15)
-			wound_desc = W.desc
-			W.heal_damage(15)
-			affecting.update_damage()
-			break
+		wound_desc = W.desc
+		W.heal_damage(15)
+		affecting.update_damage()
+		break
 
 	if(!wound_desc)
 		to_chat(user, span_warning("You can't find any wounds you can stitch shut."))

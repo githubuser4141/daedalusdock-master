@@ -44,7 +44,7 @@
 	// equip/unequip, never on bag insertion/removal - it'd show correctly on initial mapload/spawn
 	// (loc already right when Attach() first runs update_appearance) and then just stay stuck at
 	// whatever it last was after that.
-	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED), PROC_REF(inventory_updated))
+	RegisterSignal(target, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED, COMSIG_MOVABLE_MOVED), PROC_REF(inventory_updated))
 	target.update_appearance(UPDATE_ICON)
 	target.update_appearance(UPDATE_ICON_STATE)
 
@@ -52,14 +52,38 @@
 	. = ..()
 	UnregisterSignal(source, COMSIG_ATOM_UPDATE_ICON)
 	UnregisterSignal(source, COMSIG_ATOM_UPDATE_ICON_STATE, PROC_REF(update_icon_state))
-	UnregisterSignal(source, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED))
+	UnregisterSignal(source, list(COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_STORED, COMSIG_ITEM_UNEQUIPPED, COMSIG_ITEM_UNSTORED, COMSIG_MOVABLE_MOVED))
 	source.update_appearance(UPDATE_ICON)
 	source.update_appearance(UPDATE_ICON_STATE)
+
+/// Held, in a bag, or set out on a table or shelf: it shows its full-size inventory icon.
+/datum/element/world_icon/proc/shows_inventory_icon(obj/item/source)
+	return (source.item_flags & IN_INVENTORY) || source.loc?.atom_storage || ms13_on_display(source)
+
+/// Set out on a table, rack or shelf, where an item shows full size, as in a hand.
+/proc/ms13_on_display(atom/movable/item)
+	if(!isturf(item.loc))
+		return FALSE
+	var/static/list/surfaces = typecacheof(list(/obj/structure/table, /obj/structure/rack, /obj/structure/ms13/storage))
+	for(var/obj/structure/thing in item.loc)
+		if(surfaces[thing.type])
+			return TRUE
+	return FALSE
+
+/// Items scaled down on the ground (item_scaling: bandages, splints, medicine) show full size on a table too.
+/datum/element/item_scaling/Attach(atom/target, overworld_scaling, storage_scaling)
+	. = ..()
+	if(. != ELEMENT_INCOMPATIBLE && ismovable(target) && ms13_on_display(target))
+		scale(target, storage_scaling)
+
+/datum/element/item_scaling/on_moved(atom/movable/source, atom/old_loc)
+	SIGNAL_HANDLER
+	scale(source, (isturf(source.loc) && !ms13_on_display(source)) ? overworld_scaling : storage_scaling)
 
 /datum/element/world_icon/proc/update_icon(obj/item/source, updates)
 	SIGNAL_HANDLER
 
-	if((source.item_flags & IN_INVENTORY) || (source.loc && source.loc.atom_storage))
+	if(shows_inventory_icon(source))
 		if(attached_proc)
 			return
 		return default_inventory_icon(source)
@@ -72,7 +96,7 @@
 /datum/element/world_icon/proc/update_icon_state(obj/item/source, updates)
 	SIGNAL_HANDLER
 
-	if((source.item_flags & IN_INVENTORY) || (source.loc && source.loc.atom_storage))
+	if(shows_inventory_icon(source))
 		if(attached_proc)
 			return
 		return default_inventory_icon_state(source)
@@ -127,3 +151,22 @@
 
 	world_icon_state = source.world_state
 	source.icon_state = world_icon_state
+
+#ifdef UNIT_TESTS
+/// Set out on a table, an item shows full size, whichever way it's shrunk on the ground.
+/datum/unit_test/ms13_items_on_display
+	name = "ITEMS: Full Size On A Table"
+
+/datum/unit_test/ms13_items_on_display/Run()
+	var/turf/table_spot = run_loc_floor_bottom_left
+	var/turf/floor_spot = get_step(table_spot, EAST)
+	allocate(/obj/structure/table/ms13/metal, table_spot)
+	var/obj/item/stack/medical/gauze/ms13/gauze = allocate(/obj/item/stack/medical/gauze/ms13, table_spot)
+	var/obj/item/reagent_containers/glass/bucket/ms13/bucket = allocate(/obj/item/reagent_containers/glass/bucket/ms13, table_spot)
+	if(gauze.transform.a != 1 || bucket.icon != 'mojave/icons/objects/tools/tools_inventory.dmi')
+		Fail("Something on a table didn't show full size.")
+	gauze.forceMove(floor_spot)
+	bucket.forceMove(floor_spot)
+	if(gauze.transform.a == 1 || bucket.icon != 'mojave/icons/objects/tools/tools_world.dmi')
+		Fail("Something on the floor showed full size.")
+#endif

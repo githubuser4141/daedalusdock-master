@@ -371,27 +371,39 @@
 		Fail("An electric car kept going to its stop after the power went.")
 	clear_vehicle(line)
 
-	// A blast door, shut across x = 31, y = 30 to 32, slides north until its middle stands at y = 34.
-	for(var/y in 31 to 34)
-		allocate(/obj/structure/ms13_rail/hidden, locate(31, y, z))
-	var/obj/machinery/power/ms13_rail_feeder/door_feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(31, 34, z))
+	// A blast door, shut across x = 31 from y = 30, slides north its own length between the stops on its track. A
+	// train's line crosses the track on the way: neither follows the other's rail, nor stops at the other's stops.
+	var/obj/structure/ms13_vehicle_frame/tram/blast_door/door_type = /obj/structure/ms13_vehicle_frame/tram/blast_door
+	var/door_length = initial(door_type.car_length)
+	var/door_middle = 30 + FLOOR((door_length - 1) / 2, 1)
+	for(var/y in door_middle to door_middle + door_length)
+		allocate((y == door_middle || y == door_middle + door_length) ? /obj/structure/ms13_rail/blast_door/stop : /obj/structure/ms13_rail/blast_door, locate(31, y, z))
+	for(var/x in 29 to 33)
+		allocate(x == 29 ? /obj/structure/ms13_rail/station : /obj/structure/ms13_rail, locate(x, door_middle + 1, z))
+	var/turf/crossing = locate(31, door_middle + 1, z)
+	if(!ms13_rail_at(crossing, FALSE) || !ms13_rail_at(crossing, TRUE) || ms13_rail_at(crossing, FALSE) == ms13_rail_at(crossing, TRUE))
+		Fail("A blast door's track and a train's line crossing it weren't told apart.")
+	var/obj/machinery/power/ms13_rail_feeder/door_feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(31, door_middle + door_length, z))
 	net.add_machine(door_feeder)
 	net.avail = 1000000
 	var/obj/structure/ms13_vehicle_frame/tram/blast_door/door = allocate(/obj/structure/ms13_vehicle_frame/tram/blast_door, locate(31, 30, z))
 	door.id = "ms13_test_blast_door"
 	var/datum/ms13_ground_vehicle/rail/electric/blast_door/drive = door.vehicle
-	if(length(drive.frames) != 3 || length(drive.walls) || length(drive.parts) != 1 || length(drive.batteries))
-		Fail("The blast door isn't just three frames and its motor.")
+	if(length(drive.frames) != door_length || length(drive.walls) || length(drive.parts) != 1 || length(drive.batteries))
+		Fail("The blast door isn't just its frames and its motor.")
 	for(var/obj/structure/ms13_vehicle_frame/slab as anything in drive.frames)
 		if(!slab.density)
 			Fail("A blast door frame can be walked through.")
+	var/list/door_stops = drive.find_stops(drive.find_rail_routes())
+	if(length(door_stops) != 2 || (locate(/obj/structure/ms13_rail/station) in door_stops))
+		Fail("A blast door didn't find just the two stops on its own track.")
 	var/turf/shut = get_turf(drive.rail_frame())
-	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, locate(31, 33, z))
+	var/mob/living/carbon/human/consistent/bystander = allocate(/mob/living/carbon/human/consistent, locate(31, 30 + door_length, z))
 	var/obj/item/assembly/control/button = allocate(/obj/item/assembly/control, locate(35, 30, z))
 	button.id = door.id
 	button.activate()
-	if(!run_to_stand(drive, locate(31, 34, z)))
-		Fail("A door button did not slide the blast door open to the far end of its rail.")
+	if(!run_to_stand(drive, locate(31, door_middle + door_length, z)))
+		Fail("A door button did not slide the blast door open to the far stop on its track.")
 	if(drive.get_frame_at(get_turf(bystander)) || bystander.stat == DEAD)
 		Fail("The blast door did not shove a bystander out of its way.")
 	door.toggle()

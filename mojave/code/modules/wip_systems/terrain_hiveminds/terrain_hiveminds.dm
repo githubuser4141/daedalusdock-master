@@ -25,6 +25,14 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	var/expansion_cost = 4
 	var/special_cost = 30
 	var/unit_cost = 20
+	/// Growing a unit out of nothing, rather than remaking a corpse (the core and spawner structures): the territory it
+	/// needs first, what it costs (unit_cost if null), and the most of all births it may be (1 for no limit). The first
+	/// is always allowed, so a hive with no corpses about can start.
+	var/thin_air_min_territory = 0
+	var/thin_air_unit_cost
+	var/thin_air_share = 1
+	var/grown_from_nothing = 0
+	var/grown_from_corpses = 0
 	var/territory_limit = 120
 	var/territory_per_special = 12
 	var/max_units = 24
@@ -194,8 +202,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 						break
 				if(!has_breacher)
 					unit_type = /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy
-			if(unit_type && spawn_unit(unit_type, get_turf(core)))
-				resources -= unit_cost
+			if(unit_type)
+				grow_from_nothing(unit_type, get_turf(core))
 		COOLDOWN_START(src, core_spawn_cooldown, 10 SECONDS)
 	if(COOLDOWN_FINISHED(src, spread_cooldown))
 		try_expand()
@@ -364,6 +372,18 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return
 	return new unit_type(spawn_turf, src)
 
+/// Grows unit_type near origin out of nothing, if the hive is big enough, can pay, and it keeps within its share of births.
+/datum/ms13_terrain_hivemind/proc/grow_from_nothing(unit_type, turf/origin)
+	var/cost = isnull(thin_air_unit_cost) ? unit_cost : thin_air_unit_cost
+	if(length(territory) < thin_air_min_territory || resources < cost)
+		return
+	if(grown_from_nothing && grown_from_nothing + 1 > thin_air_share * (grown_from_nothing + grown_from_corpses + 1))
+		return
+	. = spawn_unit(unit_type, origin)
+	if(.)
+		resources -= cost
+		grown_from_nothing++
+
 /datum/ms13_terrain_hivemind/proc/is_convertible_corpse(mob/living/corpse)
 	if(!isliving(corpse) || QDELETED(corpse) || corpse.ms13_hive_consumed || !isturf(corpse.loc) || is_allied(corpse))
 		return FALSE
@@ -500,6 +520,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		if(length(available_types))
 			var/unit_type = pick(available_types)
 			if(spawn_unit(unit_type, spawn_turf))
+				grown_from_corpses++
 				return TRUE
 	resources = min(max_resources, resources + corpse_recycling_value)
 	return TRUE
@@ -1106,11 +1127,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 			COOLDOWN_START(src, spawn_cooldown, network.unit_spawn_delay)
 		return
 	var/list/available_types = network.get_available_unit_types()
-	if(!length(available_types) || !network.spend(network.unit_cost))
-		return
-	var/unit_type = pick(available_types)
-	new unit_type(spawn_turf, network)
-	COOLDOWN_START(src, spawn_cooldown, network.unit_spawn_delay)
+	if(length(available_types) && network.grow_from_nothing(pick(available_types), spawn_turf))
+		COOLDOWN_START(src, spawn_cooldown, network.unit_spawn_delay)
 
 /obj/structure/ms13_hivemind/special/converter
 	name = "hivemind corpse converter"

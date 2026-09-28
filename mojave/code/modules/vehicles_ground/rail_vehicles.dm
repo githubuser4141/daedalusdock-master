@@ -11,11 +11,26 @@
 	anchored = TRUE
 	max_integrity = 200
 	var/is_station = FALSE
+	/// A blast door's track: only blast doors follow it, and every other car rides on over it, so one can cross a line.
+	var/blast_door_track = FALSE
 
 /obj/structure/ms13_rail/station
 	name = "rail stop"
 	desc = "A stopping point for automated trains. Route boards name it after the area it sits in."
 	color = "#ffcc33"
+	is_station = TRUE
+
+/// A blast door's track, set into the floor. Map it under the door where it may cross a train's line: neither follows
+/// the other's rail.
+/obj/structure/ms13_rail/blast_door
+	name = "blast door track"
+	invisibility = INVISIBILITY_ABSTRACT
+	blast_door_track = TRUE
+
+/// Where a blast door comes to rest. A door with two on its track slides between them, otherwise between its track's
+/// ends. Trains never stop at one.
+/obj/structure/ms13_rail/blast_door/stop
+	name = "blast door stop"
 	is_station = TRUE
 
 /// Takes the line up or down a level. Map one on each level on the same tile, facing opposite ways: a car running
@@ -60,7 +75,7 @@
 /obj/structure/ms13_rail/update_overlays()
 	. = ..()
 	for(var/direction in GLOB.cardinals)
-		var/obj/structure/ms13_rail/neighbor = locate() in get_step(src, direction)
+		var/obj/structure/ms13_rail/neighbor = ms13_rail_at(get_step(src, direction), blast_door_track)
 		if(neighbor && !QDELETED(neighbor))
 			. += mutable_appearance('icons/obj/power_cond/cable.dmi', "[direction]")
 
@@ -95,16 +110,25 @@
 	/// Coasting from top speed, the drive pulls again below this share of it, after about coast_tiles tiles.
 	var/coast_resume = 0.85
 	var/coast_tiles = 20
+	/// Follows blast door tracks rather than the line (a blast door's drive).
+	var/blast_door_track = FALSE
 
-/proc/ms13_rail_at(turf/location)
-	return location ? (locate(/obj/structure/ms13_rail) in location) : null
+/// The rail on location: a blast door's track if blast_door, any other if not, either if null.
+/proc/ms13_rail_at(turf/location, blast_door)
+	for(var/obj/structure/ms13_rail/rail in location)
+		if(isnull(blast_door) || rail.blast_door_track == blast_door)
+			return rail
+
+/// The rail on location this car follows: a blast door keeps to its own track, and every other car rides over one.
+/datum/ms13_ground_vehicle/rail/proc/rail_at(turf/location)
+	return ms13_rail_at(location, blast_door_track)
 
 /**
  * The frame currently on the guide rail: the one it was already riding while that still holds, otherwise the
  * one nearest the middle of the hull. Null when nothing of the vehicle is over a rail at all.
  */
 /datum/ms13_ground_vehicle/rail/proc/rail_frame()
-	if(rail_bogie && !QDELETED(rail_bogie) && (rail_bogie in frames) && ms13_rail_at(get_turf(rail_bogie)))
+	if(rail_bogie && !QDELETED(rail_bogie) && (rail_bogie in frames) && rail_at(get_turf(rail_bogie)))
 		return rail_bogie
 	rail_bogie = null
 	var/min_forward = INFINITY
@@ -118,7 +142,7 @@
 		max_right = max(max_right, frame.right_offset)
 	var/best_score
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
-		if(!ms13_rail_at(get_turf(frame)))
+		if(!rail_at(get_turf(frame)))
 			continue
 		var/score = abs(frame.forward_offset - (min_forward + max_forward) / 2) + abs(frame.right_offset - (min_right + max_right) / 2)
 		if(isnull(best_score) || score < best_score)
@@ -188,7 +212,7 @@
 
 /datum/ms13_ground_vehicle/rail/do_move(direction, bypass_cooldown = FALSE)
 	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
-	if(!bogie || !ms13_rail_at(get_step(bogie, direction)))
+	if(!bogie || !rail_at(get_step(bogie, direction)))
 		return FALSE
 	. = climb_incline(direction, bypass_cooldown)
 	if(isnull(.))
@@ -296,13 +320,13 @@
 		var/turf/current = queue[index]
 		for(var/direction in GLOB.cardinals)
 			var/turf/neighbor = get_step(current, direction)
-			if(!neighbor || parents[neighbor] || !(locate(/obj/structure/ms13_rail) in neighbor))
+			if(!neighbor || parents[neighbor] || !rail_at(neighbor))
 				continue
 			parents[neighbor] = current
 			queue += neighbor
 			// Onto an incline or a region's crossing line: the line carries on at the far end.
 			var/turf/far_end = ms13_rail_link(neighbor, direction)
-			if(far_end && !parents[far_end] && ms13_rail_at(far_end))
+			if(far_end && !parents[far_end] && rail_at(far_end))
 				parents[far_end] = neighbor
 				queue += far_end
 	return parents
@@ -312,7 +336,7 @@
 	. = list()
 	for(var/turf/location as anything in parents)
 		for(var/obj/structure/ms13_rail/rail in location)
-			if(rail.is_station)
+			if(rail.is_station && rail.blast_door_track == blast_door_track)
 				. += rail
 
 /// Starts the engine and runs the line to destination. FALSE, with user told why, when it can't go.
@@ -514,17 +538,11 @@
 	vehicle.pivot = src
 	vehicle.dir = dir
 	vehicle.frames += src
-	// Validate the whole assembly before adding any components.
+	// It's built as placed, over whatever's in the way; only the edge of the map stops it.
 	for(var/back in 0 to car_length - 1)
 		for(var/right in 0 to car_width - 1)
-			var/turf/target = vehicle.get_relative_turf(-back, right, dir)
-			if(!target || target.density)
+			if(!vehicle.get_relative_turf(-back, right, dir))
 				return INITIALIZE_HINT_QDEL
-			for(var/atom/movable/blocker in target)
-				if(blocker == src || ismob(blocker))
-					continue
-				if(vehicle.blocks_vehicle(blocker))
-					return INITIALIZE_HINT_QDEL
 	build_car()
 	fit_drivetrain()
 
@@ -675,7 +693,7 @@
 	var/obj/structure/ms13_rail/destination
 	if(length(train?.rail_route))
 		for(var/obj/structure/ms13_rail/rail in train.rail_route[length(train.rail_route)])
-			if(rail.is_station)
+			if(rail.is_station && !rail.blast_door_track)
 				destination = rail
 	return list(
 		"powered" = is_powered(),

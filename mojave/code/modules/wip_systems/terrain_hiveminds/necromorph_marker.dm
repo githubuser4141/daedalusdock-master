@@ -1,9 +1,17 @@
 // Marker-only content. The shared hive has no dependency on its power, radio or hallucinations.
+/// The Marker leaves someone be this long between getting into their head.
+#define MS13_MARKER_HAUNT_COOLDOWN (45 SECONDS)
+
 /datum/ms13_terrain_hivemind/necromorph/marker
 	name = "necromorph Marker"
 	core_type = /obj/structure/ms13_hivemind/core/marker
-	core_icon = 'icons/obj/cult/structures.dmi'
-	core_icon_state = "pylon"
+	core_icon = 'mojave/icons/wip/terrain_hivemind/marker_giant.dmi'
+	core_icon_state = "marker_giant_active_anim"
+	// Its necromorphs are the dead, remade: one grown from nothing needs half its full reach of growth, ten times what
+	// remaking a corpse costs, and nineteen remade corpses for every one.
+	thin_air_min_territory = 60
+	thin_air_unit_cost = 200
+	thin_air_share = 0.05
 
 /datum/ms13_terrain_hivemind/necromorph/marker/process(delta_time)
 	var/obj/structure/ms13_hivemind/core/marker/marker = core
@@ -32,11 +40,17 @@
 /obj/structure/ms13_hivemind/core/marker
 	name = "Marker"
 	desc = "A humming alien monolith. Its branching veins resemble both flesh and electrical conductors."
-	icon = 'icons/obj/cult/structures.dmi'
-	icon_state = "pylon"
+	icon = 'mojave/icons/wip/terrain_hivemind/marker_giant.dmi'
+	icon_state = "marker_giant_dormant"
+	// Three tiles wide and six tall: centred on its tile, standing on it, over those around it like a tree.
+	pixel_x = -32
+	layer = 4.9
+	plane = ABOVE_GAME_PLANE
 	max_integrity = 1500
 	var/influence_radius = 30
-	var/corpse_scan_cursor = 1
+	/// How far it reaches for the dead, on its own floor and those just above and below, and how many it remakes a pulse.
+	var/corpse_reach = 45
+	var/corpses_per_pulse = 3
 	/// Default unsafe; a live nearby suppression projector maintains containment.
 	var/suppressed = FALSE
 	var/containment_started_at
@@ -45,6 +59,8 @@
 	var/containment_emp_light_range = 90
 	var/obj/machinery/power/ms13_marker_feed/power_feed
 	var/obj/machinery/telecomms/allinone/ms13_marker_relay/radio_relay
+	/// Its hum, on repeat while it's uncontained.
+	var/datum/looping_sound/ms13_marker_hum/hum
 	COOLDOWN_DECLARE(influence_cooldown)
 
 /obj/structure/ms13_hivemind/core/marker/Initialize(mapload, datum/ms13_terrain_hivemind/join_network)
@@ -56,11 +72,13 @@
 	name = "Marker"
 	power_feed = new(get_turf(src), src)
 	radio_relay = new(get_turf(src), src)
+	hum = new(src, TRUE)
 	COOLDOWN_START(src, influence_cooldown, 10 SECONDS)
 
 /obj/structure/ms13_hivemind/core/marker/Destroy()
 	QDEL_NULL(power_feed)
 	QDEL_NULL(radio_relay)
+	QDEL_NULL(hum)
 	return ..()
 
 /obj/structure/ms13_hivemind/core/marker/examine(mob/user)
@@ -79,6 +97,11 @@
 	if(contained != suppressed)
 		var/release_emp = suppressed && !isnull(containment_started_at) && world.time - containment_started_at >= containment_emp_arm_time
 		suppressed = contained
+		update_appearance(UPDATE_ICON_STATE)
+		if(suppressed)
+			hum?.stop()
+		else
+			hum?.start()
 		// Clear the previous charge before the EMP can cause any further containment changes.
 		containment_started_at = contained ? world.time : null
 		visible_message(span_warning((suppressed ? "[src]'s ominous hum subsides inside a containment field." : "[src]'s containment fails! Its ominous hum returns.")))
@@ -86,6 +109,23 @@
 			visible_message(span_userdanger("[src] discharges a massive electromagnetic pulse as its containment collapses!"))
 			empulse(get_turf(src), containment_emp_heavy_range, containment_emp_light_range, TRUE)
 	return suppressed
+
+/// The Marker's hum. Its sound goes in mid_sounds, and mid_length is how long that sound runs (deciseconds), so each
+/// play starts as the last ends.
+/datum/looping_sound/ms13_marker_hum
+	mid_sounds = list('mojave/sound/wip/necromorphs/marker_hum2.ogg' = 1)
+	mid_length = 9.311 SECONDS
+	// Never loud, but carrying: a slow fade out to 17 + extra_range tiles, heard through walls with each one halving it
+	// (ms13_wall_muffle()), so it's still there a few rooms off, dimly.
+	volume = 40
+	extra_range = 28
+	falloff_distance = 3
+	falloff_exponent = 1.3
+
+/// Dormant while contained, pulsing while loose.
+/obj/structure/ms13_hivemind/core/marker/update_icon_state()
+	icon_state = suppressed ? "marker_giant_dormant" : "marker_giant_active_anim"
+	return ..()
 
 /obj/structure/ms13_hivemind/core/marker/attackby(obj/item/item, mob/living/user, params)
 	if(istype(item, /obj/item/stack/cable_coil) && power_feed)
@@ -98,27 +138,36 @@
 		return
 	COOLDOWN_START(src, influence_cooldown, 10 SECONDS)
 	for(var/mob/living/carbon/human/human in GLOB.player_list)
-		if(human.client && human.stat == CONSCIOUS && human.z == z && get_dist(src, human) <= influence_radius && prob(25))
-			new /datum/hallucination/ms13_marker_attack(human)
-	// Scan a rotating budget rather than every corpse for every Marker every tick.
-	var/count = length(GLOB.dead_mob_list)
-	for(var/index in 1 to min(count, 32))
-		if(corpse_scan_cursor > length(GLOB.dead_mob_list))
-			corpse_scan_cursor = 1
-		if(!length(GLOB.dead_mob_list))
+		if(!human.client || human.stat != CONSCIOUS || human.z != z || !COOLDOWN_FINISHED(human, ms13_marker_haunt))
+			continue
+		var/distance = get_dist(src, human)
+		if(distance > influence_radius)
+			continue
+		// The nearer, the more often and the worse: 10% a pulse at the edge of its reach, up to 40% beside it.
+		var/closeness = 1 - distance / influence_radius
+		if(prob(10 + 30 * closeness))
+			COOLDOWN_START(human, ms13_marker_haunt, MS13_MARKER_HAUNT_COOLDOWN)
+			new /datum/hallucination/ms13_marker(human, TRUE, closeness)
+	// Every corpse in reach, each pulse: cheap position checks first.
+	// ponytail: walks the whole dead_mob_list every 10 seconds; a spatial lookup if that list ever runs to thousands.
+	var/remade = 0
+	for(var/mob/living/corpse in GLOB.dead_mob_list)
+		// dead_mob_list also contains observers; the typed loop skips them.
+		if(abs(corpse.x - x) > corpse_reach || abs(corpse.y - y) > corpse_reach)
+			continue
+		if(corpse.z != z && !(corpse.z == z + 1 && HasAbove(z)) && !(corpse.z == z - 1 && HasBelow(z)))
+			continue
+		if(!network.is_convertible_corpse(corpse) || LAZYLEN(corpse.grabbed_by) || network.get_corpse_claim(corpse))
+			continue
+		if(length(network.units) >= network.max_units || network.resources < network.unit_cost)
 			break
-		var/mob/living/corpse = GLOB.dead_mob_list[corpse_scan_cursor++]
-		// dead_mob_list also contains observers; typed assignments do not filter DM lists.
-		if(!network.is_convertible_corpse(corpse) || corpse.z != z || get_dist(src, corpse) > influence_radius || LAZYLEN(corpse.grabbed_by))
-			continue
-		if(network.get_corpse_claim(corpse) || length(network.units) >= network.max_units || network.resources < network.unit_cost)
-			continue
 		// Do not consume a corpse unless its tile is suitable for the newborn (no vehicles/dense blockers).
 		if(!network.get_unit_spawn_turf(get_turf(corpse)))
 			continue
 		if(network.advance_corpse_conversion(corpse, src, 1, 1))
 			network.resources -= network.unit_cost
-			break // At most one remote rebirth per pulse.
+			if(++remade >= corpses_per_pulse)
+				break
 
 // These hidden components stay on the Marker's turf so native cable/radio z-level checks work.
 /obj/machinery/power/ms13_marker_feed
@@ -252,42 +301,95 @@
 	. = ..()
 	. += span_notice("[enabled ? "Enabled" : "Disabled"]. Containment field: [field_expires > world.time ? "active" : "offline"]. Requires a cable node and 50 kW of spare grid power.")
 
-/datum/hallucination/ms13_marker_attack
-	var/image/attacker
-	var/client/viewer
-	var/hits = 0
+/mob/living/carbon/human
+	COOLDOWN_DECLARE(ms13_marker_haunt)
 
-/datum/hallucination/ms13_marker_attack/New(mob/living/carbon/human/victim, forced = TRUE)
+/**
+ * Something only its victim sees or hears, and nothing that can hurt them. Far off, a whisper; nearer, voices and things
+ * moving behind them, then glimpses of something watching; beside the Marker, now and then, something lunging out of
+ * the dark that isn't there.
+ */
+/datum/hallucination/ms13_marker
+	var/image/phantom
+	var/client/viewer
+
+/datum/hallucination/ms13_marker/New(mob/living/carbon/human/victim, forced = TRUE, closeness = 0)
 	. = ..()
 	viewer = victim.client
-	var/atom/anchor = get_step(victim, pick(GLOB.cardinals))
-	for(var/mob/living/carbon/human/other in oview(4, victim))
-		if(prob(50))
-			anchor = other
-			break
-	attacker = image('mojave/icons/wip/terrain_hivemind/ds13_slasher.dmi', anchor, "preview", MOB_LAYER)
-	attacker.override = ishuman(anchor)
-	attacker.pixel_x = -8
-	attacker.pixel_y = -8
-	if(viewer)
-		viewer.images += attacker
-	feedback_details = "Marker-induced phantom attack; real combat/health unchanged."
-	START_PROCESSING(SSobj, src)
-	QDEL_IN(src, 8 SECONDS)
+	var/list/kinds = list("whisper" = 4)
+	if(closeness >= 0.25)
+		kinds["voice"] = 2
+		kinds["stalker"] = 2
+	if(closeness >= 0.4)
+		kinds["glimpse"] = 3
+	if(closeness >= 0.75)
+		kinds["lunge"] = 1
+	var/kind = pick_weight(kinds)
+	feedback_details = "Marker hallucination: [kind]."
+	switch(kind)
+		if("whisper")
+			whisper()
+		if("voice")
+			voice()
+		if("stalker")
+			stalker()
+		if("glimpse")
+			glimpse()
+		if("lunge")
+			lunge()
+	QDEL_IN(src, 3 SECONDS)
 
-/datum/hallucination/ms13_marker_attack/process(delta_time)
-	if(!target?.client || target.stat != CONSCIOUS || ++hits > 3)
-		qdel(src)
-		return PROCESS_KILL
-	to_chat(target, span_userdanger("[ishuman(attacker.loc) ? attacker.loc.name : "Something"] slashes at you!"))
-	target.playsound_local(get_turf(target), 'sound/weapons/slash.ogg', 40, TRUE)
-	animate(attacker, pixel_x = 4, time = 2)
-	animate(pixel_x = -8, time = 2)
-
-/datum/hallucination/ms13_marker_attack/Destroy()
-	STOP_PROCESSING(SSobj, src)
+/datum/hallucination/ms13_marker/Destroy()
 	if(viewer)
-		viewer.images -= attacker
-	attacker = null
+		viewer.images -= phantom
+	phantom = null
 	viewer = null
 	return ..()
+
+/datum/hallucination/ms13_marker/proc/whisper()
+	var/static/list/lines = list("Make us whole.", "Bring us home.", "Don't be afraid.", "You're almost there.", "We're here. We've always been here.", "Let go.", "There's nothing to fear. Not anymore.", "Come closer.")
+	to_chat(target, span_hear("<i>...[pick(lines)]...</i>"))
+
+/// A voice, just behind them.
+/datum/hallucination/ms13_marker/proc/voice()
+	var/static/list/voices = list('sound/hallucinations/behind_you1.ogg', 'sound/hallucinations/behind_you2.ogg', 'sound/hallucinations/turn_around1.ogg', 'sound/hallucinations/turn_around2.ogg', 'sound/hallucinations/i_see_you1.ogg', 'sound/hallucinations/im_here1.ogg', 'sound/hallucinations/over_here2.ogg')
+	target.playsound_local(get_step(target, turn(target.dir, 180)), pick(voices), 20, FALSE)
+
+/// Something moving a few steps behind them.
+/datum/hallucination/ms13_marker/proc/stalker()
+	var/static/list/noises = list('mojave/sound/wip/necromorphs/slasher_shout_1.ogg', 'mojave/sound/wip/necromorphs/lurker_shout_1.ogg', 'mojave/sound/wip/necromorphs/infector_shout_1.ogg')
+	var/turf/behind = get_ranged_target_turf(target, turn(target.dir, 180), rand(3, 5))
+	target.playsound_local(behind, pick(noises), 25, TRUE)
+
+/// Something watching from a few tiles off, gone as soon as it's seen.
+/datum/hallucination/ms13_marker/proc/glimpse()
+	var/list/spots = list()
+	for(var/turf/open/spot in view(7, target))
+		if(get_dist(spot, target) >= 4 && !spot.density)
+			spots += spot
+	if(!length(spots) || !viewer)
+		return whisper()
+	var/static/list/watchers = list('mojave/icons/wip/terrain_hivemind/ds13_slasher.dmi', 'mojave/icons/wip/terrain_hivemind/ds13_infector.dmi', 'mojave/icons/wip/terrain_hivemind/ds13_exploder.dmi')
+	phantom = image(pick(watchers), pick(spots), "preview", MOB_LAYER)
+	phantom.pixel_x = -8
+	phantom.alpha = 0
+	viewer.images += phantom
+	animate(phantom, alpha = 190, time = 0.3 SECONDS)
+	animate(time = 0.6 SECONDS)
+	animate(alpha = 0, time = 0.4 SECONDS)
+
+/// Something lunging at them from right beside them, and nothing there.
+/datum/hallucination/ms13_marker/proc/lunge()
+	var/turf/from = get_step(target, pick(GLOB.alldirs))
+	if(!from || !viewer)
+		return whisper()
+	phantom = image('mojave/icons/wip/terrain_hivemind/ds13_slasher.dmi', from, "preview", ABOVE_MOB_LAYER)
+	phantom.pixel_x = -8
+	viewer.images += phantom
+	target.playsound_local(from, 'mojave/sound/wip/necromorphs/slasher_attack_1.ogg', 40, TRUE)
+	to_chat(target, span_danger("Something lunges at you out of the dark!"))
+	animate(phantom, pixel_x = (target.x - from.x) * 20 - 8, pixel_y = (target.y - from.y) * 20, time = 0.2 SECONDS)
+	animate(alpha = 0, time = 0.2 SECONDS)
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), target, span_notice("...There's nothing there.")), 1.5 SECONDS)
+
+#undef MS13_MARKER_HAUNT_COOLDOWN
