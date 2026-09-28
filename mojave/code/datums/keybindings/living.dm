@@ -7,10 +7,16 @@
 
 /datum/keybinding/living/wield/down(client/user)
 	. = ..()
+	if(.)
+		return
 	var/mob/living/living_user = user.mob
 	if(istype(living_user))
 		living_user.wield_active_hand()
 	return TRUE
+
+// Keep the legacy binding working for saved preferences, but offer one default V binding.
+/datum/keybinding/human/wield
+	hotkey_keys = list()
 
 /datum/keybinding/living/fixeye
 	hotkey_keys = list("ShiftF")

@@ -1,6 +1,8 @@
 //Mojave Sun related guns and variables to inherent
 
 /obj/item/gun/ballistic/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/weapons/guns_inhand_left.dmi'
@@ -22,6 +24,8 @@
 
 //Mojave Sun version for shotguns
 /obj/item/gun/ballistic/shotgun/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/weapons/guns_inhand_left.dmi'
@@ -46,6 +50,8 @@
 		AddComponent(/datum/component/scope, range_modifier = (scope_range))
 //Automatic shotguns
 /obj/item/gun/ballistic/shotgun/automatic/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/weapons/guns_inhand_left.dmi'
@@ -71,6 +77,8 @@
 
 //Revolvers
 /obj/item/gun/ballistic/revolver/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/weapons/guns_inhand_left.dmi'
@@ -105,6 +113,8 @@
 
 //Automatics
 /obj/item/gun/ballistic/automatic/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	// Magazine/slide visuals are baked into MS full-state sprites, not DD overlays.
 	show_bolt_icon = FALSE
@@ -190,6 +200,8 @@
 	AddComponent(/datum/component/automatic_fire, fire_delay)
 
 /obj/item/gun/ballistic/automatic/pistol/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	desc = "complain when seeing this"
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
@@ -242,6 +254,8 @@
 
 //Bolt-actions
 /obj/item/gun/ballistic/rifle/ms13
+	unwielded_recoil = null
+	unwielded_spread_bonus = null
 	name = "generic ms13 gun"
 	icon = 'mojave/icons/objects/guns/guns_world.dmi'
 	worn_icon = 'mojave/icons/mob/worn_guns.dmi'

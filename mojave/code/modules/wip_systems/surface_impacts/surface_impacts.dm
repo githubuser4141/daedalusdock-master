@@ -1,5 +1,22 @@
 GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 
+// Mappers can override this on a roof tile. Solid storeys and heavy metal roofing stop automatic impacts;
+// asphalt, sheet and wooden roofs do not. Area.outdoors is not a roof-thickness measurement.
+/turf
+	var/ms13_blocks_surface_impacts = FALSE
+
+/turf/closed
+	ms13_blocks_surface_impacts = TRUE
+
+/turf/open/floor
+	ms13_blocks_surface_impacts = TRUE
+
+/turf/open/floor/plating/ms13/roof
+	ms13_blocks_surface_impacts = FALSE
+
+/turf/open/floor/plating/ms13/roof/metal
+	ms13_blocks_surface_impacts = TRUE
+
 /obj/effect/temp_visual/ms13/target_indicator/surface_impact
 	name = "impact warning"
 	desc = "The ground here is about to become extremely unsafe."
@@ -66,6 +83,8 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 	var/center_y
 	var/center_z
 	var/list/reserved_turfs
+	/// Retained through the warning and resolution; explicit admin locations bypass automatic placement rules.
+	var/automatic = FALSE
 
 /datum/ms13_surface_impact/New()
 	. = ..()
@@ -98,29 +117,39 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 			if(affected)
 				. += affected
 
-/// The open ground: the surface level and the regions around it, never a basement or an upper storey.
+/// Automatic events stay on the playable map, including its connected upper and lower floors.
 /datum/ms13_surface_impact/proc/is_impact_level(z_level)
-	return z_level == ms13_surface_z() || (z_level in SSmapping.ms13_surface_levels)
+	return is_station_level(z_level) || z_level == ms13_surface_z() || (z_level in SSmapping.ms13_surface_levels)
 
 /// The map's central ground level (its config's surface_level).
 /proc/ms13_surface_z()
 	var/list/levels = islist(SSmapping.config.map_file) ? SSmapping.config.map_file : list(SSmapping.config.map_file)
 	return SSmapping.station_start + min(SSmapping.config.surface_level, length(levels)) - 1
 
-/// outdoors_only: keep off anywhere roofed, towns and bases, as the random event does.
-/datum/ms13_surface_impact/proc/get_validation_error(turf/target, check_reservations = TRUE, outdoors_only = FALSE)
-	if(!target || !is_impact_level(target.z))
-		return "The impact must be placed on the surface, not a basement or an upper floor."
+/// Check every connected floor above, so thin roofing cannot conceal a thick ceiling higher up.
+/datum/ms13_surface_impact/proc/has_thick_roof(turf/target)
+	var/turf/above = GetAbove(target)
+	while(above)
+		if(above.ms13_blocks_surface_impacts)
+			return TRUE
+		above = GetAbove(above)
+	return FALSE
+
+/datum/ms13_surface_impact/proc/get_validation_error(turf/target, check_reservations = TRUE, automatic_site = FALSE)
+	if(!target)
+		return "Choose a valid impact turf."
 	// Clear of the map's edge, and of the strips that cross into the regions beside it.
 	var/list/bounds = SSmapping.ms13_surface_bounds || list(1, 1, world.maxx, world.maxy)
 	var/margin = radius + 3 + (SSmapping.ms13_surface_bounds ? TRANSITIONEDGE : 0)
-	if(target.x - margin < bounds[1] || target.x + margin > bounds[3] || target.y - margin < bounds[2] || target.y + margin > bounds[4])
+	if(automatic_site && (target.x - margin < bounds[1] || target.x + margin > bounds[3] || target.y - margin < bounds[2] || target.y + margin > bounds[4]))
 		return "The impact is too close to the map edge to evacuate its occupants safely."
 
 	var/list/footprint = get_footprint(target)
 	for(var/turf/affected as anything in footprint)
 		if(check_reservations && (affected in GLOB.ms13_surface_impact_reserved_turfs))
 			return "Another surface impact already reserves part of this footprint."
+		if(!automatic_site)
+			continue
 		if(affected.resistance_flags & INDESTRUCTIBLE)
 			return "The footprint contains protected terrain."
 		if((locate(/obj/effect/landmark) in affected) || (locate(/obj/docking_port) in affected))
@@ -128,13 +157,16 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 		// Half a vehicle can't be left behind.
 		if((locate(/obj/structure/ms13_vehicle_frame) in affected) || (locate(/obj/vehicle/sealed) in affected))
 			return "A vehicle or mech is in the way."
-		if(outdoors_only)
-			var/area/place = affected.loc
-			if(!place.outdoors)
-				return "The footprint reaches under a roof."
+		if(has_thick_roof(affected))
+			return "The footprint reaches under a thick roof."
 
 	if(!length(get_evacuation_turfs(target)))
-		return "No safe open tile exists near the impact for evacuating players."
+		if(automatic_site)
+			return "No safe open tile exists near the impact for evacuating players."
+		for(var/turf/affected as anything in footprint)
+			for(var/mob/living/occupant in affected.get_all_contents())
+				if(ishuman(occupant) || occupant.mind)
+					return "No safe open tile exists near the impact for evacuating players."
 
 /datum/ms13_surface_impact/proc/get_evacuation_turfs(turf/target)
 	. = list()
@@ -154,20 +186,27 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 
 /// Somewhere out in the open, a walk from someone so there's an audience, but not on top of anyone.
 /datum/ms13_surface_impact/proc/find_landing_site()
+	automatic = TRUE
+	var/list/levels = list()
+	for(var/z_level in 1 to world.maxz)
+		if(is_impact_level(z_level))
+			levels += z_level
+	if(!length(levels))
+		return
 	var/list/witnesses = list()
 	for(var/mob/living/player as anything in GLOB.alive_player_list)
 		if(is_impact_level(player.z))
 			witnesses += player
 	for(var/attempt in 1 to 60)
 		var/turf/candidate
-		if(length(witnesses))
+		if(length(witnesses) && attempt <= 40)
 			var/mob/living/witness = pick(witnesses)
 			var/angle = rand(0, 359)
 			var/distance = rand(20, 45)
 			candidate = locate(witness.x + round(distance * cos(angle)), witness.y + round(distance * sin(angle)), witness.z)
 		else
-			candidate = locate(rand(1, world.maxx), rand(1, world.maxy), ms13_surface_z())
-		if(!candidate || get_validation_error(candidate, outdoors_only = TRUE))
+			candidate = locate(rand(1, world.maxx), rand(1, world.maxy), pick(levels))
+		if(!candidate || get_validation_error(candidate, automatic_site = TRUE))
 			continue
 		var/crowded = FALSE
 		for(var/mob/living/player as anything in witnesses)
@@ -178,7 +217,7 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 			return candidate
 
 /datum/ms13_surface_impact/proc/begin(turf/target)
-	var/error = get_validation_error(target)
+	var/error = get_validation_error(target, automatic_site = automatic)
 	if(error)
 		return error
 
@@ -207,7 +246,7 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 
 /datum/ms13_surface_impact/proc/resolve()
 	var/turf/center = locate(center_x, center_y, center_z)
-	var/error = get_validation_error(center, FALSE)
+	var/error = get_validation_error(center, FALSE, automatic)
 	if(error)
 		center?.visible_message(span_warning("The marked impact collapses harmlessly: [error]"))
 		qdel(src)
@@ -276,6 +315,8 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 			if(!contains_offset(x_offset, y_offset))
 				continue
 			var/turf/affected = locate(center_x + x_offset, center_y + y_offset, center_z)
+			if(!affected)
+				continue
 			if(x_offset * x_offset + y_offset * y_offset >= (radius - 1) * (radius - 1) && prob(wall_chance))
 				affected.ChangeTurf(pick(wall_types), flags = CHANGETURF_DEFAULT_BASETURF | CHANGETURF_INHERIT_AIR)
 			else
@@ -869,7 +910,7 @@ GLOBAL_LIST_EMPTY(ms13_surface_impact_reserved_turfs)
 		qdel(chosen)
 		return
 
-	var/error = chosen.get_validation_error(target)
+	var/error = chosen.get_validation_error(target, automatic_site = chosen.automatic)
 	if(error)
 		to_chat(src, span_warning(error), confidential = TRUE)
 		qdel(chosen)

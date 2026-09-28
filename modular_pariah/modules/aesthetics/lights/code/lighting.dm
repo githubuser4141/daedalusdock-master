@@ -22,13 +22,17 @@
 	if (firealarm)
 		CO = bulb_emergency_colour
 
-	var/matching = light && OR == light.light_outer_range && IR == light.light_inner_range && PO == light.light_power && CO == light.light_color && FC == light.light_falloff_curve
+	// A visual dim/flicker is not another power cycle and must not accrue bulb wear on each refresh.
+	var/datum/component/ms13_light_flicker/flicker_effect = GetComponent(/datum/component/ms13_light_flicker)
+	var/expected_power = PO * (flicker_effect ? flicker_effect.brightness_multiplier : 1)
+	// Compare requested output; the lighting subsystem may not have rendered the latest dip yet.
+	var/matching = light && OR == light_outer_range && IR == light_inner_range && expected_power == light_power && CO == light_color && FC == light_falloff_curve
 	if(!matching)
 		switchcount++
 		if(rigged)
 			if(status == LIGHT_OK && trigger)
 				explode()
-		else if( prob( min(60, (switchcount**2)*0.01) ) )
+		else if(prob(min(60, (switchcount**2)*0.01) * (world.time < ms13_emp_bulb_protection_until ? 0.1 : 1)))
 			if(trigger)
 				burn_out()
 		else
@@ -98,4 +102,3 @@
 
 /obj/item/light/tube
 	icon = 'modular_pariah/modules/aesthetics/lights/icons/lighting.dmi'
-

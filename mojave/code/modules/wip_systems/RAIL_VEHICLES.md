@@ -33,6 +33,12 @@ opposite ways: the lower one faces the way the line climbs, the upper one the wa
 Run the lower line up to its incline, and start the upper line on the tile past the upper
 incline. A car running onto either incline the way it faces comes out whole on the other level,
 its tail on the first tile past the far incline, so leave a car's length of clear line there.
+
+Ordinary `/obj/structure/stairs` with rails laid over them also connect the line. At the final
+stair in a chain, lay rail at the same coordinates on the upper floor and continue one tile
+past it in the stair's facing direction. Trains use that connection both ways; leave solid,
+clear floor for the whole car at either landing. Rails on separate floors without a stair or
+paired rail incline between them remain separate lines.
 The approach must be as wide as the car. If anything blocks the far end, the car stops short.
 
 ## Across a region's edge

@@ -368,6 +368,7 @@ GLOBAL_LIST_INIT(scrap_wood_recipes, list ( \
 	amount = 4
 
 GLOBAL_LIST_INIT(plank_recipes, list ( \
+	new/datum/stack_recipe("mine support beams", /obj/structure/ms13/cave_decor/support/beams, 4, time = 8 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("crude wood table", /obj/structure/table/ms13/wood/constructed, 4, time = 20 SECONDS, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("wood floor boards", /obj/item/stack/tile/ms13/wood, req_amount = 1, res_amount = 2, max_res_amount = 10, time = 5 SECONDS), \
 	new/datum/stack_recipe("wood barricade", /obj/structure/ms13/barricade, 4, time = 15 SECONDS, one_per_turf = FALSE, on_floor = TRUE), \

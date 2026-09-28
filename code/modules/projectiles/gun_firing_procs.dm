@@ -116,13 +116,7 @@
  * * message - If TRUE, will give chat feedback.
  */
 /obj/item/gun/proc/after_firing(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = 1)
-	// Shake the user's camera if it wasn't telekinesis
-	if(recoil && !tk_firing(user))
-		var/real_recoil = recoil
-		if(!wielded)
-			real_recoil = unwielded_recoil
-
-		shake_camera(user, real_recoil + 1, real_recoil)
+	// Mojave's after_firing override applies directional camera recoil and accumulated kick once.
 
 	//BANG BANG BANG
 	play_fire_sound()

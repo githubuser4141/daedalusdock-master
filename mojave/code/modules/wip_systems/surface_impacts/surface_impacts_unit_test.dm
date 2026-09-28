@@ -39,7 +39,28 @@
 	var/surface = ms13_surface_z()
 	TEST_ASSERT(level_check.is_impact_level(surface), "Impacts reject the surface.")
 	if(surface != SSmapping.station_start)
-		TEST_ASSERT(!level_check.is_impact_level(SSmapping.station_start), "Impacts accept the basement below the surface.")
+		TEST_ASSERT(level_check.is_impact_level(SSmapping.station_start), "Automatic impacts still reject an entire playable floor instead of checking its roof.")
+	var/turf/edge = locate(world.maxx, world.maxy, SSmapping.station_start)
+	TEST_ASSERT(!level_check.get_validation_error(edge, FALSE), "An explicit admin impact still rejects map edges or a lower floor.")
+	TEST_ASSERT(level_check.get_validation_error(edge, FALSE, TRUE), "Automatic impacts allow a crater on the map border.")
+	var/turf/thin_roof_type = /turf/open/floor/plating/ms13/roof/sheet
+	var/turf/thick_roof_type = /turf/open/floor/plating/ms13/roof/metal
+	TEST_ASSERT(!initial(thin_roof_type.ms13_blocks_surface_impacts), "Thin sheet roofing blocks automatic impacts.")
+	TEST_ASSERT(initial(thick_roof_type.ms13_blocks_surface_impacts), "Heavy metal roofing does not block automatic impacts.")
+	var/turf/roof_probe = locate(round(world.maxx / 2), round(world.maxy / 2), surface)
+	var/list/old_roof_flags = list()
+	var/turf/above = GetAbove(roof_probe)
+	while(above)
+		old_roof_flags[above] = above.ms13_blocks_surface_impacts
+		above.ms13_blocks_surface_impacts = FALSE
+		above = GetAbove(above)
+	TEST_ASSERT(!level_check.has_thick_roof(roof_probe), "An open or thin-roofed column is rejected.")
+	if(length(old_roof_flags))
+		var/turf/thick_roof = old_roof_flags[length(old_roof_flags)]
+		thick_roof.ms13_blocks_surface_impacts = TRUE
+		TEST_ASSERT(level_check.has_thick_roof(roof_probe), "The roof check missed a thick roof above thin roofing.")
+	for(var/turf/roof as anything in old_roof_flags)
+		roof.ms13_blocks_surface_impacts = old_roof_flags[roof]
 	qdel(level_check)
 
 	// A small raider fort, built out past the test room (too small for one) and put back after.

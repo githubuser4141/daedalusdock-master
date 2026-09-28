@@ -50,11 +50,21 @@
 				return get_step(level, dir)
 
 /// Where a car running onto gate the given way comes out, if that takes it to another level or region.
-/proc/ms13_rail_link(turf/gate, direction)
+/proc/ms13_rail_link(turf/gate, direction, include_regions = TRUE)
 	for(var/obj/structure/ms13_rail/ramp/ramp in gate)
 		if(ramp.dir == direction)
 			return ramp.far_end()
-	if(SSmapping.ms13_surface_edge(gate) == direction)
+	// Existing maps lay ordinary rails over stairs. Use the same terminal stair in both directions.
+	if(ms13_rail_at(gate))
+		for(var/obj/structure/stairs/stairs in gate)
+			if(stairs.dir == direction && stairs.isTerminator())
+				return get_step(GetAbove(gate), direction)
+		var/turf/below = GetBelow(gate)
+		if(ms13_rail_at(below))
+			for(var/obj/structure/stairs/stairs in below)
+				if(stairs.dir == turn(direction, 180) && stairs.isTerminator())
+					return get_step(below, direction)
+	if(include_regions && SSmapping.ms13_surface_edge(gate) == direction)
 		return SSmapping.ms13_surface_destination(gate, direction)
 
 /// What route boards call this stop: the area it was mapped into.
@@ -285,9 +295,7 @@
 	var/turf/far_end
 	var/obj/structure/ms13_vehicle_frame/leading
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
-		for(var/obj/structure/ms13_rail/ramp/ramp in get_step(frame, direction))
-			if(ramp.dir == direction)
-				far_end = ramp.far_end()
+		far_end = ms13_rail_link(get_step(frame, direction), direction, FALSE)
 		if(far_end)
 			leading = frame
 			break
@@ -669,7 +677,7 @@
 			var/list/from = board_levels["[parent.z]"] || list(0, 0, 0)
 			var/turf/joined = get_step(parent, get_dir(parents[parent], parent)) || parent
 			var/level = from[3]
-			if(parent.z != location.z && (locate(/obj/structure/ms13_rail/ramp) in parent))
+			if(parent.z != location.z && ms13_rail_link(parent, get_dir(parents[parent], parent), FALSE)?.z == location.z)
 				level += location.z > parent.z ? 1 : -1
 			board_levels["[location.z]"] = list(from[1] + joined.x - location.x, from[2] + joined.y - location.y, level)
 		var/list/spot = board_spot(location)

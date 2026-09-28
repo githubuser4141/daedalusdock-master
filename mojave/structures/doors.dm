@@ -37,6 +37,8 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 /obj/machinery/door/unpowered/ms13/Initialize(mapload)
 	. = ..()
 	align_to_dir()
+	if(motorised)
+		install_motor()
 	if(mapload)
 		. = roll_for_roundstart_lock() || .
 

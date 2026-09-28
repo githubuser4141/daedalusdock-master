@@ -21,6 +21,8 @@ TYPEINFO_DEF(/obj/item/flashlight)
 	light_on = FALSE
 	force = 10
 	var/on = FALSE
+	var/switch_on_sound = 'sound/weapons/magin.ogg'
+	var/switch_off_sound = 'sound/weapons/magout.ogg'
 
 
 /obj/item/flashlight/Initialize(mapload)
@@ -41,7 +43,7 @@ TYPEINFO_DEF(/obj/item/flashlight)
 
 /obj/item/flashlight/attack_self(mob/user)
 	on = !on
-	playsound(user, on ? 'sound/weapons/magin.ogg' : 'sound/weapons/magout.ogg', 40, TRUE)
+	playsound(user, on ? switch_on_sound : switch_off_sound, 40, TRUE)
 	update_brightness(user)
 	update_action_buttons()
 	return 1

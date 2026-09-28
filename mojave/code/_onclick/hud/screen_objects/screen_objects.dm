@@ -24,7 +24,8 @@
 
 /atom/movable/screen/wield/update_icon_state()
 	. = ..()
-	if(hud?.wield_active)
+	var/obj/item/held = hud?.mymob?.get_active_held_item()
+	if(held?.wielded)
 		icon_state = "[base_icon_state]_active"
 	else
 		icon_state = base_icon_state

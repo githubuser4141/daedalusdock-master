@@ -4,7 +4,8 @@
 /// Wielding two-handed, both hands are in use.
 /atom/movable/screen/inventory/hand/update_overlays()
 	. = ..()
-	if(hud?.wield_active && hud.mymob && hud.mymob.active_hand_index != held_index)
+	var/obj/item/held = hud?.mymob?.get_item_for_held_index(held_index)
+	if(held?.wielded || istype(held, /obj/item/offhand))
 		. += "hand_active"
 
 #ifdef UNIT_TESTS

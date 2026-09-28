@@ -567,6 +567,26 @@
 		Fail("The route board did not draw the lower line a level down, in place, joined at the incline.")
 	if(!run_line(line, low_stop) || car.z != lower || cargo.z != lower || rider.z != lower)
 		Fail("The car did not run back down the incline to the lower stop.")
+	// Drought uses normal stairs under rails rather than dedicated paired rail inclines.
+	for(var/level in list(lower, upper))
+		var/turf/gate = locate(20, 31, level)
+		qdel(locate(/obj/structure/ms13_rail/ramp) in gate)
+		allocate(/obj/structure/ms13_rail, gate)
+	var/obj/structure/stairs/stairs = allocate(/obj/structure/stairs/north, locate(20, 31, lower))
+	if(!run_line(line, high_stop) || cargo.z != upper || rider.z != upper)
+		Fail("Rails laid on ordinary stairs did not carry the whole train to the upper stop.")
+	board = terminal.ui_static_data()
+	below = null
+	for(var/list/listed as anything in board["stops"])
+		if(listed["ref"] == REF(low_stop))
+			below = listed
+	if(!below || below["level"] != -1 || length(board["links"]) != 1)
+		Fail("The route board did not show the stair-linked lower stop on its own floor.")
+	if(!run_line(line, low_stop) || cargo.z != lower || rider.z != lower)
+		Fail("Rails laid on ordinary stairs did not carry the whole train back down.")
+	qdel(stairs)
+	if(get_turf(high_stop) in line.find_rail_routes())
+		Fail("Disconnected rails on another floor remained reachable after their stairs were removed.")
 	clear_vehicle(line)
 	// Over a region's north edge: the lower line runs onto its crossing line and the region beyond picks up on its own.
 	var/list/saved_links = SSmapping.ms13_surface_links

@@ -8,7 +8,7 @@
 /proc/ms13_medical_debug(mob/recipient, message)
 	if(!MS13_MEDICAL_DEBUG_ENABLED)
 		return
-	to_chat(recipient, span_notice("[DEBUG] [message]"))
+	to_chat(recipient, span_notice("DEBUG: [message]"))
 
 TYPEINFO_DEF(/obj/item/organ/vessel)
 	default_armor = list(BLUNT = 25, PUNCTURE = 3, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25) // famously low slash armor

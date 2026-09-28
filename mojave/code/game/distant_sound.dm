@@ -1,3 +1,5 @@
+#include "sound_effects.dm"
+
 /// How fast sound carries. Faster than real sound over these distances, where the true delay would be too slight to notice.
 #define DISTANT_SOUND_TILES_PER_SECOND 100
 /// How far into the plain sound's range, as a share of it, the distant sound starts fading in, so one hands over to the other.
@@ -84,6 +86,7 @@ GLOBAL_VAR(ms13_hit_force)
  * it is. No space station hull creaking. Screen shake as DD's.
  */
 /datum/controller/subsystem/explosions/shake_the_room(turf/epicenter, near_distance, far_distance, quake_factor, echo_factor, creaking, sound/near_sound = sound(get_sfx(SFX_EXPLOSION)), sound/far_sound, sound/echo_sound, sound/creaking_sound, hull_creaking_sound)
+	near_sound.file = get_sfx(near_sound.file)
 	var/list/versions = GLOB.distant_sound_versions["[near_sound.file]"]
 	if(!versions)
 		return ..()

@@ -12,3 +12,5 @@
 	 * Wield info datums are singletons, and should not be created or deleted in the middle of a round.
 	 */
 	var/wield_info = /datum/wield_info/default
+
+#include "wielding.dm"

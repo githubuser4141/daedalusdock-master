@@ -60,11 +60,37 @@
 	return TRUE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/AttackingTarget(atom/attacked_target)
-	if(try_capture_npc(attacked_target ? attacked_target : target))
+	var/atom/victim = attacked_target ? attacked_target : target
+	if(!victim || !CanAttack(victim))
+		return FALSE
+	if(try_capture_npc(victim))
 		return TRUE
-	return ..()
+	if(!isliving(victim))
+		return hive_breach_obstacle(victim)
+	var/mob/living/living_victim = victim
+	var/health_before = living_victim.health
+	. = ..()
+	if(QDELETED(living_victim) || living_victim.health < health_before)
+		hive_route_progress_at = world.time
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/MoveToTarget(list/possible_targets)
+	if(length(hive_charge?.charging))
+		return TRUE
+	if(target && CanAttack(target))
+		if(target in possible_targets || Adjacent(target))
+			hive_last_seen_turf = get_turf(target)
+			hive_last_seen_at = world.time
+		else if(hive_last_seen_turf?.z == z && world.time - hive_last_seen_at < 20 SECONDS)
+			// Search the last observed position instead of forgetting prey at a corner or tracking it through walls.
+			stop_automated_movement = TRUE
+			in_melee = FALSE
+			if(get_turf(src) == hive_last_seen_turf)
+				LoseTarget()
+				return FALSE
+			if(!Goto(hive_last_seen_turf, move_to_delay, 0))
+				hive_abandon_route(target)
+				return FALSE
+			return TRUE
 	if(can_capture_npc(target))
 		if(Adjacent(target))
 			return try_capture_npc(target)
@@ -84,7 +110,7 @@
 	return ..()
 
 /// Use existing pathfinding, including its repath throttle, for combat, roaming and hauling.
-/mob/living/simple_animal/hostile/ms13/terrain_hivemind/Goto(atom/destination, delay, minimum_distance)
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/Goto(atom/destination, delay, minimum_distance, track_goal = TRUE)
 	if(prying_door_ref || length(hive_charge?.charging) || prevent_goto_movement || !destination || incapacitated() || !isturf(loc))
 		return FALSE
 	var/turf/destination_turf = get_turf(destination)
@@ -95,11 +121,15 @@
 	if(get_dist(src, destination) <= minimum_distance)
 		SSmove_manager.stop_looping(src)
 		return TRUE
+	if(track_goal && !hive_route_ready(destination))
+		return FALSE
 	approaching_target = FALSE // Random combat dodges would step off the calculated route.
 	var/datum/move_loop/loop = SSmove_manager.jps_move(src, destination, delay = delay, repath_delay = 3 SECONDS, max_path_length = 60, minimum_distance = minimum_distance, simulated_only = FALSE, skip_first = TRUE, flags = MOVEMENT_LOOP_IGNORE_GLIDE)
 	if(loop)
 		RegisterSignal(loop, COMSIG_MOVELOOP_POSTPROCESS, PROC_REF(hive_path_step))
-	return TRUE
+	// add_to_loop returns null when this exact route is already running.
+	var/datum/move_loop/has_target/jps/current = SSmove_manager.processing_on(src, SSmovement)
+	return loop || (istype(current) && current.target == destination)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	COOLDOWN_DECLARE(hive_breach_cooldown)
@@ -114,7 +144,7 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_path_step(datum/move_loop/has_target/jps/loop, result)
 	SIGNAL_HANDLER
-	if(result != MOVELOOP_FAILURE || !network?.active || incapacitated() || prying_door_ref)
+	if(result != MOVELOOP_FAILURE || incapacitated() || prying_door_ref)
 		return
 	if(ms13_hive_distance(src, loop.target) <= loop.minimum_distance)
 		return
@@ -132,10 +162,11 @@
 		step_rand(src)
 		return
 	// Wandering, it waits for a way out, unless it's shut in a vehicle: then it batters its way out.
-	if(!target && !corpse_target_ref && (length(network.territory) >= 12 || length(network.frontier)) && !get_ms13_ground_vehicle_at(src))
+	if(!target && !corpse_target_ref && (length(network?.territory) >= 12 || length(network?.frontier)) && !get_ms13_ground_vehicle_at(src))
 		for(var/obj/machinery/door/door in orange(1, src))
 			if(begin_door_pry(door))
 				return
+		hive_avoid_goal(roam_target)
 		roam_target = null
 		COOLDOWN_START(src, roam_retry_cooldown, 5 SECONDS)
 		SSmove_manager.stop_looping(src)
@@ -146,7 +177,14 @@
 	var/direction = get_dir(src, loop.target)
 	if(ISDIAGONALDIR(direction))
 		direction = pick(direction & (NORTH|SOUTH), direction & (EAST|WEST))
-	DestroyObjectsInDirection(direction)
+	if(DestroyObjectsInDirection(direction))
+		return
+	// A softer adjacent obstacle may provide a bypass; never spend the next tick hitting an immune wall.
+	for(var/side in list(turn(direction, 90), turn(direction, -90)))
+		if(DestroyObjectsInDirection(side))
+			return
+	// No route and no affordable breach: release this job now so the next AI tick can choose other work.
+	hive_abandon_route(loop.target)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/DestroyPathToTarget()
 	// Goto's failed-path handler handles breaches after trying existing routes.
@@ -156,7 +194,7 @@
 /proc/ms13_hive_crosses_low_wall(atom/movable/mover)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = mover
 	if(istype(unit))
-		return unit.network?.can_cross_low_walls
+		return unit.network?.can_cross_low_walls && (unit.network.can_haul_over_low_walls || !unit.is_grabbing(unit.corpse_target_ref?.resolve()))
 	for(var/obj/item/hand_item/grab/grab as anything in mover?.grabbed_by)
 		unit = grab.assailant
 		if(istype(unit) && unit.network?.can_cross_low_walls && unit.network.can_haul_over_low_walls)
@@ -200,11 +238,12 @@
 
 /datum/ms13_terrain_hivemind/advance_corpse_conversion(mob/living/corpse, datum/converter, delta_time, conversion_time, claim = TRUE)
 	var/atom/delivery_structure = istype(converter, /obj/structure/ms13_hivemind) ? converter : null
+	var/reanimating_unit = istype(corpse, /mob/living/simple_animal/hostile/ms13/terrain_hivemind)
 	var/old_unit_count = length(units)
 	var/conversion_subject = corpse?.stat == DEAD ? "remains" : "living host"
 	var/conversion_verb = corpse?.stat == DEAD ? "consumes" : "incubates"
 	. = ..()
-	if(!. || !delivery_structure)
+	if(!. || !delivery_structure || reanimating_unit)
 		return
 	max_resources += corpse_capacity_value
 	if(length(units) > old_unit_count)
@@ -452,10 +491,12 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/handle_automated_action()
 	set waitfor = FALSE
-	if(AIStatus == AI_OFF || !network?.active)
+	if(AIStatus == AI_OFF)
 		return FALSE
+	if(!network?.active)
+		return ..()
 	// Once committed, keep still long enough to make progress unless survival is genuinely urgent.
-	if(!terrain_recovering && health > maxHealth * 0.25 && has_adjacent_conversion_target())
+	if(!incapacitated() && !terrain_recovering && health > maxHealth * 0.25 && has_adjacent_conversion_target())
 		clear_roam_target()
 		return TRUE
 	if(handle_converter_recovery())
@@ -476,19 +517,18 @@
 	for(var/obj/structure/ms13_hivemind/terrain/growth as anything in network.territory)
 		var/turf/candidate = get_turf(growth)
 		var/distance = get_dist(src, candidate)
-		if(distance >= roam_min_distance && distance <= roam_range && !get_ms13_ground_vehicle_at(candidate))
+		if(distance >= roam_min_distance && distance <= roam_range && !get_ms13_ground_vehicle_at(candidate) && !hive_goal_blocked(candidate))
 			candidates += candidate
 	if(length(candidates))
 		return pick(candidates)
-	var/obj/structure/ms13_hivemind/terrain/closest = get_closest_atom(/obj/structure/ms13_hivemind/terrain, network.territory, src)
-	return get_turf(closest)
+	return ..()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/proc/has_adjacent_conversion_target()
 	var/mob/living/corpse = corpse_target_ref?.resolve()
 	if(!network?.is_convertible_corpse(corpse) || ms13_hive_distance(src, corpse) > 1 || LAZYLEN(corpse.grabbed_by))
 		return FALSE
 	var/datum/current_claim = network.get_corpse_claim(corpse)
-	return !current_claim || current_claim == src
+	return (!current_claim || current_claim == src) && hive_route_ready(corpse)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter/proc/handle_converter_recovery()
 	return handle_terrain_recovery(ignore_dependency = TRUE)
@@ -518,7 +558,7 @@
 	var/atom/victim = attacked_target
 	if(!victim)
 		victim = target
-	if(!victim || ms13_hive_distance(src, victim) > 1)
+	if(!victim || !CanAttack(victim) || ms13_hive_distance(src, victim) > 1)
 		return ..()
 	detonating = TRUE
 	var/turf/origin = get_turf(src)
@@ -556,8 +596,10 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/DestroyObjectsInDirection(direction)
 	var/turf/destination = get_step(src, direction)
-	if(!destination || !environment_smash || smash_own_edge(direction))
-		return
+	if(!destination || !environment_smash)
+		return FALSE
+	if(smash_own_edge(direction))
+		return TRUE
 	for(var/obj/structure/ms13_hivemind/friendly in destination)
 		if(friendly.network == network && friendly.density)
 			return
@@ -567,16 +609,28 @@
 		if(next_turf?.Adjacent(target_from))
 			for(var/obj/machinery/door/door in next_turf)
 				if(begin_door_pry(door))
-					return
-	if(CanSmashTurfs(destination))
-		destination.attack_animal(src)
-		return
+					return TRUE
+	if(destination.density)
+		return hive_breach_obstacle(destination)
 	for(var/obj/obstacle in destination)
 		if(!obstacle.density || obstacle.CanAllowThrough(src, direction) || !obstacle.Adjacent(src) || obstacle.IsObscured())
 			continue
-		if(ismachinery(obstacle) || isstructure(obstacle))
-			obstacle.attack_animal(src)
-			return
+		if((ismachinery(obstacle) || isstructure(obstacle)) && hive_breach_obstacle(obstacle))
+			return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/smash_own_edge(direction)
+	for(var/obj/obstacle in loc)
+		if(obstacle.density && (obstacle.flags_1 & ON_BORDER_1) && (obstacle.dir & direction) && !obstacle.CanAllowThrough(src, direction) && (ismachinery(obstacle) || isstructure(obstacle)))
+			if(hive_breach_obstacle(obstacle))
+				return TRUE
+	return FALSE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_breach_obstacle(atom/obstacle)
+	if(can_hive_charge_at(obstacle))
+		INVOKE_ASYNC(src, PROC_REF(try_hive_charge), obstacle)
+		return TRUE
+	return hive_attack_obstacle(obstacle)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/try_force_open_door(obj/machinery/door/door)
 	if(!force_opens_doors || !door?.density || !Adjacent(door) || istype(door, /obj/machinery/door/airlock/ms13))
@@ -592,11 +646,16 @@
 	return opened
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/begin_door_pry(obj/machinery/door/door)
-	if(!force_opens_doors || !door?.density || !Adjacent(door) || istype(door, /obj/machinery/door/airlock/ms13))
+	if(!network?.active || !force_opens_doors || !door?.density || !Adjacent(door) || istype(door, /obj/machinery/door/airlock/ms13))
 		return FALSE
 	if(door == failed_door_ref?.resolve() && !COOLDOWN_FINISHED(src, door_retry_cooldown))
 		return FALSE
-	if(network.door_breach_requests[WEAKREF(door)])
+	if(hive_goal_blocked(door))
+		return FALSE
+	if(can_hive_charge_at(door))
+		INVOKE_ASYNC(src, PROC_REF(try_hive_charge), door)
+		return TRUE
+	if(network?.door_breach_requests[WEAKREF(door)])
 		return FALSE
 	prying_door_ref = WEAKREF(door)
 	door_pry_started = world.time
@@ -639,13 +698,13 @@
 		if(!door?.density || !wall?.density)
 			network.finish_door_breach(door_ref)
 			continue
-		if(door.z != z || get_dist(src, door) > 10 || !CanSmashTurfs(wall) || (wall.resistance_flags & INDESTRUCTIBLE))
+		if(door.z != z || get_dist(src, door) > 10 || (!CanSmashTurfs(wall) && !(hive_charge?.obstacle_damage && can_hive_damage_obstacle(wall, hive_charge.obstacle_damage, TRUE))) || !hive_route_ready(wall))
 			continue
 		clear_corpse_task()
 		clear_roam_target()
 		if(Adjacent(wall))
 			SSmove_manager.stop_looping(src)
-			wall.attack_animal(src)
+			hive_breach_obstacle(wall)
 			var/turf/bypass = get_step(door, network.door_breach_requests[door_ref])
 			if(!bypass.density)
 				network.finish_door_breach(door_ref)
@@ -662,5 +721,6 @@
 			unit.failed_door_ref = door_ref
 			COOLDOWN_START(unit, door_retry_cooldown, 30 SECONDS)
 
+#include "terrain_hiveminds_recovery.dm"
 #include "terrain_hiveminds_vertical.dm"
 #include "necromorph_marker.dm"

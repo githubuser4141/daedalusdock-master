@@ -149,6 +149,12 @@ code/game/sound.dm,
 code/datums/actions/mobs/charge.dm,
 code/modules/unit_tests/novaflower_burn.dm,
 code/game/objects/effects/effect_system/fluid_spread/effects_smoke.dm,
+code/datums/keybinding/human.dm,
+code/modules/projectiles/gun_firing_procs.dm,
+tools/distant_sounds/make_distant_sounds.py,
+ms13_qol_tests.dme,
+modular_pariah/modules/aesthetics/lights/code/lighting.dm,
+code/game/objects/items/devices/flashlight.dm,
 
 
 */

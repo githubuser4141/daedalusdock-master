@@ -33,6 +33,9 @@
 	turf_type = /turf/open/floor/plating/ms13/ground/mountain
 	initial_gas = OPENTURF_DEFAULT_ATMOS
 	temperature = T20C
+	mineralChance = 0 // MS13 uses deposits, not the inherited SS13 ore table.
+	mining_health = 240
+	mining_max_health = 240
 
 /turf/closed/mineral/random/ms13/Initialize(mapload)
 	. = ..()
@@ -47,3 +50,5 @@
 /turf/closed/mineral/random/ms13/mammoth
 	icon = 'mojave/icons/turf/walls/rockmammoth.dmi'
 	frill_icon = 'mojave/icons/turf/walls/rockmammoth_frill.dmi'
+
+#include "mining.dm"

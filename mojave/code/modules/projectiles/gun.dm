@@ -134,6 +134,8 @@
 	. += max(strength_to_handle - user.get_body_strength(), 0) * GUN_SHORTFALL_RECOIL
 	if(!wielded && one_hand_by_weight)
 		. += (weapon_weight == WEAPON_HEAVY ? GUN_ONE_HAND_RECOIL_HEAVY : GUN_ONE_HAND_RECOIL_MEDIUM) * one_hand_share(user)
+	if(wielded)
+		. *= clamp(SPECIAL_BASELINE / max(user.get_body_strength(), SPECIAL_BASELINE), 0.35, 1)
 
 /obj/item/gun/do_fire_gun(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
 	return ..(target, user, message, params, zone_override, bonus_spread + handling_spread(user))

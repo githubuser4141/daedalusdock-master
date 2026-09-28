@@ -69,11 +69,4 @@
 		return
 
 	var/mob/living/carbon/human/H = user.mob
-	var/obj/item/I = H.get_active_held_item()
-	if(!I)
-		return
-
-	if(I.wielded)
-		I.unwield(H)
-	else
-		return I.wield(H)
+	return H.wield_active_hand()

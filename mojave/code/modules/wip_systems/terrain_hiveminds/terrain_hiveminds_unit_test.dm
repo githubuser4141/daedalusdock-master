@@ -1,5 +1,195 @@
 // Shared movement/conversion regressions plus the hive themes and separate Marker content.
 
+/datum/unit_test/ms13_hive_recovery
+	name = "MOJAVE SUN: Hive Failed Jobs Release And Retry"
+
+/datum/unit_test/ms13_hive_recovery/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler/unit = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hauler, origin, network)
+	var/obj/structure/closet/crate/barrier = allocate(/obj/structure/closet/crate, get_step(origin, NORTH))
+	barrier.damage_deflection = 1000
+	var/integrity_before = barrier.get_integrity()
+	TEST_ASSERT(!unit.hive_breach_obstacle(barrier), "A weak unit treats a damage-immune obstacle as useful work.")
+	TEST_ASSERT_EQUAL(barrier.get_integrity(), integrity_before, "The immune obstacle was damaged.")
+	barrier.damage_deflection = 0
+	TEST_ASSERT(unit.hive_breach_obstacle(barrier), "A unit refuses a breakable obstacle.")
+	TEST_ASSERT(barrier.get_integrity() < integrity_before, "A reported successful breach made no progress.")
+	barrier.modify_max_integrity(10000)
+	TEST_ASSERT(!unit.hive_breach_obstacle(barrier), "A small unit commits to a technically breakable barrier needing hundreds of hits.")
+	barrier.modify_max_integrity(2000)
+	barrier.update_integrity(2000)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/heavy = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy, origin, network)
+	TEST_ASSERT(!unit.can_hive_damage_obstacle(barrier) && heavy.can_hive_damage_obstacle(barrier), "Breach selection ignores the unit's actual damage against the same barrier.")
+	barrier.modify_max_integrity(100)
+	for(var/hit in 1 to unit.hive_max_breach_hits)
+		barrier.update_integrity(100) // A repaired obstacle must not keep resetting the hunt's progress forever.
+		unit.hive_attack_obstacle(barrier)
+	TEST_ASSERT(unit.hive_goal_blocked(barrier) && !unit.hive_breach_obstacle(barrier), "Continuous repairs keep a unit attacking one barrier without a bounded retry.")
+	unit.hive_failed_goals[WEAKREF(barrier)] = world.time - 1
+	TEST_ASSERT(unit.hive_attack_obstacle(barrier), "A timed-out breach cannot be retried after its cooldown.")
+	qdel(barrier)
+	qdel(heavy)
+
+	var/mob/living/simple_animal/chicken/corpse = allocate(/mob/living/simple_animal/chicken, get_step(origin, EAST))
+	corpse.death()
+	network.report_corpse(corpse)
+	TEST_ASSERT(unit.handle_corpse_work() && unit.is_grabbing(corpse), "The test hauler did not collect its corpse.")
+	var/obj/structure/ms13_hivemind/core/core = allocate(/obj/structure/ms13_hivemind/core, locate(origin.x + 3, origin.y, origin.z), network)
+	network.core = core
+	var/obj/structure/ms13_hivemind/special/converter/alternate = allocate(/obj/structure/ms13_hivemind/special/converter, locate(origin.x - 4, origin.y, origin.z), network)
+	TEST_ASSERT_EQUAL(network.get_corpse_delivery_target(unit), core, "The test did not choose the nearer core first.")
+	unit.hive_route_ready(core)
+	unit.hive_route_progress_at = world.time - 11 SECONDS
+	unit.handle_corpse_work()
+	TEST_ASSERT(unit.hive_goal_blocked(core) && unit.is_grabbing(corpse), "A failed delivery neither avoided its destination nor preserved the body for an alternate route.")
+	TEST_ASSERT_EQUAL(network.get_corpse_delivery_target(unit), alternate, "The hauler immediately reselected the inaccessible core.")
+	unit.hive_route_ready(alternate)
+	unit.hive_route_progress_at = world.time - 11 SECONDS
+	unit.handle_corpse_work()
+	unit.handle_corpse_work()
+	TEST_ASSERT(!unit.corpse_target_ref && !unit.is_grabbing(corpse) && !network.get_corpse_claim(corpse), "Exhausting delivery routes leaves the corpse or claim stuck to its hauler.")
+	TEST_ASSERT(unit.hive_goal_blocked(corpse) && !network.find_reported_corpse(unit), "The hauler reacquires the same undeliverable corpse immediately.")
+	unit.hive_failed_goals[WEAKREF(corpse)] = world.time - 1
+	TEST_ASSERT_EQUAL(network.find_reported_corpse(unit), corpse, "Failed jobs can never be retried after the map changes.")
+
+	unit.hive_failed_goals.Cut()
+	TEST_ASSERT(network.claim_corpse(corpse, unit), "Could not start the bounded delivery retry check.")
+	unit.corpse_target_ref = WEAKREF(corpse)
+	for(var/attempt in 1 to 3)
+		unit.hive_abandon_route(core)
+		unit.hive_failed_goals -= WEAKREF(core)
+	TEST_ASSERT(!unit.corpse_target_ref && !network.get_corpse_claim(corpse), "Expiring destination cooldowns keep an undeliverable body assigned forever.")
+
+	// Oscillating between previously visited tiles is not progress.
+	var/turf/far_goal = locate(origin.x + 5, origin.y + 4, origin.z)
+	unit.hive_route_ready(far_goal)
+	var/turf/other_tile = get_step(origin, SOUTH)
+	unit.forceMove(other_tile)
+	unit.hive_route_ready(far_goal)
+	unit.forceMove(origin)
+	unit.hive_route_progress_at = world.time - 11 SECONDS
+	TEST_ASSERT(!unit.hive_route_ready(far_goal), "A shuffling loop continually resets the progress deadline.")
+
+	// A blocked healing patch must not suppress combat/roaming forever.
+	var/obj/structure/ms13_hivemind/terrain/growth = allocate(/obj/structure/ms13_hivemind/terrain, get_step(origin, SOUTH), network)
+	unit.health = unit.maxHealth * 0.2
+	unit.hive_avoid_goal(growth)
+	TEST_ASSERT(!unit.handle_terrain_recovery(TRUE), "Unreachable healing terrain captures the unit's entire decision loop.")
+	unit.health = unit.maxHealth
+	unit.hive_failed_goals.Cut()
+	TEST_ASSERT(network.claim_corpse(corpse, unit), "Could not claim the corpse for interruption testing.")
+	unit.corpse_target_ref = WEAKREF(corpse)
+	unit.Paralyze(5 SECONDS, TRUE)
+	unit.process(1)
+	TEST_ASSERT(!unit.corpse_target_ref && !network.get_corpse_claim(corpse), "An incapacitated worker retains exclusive corpse ownership.")
+
+/datum/unit_test/ms13_hive_live_pursuit
+	name = "MOJAVE SUN: Hive Live Blocked Pursuit And Resumption"
+
+/datum/unit_test/ms13_hive_live_pursuit/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/unit = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier, origin, network)
+	unit.terrain_dependent = FALSE
+	var/turf/rock_site = get_step(origin, WEST)
+	var/old_rock_type = rock_site.type
+	rock_site = rock_site.ChangeTurf(/turf/closed/indestructible/rock/ms13/drought)
+	TEST_ASSERT(!unit.can_hive_damage_obstacle(rock_site) && !unit.can_hive_damage_obstacle(rock_site, 10000, TRUE), "Dense indestructible rock is considered breachable, including by a ram.")
+	var/list/barriers = list()
+	for(var/turf/tile in RANGE_TURFS(1, origin))
+		if(tile == origin)
+			continue
+		var/obj/structure/closet/crate/barrier = allocate(/obj/structure/closet/crate, tile)
+		barrier.damage_deflection = 1000
+		barrier.set_opacity(FALSE)
+		barriers += barrier
+	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, locate(origin.x + 2, origin.y, origin.z))
+	victim.maxHealth = 1000
+	victim.health = 1000
+	victim.toggle_ai(AI_OFF)
+	unit.GiveTarget(victim)
+	for(var/tick in 1 to 15)
+		unit.handle_automated_action()
+		sleep(1 SECONDS)
+		if(unit.hive_goal_blocked(victim))
+			break
+	TEST_ASSERT(unit.hive_goal_blocked(victim) && unit.target != victim, "A live unit trapped behind immune obstacles never abandons its failed pursuit.")
+	QDEL_LIST(barriers)
+	rock_site.ChangeTurf(old_rock_type)
+	rock_site = get_step(origin, EAST)
+	old_rock_type = rock_site.type
+	rock_site = rock_site.ChangeTurf(/turf/closed/indestructible/rock/ms13/drought)
+	unit.hive_failed_goals.Cut()
+	unit.GiveTarget(victim)
+	unit.hive_last_seen_turf = get_turf(victim)
+	unit.hive_last_seen_at = world.time
+	for(var/tick in 1 to 5)
+		unit.handle_automated_action()
+		sleep(1 SECONDS)
+		if(victim.health < 1000)
+			break
+	TEST_ASSERT(get_turf(unit) != origin && victim.health < 1000, "With a route around dense rock, the live unit does not resume movement and attack.")
+	rock_site.ChangeTurf(old_rock_type)
+	qdel(network)
+	unit.orphan_damage = 0
+	unit.forceMove(origin)
+	unit.GiveTarget(victim)
+	victim.health = 1000
+	for(var/tick in 1 to 5)
+		unit.handle_automated_action()
+		sleep(1 SECONDS)
+		if(victim.health < 1000)
+			break
+	TEST_ASSERT(!unit.network && victim.health < 1000, "Surviving units freeze instead of hunting after their core is destroyed.")
+	TEST_ASSERT(!unit.CanAttack(null), "A vanished target is still attackable.")
+
+/datum/unit_test/ms13_necromorph_remains
+	name = "MOJAVE SUN: Necromorph Strains Gear And Reanimation"
+
+/datum/unit_test/ms13_necromorph_remains/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	network.resources = 500
+	network.mob_health = 1
+	network.mob_damage_upper = 1
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/brute = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy, origin, network)
+	TEST_ASSERT(brute.maxHealth == 250 && brute.melee_damage_upper == 80 && brute.obj_damage == 90, "Absolute strain stats still depend on the network's base multipliers.")
+	brute.on_stamina_update()
+	TEST_ASSERT_EQUAL(brute.move_to_delay, 5, "Stamina updates discard the configured strain movement delay.")
+	TEST_ASSERT(network.get_unit_cost(brute.type) > network.get_unit_cost(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier), "Special units cost the same as a basic strain.")
+	brute.death()
+	TEST_ASSERT(!QDELETED(brute) && brute.stat == DEAD && !(brute in network.units), "A dead necromorph disappears or still occupies the living population cap.")
+	TEST_ASSERT(!network.is_convertible_corpse(brute), "A necromorph can revive immediately after being killed.")
+	brute.hive_reanimate_after = 0
+	var/resources_before = network.resources
+	TEST_ASSERT(network.advance_corpse_conversion(brute, network, 1, 1), "An intact necromorph cannot be reanimated.")
+	TEST_ASSERT(brute.stat == CONSCIOUS && brute.health == brute.maxHealth && (brute in network.units), "Reanimation does not restore an active, healthy unit.")
+	TEST_ASSERT_EQUAL(network.resources, resources_before - network.get_unit_cost(brute.type), "Reanimation bypasses the strain resource cost.")
+	brute.death()
+	brute.apply_damage(brute.hive_corpse_damage_limit, BRUTE)
+	TEST_ASSERT(QDELETED(brute), "Damaging necromorph remains cannot permanently destroy them.")
+	TEST_ASSERT(locate(/obj/effect/decal/cleanable/blood/gibs) in origin, "Destroying necromorph remains creates no gibs.")
+
+	var/mob/living/carbon/human/consistent/host = allocate(/mob/living/carbon/human/consistent, origin)
+	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey, origin)
+	var/obj/item/crowbar/tool = allocate(/obj/item/crowbar, origin)
+	host.equip_to_slot_if_possible(uniform, ITEM_SLOT_ICLOTHING)
+	host.put_in_hands(tool)
+	host.death()
+	TEST_ASSERT(network.advance_corpse_conversion(host, network, 1, 1), "A funded necromorph conversion did not complete.")
+	TEST_ASSERT(!QDELETED(uniform) && uniform.loc == origin && !QDELETED(tool) && tool.loc == origin, "Conversion deletes or traps the victim's worn/held gear.")
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/survivor = network.units[1]
+	survivor.death()
+	qdel(network)
+	TEST_ASSERT(!survivor.network, "A dead necromorph retains a deleted network after the core is destroyed.")
+
 /obj/effect/ms13_marker_emp_test_probe
 	var/pulses = 0
 	var/last_severity
@@ -32,6 +222,7 @@
 	var/datum/ms13_terrain_hivemind/necromorph/network = new
 	network.active = TRUE
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/charger = new(origin, network)
+	charger.toggle_ai(AI_OFF)
 	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, locate(origin.x + 2, origin.y, origin.z))
 	victim.maxHealth = 1000
 	victim.health = 1000
@@ -43,6 +234,29 @@
 	TEST_ASSERT(victim.health < 1000, "A charge collides without hurting the hostile victim.")
 	TEST_ASSERT(!length(charger.hive_charge.charging), "A completed charge leaves the mob movement-locked.")
 	TEST_ASSERT(!charger.hive_charge.IsAvailable(), "A completed charge has no cooldown.")
+	charger.forceMove(origin)
+	victim.forceMove(locate(origin.x + 2, origin.y, origin.z))
+	charger.GiveTarget(victim)
+	charger.hive_charge.StartCooldown(0)
+	TEST_ASSERT(charger.can_hive_charge_at(victim), "The moved-target test could not prepare a second charge.")
+	INVOKE_ASYNC(charger, TYPE_PROC_REF(/mob/living/simple_animal/hostile/ms13/terrain_hivemind, try_hive_charge))
+	sleep(2)
+	TEST_ASSERT(length(charger.hive_charge.charging), "The moved-target test charge never started.")
+	victim.forceMove(locate(origin.x + 2, origin.y + 2, origin.z))
+	sleep(charger.hive_charge.charge_delay)
+	charger.LoseTarget()
+	sleep(3 SECONDS)
+	TEST_ASSERT(charger.x >= origin.x + 2, "Moving off the aimed tile or losing the target cancels the committed charge: x=[charger.x], origin=[origin.x].")
+	TEST_ASSERT(!length(charger.hive_charge.charging), "A missed charge leaves its movement lock behind.")
+	charger.forceMove(origin)
+	charger.hive_charge.StartCooldown(0)
+	var/obj/structure/closet/crate/ram_target = allocate(/obj/structure/closet/crate, get_step(origin, EAST))
+	ram_target.damage_deflection = 100
+	var/ram_integrity = ram_target.get_integrity()
+	TEST_ASSERT(!charger.can_hive_damage_obstacle(ram_target), "The ram test obstacle can already be broken by a normal hit.")
+	TEST_ASSERT(charger.try_hive_charge(ram_target), "A brute cannot charge a breakable structure.")
+	TEST_ASSERT(QDELETED(ram_target) || ram_target.get_integrity() < ram_integrity, "Charging a structure did not use the stronger ram damage.")
+	qdel(ram_target)
 	qdel(charger)
 	victim.forceMove(origin)
 	victim.health = 1000

@@ -84,6 +84,8 @@
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_navigate_vertical(atom/goal)
 	if(!goal || !isturf(loc) || hive_travelling || incapacitated())
 		return FALSE
+	if(!hive_route_ready(goal))
+		return FALSE
 	if(hive_goal_z != goal.z || hive_z_waypoint?.z != z || COOLDOWN_FINISHED(src, hive_z_waypoint_cooldown))
 		hive_z_waypoint = null
 	if(!hive_z_waypoint)
@@ -98,6 +100,8 @@
 			var/best_distance = INFINITY
 			for(var/list/option as anything in options)
 				var/turf/entry = option[1]
+				if(hive_goal_blocked(entry))
+					continue
 				var/distance = get_dist(src, entry)
 				if(distance < best_distance)
 					best = option
@@ -107,6 +111,7 @@
 			options -= list(best)
 			var/turf/entry = best[1]
 			if(get_turf(src) != entry && !length(jps_path_to(src, entry, max_steps = 60, mintargetdist = 0)))
+				hive_avoid_goal(entry)
 				continue
 			hive_z_waypoint = entry
 			hive_z_landing = best[2]
@@ -117,13 +122,13 @@
 			break
 	if(!hive_z_waypoint)
 		// Do not stare forever at inaccessible prey across floors.
-		if(target == goal && ++hive_z_failed_plans >= 3)
-			LoseTarget()
+		if(++hive_z_failed_plans >= 3)
+			hive_abandon_route(goal)
 			COOLDOWN_START(src, hive_vertical_sight_cooldown, 30 SECONDS)
 			hive_z_failed_plans = 0
 		return FALSE
 	if(get_turf(src) != hive_z_waypoint)
-		Goto(hive_z_waypoint, move_to_delay, 0)
+		Goto(hive_z_waypoint, move_to_delay, 0, track_goal = FALSE)
 		return TRUE
 	SSmove_manager.stop_looping(src)
 	hive_travelling = TRUE
@@ -148,6 +153,8 @@
 				visible_message(span_warning("[src] scrambles up onto [hive_z_landing]!"))
 				forceMoveWithGroup(hive_z_landing, ZMOVING_VERTICAL)
 	hive_travelling = FALSE
+	if(!QDELETED(src) && z == start.z)
+		hive_avoid_goal(start)
 	hive_z_waypoint = null
 	hive_z_connector = null
 	return TRUE
@@ -193,6 +200,7 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/climber
 	parent_type = /mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout
+	strain_key = "climber"
 	can_scale_roofs = TRUE
 	move_to_delay = 3
 	off_terrain_damage_multiplier = 0
@@ -203,6 +211,7 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher
 	parent_type = /mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier
+	strain_key = "ambusher"
 	can_scale_roofs = TRUE
 	off_terrain_damage_multiplier = 0
 	/// Lying in wait. It leaves the nest with the rest first, so it doesn't lie in their way.
@@ -216,9 +225,11 @@
 	COOLDOWN_START(src, ambush_awake_cooldown, 30 SECONDS)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/ambusher/handle_automated_action()
-	if(AIStatus == AI_OFF || !network?.active || incapacitated())
+	if(AIStatus == AI_OFF || incapacitated())
 		return FALSE
-	if(target || health < maxHealth)
+	if(!network?.active)
+		return ..()
+	if(target || corpse_target_ref || health < maxHealth)
 		hibernating = FALSE
 		COOLDOWN_START(src, ambush_awake_cooldown, 30 SECONDS)
 	if(!hibernating && !target && COOLDOWN_FINISHED(src, ambush_awake_cooldown) && good_ambush_spot())

@@ -275,4 +275,4 @@
 				soundin = pick('sound/weapons/block/metal_block_01.ogg','sound/weapons/block/metal_block_02.ogg','sound/weapons/block/metal_block_03.ogg','sound/weapons/block/metal_block_04.ogg','sound/weapons/block/metal_block_05.ogg','sound/weapons/block/metal_block_06.ogg')
 			if(SFX_KEYBOARD)
 				soundin = pick('goon/sounds/keyboard1.ogg','goon/sounds/keyboard2.ogg','goon/sounds/keyboard3.ogg')
-	return soundin
+	return get_sfx_mojave(soundin)

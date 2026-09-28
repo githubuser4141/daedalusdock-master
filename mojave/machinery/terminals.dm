@@ -25,6 +25,9 @@
 	var/system = "ROBCO50" // Flavour text on the top indicating system type. Very awesome stuff.
 	var/prog_notekeeper = TRUE // Almost all consoles have the word processor installed, but we can remove it if we want to
 	var/remote_capability = FALSE // For special terminals that can activate certain things. Wall terminals / The quirky ones with antennas namely
+	/// Camera network available from Utili-Dock; blank disables the camera menu.
+	var/camera_network = ""
+	var/obj/machinery/computer/security/ms13_terminal_viewer/camera_viewer
 	var/rigged = FALSE // Ultra cursed var. If true, terminal explodes violently on certain interaction. Delightfully devilish.
 	var/riggable = TRUE // To determine rigging eligibility
 	var/datum/looping_sound/ms13/terminal/soundloop
@@ -137,9 +140,11 @@
 			return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/ms13/terminal/proc/FXtoggle() // For overlays/sound
-	if(!broken && active)
+	cut_overlays()
+	if(!broken && active && is_operational)
 		add_overlay(image(icon, "[screen_icon]", ABOVE_OBJ_LAYER, dir))
-		soundloop = new(src, TRUE)
+		if(!soundloop)
+			soundloop = new(src, TRUE)
 	else
 		cut_overlays()
 		QDEL_NULL(soundloop)
@@ -161,6 +166,7 @@
 	qdel(src)
 
 /obj/machinery/ms13/terminal/Destroy()
+	QDEL_NULL(camera_viewer)
 	. = ..()
 	QDEL_NULL(soundloop)
 
@@ -175,17 +181,15 @@
 
 /obj/machinery/ms13/terminal/ui_interact(mob/user)
 	. = ..()
-	if(broken || !active)
+	if(broken || !active || !is_operational)
 		return
 
-	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
+	if(!user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 
 	if(password_needed && !unlocked)
 		var/guess = tgui_input_text(user, "Enter the password", "Password")
-		if(guess == !password)
-			return
-		if(!guess)
+		if(!guess || guess != password || !user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY) || broken || !active || !is_operational)
 			return
 		unlocked = TRUE
 		to_chat(user, span_notice("You unlock the computer."))
@@ -248,7 +252,9 @@
 		if (2)
 			dat += "[loaded_content]"
 		if (3)
-			dat += " Network online. Pending input. "
+			dat += "Network online. Select a linked circuit."
+			if(camera_network)
+				dat += "<br><a href='byond://?src=[REF(src)];choice=cameras'>\> Security cameras</a>"
 
 	if (mode)
 		dat += "<br><br><center>=============================================================================</center>"
@@ -272,7 +278,6 @@
 				dat += "<a href='byond://?src=[REF(src)];choice=signal_six'>\>  [signal_title_6]</a><br>"
 			if(signal_title_single && !used)
 				dat += "<a href='byond://?src=[REF(src)];choice=signal_single'>\>  [signal_title_single]</a><br>"
-				used = TRUE
 		dat += "<a href='byond://?src=[REF(src)];choice=Return'>\>  Return</a>"
 
 	dat += "</font></div>"
@@ -282,10 +287,20 @@
 	popup.open()
 
 /obj/machinery/ms13/terminal/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	var/mob/living/U = usr
+	if(!terminal_available(U))
+		return
+	if(href_list["choice"] == "cameras")
+		open_cameras(U)
+		return
+	if(findtext(href_list["choice"], "signal_") == 1)
+		activate_link(href_list["choice"], U)
+		ui_interact(U)
+		return
 
-	if(usr.canUseTopic(src) && !href_list["close"])
+	if(!href_list["close"])
 		add_fingerprint(U)
 		U.set_machine(src)
 		switch(href_list["choice"])
@@ -358,36 +373,10 @@
 				mode = 2
 
 // Signal sender - Should have a few of these just in case.
-			if("signal_one")
-				id = signal_id_1
-				transmit_signal()
-
-			if("signal_two")
-				id = signal_id_2
-				transmit_signal()
-
-			if("signal_three")
-				id = signal_id_3
-				transmit_signal()
-
-			if("signal_four")
-				id = signal_id_4
-				transmit_signal()
-
-			if("signal_five")
-				id = signal_id_5
-				transmit_signal()
-
-			if("signal_six")
-				id = signal_id_6
-				transmit_signal()
-
-			if("signal_single")
-				id = signal_id_single
-				transmit_signal()
-
 // Joker - AKA character killer
 			if("joker") // It's go time. Used for rigged terminals.
+				if(!rigged)
+					return
 				var/file_in_memory = /datum/terminal/document/joker
 				var/datum/terminal/document/J = new file_in_memory
 
@@ -406,59 +395,24 @@
 			if ("1") // Notepad
 				mode = 1
 			if ("3") // Signaller
-				mode = 3
+				if(remote_capability)
+					mode = 3
 
 	updateUsrDialog()
 	return
 
 /obj/machinery/ms13/terminal/proc/write_documents()
-	if (doc_title_1)
-		var/file_in_memory = text2path("/datum/terminal/document/[doc_title_1]")
-		var/datum/terminal/document/N = new file_in_memory
-		doc_title_1 = "[N.title]"
-		doc_content_1 = "[N.content]"
-	if (doc_title_2)
-		var/file_in_memory = text2path("/datum/terminal/document/[doc_title_2]")
-		var/datum/terminal/document/N = new file_in_memory
-		doc_title_2 = "[N.title]"
-		doc_content_2 = "[N.content]"
-	if (doc_title_3)
-		var/file_in_memory = text2path("/datum/terminal/document/[doc_title_3]")
-		var/datum/terminal/document/N = new file_in_memory
-		doc_title_3 = "[N.title]"
-		doc_content_3 = "[N.content]"
-	if (doc_title_4)
-		var/file_in_memory = text2path("/datum/terminal/document/[doc_title_4]")
-		var/datum/terminal/document/N = new file_in_memory
-		doc_title_4 = "[N.title]"
-		doc_content_4 = "[N.content]"
-	if (doc_title_5)
-		var/file_in_memory = text2path("/datum/terminal/document/[doc_title_5]")
-		var/datum/terminal/document/N = new file_in_memory
-		doc_title_5 = "[N.title]"
-		doc_content_5 = "[N.content]"
+	for(var/slot in 1 to 5)
+		var/title_var = "doc_title_[slot]"
+		var/document_type = text2path("/datum/terminal/document/[vars[title_var]]")
+		if(!ispath(document_type, /datum/terminal/document))
+			continue // Custom mapper titles and their contents are already complete.
+		var/datum/terminal/document/document = new document_type
+		vars[title_var] = document.title
+		vars["doc_content_[slot]"] = document.content
+		qdel(document)
 
-	return
-
-// AI EDIT: disabled, not fixed - GLOB.machines doesn't exist anywhere (no global machine registry of any kind,
-// confirmed via search, including MS's own live source). transmit_signal() is still called from 7 sites below,
-// so kept as a real proc, just with the broken poddoor loop commented out the same way the author already
-// disabled the sign-toggling code right below it.
-/obj/machinery/ms13/terminal/proc/transmit_signal()
-	var/openclose
-	//for(var/obj/machinery/door/poddoor/M in GLOB.machines)
-	//	if(M.id == src.id)
-	//		if(openclose == null)
-	//			openclose = M.density
-	//		INVOKE_ASYNC(M, openclose ? TYPE_PROC_REF(/obj/machinery/door/poddoor, open) : TYPE_PROC_REF(/obj/machinery/door/poddoor, close))
-
-	// freak this code for now
-	//var/onoff
-	//for(var/obj/structure/ms13/sign/S in GLOB.signs)
-	//	if(S.id == src.id)
-	//		if(openclose == null)
-	//			openclose = S.on
-	//		INVOKE_ASYNC(S, onoff ? /obj/structure/ms13/sign.proc/on : /obj/structure/ms13/sign.proc/off)
+#include "terminal_controls.dm"
 
 //// Extra variants ////
 /obj/machinery/ms13/terminal/pristine
@@ -497,6 +451,7 @@
 	screen_icon = "wallterminal_screen"
 	termtag = "Utility"
 	active = FALSE
+	remote_capability = TRUE
 	density = FALSE
 	riggable = FALSE
 	var/flippable = TRUE
@@ -506,10 +461,11 @@
 	if(!flippable)
 		active = TRUE
 	AddElement(/datum/element/wall_mount)
+	FXtoggle()
 
 /obj/machinery/ms13/terminal/wall/AltClick(mob/user)
 	. = ..()
-	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
+	if(!user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	if(broken)
 		return

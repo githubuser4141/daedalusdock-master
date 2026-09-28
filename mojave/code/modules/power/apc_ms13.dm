@@ -21,6 +21,17 @@
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 
+/// Utility boxes have no electronic shorting circuit, including when an EMP pulses their wiring.
+/datum/wires/apc/on_pulse(wire)
+	if(istype(holder, /obj/machinery/power/apc/ms13) && (wire == WIRE_POWER1 || wire == WIRE_POWER2))
+		return
+	return ..()
+
+/datum/wires/apc/on_cut(index, mend)
+	if(istype(holder, /obj/machinery/power/apc/ms13) && (index == WIRE_POWER1 || index == WIRE_POWER2))
+		return
+	return ..()
+
 // Old fuseboxes don't have an ID scanner to swipe in the first place.
 /obj/machinery/power/apc/ms13/togglelock(mob/living/user)
 	to_chat(user, span_notice("[src] has no electronic lock to toggle - it's just a breaker box."))
@@ -79,10 +90,11 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 		equipment = autoset(equipment, AUTOSET_ON)
 		lighting = autoset(lighting, AUTOSET_ON)
 		environ = autoset(environ, AUTOSET_ON)
-	else
+	else if(operating)
 		equipment = autoset(equipment, AUTOSET_FORCE_OFF)
 		lighting = autoset(lighting, AUTOSET_FORCE_OFF)
 		environ = autoset(environ, AUTOSET_FORCE_OFF)
+	// An open breaker removes area power below; it must not erase manually enabled channel settings.
 
 	var/area_state_changed = area.power_light != (operating && !shorted && APC_CHANNEL_IS_ON(lighting)) \
 		|| area.power_equip != (operating && !shorted && APC_CHANNEL_IS_ON(equipment)) \

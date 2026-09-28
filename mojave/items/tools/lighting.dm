@@ -1,5 +1,9 @@
 // Handheld light sources  //
 
+/obj/item/flashlight
+	switch_on_sound = 'mojave/sound/ms13items/flashlight_on.ogg'
+	switch_off_sound = 'mojave/sound/ms13items/flashlight_off.ogg'
+
 /obj/item/flashlight/ms13
 	name = "flashlight"
 	desc = "A common flashlight. An essential tool for any tomfoolery in the unknown."

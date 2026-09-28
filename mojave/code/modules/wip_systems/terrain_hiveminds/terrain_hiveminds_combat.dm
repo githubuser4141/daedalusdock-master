@@ -26,37 +26,61 @@
 		attack_sound = audio[1]
 		deathsound = audio[2]
 		hive_challenge_sound = audio[3]
-		if(unit_role == MS13_HIVE_ROLE_HEAVY || unit_role == "siege")
+		if(unit_role == MS13_HIVE_ROLE_HEAVY || unit_role == "siege" || unit_role == "regenerator")
 			hive_charge = new
 	if(hive_charge)
+		var/list/stats = network.get_strain_stats(type)
+		if(!isnull(stats?["ram_damage"]))
+			hive_charge.obstacle_damage = stats["ram_damage"]
 		hive_charge.Grant(src)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/GiveTarget(atom/new_target)
 	var/had_target = target
 	. = ..()
+	if(target != had_target)
+		hive_last_seen_turf = get_turf(target)
+		hive_last_seen_at = world.time
 	if(target && !had_target && hive_challenge_sound && COOLDOWN_FINISHED(src, hive_challenge_cooldown))
 		playsound(src, hive_challenge_sound, 60, TRUE)
 		COOLDOWN_START(src, hive_challenge_cooldown, 12 SECONDS)
 
-/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/try_hive_charge()
-	if(!hive_charge?.IsAvailable() || !isliving(target) || !CanAttack(target) || can_capture_npc(target) || corpse_target_ref || LAZYLEN(grabbed_by) || !isturf(loc) || !isturf(target.loc))
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/LoseTarget()
+	if(stat != DEAD && length(hive_charge?.charging))
+		// The rush commits to a position. Losing/deleting the prey must not cancel its movement loop.
+		GiveTarget(null)
+		approaching_target = FALSE
+		in_melee = FALSE
+		LoseAggro()
+		return
+	return ..()
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_hive_charge_at(atom/charge_target)
+	if(!hive_charge?.IsAvailable() || !charge_target || corpse_target_ref || LAZYLEN(grabbed_by) || !isturf(loc) || (!isturf(charge_target) && !isturf(charge_target.loc)))
 		return FALSE
-	var/distance = ms13_hive_distance(src, target)
-	if(distance < 2 || distance > hive_charge.charge_distance || !(target in view(vision_range, src)))
+	var/living_target = isliving(charge_target)
+	if(living_target ? (!CanAttack(charge_target) || can_capture_npc(charge_target)) : !can_hive_damage_obstacle(charge_target, hive_charge.obstacle_damage, TRUE))
+		return FALSE
+	var/distance = ms13_hive_distance(src, charge_target)
+	return distance >= (living_target ? 2 : 1) && distance <= hive_charge.charge_distance && (charge_target in view(vision_range, src))
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/try_hive_charge(atom/charge_target = target)
+	if(!can_hive_charge_at(charge_target))
 		return FALSE
 	SSmove_manager.stop_looping(src)
-	hive_charge.Trigger(target = target)
+	in_melee = FALSE
+	hive_charge.Trigger(target = charge_target)
 	return TRUE
 
 /datum/action/cooldown/mob_cooldown/charge/ms13_hive
 	name = "Ramming charge"
-	cooldown_time = 12 SECONDS
-	charge_delay = 1 SECONDS
-	charge_distance = 6
-	charge_past = 0
+	cooldown_time = 6 SECONDS
+	charge_delay = 0.8 SECONDS
+	charge_distance = 8
+	charge_past = 3
 	charge_speed = 1
 	charge_damage = 35
 	destroy_objects = FALSE
+	var/obstacle_damage = 135
 
 /datum/action/cooldown/mob_cooldown/charge/ms13_hive/pounce
 	name = "Pounce"
@@ -64,6 +88,8 @@
 	charge_delay = 0.6 SECONDS
 	charge_distance = 4
 	charge_damage = 15
+	charge_past = 1
+	obstacle_damage = 0
 
 /datum/action/cooldown/mob_cooldown/charge/ms13_hive/do_charge_indicator(atom/charger, atom/charge_target)
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = charger
@@ -83,6 +109,9 @@
 	if(!QDELETED(charger) && charger in charging)
 		UnregisterSignal(charger, list(COMSIG_MOVABLE_BUMP, COMSIG_MOVABLE_PRE_MOVE, COMSIG_MOVABLE_MOVED, COMSIG_MOB_STATCHANGE))
 		charging -= charger
+		actively_moving = FALSE
+		if(owner)
+			SEND_SIGNAL(owner, COMSIG_FINISHED_CHARGE)
 
 /datum/action/cooldown/mob_cooldown/charge/ms13_hive/on_bump(atom/movable/source, atom/obstacle)
 	SIGNAL_HANDLER
@@ -92,10 +121,8 @@
 	if(isliving(obstacle))
 		if(unit.CanAttack(obstacle))
 			hit_target(unit, obstacle, charge_damage)
-	else if(!istype(src, /datum/action/cooldown/mob_cooldown/charge/ms13_hive/pounce) && !(obstacle.resistance_flags & INDESTRUCTIBLE))
-		var/obj/structure/ms13_hivemind/structure = obstacle
-		if((!istype(structure) || structure.network != unit.network) && (!isturf(obstacle) || unit.CanSmashTurfs(obstacle)))
-			INVOKE_ASYNC(obstacle, TYPE_PROC_REF(/atom, attack_animal), unit)
+	else if(obstacle_damage > 0)
+		INVOKE_ASYNC(unit, TYPE_PROC_REF(/mob/living/simple_animal/hostile/ms13/terrain_hivemind, hive_attack_obstacle), obstacle, obstacle_damage)
 	SSmove_manager.stop_looping(source)
 
 /datum/action/cooldown/mob_cooldown/charge/ms13_hive/hit_target(atom/movable/source, atom/target, damage_dealt)

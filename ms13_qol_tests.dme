@@ -1,0 +1,17 @@
+// Compile this from the repository root, then run ms13_qol_tests.dmb on a spare port.
+#define UNIT_TESTS
+#include "daedalus.dme"
+TEST_FOCUS(/datum/unit_test/ms13_hive_recovery)
+TEST_FOCUS(/datum/unit_test/ms13_necromorph_remains)
+TEST_FOCUS(/datum/unit_test/ms13_hive_combat)
+TEST_FOCUS(/datum/unit_test/ms13_terrain_hiveminds)
+TEST_FOCUS(/datum/unit_test/ms13_hive_live_pursuit)
+TEST_FOCUS(/datum/unit_test/ms13_mining)
+TEST_FOCUS(/datum/unit_test/ms13_wielding)
+TEST_FOCUS(/datum/unit_test/ms13_gun_handling)
+TEST_FOCUS(/datum/unit_test/ms13_hand_slots)
+TEST_FOCUS(/datum/unit_test/ms13_surface_impacts)
+TEST_FOCUS(/datum/unit_test/ms13_terminal_controls)
+TEST_FOCUS(/datum/unit_test/ms13_sound_effects)
+TEST_FOCUS(/datum/unit_test/ms13_marker_lighting)
+TEST_FOCUS(/datum/unit_test/ms13_rail_vehicles)

@@ -11,24 +11,23 @@ TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
 	resistance_flags = UNACIDABLE | FIRE_PROOF | LAVA_PROOF
 	hitted_sound = 'sound/effects/break_stone.ogg'
 	var/deposit_type = null
-	var/last_act = 0
-	var/mining_bonus_damage = 0
+	/// Map-placed deposits are buried; runtime deposits and sulfur regrowth stay exposed.
+	var/encase_on_mapload = TRUE
+	/// Leave null to match the surrounding rock, or select a mineable rock subtype in the editor.
+	var/enclosing_rock_type
 
 //Ore deposit mining process
 
 /obj/structure/ms13/ore_deposit/attackby(obj/item/W, mob/user)
-	src.mining_bonus_damage = W.force * W.mining_mult
-	W.force += mining_bonus_damage
-	. = ..()
-	W.force -= mining_bonus_damage
-	if(W.mining_mult <= 0)
-		to_chat(user, span_notice("You could probably use something better than a [W.name] for this."))
-	if(W.mining_mult > 0)
-		to_chat(user, span_notice("The [src.name] crumbles under your [W.name]!"))
+	if(W.tool_behaviour == TOOL_MINING && isliving(user))
+		var/mob/living/miner = user
+		miner.ms13_mine(src, W)
+		return TRUE
+	return ..()
 
 /obj/structure/ms13/ore_deposit/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
-		if(!disassembled)
+		if(!disassembled && deposit_type)
 			new deposit_type(src.loc, rand(2,5))
 	qdel(src)
 
@@ -36,10 +35,73 @@ TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
 
 //randomises integrity for deposits
 
-/obj/structure/ms13/ore_deposit/Initialize()
+/obj/structure/ms13/ore_deposit/Initialize(mapload)
 	. = ..()
 	max_integrity = rand(380, 525)
 	atom_integrity = max_integrity
+	if(mapload && encase_on_mapload)
+		return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/ms13/ore_deposit/LateInitialize()
+	. = ..()
+	encase_in_rock()
+
+/obj/structure/ms13/ore_deposit/proc/encase_in_rock()
+	var/turf/site = get_turf(src)
+	if(!site || istype(site, /turf/closed/mineral/random/ms13))
+		return
+	var/rock_type = enclosing_rock_type
+	if(!ispath(rock_type, /turf/closed/mineral/random/ms13))
+		rock_type = /turf/closed/mineral/random/ms13
+		for(var/turf/nearby in range(1, site))
+			if(istype(nearby, /turf/closed/indestructible/rock/ms13/drought) || istype(nearby, /turf/closed/mineral/random/ms13/drought) || istype(nearby, /turf/open/floor/plating/ms13/ground/mountain/drought))
+				rock_type = /turf/closed/mineral/random/ms13/drought
+				break
+			if(istype(nearby, /turf/closed/indestructible/rock/ms13/mammoth) || istype(nearby, /turf/closed/mineral/random/ms13/mammoth))
+				rock_type = /turf/closed/mineral/random/ms13/mammoth
+	site.ChangeTurf(rock_type)
+
+/obj/structure/ms13/ore_deposit/random
+	name = "random ore deposit"
+	icon_state = "copper-deposit"
+	var/list/deposit_choices = list(/obj/structure/ms13/ore_deposit/coal = 4, /obj/structure/ms13/ore_deposit/iron = 4, /obj/structure/ms13/ore_deposit/copper = 5, /obj/structure/ms13/ore_deposit/lead = 5, /obj/structure/ms13/ore_deposit/alu = 4, /obj/structure/ms13/ore_deposit/zinc = 4, /obj/structure/ms13/ore_deposit/silver = 3, /obj/structure/ms13/ore_deposit/gold = 1)
+
+/obj/structure/ms13/ore_deposit/random/Initialize(mapload)
+	. = ..()
+	return INITIALIZE_HINT_LATELOAD
+
+/obj/structure/ms13/ore_deposit/random/LateInitialize()
+	if(encase_on_mapload)
+		..()
+	var/deposit_path = pick_weight(deposit_choices)
+	new deposit_path(get_turf(src))
+	qdel(src)
+
+/obj/structure/ms13/ore_deposit/random/low
+	name = "random low-value ore deposit"
+	deposit_choices = list(/obj/structure/ms13/ore_deposit/coal = 1, /obj/structure/ms13/ore_deposit/iron = 1, /obj/structure/ms13/ore_deposit/copper = 1, /obj/structure/ms13/ore_deposit/lead = 1, /obj/structure/ms13/ore_deposit/alu = 1, /obj/structure/ms13/ore_deposit/zinc = 1)
+
+/obj/structure/ms13/ore_deposit/random/high
+	name = "random high-value ore deposit"
+	deposit_choices = list(/obj/structure/ms13/ore_deposit/silver = 3, /obj/structure/ms13/ore_deposit/gold = 1)
+
+/obj/structure/ms13/ore_deposit/random/drought
+	enclosing_rock_type = /turf/closed/mineral/random/ms13/drought
+
+/obj/structure/ms13/ore_deposit/random/mammoth
+	enclosing_rock_type = /turf/closed/mineral/random/ms13/mammoth
+
+/obj/structure/ms13/ore_deposit/random/low/drought
+	enclosing_rock_type = /turf/closed/mineral/random/ms13/drought
+
+/obj/structure/ms13/ore_deposit/random/low/mammoth
+	enclosing_rock_type = /turf/closed/mineral/random/ms13/mammoth
+
+/obj/structure/ms13/ore_deposit/random/high/drought
+	enclosing_rock_type = /turf/closed/mineral/random/ms13/drought
+
+/obj/structure/ms13/ore_deposit/random/high/mammoth
+	enclosing_rock_type = /turf/closed/mineral/random/ms13/mammoth
 
 /obj/structure/ms13/ore_deposit/copper
 	name = "copper ore deposit"
@@ -78,9 +140,9 @@ TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
 	deposit_type = /obj/item/stack/sheet/ms13/nugget/nugget_coal
 
 /obj/structure/ms13/ore_deposit/coal/attackby(obj/item/W, mob/user)
-	. = ..()
 	var/turf/my_turf = get_turf(src)
-	my_turf.VapourTurf(/datum/vapours/carbon_air_vapour, 50)
+	. = ..()
+	my_turf?.VapourTurf(/datum/vapours/carbon_air_vapour, 50)
 
 /obj/structure/ms13/ore_deposit/uranium
 	name = "uranium deposit"
@@ -135,9 +197,9 @@ TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
 	qdel(src)
 
 /obj/structure/ms13/ore_deposit/sulfur/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration, def_zone)
-	. = ..()
 	var/turf/my_turf = get_turf(src)
-	my_turf.VapourTurf(/datum/vapours/sulfur_concentrate, 25) // Kick a bit more in the air per hit for good measure
+	. = ..()
+	my_turf?.VapourTurf(/datum/vapours/sulfur_concentrate, 25) // Kick a bit more in the air per hit for good measure
 
 /obj/structure/ms13/ore_deposit/sulfur/growth
 	name = "sulfur growth"

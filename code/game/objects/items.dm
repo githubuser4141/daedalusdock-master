@@ -966,8 +966,12 @@ DEFINE_INTERACTABLE(/obj/item)
 	if(wielded)
 		return FALSE
 
-	// No free hands.
-	if(!length(user.get_empty_held_indexes()))
+	// Pair the hand actually holding this item, including automatic wielding on pickup.
+	var/held_index = user?.get_held_index_of_item(src)
+	if(!held_index || (item_flags & ABSTRACT))
+		return FALSE
+	var/other_index = held_index % 2 ? held_index + 1 : held_index - 1
+	if(other_index > length(user.held_items) || !user.has_hand_for_held_index(other_index) || user.get_item_for_held_index(other_index))
 		to_chat(user, span_warning("You need two hands to wield [src]."))
 		return FALSE
 
@@ -978,8 +982,7 @@ DEFINE_INTERACTABLE(/obj/item)
 
 	// Let's reserve the other hand.
 	var/obj/item/offhand/offhand_item = new(user, src)
-	if(!user.put_in_inactive_hand(offhand_item)) // This should be impossible
-		stack_trace("[user] somehow failed to wield an item despite having a free hand.")
+	if(!user.put_in_hand(offhand_item, other_index))
 		wielded = FALSE
 		qdel(offhand_item)
 		return FALSE
@@ -1044,7 +1047,7 @@ DEFINE_INTERACTABLE(/obj/item)
 
 	SEND_SIGNAL(src, COMSIG_ITEM_UNWIELD, user)
 
-	return FALSE
+	return TRUE
 
 /**
  *the mob M is attempting to equip this item into the slot passed through as 'slot'. Return 1 if it can do this and 0 if it can't.

@@ -3,10 +3,17 @@
 	update_nv()
 
 /// Wielding procs
+/mob/living
+	var/tmp/last_wield_input = -1
+
 /mob/living/proc/wield_active_hand()
+	// Old saved preferences can bind both "wield" and "wield_item" to V.
+	if(last_wield_input == world.time || incapacitated())
+		return FALSE
 	var/obj/item/active = get_active_held_item()
 	if(istype(active))
-		return active.wield(src) // AI EDIT: wield_act() -> wield() (DD's real proc, code/game/objects/items.dm)
+		last_wield_input = world.time
+		return active.wielded ? active.unwield(src) : active.wield(src)
 	else
 		to_chat(src, span_warning("You have nothing to wield!"))
 		return FALSE
@@ -21,11 +28,6 @@
 	for(var/hand in hud_used.hand_slots)
 		hand_hud = hud_used.hand_slots[hand]
 		hand_hud?.update_appearance()
-	var/obj/item/active_item = hud_used.mymob?.get_active_held_item()
-	if(active_item?.wield_info)
-		var/datum/wield_info/wield_info = GLOB.path_to_wield_info[active_item.wield_info]
-		var/wield_pixel_x = !active ? 0 : (!(hud_used.mymob.active_hand_index % RIGHT_HANDS) ? wield_info.pixel_x_wielded : -wield_info.pixel_x_wielded)
-		active_item.screen_loc = ui_hand_position(hud_used.mymob.active_hand_index, wield_pixel_x)
 	return TRUE
 
 /// Alter speech when a mob is buried in a grave

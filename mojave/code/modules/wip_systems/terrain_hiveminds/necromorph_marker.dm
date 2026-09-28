@@ -118,9 +118,9 @@
 	// Never loud, but carrying: a slow fade out to 17 + extra_range tiles, heard through walls with each one halving it
 	// (ms13_wall_muffle()), so it's still there a few rooms off, dimly.
 	volume = 40
-	extra_range = 28
+	extra_range = 35
 	falloff_distance = 3
-	falloff_exponent = 1.3
+	falloff_exponent = 2
 
 /// Dormant while contained, pulsing while loose.
 /obj/structure/ms13_hivemind/core/marker/update_icon_state()
@@ -148,6 +148,7 @@
 		if(prob(10 + 30 * closeness))
 			COOLDOWN_START(human, ms13_marker_haunt, MS13_MARKER_HAUNT_COOLDOWN)
 			new /datum/hallucination/ms13_marker(human, TRUE, closeness)
+	disturb_lights()
 	// Every corpse in reach, each pulse: cheap position checks first.
 	// ponytail: walks the whole dead_mob_list every 10 seconds; a spatial lookup if that list ever runs to thousands.
 	var/remade = 0
@@ -165,9 +166,10 @@
 		if(!network.get_unit_spawn_turf(get_turf(corpse)))
 			continue
 		if(network.advance_corpse_conversion(corpse, src, 1, 1))
-			network.resources -= network.unit_cost
 			if(++remade >= corpses_per_pulse)
 				break
+
+#include "marker_lighting.dm"
 
 // These hidden components stay on the Marker's turf so native cable/radio z-level checks work.
 /obj/machinery/power/ms13_marker_feed
