@@ -8,7 +8,9 @@
 
 /// Only electrical handheld lights and fixtures are affected, not fire or unrelated glowing objects.
 /obj/structure/ms13_hivemind/core/marker/proc/disturb_lights()
-	for(var/atom/movable/nearby in range(influence_radius, src))
+	if(light_flicker_radius <= 0)
+		return
+	for(var/atom/movable/nearby in range(light_flicker_radius, src))
 		if(istype(nearby, /obj/machinery/light))
 			nearby.AddComponent(/datum/component/ms13_light_flicker, src)
 		else if(istype(nearby, /obj/item/flashlight) && !istype(nearby, /obj/item/flashlight/flare))
@@ -28,7 +30,7 @@
 	// Resolve influence now: the first APC startup can precede the Marker's periodic influence pulse.
 	for(var/datum/ms13_terrain_hivemind/necromorph/marker/hive in GLOB.ms13_terrain_hiveminds)
 		var/obj/structure/ms13_hivemind/core/marker/marker = hive.core
-		if(hive.active && marker && marker.z == z && get_dist(marker, src) <= marker.influence_radius && !marker.is_suppressed())
+		if(hive.active && marker && marker.z == z && marker.light_flicker_radius > 0 && get_dist(marker, src) <= marker.light_flicker_radius && !marker.is_suppressed())
 			AddComponent(/datum/component/ms13_light_flicker, marker)
 	if(!QDELETED(effect))
 		effect.start_flicker(TRUE)
@@ -123,7 +125,7 @@
 	var/had_marker = length(markers)
 	for(var/datum/weakref/ref as anything in markers.Copy())
 		var/obj/structure/ms13_hivemind/core/marker/marker = ref.resolve()
-		if(!site || !marker?.network?.active || marker.suppressed || marker.z != site.z || get_dist(marker, site) > marker.influence_radius)
+		if(!site || !marker?.network?.active || marker.suppressed || marker.z != site.z || marker.light_flicker_radius <= 0 || get_dist(marker, site) > marker.light_flicker_radius)
 			markers -= ref
 	if(!length(markers))
 		if(had_marker || !flicker_steps)
@@ -177,9 +179,18 @@
 	sleep(1.6 SECONDS)
 	if(!QDELETED(effect) || fixture.light_power != fixture.bulb_power || fixture.switchcount != 0)
 		Fail("Normal startup did not finish at full brightness without extra bulb wear.")
-	var/datum/ms13_terrain_hivemind/necromorph/marker/hive = new(site, 0)
+	SSatoms.map_loader_begin(REF(src))
+	var/obj/structure/ms13_hivemind/core/marker/mapped_marker = new(site)
+	mapped_marker.light_flicker_radius = 2
+	SSatoms.map_loader_stop(REF(src))
+	SSatoms.InitializeAtoms(list(mapped_marker))
+	var/obj/structure/ms13_hivemind/core/marker/marker = locate() in site
+	var/datum/ms13_terrain_hivemind/necromorph/marker/hive = marker.network
 	allocated += hive
-	var/obj/structure/ms13_hivemind/core/marker/marker = hive.core
+	hive.resources = 0
+	hive.territory_limit = 0
+	if(marker == mapped_marker || marker.light_flicker_radius != 2 || marker.influence_radius != 30)
+		Fail("A mapped lighting radius was lost during Marker creation or changed its other influence.")
 	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human/consistent, site)
 	var/obj/item/flashlight/ms13/handheld = allocate(/obj/item/flashlight/ms13, holder)
 	var/original_power = handheld.light_power
@@ -228,6 +239,20 @@
 	effect.process(1)
 	if(!QDELETED(effect) || handheld.light_power != 2)
 		Fail("A carried light stayed dim after leaving the Marker's range.")
+	holder.forceMove(locate(site.x + 3, site.y, site.z))
+	marker.disturb_lights()
+	if(handheld.GetComponent(/datum/component/ms13_light_flicker))
+		Fail("A light outside the custom radius still acquired Marker influence.")
+	holder.forceMove(locate(site.x + 2, site.y, site.z))
+	marker.disturb_lights()
+	effect = handheld.GetComponent(/datum/component/ms13_light_flicker)
+	if(!effect)
+		Fail("A light at the custom radius boundary was excluded.")
+		return
+	marker.light_flicker_radius = 1
+	effect.process(1)
+	if(!QDELETED(effect) || handheld.light_power != 2)
+		Fail("Shrinking the lighting radius did not restore a carried light.")
 	box.operating = FALSE
 	box.update()
 	fixture.switchcount = -1
@@ -255,6 +280,24 @@
 	fixture.emp_act(EMP_HEAVY)
 	if(fixture.status != LIGHT_OK || fixture.ms13_emp_bulb_protection_until < world.time + 89 SECONDS)
 		Fail("An EMP did not leave the bulb intact with its reduced-burnout recovery window.")
+	marker.light_flicker_radius = 0
+	effect.process(1)
+	marker.disturb_lights()
+	if(!QDELETED(effect) || fixture.GetComponent(/datum/component/ms13_light_flicker) || abs(fixture.light_power - original_power) > 0.001)
+		Fail("Zero lighting radius did not disable dimming even on the Marker's own tile.")
+	box.operating = FALSE
+	box.update()
+	fixture.switchcount = -1
+	fixture.maploaded = TRUE
+	box.operating = TRUE
+	box.update()
+	effect = fixture.GetComponent(/datum/component/ms13_light_flicker)
+	if(!effect || length(effect.markers) || effect.flicker_steps != 3)
+		Fail("A disabled Marker still strengthened APC startup.")
+	sleep(1.6 SECONDS)
+	marker.light_flicker_radius = 30
+	marker.disturb_lights()
+	effect = fixture.GetComponent(/datum/component/ms13_light_flicker)
 	qdel(marker)
 	effect.process(1)
 	if(!QDELETED(effect) || abs(fixture.light_power - original_power) > 0.001)

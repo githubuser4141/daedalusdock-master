@@ -164,13 +164,18 @@
 	brute.on_stamina_update()
 	TEST_ASSERT_EQUAL(brute.move_to_delay, 5, "Stamina updates discard the configured strain movement delay.")
 	TEST_ASSERT(network.get_unit_cost(brute.type) > network.get_unit_cost(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier), "Special units cost the same as a basic strain.")
+	var/matrix/standing = matrix(brute.transform)
 	brute.death()
+	sleep(0.3 SECONDS)
 	TEST_ASSERT(!QDELETED(brute) && brute.stat == DEAD && !(brute in network.units), "A dead necromorph disappears or still occupies the living population cap.")
+	TEST_ASSERT(brute.lying_angle == 90 && brute.transform.b != standing.b, "Necromorph death sets a pose flag but does not visually rotate the corpse.")
 	TEST_ASSERT(!network.is_convertible_corpse(brute), "A necromorph can revive immediately after being killed.")
 	brute.hive_reanimate_after = 0
 	var/resources_before = network.resources
 	TEST_ASSERT(network.advance_corpse_conversion(brute, network, 1, 1), "An intact necromorph cannot be reanimated.")
+	sleep(0.3 SECONDS)
 	TEST_ASSERT(brute.stat == CONSCIOUS && brute.health == brute.maxHealth && (brute in network.units), "Reanimation does not restore an active, healthy unit.")
+	TEST_ASSERT(brute.lying_angle == 0 && brute.transform.a == standing.a && brute.transform.b == standing.b && brute.transform.d == standing.d && brute.transform.e == standing.e, "Reanimation does not restore the upright sprite transform.")
 	TEST_ASSERT_EQUAL(network.resources, resources_before - network.get_unit_cost(brute.type), "Reanimation bypasses the strain resource cost.")
 	brute.death()
 	brute.apply_damage(brute.hive_corpse_damage_limit, BRUTE)

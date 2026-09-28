@@ -79,7 +79,21 @@
 // A conduit is the existing wired, cell-less utility box with an explicit mapper-facing purpose.
 /obj/machinery/power/apc/ms13/conduit
 	name = "remote power conduit"
-	desc = "A wired area power conduit. Its breaker can be operated locally or by a switch or terminal with its circuit ID."
+	desc = "A wired area power conduit. Click to flip its breaker, or operate it remotely with a switch or terminal sharing its circuit ID."
+
+/obj/machinery/power/apc/ms13/conduit/interact(mob/user)
+	if(!can_interact(user) || !can_use(user) || (machine_stat & MAINT) || failure_timer)
+		return
+	add_fingerprint(user)
+	toggle_breaker(user)
+	to_chat(user, span_notice("You switch [src] [operating ? "on" : "off"]."))
+	return TRUE
+
+/obj/machinery/power/apc/ms13/conduit/ui_interact(mob/user, datum/tgui/ui)
+	return
+
+/obj/machinery/power/apc/ms13/conduit/ui_status(mob/user)
+	return UI_CLOSE
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13/conduit, APC_PIXEL_OFFSET)
 

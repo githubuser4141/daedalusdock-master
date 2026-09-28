@@ -8054,6 +8054,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
+"hCe" = (
+/obj/structure/ms13_rail,
+/obj/structure/cable/smart_cable/color,
+/obj/machinery/power/ms13_rail_feeder,
+/turf/open/floor/ms13/concrete/industrial/walkway,
+/area/ms13/underground/bos)
 "hCl" = (
 /obj/structure/table/ms13/metal/grate,
 /obj/effect/spawner/random/ms13/tools/lights,
@@ -8864,6 +8870,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"iqx" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/underground/mountain)
 "iqY" = (
 /obj/structure/ms13/pot/plant,
 /turf/open/floor/ms13/concrete,
@@ -9469,6 +9481,10 @@
 	pixel_y = 8
 	},
 /turf/open/floor/wood/ms13/wide,
+/area/ms13/town)
+"iUD" = (
+/obj/item/storage/ms13/toolbox/filled,
+/turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "iUN" = (
 /obj/structure/sink/ms13{
@@ -18967,10 +18983,6 @@
 	dir = 4
 	},
 /turf/open/floor/wood/ms13/wide,
-/area/ms13/town)
-"rPU" = (
-/obj/item/storage/ms13/toolbox/filled,
-/turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "rQp" = (
 /obj/structure/table/ms13/no_smooth/counter/wood/crafted,
@@ -48252,7 +48264,7 @@ tZy
 tZy
 tZy
 tZy
-tZy
+hCe
 tZy
 tZy
 wSu
@@ -49465,7 +49477,7 @@ blm
 blm
 blm
 blm
-tdh
+iqx
 tdh
 tdh
 qiN
@@ -53055,7 +53067,7 @@ ylS
 thD
 mGq
 ylS
-rPU
+iUD
 cXR
 jJD
 hQa

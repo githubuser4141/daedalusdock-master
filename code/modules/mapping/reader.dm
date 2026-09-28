@@ -795,17 +795,29 @@ GLOBAL_LIST_EMPTY(map_model_default)
 	if(members[index] != /area/template_noop)
 		if(members_attributes[index] != default_list)
 			world.preloader_setup(members_attributes[index], members[index])//preloader for assigning  set variables on atom creation
-		var/area/area_instance = loaded_areas[members[index]]
+		var/area/area_type = members[index]
+		var/mapped_name = members_attributes[index]["name"]
+		// MS13 maps reuse area types for separately named rooms. Sharing their instance makes
+		// their APCs fight over one power state (and the last tile renames every room).
+		var/named_ms13_area = ispath(area_type, /area/ms13) && mapped_name && mapped_name != initial(area_type.name)
+		var/area_key = named_ms13_area ? "[area_type]:[mapped_name]" : area_type
+		var/area/area_instance = loaded_areas[area_key]
 		if(!area_instance)
-			var/area_type = members[index]
 			// If this parsed map doesn't have that area already, we check the global cache
-			area_instance = GLOB.areas_by_type[area_type]
+			var/area/default_area = GLOB.areas_by_type[area_type]
+			area_instance = named_ms13_area ? null : default_area
 			// If the global list DOESN'T have this area it's either not a unique area, or it just hasn't been created yet
 			if (!area_instance)
 				area_instance = new area_type(null)
 				if(!area_instance)
 					CRASH("[area_type] failed to be new'd, what'd you do?")
-			loaded_areas[area_type] = area_instance
+				if(named_ms13_area)
+					area_instance.area_flags &= ~UNIQUE_AREA
+					if(default_area)
+						GLOB.areas_by_type[area_type] = default_area
+					else
+						GLOB.areas_by_type -= area_type
+			loaded_areas[area_key] = area_instance
 
 		if(!new_z)
 			old_area = crds.loc

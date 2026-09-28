@@ -351,8 +351,9 @@ multiple modular subtrees with behaviors
 /datum/ai_controller/proc/get_movement_delay()
 	if(isliving(pawn))
 		var/mob/living/living_pawn = pawn
-		return living_pawn.movement_delay
-	return non_mob_movement_delay
+		// MOJAVE EDIT: fast animals can have negative additive slowdown. Never schedule a move in the past.
+		return max(living_pawn.movement_delay, world.tick_lag)
+	return max(non_mob_movement_delay, world.tick_lag)
 
 /datum/ai_controller/proc/MovePawn(...)
 	if(!isturf(pawn.loc))

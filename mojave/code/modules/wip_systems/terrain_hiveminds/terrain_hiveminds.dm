@@ -1317,6 +1317,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	revivable_hive_corpse = network.persistent_unit_corpses
 	if(revivable_hive_corpse)
 		del_on_death = FALSE
+		rotate_on_lying = TRUE
 	terrain_dependent = network.mobs_require_terrain
 	orphan_damage = network.mob_orphan_damage
 	faction = list(network.faction_id)

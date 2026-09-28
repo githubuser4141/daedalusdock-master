@@ -18,6 +18,9 @@
 	if(vol < DISTANT_SOUND_MIN_VOLUME)
 		return
 	var/list/versions = GLOB.distant_sound_versions["[sound_file]"]
+	// Guns/blasts have long-range sound profiles even when their local mix volume is only 50.
+	var/startle_volume = (versions && versions[3] >= SOUND_RANGE * 8 && vol >= 40) ? max(vol, 80) : vol
+	ms13_startle_wildlife(turf_source, startle_volume, SOUND_RANGE + extrarange)
 	if(versions)
 		// Some kinds carry quieter than they're played: creatures are eerie far off, not deafening.
 		var/loudness = length(versions) > 3 ? versions[4] : 1
@@ -86,6 +89,7 @@ GLOBAL_VAR(ms13_hit_force)
  * it is. No space station hull creaking. Screen shake as DD's.
  */
 /datum/controller/subsystem/explosions/shake_the_room(turf/epicenter, near_distance, far_distance, quake_factor, echo_factor, creaking, sound/near_sound = sound(get_sfx(SFX_EXPLOSION)), sound/far_sound, sound/echo_sound, sound/creaking_sound, hull_creaking_sound)
+	ms13_startle_wildlife(epicenter, 100, max(near_distance, far_distance))
 	near_sound.file = get_sfx(near_sound.file)
 	var/list/versions = GLOB.distant_sound_versions["[near_sound.file]"]
 	if(!versions)

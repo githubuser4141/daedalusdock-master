@@ -1,0 +1,6 @@
+#define UNIT_TESTS
+#include "daedalus.dme"
+TEST_FOCUS(/datum/unit_test/ms13_wildlife)
+TEST_FOCUS(/datum/unit_test/ms13_wildlife_route)
+TEST_FOCUS(/datum/unit_test/ms13_flora_ecology)
+TEST_FOCUS(/datum/unit_test/ms13_wildlife_presets)

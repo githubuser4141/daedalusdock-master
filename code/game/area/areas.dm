@@ -270,7 +270,14 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /area/Destroy()
 	if(GLOB.areas_by_type[type] == src)
 		GLOB.areas_by_type[type] = null
-	GLOB.sortedAreas -= src
+	GLOB.areas -= src
+	LAZYREMOVE(GLOB.sortedAreas, src) // require_area_resort() deliberately clears this cache.
+	for(var/z_level in SSmapping.areas_in_z)
+		var/list/registered_areas = SSmapping.areas_in_z[z_level]
+		registered_areas -= src
+	for(var/area_name in GLOB.teleportlocs)
+		if(GLOB.teleportlocs[area_name] == src)
+			GLOB.teleportlocs -= area_name
 	light_switches.Cut()
 	STOP_PROCESSING(SSobj, src)
 	QDEL_NULL(alarm_manager)

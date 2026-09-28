@@ -33,9 +33,33 @@
 
 /datum/ms13_terrain_hivemind/necromorph/marker/advance_corpse_conversion(mob/living/corpse, datum/converter, delta_time, conversion_time, claim = TRUE)
 	var/obj/structure/ms13_hivemind/core/marker/marker = core
-	if(marker?.is_suppressed())
+	if(marker?.is_suppressed() || !can_reanimate_at(corpse))
 		return FALSE
 	return ..()
+
+/// Pause every conversion route without consuming resources or discarding accumulated progress.
+/datum/ms13_terrain_hivemind/necromorph/marker/proc/can_reanimate_at(mob/living/corpse)
+	var/turf/site = get_turf(corpse)
+	if(QDELETED(corpse) || !site)
+		return FALSE
+	if(is_territory(site))
+		return TRUE
+	var/datum/time_of_day/sky = SSoutdoor_effects.current_step_datum
+	if(istype(sky, /datum/time_of_day/sunrise) || istype(sky, /datum/time_of_day/daytime) || istype(sky, /datum/time_of_day/sunset))
+		if(site.outdoor_effect?.state == SKY_VISIBLE || site.outdoor_effect?.state == SKY_VISIBLE_BORDER)
+			return FALSE
+		// Sun spilling under a roof counts too; electric lamps and moonlight do not.
+		for(var/datum/lighting_corner/corner as anything in list(site.lighting_corner_NE, site.lighting_corner_SE, site.lighting_corner_SW, site.lighting_corner_NW))
+			if(corner?.sunFalloff > 0)
+				return FALSE
+	// Include the actual projections visible through open space on higher floors.
+	for(var/atom/movable/visible_body as anything in (list(corpse) + corpse.get_associated_mimics()))
+		for(var/mob/living/carbon/human/witness as anything in GLOB.human_list)
+			if(QDELETED(witness) || witness.stat != CONSCIOUS || witness.z != visible_body.z || !witness.in_fov(visible_body))
+				continue
+			if(visible_body in view(witness.client ? witness.client.view : world.view, witness))
+				return FALSE
+	return TRUE
 
 /obj/structure/ms13_hivemind/core/marker
 	name = "Marker"
@@ -48,6 +72,8 @@
 	plane = ABOVE_GAME_PLANE
 	max_integrity = 1500
 	var/influence_radius = 30
+	/// Same-floor radius for electrical light dimming/flicker only. Zero disables the effect.
+	var/light_flicker_radius = 30
 	/// How far it reaches for the dead, on its own floor and those just above and below, and how many it remakes a pulse.
 	var/corpse_reach = 45
 	var/corpses_per_pulse = 3
@@ -67,7 +93,9 @@
 	. = ..()
 	if(!join_network)
 		// A mapper-placed Marker starts a network, which creates its actual registered core.
-		new /datum/ms13_terrain_hivemind/necromorph/marker(get_turf(src), 120)
+		var/datum/ms13_terrain_hivemind/necromorph/marker/hive = new(get_turf(src), 120)
+		var/obj/structure/ms13_hivemind/core/marker/registered_core = hive.core
+		registered_core.light_flicker_radius = light_flicker_radius
 		return INITIALIZE_HINT_QDEL
 	name = "Marker"
 	power_feed = new(get_turf(src), src)
@@ -117,8 +145,8 @@
 	mid_length = 9.311 SECONDS
 	// Never loud, but carrying: a slow fade out to 17 + extra_range tiles, heard through walls with each one halving it
 	// (ms13_wall_muffle()), so it's still there a few rooms off, dimly.
-	volume = 40
-	extra_range = 35
+	volume = 32
+	extra_range = 52 // just enough to reach the BoS base
 	falloff_distance = 3
 	falloff_exponent = 2
 
@@ -395,3 +423,102 @@
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), target, span_notice("...There's nothing there.")), 1.5 SECONDS)
 
 #undef MS13_MARKER_HAUNT_COOLDOWN
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_marker_reanimation
+	name = "MOJAVE SUN: Marker Reanimation Respects Sight And Sunlight"
+	var/datum/time_of_day/old_sky
+	var/atom/movable/outdoor_effect/sky_effect
+	var/old_sky_state
+	var/created_sky_effect = FALSE
+
+/datum/unit_test/ms13_marker_reanimation/Destroy()
+	SSoutdoor_effects.current_step_datum = old_sky
+	if(created_sky_effect)
+		qdel(sky_effect, force = TRUE)
+	else if(sky_effect)
+		sky_effect.state = old_sky_state
+	return ..()
+
+/datum/unit_test/ms13_marker_reanimation/Run()
+	old_sky = SSoutdoor_effects.current_step_datum
+	var/turf/site = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	sky_effect = site.outdoor_effect
+	if(!sky_effect)
+		sky_effect = new(site)
+		created_sky_effect = TRUE
+	old_sky_state = sky_effect.state
+	sky_effect.state = SKY_BLOCKED
+	SSoutdoor_effects.current_step_datum = locate(/datum/time_of_day/midnight) in SSoutdoor_effects.time_cycle_steps
+	var/datum/ms13_terrain_hivemind/necromorph/marker/network = new
+	allocated += network
+	network.active = TRUE
+	network.resources = 500
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/corpse = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier, site, network)
+	corpse.death()
+	corpse.hive_reanimate_after = 0
+	var/mob/living/carbon/human/consistent/witness = allocate(/mob/living/carbon/human/consistent, locate(site.x + 3, site.y, site.z))
+	witness.see_in_dark = 8 // Test facing and occlusion without depending on the test room's light processing.
+	witness.update_fov()
+	witness.setDir(WEST)
+	if(corpse.stat != DEAD || !witness.in_fov(corpse) || !(corpse in view(world.view, witness)))
+		Fail("The observation fixture is not a visible dead body: state [corpse.stat], facing [witness.in_fov(corpse)], view [corpse in view(world.view, witness)].")
+		return
+	if(!(!network.advance_corpse_conversion(corpse, network, 1, 1) && corpse.stat == DEAD))
+		Fail("The Marker revives a corpse in a person's field of view.")
+	if(!(network.resources == 500 && !length(network.corpse_claims)))
+		Fail("A blocked revival spends resources or reserves the body.")
+	witness.setDir(EAST)
+	if(!(network.can_reanimate_at(corpse)))
+		Fail("Looking away does not release the revival restriction.")
+	network.advance_corpse_conversion(corpse, network, 1, 2)
+	witness.setDir(WEST)
+	if(!(!network.advance_corpse_conversion(corpse, network, 1, 2) && network.corpse_conversion_progress[WEAKREF(corpse)] == 0.5))
+		Fail("Looking back does not pause partially completed revival.")
+	var/obj/structure/closet/crate/occluder = allocate(/obj/structure/closet/crate, get_step(site, EAST))
+	occluder.set_opacity(TRUE)
+	if(!(network.can_reanimate_at(corpse)))
+		Fail("A person sees through an opaque obstruction when blocking revival.")
+	qdel(occluder)
+	ADD_TRAIT(witness, TRAIT_BLIND, REF(src))
+	if(!(network.can_reanimate_at(corpse)))
+		Fail("A blind person blocks revival.")
+	REMOVE_TRAIT(witness, TRAIT_BLIND, REF(src))
+	// A visible open-space projection must count even when the actual body is on another floor.
+	corpse.forceMove(locate(site.x, site.y, site.z - 1))
+	var/atom/movable/openspace/mimic/projection = allocate(/atom/movable/openspace/mimic, site)
+	projection.appearance = corpse.appearance
+	projection.associated_atom = corpse
+	corpse.bound_overlay = projection
+	if(network.can_reanimate_at(corpse))
+		Fail("Watching a corpse's open-space projection from another floor permits revival.")
+	qdel(projection)
+	if(!network.can_reanimate_at(corpse))
+		Fail("A person on another floor blocks a body that has no visible projection.")
+	corpse.forceMove(site)
+	witness.setDir(EAST)
+	if(!(network.advance_corpse_conversion(corpse, network, 1, 2) && corpse.stat == CONSCIOUS))
+		Fail("Paused revival does not resume when unobserved.")
+	corpse.death()
+	corpse.forceMove(site)
+	corpse.hive_reanimate_after = 0
+	sky_effect.state = SKY_VISIBLE
+	SSoutdoor_effects.current_step_datum = locate(/datum/time_of_day/daytime) in SSoutdoor_effects.time_cycle_steps
+	var/resources_before = network.resources
+	if(network.can_reanimate_at(corpse))
+		Fail("Sunlight fixture permits revival: sky [SSoutdoor_effects.current_step_datum?.type], effect [site.outdoor_effect?.state] (saved [sky_effect.state], same [site.outdoor_effect == sky_effect]), body [corpse.x],[corpse.y],[corpse.z] / site [site.x],[site.y],[site.z], owned [network.is_territory(get_turf(corpse))].")
+	if(!(!network.advance_corpse_conversion(corpse, network, 1, 1) && network.resources == resources_before))
+		Fail("Direct sunlight permits revival or consumes resources.")
+	SSoutdoor_effects.current_step_datum = locate(/datum/time_of_day/midnight) in SSoutdoor_effects.time_cycle_steps
+	if(!(network.can_reanimate_at(corpse)))
+		Fail("An outdoor corpse stays blocked after night falls.")
+	SSoutdoor_effects.current_step_datum = locate(/datum/time_of_day/daytime) in SSoutdoor_effects.time_cycle_steps
+	sky_effect.state = SKY_BLOCKED
+	if(!(network.can_reanimate_at(corpse)))
+		Fail("Sheltered ground is treated as direct sunlight.")
+	sky_effect.state = SKY_VISIBLE
+	witness.setDir(WEST)
+	allocate(/obj/structure/ms13_hivemind/terrain, site, network)
+	if(!(network.advance_corpse_conversion(corpse, network, 1, 1) && corpse.stat == CONSCIOUS))
+		Fail("Owned hivemind mass does not override both sunlight and observation.")
+#endif

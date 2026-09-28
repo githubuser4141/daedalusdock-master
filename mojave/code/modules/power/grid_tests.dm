@@ -144,6 +144,114 @@
 	var/obj/structure/cable/knot = allocate(/obj/structure/cable, tile)
 	knot.set_directions(GLOB.real_dirs_to_cable_dirs["[toward]"])
 
+/// Named map rooms must not share the same APC-controlled area instance.
+/datum/unit_test/ms13_named_map_areas
+	name = "POWER: Separately Named MS13 Map Areas Stay Separate"
+
+/datum/unit_test/ms13_named_map_areas/Run()
+	var/datum/parsed_map/map = new
+	allocated += map
+	var/area/area_type = /area/ms13/underground/mountain_bunker
+	var/area/default_area = GLOB.areas_by_type[area_type]
+	var/list/names = list("Regression Tram", null, "Regression Mines", "Regression Tram", null)
+	var/list/old_areas = list()
+	var/list/rooms = list()
+	for(var/index in 1 to length(names))
+		var/turf/site = locate(run_loc_floor_bottom_left.x + index, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+		old_areas[site] = get_area(site)
+		var/list/attributes = names[index] ? list("name" = names[index]) : GLOB.map_model_default
+		map.build_coordinate(list(list(/turf/template_noop, area_type), list(GLOB.map_model_default, attributes)), site, FALSE, FALSE, FALSE)
+		rooms += get_area(site)
+	if(rooms[1] == rooms[2] || rooms[1] == rooms[3] || rooms[2] == rooms[3])
+		Fail("Differently named rooms shared one area and would fight over APC power.")
+	if(rooms[1] != rooms[4] || rooms[2] != rooms[5])
+		Fail("Repeated tiles of the same mapped room created different areas.")
+	if(GLOB.areas_by_type[area_type] != default_area || default_area.name != initial(area_type.name))
+		Fail("Loading a named room replaced or renamed the default area.")
+	for(var/turf/site as anything in old_areas)
+		site.change_area(get_area(site), old_areas[site])
+	get_sorted_areas()
+	qdel(rooms[1])
+	require_area_resort()
+	qdel(rooms[3])
+	var/area/deleted_room = rooms[3]
+	if(deleted_room.alarm_manager || (rooms[1] in get_sorted_areas()) || (rooms[3] in get_sorted_areas()))
+		Fail("Deleting a room with a cleared area cache interrupted cleanup or left stale area entries.")
+
+/// Exercise a real generator, cable, terminal and fixture across powernet rollovers.
+/datum/unit_test/ms13_utility_power
+	name = "POWER: Utility Box Generator Startup Stays Steady"
+	var/power_changes = 0
+
+/datum/unit_test/ms13_utility_power/proc/power_changed()
+	SIGNAL_HANDLER
+	power_changes++
+
+/datum/unit_test/ms13_utility_power/proc/power_tick(obj/machinery/ms13/fusion_generator/generator, obj/machinery/power/apc/ms13/box)
+	generator.powernet.reset()
+	generator.process(2)
+	box.process(2)
+
+/datum/unit_test/ms13_utility_power/Run()
+	var/turf/site = run_loc_floor_bottom_left
+	var/area/old_area = get_area(site)
+	var/area/room = new
+	allocated += room
+	site.change_area(old_area, room)
+	var/obj/structure/cable/wire = allocate(/obj/structure/cable, site)
+	wire.set_directions(CABLE_NORTH)
+	var/obj/machinery/ms13/fusion_generator/generator = allocate(/obj/machinery/ms13/fusion_generator, site)
+	generator.set_generator_state("off")
+	SSatoms.map_loader_begin(REF(src))
+	var/obj/machinery/power/apc/ms13/box = new(site)
+	SSatoms.map_loader_stop(REF(src))
+	SSatoms.InitializeAtoms(list(box))
+	allocated += box
+	box.terminal.connect_to_network()
+	var/obj/machinery/light/ms13/fixture = allocate(/obj/machinery/light/ms13, site)
+	fixture.status = LIGHT_OK
+	fixture.switchcount = -1
+	fixture.maploaded = TRUE
+	// Advance this isolated network ourselves; timers still run for the real startup flicker.
+	STOP_PROCESSING(SSmachines, generator)
+	STOP_PROCESSING(SSmachines, box)
+	SSmachines.powernets -= generator.powernet
+	RegisterSignal(room, COMSIG_AREA_POWER_CHANGE, PROC_REF(power_changed))
+	power_tick(generator, box)
+	if(room.power_light || fixture.on)
+		Fail("The switched-off generator powered its room.")
+	generator.set_generator_state("on")
+	power_tick(generator, box)
+	power_tick(generator, box)
+	if(!room.power_light || !fixture.on || !fixture.GetComponent(/datum/component/ms13_light_flicker))
+		Fail("Generator startup did not power the fixture and start its finite flicker.")
+	sleep(2 SECONDS)
+	var/changes_after_startup = power_changes
+	for(var/tick in 1 to 30)
+		power_tick(generator, box)
+		if(!room.power_light || !fixture.on)
+			Fail("A steady generator lost room power on tick [tick].")
+	if(power_changes != changes_after_startup || fixture.GetComponent(/datum/component/ms13_light_flicker) || fixture.switchcount != 0)
+		Fail("Steady generator power repeated the APC transition or fixture startup.")
+	generator.set_generator_state("off")
+	power_tick(generator, box)
+	power_tick(generator, box)
+	if(room.power_light || fixture.on)
+		Fail("Stopping the generator did not remove room power.")
+	generator.set_generator_state("on")
+	fixture.switchcount = -1
+	fixture.maploaded = TRUE
+	power_tick(generator, box)
+	power_tick(generator, box)
+	if(!room.power_light || !fixture.on)
+		Fail("Restoring the generator did not restore room power.")
+	UnregisterSignal(room, COMSIG_AREA_POWER_CHANGE)
+	qdel(fixture)
+	qdel(box)
+	qdel(generator)
+	qdel(wire)
+	site.change_area(room, old_area)
+
 /// Smart cables mapped straight through a plant: they stop at a substation, and leave a knot for a lamp mid-line.
 /datum/unit_test/ms13_smart_cables
 	name = "POWER: Smart Cables Wire The Grid"

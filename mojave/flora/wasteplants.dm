@@ -31,12 +31,12 @@
 	pixel_x = rand(-3, 3)
 	pixel_y = rand(-3, 3)
 
-/obj/structure/flora/ms13/forage/proc/harvest(user)
+/obj/structure/flora/ms13/forage/proc/harvest(user, produce_items = TRUE)
 	if(harvested)
 		return 0
 
 	var/rand_harvested = rand(harvest_amount_low, harvest_amount_high)
-	if(rand_harvested)
+	if(rand_harvested && produce_items)
 		if(user)
 			var/msg = harvest_message_med
 			if(rand_harvested == harvest_amount_low)

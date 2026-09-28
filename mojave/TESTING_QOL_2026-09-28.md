@@ -132,7 +132,7 @@ The distance-sound generator preserves authored explosion tiers, creates the new
 
 ## 10. Marker lighting atmosphere
 
-Place an unsuppressed Marker and powered wall lights/electrical handheld flashlights within its **30-tile influence radius on the same floor**.
+Place an unsuppressed Marker and powered wall lights/electrical handheld flashlights within its **30-tile lighting radius on the same floor**. Set the Marker's mapper variable `light_flicker_radius` to adjust it independently of hallucination/corpse reach; **0 disables Marker lighting effects**, including on its own tile. The setting survives initialization of a mapped Marker.
 
 - Turn an APC off and back on without a Marker: fixtures give two quick startup dips, then stay at full brightness. Near a Marker, startup instead gives four deeper dips over about **2.8 seconds**, then settles to **20% dimmer**. An already-lit lamp entering Marker influence just dims; the periodic influence pulse does not restart startup.
 - Watch several lights for a few minutes. After the startup burst, each light independently waits **1–3 minutes** between single **0.4-second** dips. The regular influence pulses must not restart the startup burst. Flames/flares are excluded.
@@ -148,7 +148,40 @@ Place an unsuppressed Marker and powered wall lights/electrical handheld flashli
 - Pick a stop across the stairs, ride there with a passenger and loose cargo, then return. The route board should show the stop on its correct floor. A blocked landing must stop the entire car rather than split it across levels.
 - Test the second-level tunnel stop in `Drought`: the rail/stair connection at **(115,171)** joins it to `Drought_below`. The leftover third-level stop in `Drought_above` at **(115,177)** is separate and is not the destination for this check. No map files were edited for this fix.
 
+## 29 September follow-up checks
+
+- **Mountain Bunker generator:** start a fresh round and turn on the generator serving the utility box at map coordinates **(96,175) in Drought_below**. In the current centered runtime map this is **(111,202,2)**. The brief light startup should finish and the APC should stop repeatedly thunking. The map loader now keeps differently named MS13 rooms separate instead of merging Mountain Bunker, Brotherhood Tram and BoS Mines into one area controlled by competing APCs. This requires reloading the map in a new round/server; recompiling cannot split an already-running area's objects.
+- **Conduit:** click `/obj/machinery/power/apc/ms13/conduit` to turn its area power off/on. It must open no UI. Remote switches and linked terminals still operate it. Normal utility boxes retain their existing interface.
+- **StrongDMM measuring stick:** restart either desktop StrongDMM copy. Select the second tool and drag: the status bar shows inclusive length for a line, or width, height and tile area for a rectangle. Hold Ctrl for its border tile count. Reverse-direction drags give the same measurements. Release and Undo should behave normally. A named backup is at `J:\daedalusmojave\StrongDMM\dst\StrongDMM-QoL-measurement-2026-09-29.exe`.
+- **Necromorph corpses:** kill a necromorph; its sprite should fall onto its side. Reanimation should restore the upright pose. Damaging the corpse enough still produces gibs and prevents revival.
+- **Marker revival:** away from its biomass, watch an eligible corpse from the front: it must stay dead, including when visible through open space from above. Look away or block the sight line with an opaque obstacle: revival may resume. Blind/unconscious/dead observers do not prevent it. Direct sunlight, including sunlight spilling under a roof, blocks revival from sunrise through sunset; outdoor darkness and electric lighting do not. A patch of that Marker's biomass under the body overrides both observation and sunlight restrictions. Suppression, cooldowns, population and resource requirements still apply. The same rule covers remote pulses, unit conversion and structures; blocked attempts preserve prior progress and spend no resources.
+- **Lighting radius:** map a Marker with `light_flicker_radius = 2`; lights two tiles away should be affected and lights three tiles away should not. Set it to 0: existing lights recover on their next processing tick, and future APC startups use the ordinary brief flicker. Re-enable it to restore the atmosphere.
+
+## 12. Wildlife, themed dens and regrowing flora
+
+See [the wildlife and flora mapper guide](WILDLIFE_AND_FLORA.md) for all type paths, mapper variables and a seven-step manual checklist.
+
+- Reopen the DME in StrongDMM, then search **Drought predator**, **Drought prey**, **Mammoth predator**, or **Mammoth prey**. Each theme has three predator and three prey presets. These are invisible home-point spawners using existing animals; decorate their surroundings with the map's existing scenery. No map placements were changed.
+- Place predator/prey dens and flora nearby. Animals patrol home territory, defend it, hunt suitable prey, haul kills home, graze, retreat and heal. Try blocking their home route: failed jobs release carried food and allow other movement instead of leaving animals permanently stuck.
+- Fire near wildlife away from its den: smaller animals are more likely to flee. Existing non-den mobs retain their shared-target coordination and fast pursuit. Den animals explicitly opt out of that pack system.
+- Flora supports exact-tile, radius and area placement. Harvesting uses existing regrowth; removed plants can respawn after the configured delay. Buildings, roads and occupied tiles must remain clear.
+
 ## Automated verification
+
+Wildlife and den verification, 29 September 2026:
+
+- Normal build: **0 errors, 17 existing warnings**, `data/wildlife-game-compile.log`. Combined test build: **0 errors, 20 existing warnings**, `data/wildlife-qol-compile.log`.
+- All **22 checks passed**, including every themed den preset, wildlife decisions/recovery, live hunting and hauling around an obstacle, flora regrowth and existing pack coordination, alongside all 17 earlier follow-up checks. Results: `data/wildlife-final-results.json`; test log: `data/logs/2026/09/29/round-08.54.21/tests.log`.
+- The test run and normal game boot both had **zero handled or native runtime errors**. Normal boot: `data/logs/2026/09/29/round-08.54.23/runtime.log`, `data/wildlife-final-game-startup.log`.
+- Live hauling exposed a shared scheduling defect: negative additive slowdown could schedule the next AI movement step in the past, leaving a fast animal stalled. The shared movement-delay getter now clamps to one world tick; normal pack speed settings and pursuit logic were not retuned.
+
+Follow-up verification, 29 September 2026:
+
+- Normal build: **0 errors, 17 existing warnings**, `data/qol-september29-game-compile.log`.
+- All **17 focused checks passed**, including Marker visibility/sunlight, corpse sprite rotation, mapped lighting radius, conduit clicks, separate named areas and generator startup. Build: **0 errors, 20 existing unit-build warnings**. Archived results: `data/qol-september29-results.json`; tests: `data/logs/2026/09/29/round-08.05.29/tests.log`.
+- Both the focused run and normal boot had **zero handled or native runtime errors**. Checked `runtime.log` and native `dd.log`/startup output. Normal boot: `data/logs/2026/09/29/round-08.05.01/runtime.log`, `data/qol-september29-clean-game-startup.log`. Area deletion now also clears its registries safely when the sorting cache was invalidated.
+- The earlier live bunker probe at **(111,202,2)** confirmed one APC and sustained power with roughly **5.36 kW demand / 10 kW supply**; `data/logs/2026/09/29/round-07.15.00/tests.log`.
+- StrongDMM: full Go suite passed, plus `TestDroughtEditorWorkflow` using the real Drought maps, including measurement, release and Undo. Log: `J:\daedalusmojave\StrongDMM\dst\qol-measurement-ui-tests.log`. Both desktop executables match the dated backup.
 
 Final verification, 28 September 2026:
 
