@@ -306,8 +306,9 @@
 	var/lead = leading.x * step_x + leading.y * step_y - tail
 	return translate_hull(far_end.x + lead * step_x - leading.x, far_end.y + lead * step_y - leading.y, far_end.z, bypass_cooldown)
 
-/// One bounded breadth-first search when selecting a destination, never a world scan each tick.
-/datum/ms13_ground_vehicle/rail/proc/find_rail_routes()
+/// One bounded breadth-first search when selecting a destination, never a world scan each tick. With any_rail, it follows
+/// every rail touching, a blast door's track and a line alike, as power does.
+/datum/ms13_ground_vehicle/rail/proc/find_rail_routes(any_rail = FALSE)
 	var/obj/structure/ms13_vehicle_frame/bogie = rail_frame()
 	var/list/parents = list()
 	if(!bogie)
@@ -320,13 +321,13 @@
 		var/turf/current = queue[index]
 		for(var/direction in GLOB.cardinals)
 			var/turf/neighbor = get_step(current, direction)
-			if(!neighbor || parents[neighbor] || !rail_at(neighbor))
+			if(!neighbor || parents[neighbor] || !(any_rail ? ms13_rail_at(neighbor) : rail_at(neighbor)))
 				continue
 			parents[neighbor] = current
 			queue += neighbor
 			// Onto an incline or a region's crossing line: the line carries on at the far end.
 			var/turf/far_end = ms13_rail_link(neighbor, direction)
-			if(far_end && !parents[far_end] && rail_at(far_end))
+			if(far_end && !parents[far_end] && (any_rail ? ms13_rail_at(far_end) : rail_at(far_end)))
 				parents[far_end] = neighbor
 				queue += far_end
 	return parents

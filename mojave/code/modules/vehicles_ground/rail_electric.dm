@@ -81,12 +81,16 @@
 	/// The line was live when last heard from.
 	var/line_live = FALSE
 
-/datum/ms13_ground_vehicle/rail/electric/find_rail_routes()
+/datum/ms13_ground_vehicle/rail/electric/find_rail_routes(any_rail = FALSE)
 	. = ..()
+	if(any_rail)
+		return
 	for(var/obj/machinery/power/ms13_rail_feeder/old_feeder as anything in feeders)
 		UnregisterSignal(old_feeder, COMSIG_MS13_LINE_POWER_CHANGED)
 	feeders = list()
-	for(var/turf/location as anything in .)
+	// Power runs along every rail touching, so a blast door's track crossing a live line is live too, though each car
+	// drives only its own.
+	for(var/turf/location as anything in ..(TRUE))
 		var/obj/machinery/power/ms13_rail_feeder/feeder = locate() in location
 		if(feeder)
 			// Picks up a cable laid or rewired since the networks were last built.

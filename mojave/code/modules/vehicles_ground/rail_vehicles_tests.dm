@@ -383,7 +383,8 @@
 	var/turf/crossing = locate(31, door_middle + 1, z)
 	if(!ms13_rail_at(crossing, FALSE) || !ms13_rail_at(crossing, TRUE) || ms13_rail_at(crossing, FALSE) == ms13_rail_at(crossing, TRUE))
 		Fail("A blast door's track and a train's line crossing it weren't told apart.")
-	var/obj/machinery/power/ms13_rail_feeder/door_feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(31, door_middle + door_length, z))
+	// Its power comes from the line it crosses: the feeder is on the train's rail, not the door's track.
+	var/obj/machinery/power/ms13_rail_feeder/door_feeder = allocate(/obj/machinery/power/ms13_rail_feeder, locate(33, door_middle + 1, z))
 	net.add_machine(door_feeder)
 	net.avail = 1000000
 	var/obj/structure/ms13_vehicle_frame/tram/blast_door/door = allocate(/obj/structure/ms13_vehicle_frame/tram/blast_door, locate(31, 30, z))

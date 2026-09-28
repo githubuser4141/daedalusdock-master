@@ -2190,6 +2190,7 @@
 "mh" = (
 /obj/structure/ms13_rail/blast_door,
 /obj/structure/ms13_rail,
+/obj/structure/ms13_rail/blast_door/stop,
 /turf/open/floor/ms13/concrete/industrial/walkway{
 	dir = 1
 	},
@@ -4758,9 +4759,7 @@
 /obj/structure/ms13_rail/blast_door,
 /obj/structure/ms13_rail/blast_door/stop,
 /turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain_bunker{
-	name = "Brotherhood Tram"
-	})
+/area/ms13/underground/mountain_bunker)
 "AB" = (
 /obj/structure/bed/ms13/bedframe/wire,
 /obj/structure/bed/ms13/mattress/stained,
@@ -9117,7 +9116,6 @@
 	id = "bos_blast_door"
 	},
 /obj/structure/ms13_rail/blast_door,
-/obj/structure/ms13_rail/station,
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
 	name = "Brotherhood Tram"
@@ -30136,7 +30134,7 @@ uD
 uD
 gU
 vC
-mP
+dF
 eG
 dF
 Ut
@@ -30338,7 +30336,7 @@ uD
 uD
 gU
 hA
-dF
+mP
 eG
 dF
 Ut
@@ -31145,13 +31143,13 @@ uD
 xY
 gU
 gU
-Az
+EO
 EO
 mh
 EO
 ZZ
 EO
-zp
+Az
 zp
 zp
 Af
