@@ -1660,8 +1660,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		if(LAZYLEN(corpse.grabbed_by))
 			clear_corpse_task()
 			return FALSE
-		if(ms13_hive_distance(src, corpse) > 1)
-			Goto(corpse, move_to_delay, 1)
+		if(!Adjacent(corpse))
+			Goto(corpse, move_to_delay, ms13_hive_distance(src, corpse) > 1 ? 1 : 0)
 		else
 			if(!hive_route_ready(corpse))
 				return FALSE
@@ -1670,8 +1670,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(!network.units_haul_corpses)
 		return FALSE
 	if(!is_grabbing(corpse))
-		if(ms13_hive_distance(src, corpse) > 1)
-			Goto(corpse, move_to_delay, 1)
+		if(!Adjacent(corpse))
+			Goto(corpse, move_to_delay, ms13_hive_distance(src, corpse) > 1 ? 1 : 0)
 			return TRUE
 		if(!try_make_grab(corpse))
 			hive_avoid_goal(corpse)
@@ -1704,8 +1704,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		hive_avoid_goal(corpse)
 		clear_corpse_task()
 		return FALSE
-	if(ms13_hive_distance(src, destination) > 1)
-		Goto(destination, move_to_delay, 1)
+	if(!Adjacent(destination))
+		Goto(destination, move_to_delay, ms13_hive_distance(src, destination) > 1 ? 1 : 0)
 		return TRUE
 	release_grabs(corpse)
 	corpse.forceMove(get_turf(src))
@@ -1756,6 +1756,10 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return FALSE
 	if(!COOLDOWN_FINISHED(src, roam_retry_cooldown))
 		return TRUE
+	if(roam_target && Adjacent(roam_target))
+		for(var/obj/machinery/door/door in roam_target)
+			if(begin_door_pry(door))
+				return TRUE
 	if(!roam_target || roam_target.z != z || get_dist(src, roam_target) <= 1 || COOLDOWN_FINISHED(src, roam_retarget_cooldown))
 		roam_target = pick_roam_target()
 		if(!roam_target)

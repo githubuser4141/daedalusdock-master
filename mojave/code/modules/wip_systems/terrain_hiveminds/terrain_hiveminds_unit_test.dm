@@ -36,6 +36,8 @@
 	obstacle.damage_deflection = 10000
 	TEST_ASSERT(!unit.handle_hive_idle_destruction(), "Idle destruction attacks an object it cannot damage.")
 	obstacle.damage_deflection = 0
+	for(var/hit in 1 to unit.hive_max_breach_hits + 1)
+		TEST_ASSERT(unit.hive_attack_obstacle(obstacle, last_resort = TRUE), "Productive last-resort demolition was abandoned merely for taking more than fifty hits.")
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/small = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout, origin, network)
 	TEST_ASSERT(!small.handle_hive_idle_destruction(), "A small swarmer inherited large-unit idle destruction.")
 
@@ -63,6 +65,11 @@
 		site.ChangeTurf(/turf/closed/indestructible/rock/ms13/drought)
 	var/turf/closed/mineral/random/ms13/rock = get_step(origin, EAST)
 	rock = rock.ChangeTurf(/turf/closed/mineral/random/ms13)
+	// The five-tile test room ends here; create a real tunnel destination beyond its boundary.
+	for(var/offset in 2 to 3)
+		var/turf/site = locate(origin.x + offset, origin.y, origin.z)
+		replaced_turfs[site] = site.type
+		site.ChangeTurf(/turf/open/floor/plating)
 	rock.damage_deflection = 0
 	TEST_ASSERT(unit.CanSmashTurfs(rock), "A slasher cannot recognise affordable mineable rock.")
 	var/health_before = rock.mining_health
@@ -80,17 +87,21 @@
 	qdel(small)
 	TEST_ASSERT(unit.handle_hive_idle_destruction(), "A trapped idle slasher does not choose its destructible exit.")
 	// Give the established hive another frontier outside this enclosure. Its failed patrol must yield to breaching.
-	var/turf/destination = get_step(rock, EAST)
+	var/turf/closed/mineral/random/ms13/second_rock = get_step(rock, EAST)
+	second_rock = second_rock.ChangeTurf(/turf/closed/mineral/random/ms13)
+	second_rock.mining_health = 90
+	second_rock.damage_deflection = 0
+	var/turf/destination = get_step(second_rock, EAST)
 	allocate(/obj/structure/ms13_hivemind/terrain, destination, network)
 	unit.toggle_ai(AI_ON)
 	unit.roam_target = destination
 	COOLDOWN_START(unit, roam_retarget_cooldown, 1 MINUTES)
-	for(var/tick in 1 to 30)
+	for(var/tick in 1 to 45)
 		unit.handle_automated_action()
 		sleep(1 SECONDS)
-		if(!rock.density)
+		if(!rock.density && !second_rock.density)
 			break
-	TEST_ASSERT(!rock.density, "Normal AI ticks never opened the only exit after its patrol path failed.")
+	TEST_ASSERT(!rock.density && !second_rock.density, "Normal AI ticks stopped excavating before reaching the open tunnel beyond both rock tiles.")
 	TEST_ASSERT(get_turf(unit) != origin || unit.Move(rock, EAST), "The slasher could not leave through the freshly mined exit.")
 	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, destination)
 	victim.maxHealth = 1000
@@ -104,6 +115,84 @@
 		if(victim.health < 1000)
 			break
 	TEST_ASSERT(victim.health < 1000, "Breaching an exit left the slasher unable to resume combat.")
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/escape_test
+	var/turf/patrol_goal
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/escape_test/pick_roam_target()
+	return patrol_goal
+
+/datum/unit_test/ms13_hive_rock_escape/shutters
+	name = "MOJAVE SUN: Hive Leaves Through Two Shutters Then Wrecks Machinery"
+
+/datum/unit_test/ms13_hive_rock_escape/shutters/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	for(var/turf/site in block(locate(origin.x - 2, origin.y - 1, origin.z), locate(origin.x + 7, origin.y + 1, origin.z)))
+		replaced_turfs[site] = site.type
+		site.ChangeTurf(site.y == origin.y && site.x >= origin.x && site.x <= origin.x + 6 ? /turf/open/floor/plating : /turf/closed/indestructible/rock/ms13/drought)
+	var/turf/closed/mineral/random/ms13/dead_end = get_step(origin, WEST)
+	dead_end = dead_end.ChangeTurf(/turf/closed/mineral/random/ms13)
+	var/original_rock_health = dead_end.mining_health
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	allocate(/obj/structure/ms13_hivemind/terrain, origin, network)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/escape_test/unit = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/escape_test, origin, network)
+	unit.terrain_dependent = FALSE
+	var/obj/machinery/door/poddoor/shutters/ms13/first = allocate(/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/solo, locate(origin.x + 2, origin.y, origin.z))
+	var/obj/machinery/door/poddoor/shutters/ms13/second = allocate(/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/solo, locate(origin.x + 4, origin.y, origin.z))
+	first.locked = TRUE
+	second.locked = TRUE
+	unit.patrol_goal = locate(origin.x + 6, origin.y, origin.z)
+	for(var/tick in 1 to 25)
+		unit.handle_automated_action()
+		sleep(1 SECONDS)
+		if(unit.x > second.x)
+			break
+	TEST_ASSERT(!first.density && !second.density && unit.x > second.x, "The active hive never pried both starting shutters and left its enclosure.")
+	TEST_ASSERT(dead_end.mining_health == original_rock_health, "The hive excavated the opposite dead end instead of using shutters.")
+	unit.patrol_goal = null
+	unit.clear_roam_target()
+	unit.toggle_ai(AI_OFF)
+	for(var/fixture_type in list(/obj/machinery/ms13/fusion_generator, /obj/machinery/power/apc/ms13, /obj/machinery/light/ms13))
+		var/obj/fixture = allocate(fixture_type, get_turf(unit))
+		if(istype(fixture, /obj/machinery/power/apc))
+			var/obj/machinery/power/apc/box = fixture
+			box.area = new /area
+			allocated += box.area
+		fixture.modify_max_integrity(60)
+		for(var/hit in 1 to 50)
+			COOLDOWN_RESET(unit, hive_breach_cooldown)
+			unit.handle_hive_idle_destruction()
+			if(QDELETED(fixture))
+				break
+		TEST_ASSERT(QDELETED(fixture), "An idle slasher did not finish destroying [fixture_type], including its broken casing.")
+
+/datum/unit_test/ms13_hive_rock_escape/corner_corpse
+	name = "MOJAVE SUN: Swarmer Routes Around Corner To Collect Corpse"
+
+/datum/unit_test/ms13_hive_rock_escape/corner_corpse/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, run_loc_floor_bottom_left.z)
+	for(var/side in list(NORTH, EAST))
+		var/turf/site = get_step(origin, side)
+		replaced_turfs[site] = site.type
+		site.ChangeTurf(/turf/closed/indestructible/rock/ms13/drought)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/unit = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout, origin, network)
+	unit.toggle_ai(AI_OFF)
+	var/mob/living/carbon/human/consistent/corpse = allocate(/mob/living/carbon/human/consistent, get_step(origin, NORTHEAST))
+	corpse.death()
+	TEST_ASSERT(!unit.Adjacent(corpse) && get_dist(unit, corpse) == 1, "The blocked diagonal test was not obstructed.")
+	TEST_ASSERT(!unit.try_make_grab(corpse) && !length(unit.active_grabs), "A failed unreachable grab left a partial grab behind.")
+	network.report_corpse(corpse)
+	for(var/tick in 1 to 15)
+		unit.handle_corpse_work()
+		sleep(0.5 SECONDS)
+		if(unit.is_grabbing(corpse))
+			break
+	TEST_ASSERT(unit.is_grabbing(corpse) && get_turf(unit) != origin, "The swarmer did not route around the corner and resume hauling.")
 
 /datum/unit_test/ms13_hive_recovery
 	name = "MOJAVE SUN: Hive Failed Jobs Release And Retry"

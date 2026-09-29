@@ -56,7 +56,8 @@
 	assailant.update_pull_hud_icon()
 
 	/// Do flavor things like pixel offsets, animation, sound
-	adjust_position()
+	if(!adjust_position())
+		return INITIALIZE_HINT_QDEL
 	assailant.animate_interact(affecting, INTERACT_GRAB)
 
 	var/sound = 'sound/weapons/thudswoosh.ogg'
@@ -335,7 +336,8 @@
 	if(is_grab_unique(current_grab))
 		current_grab.apply_unique_grab_effects(affecting)
 
-	adjust_position()
+	if(!adjust_position())
+		return
 	update_appearance()
 
 	if(ismob(affecting))
@@ -361,7 +363,8 @@
 	if(is_grab_unique(current_grab))
 		current_grab.apply_unique_grab_effects(affecting)
 
-	adjust_position()
+	if(!adjust_position())
+		return
 	update_appearance()
 
 	if(ismob(affecting))
@@ -450,10 +453,13 @@
 
 	if(current_grab.same_tile)
 		affecting.move_from_pull(assailant, get_turf(assailant))
+		if(QDELETED(src))
+			return FALSE
 		affecting.setDir(assailant.dir)
 
 	affecting.update_offsets()
 	affecting.reset_plane_and_layer()
+	return TRUE
 
 /obj/item/hand_item/grab/proc/move_victim_towards(atom/destination)
 	if(current_grab.same_tile)

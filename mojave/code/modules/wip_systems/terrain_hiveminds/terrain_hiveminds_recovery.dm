@@ -29,6 +29,7 @@
 	var/hive_max_breach_hits = 50
 	var/datum/weakref/hive_breach_target
 	var/hive_breach_hits = 0
+	var/hive_breach_integrity = 0
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_network_lost()
 	SIGNAL_HANDLER
@@ -167,11 +168,13 @@
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_attack_obstacle(atom/obstacle, ram_damage, last_resort = FALSE)
 	if(!can_hive_damage_obstacle(obstacle, ram_damage, !isnull(ram_damage), last_resort))
 		return FALSE
-	if(hive_breach_target?.resolve() != obstacle)
-		hive_breach_target = WEAKREF(obstacle)
-		hive_breach_hits = 0
-	hive_breach_hits++
 	var/old_integrity = obstacle.get_integrity()
+	// Keep productive demolition going. Bound attacks whose damage is being repaired between blows.
+	if(hive_breach_target?.resolve() != obstacle || old_integrity < hive_breach_integrity)
+		hive_breach_hits = 0
+	hive_breach_target = WEAKREF(obstacle)
+	hive_breach_integrity = old_integrity
+	hive_breach_hits++
 	var/was_dense = obstacle.density
 	if(!isnull(ram_damage))
 		obstacle.attack_generic(src, ram_damage, melee_damage_type, BLUNT, TRUE, armor_penetration)
@@ -193,9 +196,12 @@
 		return FALSE
 	if(!isturf(loc) || target || roam_target || corpse_target_ref || incapacitated() || !COOLDOWN_FINISHED(src, hive_breach_cooldown))
 		return FALSE
-	// Open an exit before spending idle turns on loose furniture inside the enclosure.
+	if(hive_try_nearby_door())
+		return TRUE
+	// A wall is an exit only when there is somewhere to go beyond it.
 	for(var/turf/closed/wall in orange(1, src))
-		if(Adjacent(wall) && hive_attack_obstacle(wall, last_resort = TRUE))
+		var/turf/beyond = get_step(wall, get_dir(src, wall))
+		if(isopenturf(beyond) && !beyond.density && Adjacent(wall) && hive_attack_obstacle(wall, last_resort = TRUE))
 			COOLDOWN_START(src, hive_breach_cooldown, 2 SECONDS)
 			return TRUE
 	for(var/obj/obstacle in range(1, src))
@@ -204,4 +210,23 @@
 		if(hive_attack_obstacle(obstacle, last_resort = TRUE))
 			COOLDOWN_START(src, hive_breach_cooldown, 2 SECONDS)
 			return TRUE
+	return FALSE
+
+/// Reuse normal roaming/prying and its failure cooldowns before committing to excavation.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_try_nearby_door()
+	if(!force_opens_doors || !network?.active)
+		return FALSE
+	// ponytail: only visible doors within five tiles; the normal pathfinder handles longer routes.
+	for(var/obj/machinery/door/door in oview(5, src))
+		if(!can_hive_pry_door(door))
+			continue
+		if(Adjacent(door))
+			return begin_door_pry(door)
+		if(target || corpse_target_ref)
+			continue // Keep combat/hauling ownership of the route; their pathfinder already considers doors.
+		if(length(SSpathfinder.jps_pathfind_now(src, door, max_steps = 10, mintargetdist = 1, simulated_only = FALSE)))
+			roam_target = get_turf(door)
+			COOLDOWN_RESET(src, roam_retry_cooldown)
+			COOLDOWN_START(src, roam_retarget_cooldown, 10 SECONDS)
+			return Goto(roam_target, move_to_delay, 0)
 	return FALSE

@@ -161,16 +161,9 @@
 		// A route exists but a moving crowd can occupy its next tile; make room and repath.
 		step_rand(src)
 		return
-	// Wandering, it waits for a way out, unless it's shut in a vehicle: then it batters its way out.
-	if(!target && !corpse_target_ref && (length(network?.territory) >= 12 || length(network?.frontier)) && !get_ms13_ground_vehicle_at(src))
-		for(var/obj/machinery/door/door in orange(1, src))
-			if(begin_door_pry(door))
-				return
-		hive_avoid_goal(roam_target)
-		roam_target = null
-		COOLDOWN_START(src, roam_retry_cooldown, 5 SECONDS)
-		SSmove_manager.stop_looping(src)
+	if(hive_try_nearby_door())
 		return
+	// A grown hive can still be enclosed. Patrols must approach and clear a viable exit too.
 	var/turf/next_step = get_step_towards(src, loop.target)
 	if(next_step && Move(next_step, get_dir(src, next_step)))
 		return
@@ -229,7 +222,13 @@
 		return TRUE
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = pass_info.caller_ref?.resolve()
 	if(istype(unit) && unit.force_opens_doors && unit.network?.active)
-		return !unit.network.door_breach_requests[WEAKREF(src)] && (unit.failed_door_ref?.resolve() != src || COOLDOWN_FINISHED(unit, door_retry_cooldown))
+		return unit.can_hive_pry_door(src)
+	return ..()
+
+/obj/machinery/door/poddoor/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = pass_info.caller_ref?.resolve()
+	if(density && istype(unit) && unit.force_opens_doors && unit.network?.active)
+		return unit.can_hive_pry_door(src)
 	return ..()
 
 /datum/ms13_terrain_hivemind
@@ -647,23 +646,22 @@
 	return opened
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/begin_door_pry(obj/machinery/door/door)
-	if(!network?.active || !force_opens_doors || !door?.density || !Adjacent(door) || istype(door, /obj/machinery/door/airlock/ms13))
-		return FALSE
-	if(door == failed_door_ref?.resolve() && !COOLDOWN_FINISHED(src, door_retry_cooldown))
-		return FALSE
-	if(hive_goal_blocked(door))
+	if(!can_hive_pry_door(door) || !Adjacent(door))
 		return FALSE
 	if(can_hive_charge_at(door))
 		INVOKE_ASYNC(src, PROC_REF(try_hive_charge), door)
 		return TRUE
-	if(network?.door_breach_requests[WEAKREF(door)])
-		return FALSE
 	prying_door_ref = WEAKREF(door)
 	door_pry_started = world.time
 	in_melee = FALSE
 	SSmove_manager.stop_looping(src)
 	visible_message(span_warning("[src] braces against [door] and starts forcing it open!"))
 	return TRUE
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_hive_pry_door(obj/machinery/door/door)
+	return network?.active && force_opens_doors && door?.density && !(door.resistance_flags & INDESTRUCTIBLE) \
+		&& !istype(door, /obj/machinery/door/airlock/ms13) && !hive_goal_blocked(door) && !hive_goal_blocked(get_turf(door)) \
+		&& !network.door_breach_requests[WEAKREF(door)] && (failed_door_ref?.resolve() != door || COOLDOWN_FINISHED(src, door_retry_cooldown))
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_door_pry()
 	var/obj/machinery/door/door = prying_door_ref?.resolve()

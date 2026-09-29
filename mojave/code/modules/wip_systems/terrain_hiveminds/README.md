@@ -22,8 +22,11 @@ structures are attempted every 12 seconds. Separate generators still supplement 
 Finite territory, population and structure caps still intentionally limit spending.
 
 Movement uses the existing throttled JPS pathfinder (60-step search, three-second repath delay).
-Units try existing entrances before breaching a blocked route. Idle roaming only breaches for a
-cramped nest with fewer than 12 tiles and no frontier. Opened walls refresh an exhausted frontier.
+Units try usable doors and shutters before breaching a blocked route. Established hives also clear
+blocked patrol routes; territory size does not prove that an exit exists. Idle excavation prefers
+walls with open space beyond them. Opened walls refresh an exhausted frontier. Small units reject
+obstacles requiring more than 50 blows. Slasher-and-larger last-resort demolition may take longer
+while integrity keeps dropping; 50 blows without retained progress trigger a temporary retry delay.
 Both DD and Mojave's table-derived low walls support movement and pathfinding for crossing themes,
 including hauled bodies. Idle scouts, ranged units and heavies can help hauling hives when no idle
 hauler is within seven tiles of the subject. Friendly nest walls are also traversable by pathfinding.
@@ -160,7 +163,9 @@ Its sprite is DS13's giant Marker (`mojave/icons/wip/terrain_hivemind/marker_gia
   Existing short-lived hallucinations finish normally. Power loss, destruction or disabling the
   projector restores the danger on the next processing tick (no permanent suppression latch).
 - After **five continuous minutes** of containment, losing the last working suppression field
-  releases one EMP (heavy radius 15, light radius 30, using native EMP effects). Every failure
+  releases one EMP (heavy radius 45, light radius 90, using native EMP effects). Connected floors
+  cost five tiles each. The separate psychic backlash uses `influence_radius` (45 by default).
+  Every failure
   clears the charge, including short interruptions: cycling containment cannot bank time or spam
   pulses. Another pulse requires another uninterrupted five minutes. Examine shows charging/armed
   status; redundant projectors prevent a failure while any working field remains.

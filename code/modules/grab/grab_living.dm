@@ -73,7 +73,7 @@
 			target = grabbed_mob
 			to_chat(src, span_warning("As \the [original_target] is buckled to \the [target], you try to grab that instead."))
 
-	if(!istype(target))
+	if(!istype(target) || !Adjacent(target))
 		return
 
 	face_atom(target)
@@ -176,4 +176,3 @@
 			if(!direction)
 				continue
 			setDir(global.reverse_dir[direction])
-
