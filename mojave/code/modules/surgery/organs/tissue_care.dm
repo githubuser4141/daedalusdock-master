@@ -45,6 +45,11 @@
 		return
 	return ownerlimb.local_blood_volume > 0
 
+/// Hurt tissue is an injury to the limb, not poisoning: it doesn't read as toxin. What a crushed muscle leaks
+/// (myoglobin, muscle.dm) or an infection turning (germs_bodypart.dm) still does, through the organs it harms.
+/obj/item/organ/getToxLoss()
+	return ms13_tissue ? 0 : ..()
+
 /**
  * Surgery is the reliable answer for destroyed tissue, so it has to actually finish the job. DD's
  * surgically_fix() repairs the damage but leaves ORGAN_DEAD set (check_failing_thresholds() only clears
@@ -241,10 +246,11 @@
 		if(!O.ms13_tissue)
 			continue
 		worst = max(worst, O.damage / O.maxHealth)
-	if(worst < MS13_TISSUE_NEGLECT_DAMAGE_RATIO)
+	if(worst <= MS13_TISSUE_NEGLECT_DAMAGE_RATIO)
 		return
 
-	var/rate = MS13_TISSUE_NEGLECT_GERM_RATE
+	// Worse injuries turn faster, easing in from nothing at the threshold.
+	var/rate = MS13_TISSUE_NEGLECT_GERM_RATE * (worst - MS13_TISSUE_NEGLECT_DAMAGE_RATIO) / (1 - MS13_TISSUE_NEGLECT_DAMAGE_RATIO)
 	if(cached_bleed_rate > 0 && !is_disinfected())
 		rate *= MS13_TISSUE_NEGLECT_OPEN_WOUND_MULT
 	germ_level += rate

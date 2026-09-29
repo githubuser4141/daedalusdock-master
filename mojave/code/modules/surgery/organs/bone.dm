@@ -188,34 +188,6 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 	if(limb)
 		limb.refresh_muscle_effects()
 
-/// Bone is the harder, deeper layer - registered after muscle in GLOB.natural_armor_layers (natural_armor.dm)
-/// so muscle absorbs first and bone gets whatever's left, matching real anatomy (skin/muscle over bone).
-/datum/natural_armor_layer/bone
-	gone_fraction = MS13_BONE_ARMOR_GONE_FRACTION
-	absorb_fraction = MS13_BONE_ARMOR_ABSORB_FRACTION
-
-/**
- * Below MS13_BONE_ARMOR_MIN_DAMAGE a hit only reaches the bone if it cut or stabbed its way through what's over
- * it, and then the bone stops it: all of it goes into the bone. A weak blunt blow never gets that deep, and
- * lands on the limb whole.
- */
-/datum/natural_armor_layer/bone/absorb(mob/living/carbon/human/H, damage_amount, damagetype, def_zone, sharpness)
-	if(damage_amount >= MS13_BONE_ARMOR_MIN_DAMAGE)
-		return ..()
-	if(!sharpness)
-		return damage_amount
-	var/obj/item/bodypart/hit_part = isbodypart(def_zone) ? def_zone : H.get_bodypart(deprecise_zone(def_zone))
-	var/obj/item/organ/bone/B = hit_part && get_organ(H, hit_part, damagetype)
-	if(!B || (B.organ_flags & ORGAN_DEAD))
-		return damage_amount
-	B.applyOrganDamage(damage_amount, updating_health = FALSE)
-	return 0
-
-/datum/natural_armor_layer/bone/get_organ(mob/living/carbon/human/H, obj/item/bodypart/hit_part, damagetype)
-	if(damagetype != BRUTE)
-		return null
-	return hit_part.get_bone_organ()
-
 /// Dragging someone over the ground (drag_damage() only runs for a grabbed, unbuckled body lying on a turf) can
 /// tear off an arm or leg that is already broken and mangled almost to nothing.
 /mob/living/carbon/human/drag_damage(turf/new_loc, turf/old_loc, direction)

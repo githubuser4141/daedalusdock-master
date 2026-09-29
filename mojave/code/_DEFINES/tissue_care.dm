@@ -66,11 +66,13 @@
 // --- Neglect: untreated injuries get infected. ---
 /// Damage fraction above which tissue counts as a serious injury for infection purposes.
 #define MS13_TISSUE_NEGLECT_DAMAGE_RATIO 0.5
-/// germ_level added to the limb per tick per neglected serious tissue injury. DD's own germ pipeline takes
-/// it from here: fever at INFECTION_LEVEL_ONE, spread to other organs and limbs at TWO, necrosis at THREE.
-#define MS13_TISSUE_NEGLECT_GERM_RATE 2
-/// Multiplier on that rate while the limb has an open bleeding wound - dirt gets in far faster.
-#define MS13_TISSUE_NEGLECT_OPEN_WOUND_MULT 2.5
+/// germ_level added to the limb per tick for destroyed tissue nobody is treating, easing in from nothing at
+/// MS13_TISSUE_NEGLECT_DAMAGE_RATIO. Wastelanders shrug off most of it: destroyed tissue left alone runs a fever
+/// (INFECTION_LEVEL_ONE) in about 17 minutes. DD's own germ pipeline takes it from there: spread at TWO,
+/// necrosis at THREE.
+#define MS13_TISSUE_NEGLECT_GERM_RATE 0.5
+/// Multiplier on that rate while the limb has an open bleeding wound - dirt gets in faster.
+#define MS13_TISSUE_NEGLECT_OPEN_WOUND_MULT 2
 /// Infection at or above this level stops natural healing outright. The body is busy fighting the
 /// infection; clear it with antibiotics before anything will knit.
 #define MS13_TISSUE_HEAL_BLOCKING_GERMS INFECTION_LEVEL_TWO

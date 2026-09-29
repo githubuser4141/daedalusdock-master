@@ -92,9 +92,15 @@ TYPEINFO_DEF(/obj/item/organ/muscle/chest)
 		ownerlimb.refresh_muscle_effects()
 	if(is_leg_muscle)
 		check_buckle(delta_time)
-	if(damage > 0)
-		add_myoglobin(MS13_MUSCLE_WASTE_PER_DAMAGE * damage * delta_time)
+	// Only crushed muscle breaks down into the blood; a bruise doesn't.
+	var/crushed = get_crushed_damage()
+	if(crushed > 0)
+		add_myoglobin(MS13_MUSCLE_WASTE_PER_DAMAGE * crushed * delta_time)
 		ms13_medical_debug(owner, "Muscle [name] performance=[get_performance()] damage=[damage]/[maxHealth]")
+
+/// Damage past the muscle's high threshold: the share that's crushed rather than bruised.
+/obj/item/organ/muscle/proc/get_crushed_damage()
+	return max(damage - maxHealth * high_threshold, 0)
 
 /// A weak leg can buckle mid-stride - deliberately not DD's real TRAIT_FLOORED (a hard floor for a leg that
 /// flat-out doesn't work), just a brief recoverable stumble for one that's merely weak.
@@ -140,12 +146,12 @@ TYPEINFO_DEF(/obj/item/organ/muscle/chest)
 	owner.reagents.add_reagent(/datum/reagent/toxin/myoglobin, added)
 	ms13_medical_debug(owner, "Myoglobin +[round(added, 0.1)] (now [round(current + added, 0.1)]/[ceiling])")
 
-/// Ceiling scales with how many muscles are CURRENTLY damaged (not a running count) - one smashed limb stays
+/// Ceiling scales with how many muscles are CURRENTLY crushed (not a running count) - one smashed limb stays
 /// survivable, smashed up everywhere is genuine danger.
 /obj/item/organ/muscle/proc/get_myoglobin_ceiling()
 	var/contributing = 0
 	for(var/obj/item/organ/muscle/M in owner.organs)
-		if(M.damage > 0 || (M.organ_flags & ORGAN_DEAD))
+		if(M.get_crushed_damage() > 0 || (M.organ_flags & ORGAN_DEAD))
 			contributing++
 	return max(1, contributing) * MS13_MUSCLE_WASTE_MAX_VOLUME_PER_MUSCLE
 
@@ -189,15 +195,3 @@ TYPEINFO_DEF(/obj/item/organ/muscle/chest)
 	. = ..()
 	if(limb)
 		limb.refresh_muscle_effects()
-
-/// Registers muscle with the natural-armor-layer framework (natural_armor.dm) - some of a BRUTE hit is gone
-/// entirely, some becomes real muscle damage, the rest passes through, all scaled by the muscle's own
-/// remaining health. Separate from and applied after external armor/subarmor.
-/datum/natural_armor_layer/muscle
-	gone_fraction = MS13_MUSCLE_ARMOR_GONE_FRACTION
-	absorb_fraction = MS13_MUSCLE_ARMOR_ABSORB_FRACTION
-
-/datum/natural_armor_layer/muscle/get_organ(mob/living/carbon/human/H, obj/item/bodypart/hit_part, damagetype)
-	if(damagetype != BRUTE)
-		return null
-	return locate(/obj/item/organ/muscle) in hit_part.contained_organs

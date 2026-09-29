@@ -139,3 +139,32 @@
 	var/mangled = subject.get_melee_strength_mult()
 	TEST_ASSERT(mangled < healthy, "Destroying both arms' muscle did not reduce melee strength ([healthy] -> [mangled]).")
 	TEST_ASSERT(mangled > 0, "Melee strength bottomed out at zero; a weapon should always land for something.")
+
+/**
+ * A bruise or a nick stays a bruise or a nick: bruised muscle doesn't poison anyone (only crushed muscle breaks
+ * down into myoglobin), and a limb whose vessel is only nicked keeps refilling instead of bleeding itself dry.
+ */
+/datum/unit_test/ms13_tissue_no_snowball
+	name = "TISSUE: A Bruise Or A Nick Doesn't Snowball"
+
+/datum/unit_test/ms13_tissue_no_snowball/Run()
+	var/mob/living/carbon/human/subject = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/bodypart/arm = subject.get_bodypart(BODY_ZONE_L_ARM)
+	var/obj/item/organ/muscle/muscle = locate() in arm.contained_organs
+	TEST_ASSERT(muscle, "Left arm has no muscle organ.")
+
+	muscle.setOrganDamage(muscle.maxHealth * 0.3)
+	TEST_ASSERT_EQUAL(subject.getToxLoss(), 0, "A bruised muscle read as toxin.")
+	muscle.on_life(2, 0)
+	TEST_ASSERT(!subject.reagents.has_reagent(/datum/reagent/toxin/myoglobin), "A bruised muscle released myoglobin.")
+	muscle.setOrganDamage(muscle.maxHealth * 0.9)
+	muscle.on_life(2, 0)
+	TEST_ASSERT(subject.reagents.has_reagent(/datum/reagent/toxin/myoglobin), "A crushed muscle released no myoglobin.")
+
+	var/obj/item/organ/vessel/vessel = locate() in arm.contained_organs
+	TEST_ASSERT(vessel, "Left arm has no vessel organ.")
+	vessel.setOrganDamage(1)
+	arm.local_blood_volume = arm.local_blood_volume_max * 0.1
+	var/blood_before = arm.local_blood_volume
+	vessel.on_life(2, 0)
+	TEST_ASSERT(arm.local_blood_volume > blood_before, "A limb with only a nicked vessel kept draining instead of refilling ([blood_before] -> [arm.local_blood_volume]).")

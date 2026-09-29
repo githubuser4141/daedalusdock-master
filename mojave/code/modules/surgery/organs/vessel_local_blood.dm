@@ -90,8 +90,11 @@
 		var/local_loss = damage * MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE * internal_mult * vessel_size * delta_time
 		ownerlimb.apply_organ_bleed(local_loss)
 		ms13_medical_debug(owner, "Vessel [name] bleeding: local -[round(local_loss, 0.1)] (now [round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
-		return
 
+	// Blood keeps coming in past a leak, so a nick is outpaced and only a bad tear starves the limb. A ruptured
+	// vessel carries nothing on.
+	if(organ_flags & ORGAN_DEAD)
+		return
 	if(ownerlimb.local_blood_volume >= ownerlimb.local_blood_volume_max)
 		return
 	if(owner.blood_volume <= MS13_LOCAL_BLOOD_REGEN_FLOOR)
@@ -126,29 +129,14 @@
 		ms13_medical_debug(owner, "Ischemia: [O.name] +[round(ischemia_damage, 0.1)] damage (ceiling [round(ceiling, 0.1)])")
 
 /**
- * DD's base /obj/item/organ/proc/handle_regeneration() (code/modules/surgery/organs/_organ.dm) already
- * self-heals any organ once its damage drops under 10% of max - vessels get that for free just by being a
- * normal /obj/item/organ subtype, no changes needed there. What DD's base version doesn't know about is
- * blood supply: gate it on this limb actually having enough local_blood_volume to knit itself back together
- * with - a vessel sitting in a locally blood-starved limb (drained faster than it's regenerating, see
- * on_life() above) shouldn't be healing on its own no matter how minor the damage is.
- */
-/obj/item/organ/vessel/handle_regeneration()
-	if(!ownerlimb || ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD_PCT)
-		if(ownerlimb)
-			ms13_medical_debug(owner, "Vessel [name] regen blocked: local blood too low ([round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
-		return
-	return ..()
-
-/**
- * Same idea as the vessel-specific override above, generalized to every other organ - a heart or lung
- * sitting in a blood-starved chest shouldn't be knitting itself back together either. Safe to apply
- * universally: local_blood_volume defaults to full and only ever drops via a vessel actually being
- * damaged (vessel_local_blood.dm's on_life()), so this is a no-op for any species/mob that never got the
- * vessel system installed on it.
+ * A heart or lung sitting in a blood-starved chest shouldn't be knitting itself back together. Safe to apply
+ * universally: local_blood_volume defaults to full and only ever drops via a vessel actually being damaged
+ * (vessel_local_blood.dm's on_life()), so this is a no-op for any species/mob that never got the vessel system
+ * installed on it. Tissue skips the gate: its own healing already slows with the blood reaching the limb, and
+ * gating it stopped a nicked vessel ever healing once its leak had drained the limb.
  */
 /obj/item/organ/handle_regeneration()
-	if(ownerlimb && ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT)
+	if(!ms13_tissue && ownerlimb && ownerlimb.local_blood_volume < ownerlimb.local_blood_volume_max * MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT)
 		ms13_medical_debug(owner, "[name] regen blocked: local blood too low ([round(ownerlimb.local_blood_volume, 0.1)]/[ownerlimb.local_blood_volume_max])")
 		return
 	// Tissue heals on its own terms - blood, food, rest and care - rather than DD's flat -0.1 below 10%

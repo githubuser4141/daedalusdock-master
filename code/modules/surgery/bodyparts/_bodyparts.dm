@@ -578,7 +578,9 @@
 	var/list/victims = list()
 	var/organ_hit_chance = 0
 	for(var/obj/item/organ/I as anything in contained_organs)
-		if(!I.cosmetic_only && I.damage < I.maxHealth)
+		// MOJAVE EDIT - not mojave's limb tissue (muscle/bone/vessel): a hit already reaches that by depth
+		// (natural_armor.dm), and this is the internal injury to what's behind it
+		if(!I.cosmetic_only && !I.ms13_tissue && I.damage < I.maxHealth)
 			victims[I] = I.relative_size
 			organ_hit_chance += I.relative_size
 

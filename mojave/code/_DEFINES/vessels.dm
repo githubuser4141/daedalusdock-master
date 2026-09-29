@@ -52,13 +52,8 @@
 /// Per-tick GLOBAL blood_volume lost (via the real bleed() proc) per point of current vessel damage - on top
 /// of, not instead of, the flat +5 bleed_rate a fully severed artery already causes.
 #define MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE 0.1
-/// Fraction of THIS limb's own local_blood_volume_max (not a flat number - limbs hold different amounts,
-/// see MS13_LOCAL_BLOOD_CHEST etc above) a vessel's limb needs before that vessel is allowed to use DD's
-/// base handle_regeneration() self-heal at all - a quarter tank of local blood or less and there's not
-/// enough supply reaching the injury to knit it back together.
-#define MS13_VESSEL_REGEN_MIN_LOCAL_BLOOD_PCT 0.25
-/// Same idea, generalized to every other organ sharing the bodypart (heart/lungs/liver/stomach in a
-/// starved chest, brain/eyes in a starved head) - a bit more lenient than the vessel's own threshold.
+/// Fraction of a bodypart's own local_blood_volume_max the organs in it (heart/lungs/liver/stomach in a starved
+/// chest, brain/eyes in a starved head) need before they self-heal. Tissue is exempt: its healing slows with blood.
 #define MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT 0.15
 /// Per-tick organ damage to everything else sharing a bodypart once its local_blood_volume hits 0 outright -
 /// slow ischemic damage, not a death sentence, but a prolonged rupture will start costing real organ health.

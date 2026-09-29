@@ -28,13 +28,6 @@
 /// One-time local (not global - "self-sealing", see bone.dm's set_organ_dead()) blood loss on a break.
 #define MS13_BONE_BREAK_LOCAL_BLEED 15
 
-/// Minimum incoming damage before bone's natural-armor layer intercepts a hit at all.
-#define MS13_BONE_ARMOR_MIN_DAMAGE 3
-/// Same three-way split idea as muscle's (natural_armor.dm) - bone is the harder, later layer, so it blocks
-/// more of what muscle didn't already absorb.
-#define MS13_BONE_ARMOR_GONE_FRACTION 0.25
-#define MS13_BONE_ARMOR_ABSORB_FRACTION 0.15
-
 /// A broken arm or leg this badly damaged (fraction of its max_damage) can tear off while its owner is dragged.
 #define MS13_DRAG_DISMEMBER_DAMAGE 0.9
 /// Chance per tile dragged that such a limb tears off.
