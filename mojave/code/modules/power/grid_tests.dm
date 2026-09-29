@@ -389,8 +389,8 @@
 	return ..()
 
 /// Heavy ground cable and concrete cable floor wire up the way they're drawn; smart ground cable takes its shape from
-/// what's around it, plain ground cable never joins plain ground cable, and connector and node pieces take machines and
-/// knots like a cable knot.
+/// what's around it, ground cable only joins ground cable of its own colour, and connector and node pieces take machines
+/// and knots like a cable knot.
 /datum/unit_test/ms13_drawn_cables
 	name = "POWER: Drawn Cables Run The Way They're Drawn"
 	var/turf/floor_spot
@@ -421,10 +421,12 @@
 
 	var/turf/pile = locate(start.x + 2, start.y + 3, start.z)
 	var/obj/structure/ms13/cable/red/one = allocate(/obj/structure/ms13/cable/red, pile)
-	var/obj/structure/ms13/cable/blue/two = allocate(/obj/structure/ms13/cable/blue, get_step(pile, EAST))
-	var/obj/structure/ms13/cable/red/over = allocate(/obj/structure/ms13/cable/red, pile)
-	if((two in one.get_cable_connections()) || (one in two.get_cable_connections()) || (over in one.get_cable_connections()))
-		return Fail("Plain ground cable joined plain ground cable.")
+	var/obj/structure/ms13/cable/red/next = allocate(/obj/structure/ms13/cable/red, get_step(pile, WEST))
+	var/obj/structure/ms13/cable/blue/other = allocate(/obj/structure/ms13/cable/blue, get_step(pile, EAST))
+	if(!(next in one.get_cable_connections()) || !(one in next.get_cable_connections()))
+		return Fail("A run of plain ground cable of one colour didn't join up.")
+	if((other in one.get_cable_connections()) || (one in other.get_cable_connections()))
+		return Fail("Ground cable of different colours joined.")
 	if(ms13_drawn_cable_dirs("curve", EAST) != (CABLE_NORTH|CABLE_EAST) || ms13_drawn_cable_dirs("tail", WEST) != CABLE_EAST)
 		return Fail("Drawn cable shapes don't run the way their sprites do.")
 

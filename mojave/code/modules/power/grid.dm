@@ -395,19 +395,17 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 		ms13_take_shape()
 	ms13_lay_drawn(ms13_shape, dir)
 
-/// Only smart ground cable joins other ground cable by itself, so the rest can be piled and crossed freely.
+/// Ground cable only joins ground cable of its own colour, so different colours can be piled and crossed freely.
 /obj/structure/ms13/cable/get_cable_connections(powernetless_only = FALSE, ignore_conduits = FALSE)
 	. = ..()
-	if(ms13_smart)
-		return
 	var/list/joined = .
 	for(var/obj/structure/ms13/cable/other in joined.Copy())
-		if(!other.ms13_smart)
+		if(other.ms13_colour != ms13_colour)
 			joined -= other
 
 /**
- * Smart ground cable takes the sprite that joins it to what's around it: the same smart cable, or any other cable run
- * into its tile. A lone end frays, unless it butts a wall, when it runs on into it; a straight run under a machine is a
+ * Smart ground cable takes the sprite that joins it to what's around it: the same smart cable, or any other cable of
+ * its colour, or not ground cable at all, run into its tile. A lone end frays, unless it butts a wall, when it runs on into it; a straight run under a machine is a
  * connector, taking it like a knot. Tees the sprites don't draw become a full crossing.
  */
 /obj/structure/ms13/cable/proc/ms13_take_shape()
@@ -415,7 +413,7 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	var/count = 0
 	for(var/direction in GLOB.cardinals)
 		var/turf/next = get_step(src, direction)
-		var/joined = ms13_cable_dirs_on(next) & GLOB.real_dirs_to_cable_dirs["[turn(direction, 180)]"]
+		var/joined = ms13_cable_dirs_on(next, ms13_colour) & GLOB.real_dirs_to_cable_dirs["[turn(direction, 180)]"]
 		for(var/obj/structure/ms13/cable/other in next)
 			joined ||= other.type == type
 		if(joined)
@@ -452,8 +450,8 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	icon_state = "[ms13_smart]_[sprite]"
 
 /// The cable directions the cabling on target runs, drawn or laid, whether or not it's set up yet. Smart ground cable
-/// is left out, not having picked its shape.
-/proc/ms13_cable_dirs_on(turf/target)
+/// is left out, not having picked its shape, and so is ground cable of any colour but colour.
+/proc/ms13_cable_dirs_on(turf/target, colour)
 	. = NONE
 	var/turf/open/floor/ms13/concrete/cable/floor = target
 	if(istype(floor))
@@ -461,7 +459,7 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	for(var/obj/structure/cable/wire in target)
 		var/obj/structure/ms13/cable/ground = wire
 		if(istype(ground))
-			if(!ground.ms13_smart)
+			if(!ground.ms13_smart && ground.ms13_colour == colour)
 				. |= ms13_drawn_cable_dirs(ground.ms13_shape, ground.dir)
 		else if(!istype(wire, /obj/structure/cable/ms13_cast))
 			. |= wire.linked_dirs || text2num(wire.icon_state)

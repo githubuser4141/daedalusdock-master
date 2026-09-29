@@ -79,8 +79,8 @@ TYPEINFO_DEF(/obj/structure/ms13)
 	layer = 4.9
 	plane = ABOVE_GAME_PLANE
 
-//Heavy ground cable: real wiring, run the way it's drawn (power/grid.dm). Only smart cable joins other ground cable by
-//itself; the rest can be piled and crossed freely, joining only smart cable, ordinary cable, walls and machines.//
+//Heavy ground cable: real wiring, run the way it's drawn (power/grid.dm). It only joins ground cable of its own colour,
+//so different colours can be piled and crossed freely.//
 
 /obj/structure/ms13/cable
 	parent_type = /obj/structure/cable
@@ -93,9 +93,12 @@ TYPEINFO_DEF(/obj/structure/ms13)
 	var/ms13_shape = "straight"
 	/// Smart cable's sprite stem: as the map loads it takes the shape that joins it to the cable around it.
 	var/ms13_smart
+	/// Ground cable only joins ground cable of the same colour.
+	var/ms13_colour
 
 /obj/structure/ms13/cable/red
 	icon_state = "cable_red_straight"
+	ms13_colour = "red"
 
 /obj/structure/ms13/cable/red/curve
 	icon_state = "cable_red_curved"
@@ -118,6 +121,7 @@ TYPEINFO_DEF(/obj/structure/ms13)
 
 /obj/structure/ms13/cable/blue
 	icon_state = "cable_blue_straight"
+	ms13_colour = "blue"
 
 /obj/structure/ms13/cable/blue/curve
 	icon_state = "cable_blue_curved"
@@ -140,6 +144,7 @@ TYPEINFO_DEF(/obj/structure/ms13)
 
 /obj/structure/ms13/cable/green
 	icon_state = "cable_green_straight"
+	ms13_colour = "green"
 
 /obj/structure/ms13/cable/green/curve
 	icon_state = "cable_green_curved"
@@ -162,6 +167,7 @@ TYPEINFO_DEF(/obj/structure/ms13)
 
 /obj/structure/ms13/cable/black
 	icon_state = "cable_black_straight"
+	ms13_colour = "black"
 
 /obj/structure/ms13/cable/black/curve
 	icon_state = "cable_black_curved"
