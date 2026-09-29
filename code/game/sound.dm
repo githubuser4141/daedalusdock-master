@@ -66,38 +66,24 @@
 	carry_sound(turf_source, S.file, vol, extrarange) // MOJAVE EDIT - loud sounds carry far (mojave/code/game/distant_sound.dm)
 	var/maxdistance = SOUND_RANGE + extrarange
 	var/source_z = turf_source.z
-	var/list/listeners = SSmobs.clients_by_zlevel[source_z].Copy()
+	var/list/listeners = list()
 
 	. = list()//output everything that successfully heard the sound
 
-	var/turf/above_turf = GetAbove(turf_source)
-	var/turf/below_turf = GetBelow(turf_source)
-
 	var/audible_distance = falloff_exponent ? CALCULATE_MAX_SOUND_AUDIBLE_DISTANCE(vol, maxdistance, falloff_distance, falloff_exponent) : maxdistance
-
-	if(ignore_walls)
-
-		if(above_turf && istransparentturf(above_turf))
-			listeners += SSmobs.clients_by_zlevel[above_turf.z]
-
-		if(below_turf && istransparentturf(turf_source))
-			listeners += SSmobs.clients_by_zlevel[below_turf.z]
-
-	else //these sounds don't carry through walls
-		listeners = get_hearers_in_view(audible_distance, turf_source)
-
-		if(above_turf && istransparentturf(above_turf))
-			listeners += get_hearers_in_view(audible_distance, above_turf)
-
-		if(below_turf && istransparentturf(turf_source))
-			listeners += get_hearers_in_view(audible_distance, below_turf)
-
-	listeners |= SSmobs.dead_players_by_zlevel[source_z]
-	if(length(SSmobs.flock_cameras_by_zlevel[source_z]))
-		listeners |= SSmobs.flock_cameras_by_zlevel[source_z]
+	for(var/level in SSmapping.get_zstack(source_z))
+		var/remaining_range = audible_distance - abs(level - source_z) * MULTIZ_LEVEL_DISTANCE
+		if(remaining_range < 0)
+			continue
+		if(ignore_walls)
+			listeners |= SSmobs.clients_by_zlevel[level]
+		else
+			listeners |= get_hearers_in_view(remaining_range, locate(turf_source.x, turf_source.y, level))
+		listeners |= SSmobs.dead_players_by_zlevel[level]
+		listeners |= SSmobs.flock_cameras_by_zlevel[level]
 
 	for(var/mob/listening_mob in listeners)//observers always hear through walls
-		if(get_dist(listening_mob, turf_source) <= audible_distance)
+		if(get_dist_multiz(listening_mob, turf_source) <= audible_distance)
 			listening_mob.playsound_local(turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, S, maxdistance, falloff_distance, 1, use_reverb)
 			. += listening_mob
 
@@ -123,7 +109,10 @@
 		var/turf/turf_loc = get_turf(src)
 
 		//sound volume falloff with distance
-		distance = get_dist(turf_loc, turf_source) * distance_multiplier
+		distance = get_dist_multiz(turf_loc, turf_source)
+		if(distance == INFINITY)
+			return FALSE
+		distance *= distance_multiplier
 
 		if(max_distance && falloff_exponent) //If theres no max_distance we're not a 3D sound, so no falloff.
 			sound_to_use.volume -= CALCULATE_SOUND_VOLUME(vol, distance, max_distance, falloff_distance, falloff_exponent)
@@ -156,7 +145,7 @@
 		sound_to_use.x = dx * distance_multiplier
 		var/dz = turf_source.y - turf_loc.y // Hearing from infront/behind
 		sound_to_use.z = dz * distance_multiplier
-		var/dy = (turf_source.z - turf_loc.z) * 5 * distance_multiplier // Hearing from  above / below, multiplied by 5 because we assume height is further along coords.
+		var/dy = (turf_source.z - turf_loc.z) * MULTIZ_LEVEL_DISTANCE * distance_multiplier
 		sound_to_use.y = dy
 
 		sound_to_use.falloff = max_distance || 1 //use max_distance, else just use 1 as we are a direct sound so falloff isnt relevant.

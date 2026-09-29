@@ -27,6 +27,14 @@
 			return get_dir(us, them)
 	return (dir | get_dir(us, them))
 
+/// Tile distance across connected floors; unrelated map regions are never in range.
+/proc/get_dist_multiz(atom/source, atom/target)
+	var/turf/start = get_turf(source)
+	var/turf/end = get_turf(target)
+	if(!start || !end || !SSmapping.are_same_zstack(start.z, end.z))
+		return INFINITY
+	return max(abs(start.x - end.x), abs(start.y - end.y)) + abs(start.z - end.z) * MULTIZ_LEVEL_DISTANCE
+
 ///Checks if 2 levels are in the same Z-stack.
 /datum/controller/subsystem/mapping/proc/are_same_zstack(zA, zB, include_lateral)
 	if (zA <= 0 || zB <= 0 || zA > world.maxz || zB > world.maxz)
@@ -34,66 +42,30 @@
 	if (zA == zB)
 		return TRUE
 
-	if(include_lateral)
-		if (length(laterally_linked_zlevels) >= zA && length(laterally_linked_zlevels[zA]) >= zB)
-			return laterally_linked_zlevels[zA][zB]
-
-	else if (length(linked_zlevels) >= zA && length(linked_zlevels[zA]) >= zB)
-		return linked_zlevels[zA][zB]
-
-	var/list/levels = get_zstack(zA, include_lateral)
-
-	var/list/new_entry = new(world.maxz)
-
-	for (var/entry in levels)
-		new_entry[entry] = TRUE
-
-	if (length(linked_zlevels) < zA)
-		linked_zlevels.len = zA
-
-	if(include_lateral)
-		laterally_linked_zlevels[zA] = new_entry
-	else
-		linked_zlevels[zA] = new_entry
-	return new_entry[zB]
+	return zB in get_zstack(zA, include_lateral)
 
 ///Get a list of Z levels that are in zA's Z-stack.
 /datum/controller/subsystem/mapping/proc/get_zstack(zA, include_lateral)
-	var/static/list/lateral_zstack_cache[world.maxz]
-	var/static/list/zstack_cache[world.maxz]
 	if(isturf(zA))
 		zA = zA:z
+	if(!isnum(zA) || zA < 1 || zA > world.maxz)
+		return list()
 
-	if(length(zstack_cache) < world.maxz)
-		zstack_cache.len = world.maxz
-		lateral_zstack_cache.len = world.maxz
-
-	if(include_lateral)
-		. = lateral_zstack_cache[zA]
-	else
-		. = zstack_cache[zA]
-
-	if(islist(.))
-		return .
-
+	// Walk the few floors directly: cached answers went stale when maps added or linked levels.
 	. = list(zA)
 	// Traverse up and down to get the multiz stack.
-	for(var/level = zA, HasAbove(level), level--)
-		. |= level-1
-	for(var/level = zA, HasBelow(level), level++)
+	for(var/level = zA, HasAbove(level), level++)
 		. |= level+1
+	for(var/level = zA, HasBelow(level), level--)
+		. |= level-1
 
 	if(!include_lateral)
-		zstack_cache[zA] = .
 		return .
 
 	// Check stack for any laterally connected neighbors.
 	for(var/i = 1, i <= length(.), i++)
 		var/datum/space_level/checking = z_list[.[i]]
-		for(var/neighbor_key in checking.neigbours)
+		for(var/neighbor_key in checking?.neigbours)
 			var/datum/space_level/neighbor = checking.neigbours[neighbor_key]
 			. |= neighbor.z_value
-
-	lateral_zstack_cache[zA] = .
-
 

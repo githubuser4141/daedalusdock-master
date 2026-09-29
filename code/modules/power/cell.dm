@@ -26,6 +26,8 @@ TYPEINFO_DEF(/obj/item/stock_parts/cell)
 	var/charge = 0
 	///Maximum charge in cell units
 	var/maxcharge = 1000
+	/// Charge lost to a heavy EMP; light EMPs drain half this amount.
+	var/emp_charge_loss = 1000
 	grind_results = list(/datum/reagent/lithium = 15, /datum/reagent/iron = 5, /datum/reagent/silicon = 5)
 	///If the cell has been booby-trapped by injecting it with plasma. Chance on use() to explode.
 	var/rigged = FALSE
@@ -154,7 +156,7 @@ TYPEINFO_DEF(/obj/item/stock_parts/cell)
 	. = ..()
 	if(. & EMP_PROTECT_SELF)
 		return
-	charge -= 1000 / severity
+	charge -= emp_charge_loss / severity
 	if (charge < 0)
 		charge = 0
 

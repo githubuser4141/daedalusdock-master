@@ -202,11 +202,6 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/town)
-"ajI" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/item/storage/ms13/toolbox/filled,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "ajL" = (
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/ms13/tile/large/cafeteria,
@@ -525,6 +520,14 @@
 	},
 /turf/open/floor/ms13/tile/full/black,
 /area/ms13/town)
+"awM" = (
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/sandbag,
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 4
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "awR" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 4
@@ -613,12 +616,6 @@
 	},
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/town)
-"aCM" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 4
-	},
-/turf/open/openspace/ms13,
-/area/ms13/underground/mountain)
 "aEj" = (
 /obj/structure/table/ms13/no_smooth/counter/wood,
 /obj/machinery/light/ms13/bulb{
@@ -1309,14 +1306,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"bjz" = (
-/obj/machinery/power/apc/ms13/directional{
-	dir = 1;
-	pixel_y = 22
-	},
-/obj/structure/cable/smart_cable/color/yellow,
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "bjH" = (
 /obj/structure/filingcabinet/ms13{
 	dir = 8
@@ -3219,9 +3208,10 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "cNX" = (
-/obj/effect/spawner/random/ms13/food/produce_random,
-/turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/legioncamp)
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "cNY" = (
 /obj/structure/ms13/tank/chemical,
 /turf/open/floor/ms13/metal/plate,
@@ -3247,8 +3237,8 @@
 /turf/closed/wall/ms13/siding/blue,
 /area/ms13/town)
 "cQb" = (
-/obj/structure/table/ms13/crafting/weaponbench,
-/turf/open/floor/wood/ms13/wide,
+/obj/effect/spawner/random/ms13/food/produce_random,
+/turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/legioncamp)
 "cQc" = (
 /obj/structure/table/ms13/metal/heavy,
@@ -4286,10 +4276,6 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/town)
-"dPu" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "dPG" = (
 /obj/structure/closet/ms13/metal,
 /obj/effect/spawner/random/ms13/clothing/under,
@@ -4485,17 +4471,6 @@
 /obj/structure/chair/ms13/metal/broken,
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
-"dYn" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/obj/item/clothing/head/hardhat/ms13/mining,
-/obj/item/clothing/head/hardhat/ms13/mining,
-/obj/item/gun/energy/ms13/plasma/pistol{
-	pixel_y = -8
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "dYO" = (
 /obj/structure/ms13/trash/glass/basic,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -5110,13 +5085,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"eCv" = (
-/obj/item/paper_bin/ms13{
-	pixel_y = 2;
-	pixel_x = 5
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "eCL" = (
 /obj/structure/chair/ms13/overlaypickup/plastic,
 /obj/structure/ms13/wall_decor/clock,
@@ -5228,6 +5196,16 @@
 /obj/structure/ms13/pipes/horizontal/single/random,
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
+"eKf" = (
+/obj/structure/ms13/storage/bookshelf,
+/obj/effect/spawner/random/ms13/gun/tier2,
+/obj/effect/spawner/random/ms13/gun/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "eKq" = (
 /obj/structure/table/ms13/wood/constructed/cobbled,
 /obj/structure/ms13/trash/books/pile_alt{
@@ -5244,12 +5222,6 @@
 /obj/structure/ms13/rug/rubber,
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
-"eLs" = (
-/obj/structure/ms13/rug/red{
-	dir = 4
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "eLV" = (
 /obj/effect/landmark/start/ms13/dry_shaman,
 /turf/open/floor/wood/ms13/wide,
@@ -5356,6 +5328,10 @@
 /obj/machinery/light/ms13,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"ePH" = (
+/obj/structure/table/ms13/crafting/weaponbench,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "ePX" = (
 /obj/structure/ms13/storage/large/shelf{
 	dir = 4
@@ -5458,10 +5434,6 @@
 	},
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/town)
-"eVn" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/turf/open/openspace/ms13,
-/area/ms13/underground/mountain)
 "eVE" = (
 /obj/structure/table/ms13/no_smooth/counter/wood{
 	dir = 4
@@ -5566,10 +5538,6 @@
 /obj/effect/turf_decal/ms13/showerdrains/square,
 /turf/open/floor/ms13/tile/brown,
 /area/ms13/town)
-"fcF" = (
-/obj/structure/table/ms13/crafting/ammobench,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "fcI" = (
 /obj/structure/ms13/fence,
 /obj/structure/ms13/barricade,
@@ -5660,9 +5628,12 @@
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/town)
 "fgG" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
-/turf/open/floor/wood/ms13/mosaic,
-/area/ms13/town)
+/obj/structure/table/ms13/wood/constructed,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "fhq" = (
 /obj/structure/ms13/storage/store/metal{
 	dir = 4
@@ -5823,6 +5794,18 @@
 /obj/structure/ms13/wall_decor/cross,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"fqn" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 4
+	},
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "fqB" = (
 /obj/structure/closet/ms13/fridge,
 /obj/structure/ms13/barricade{
@@ -6026,6 +6009,12 @@
 /obj/effect/spawner/random/ms13/guaranteed/medical/dbag,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"fBf" = (
+/obj/effect/spawner/random/ms13/food/trash,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "fBy" = (
 /obj/structure/dresser/ms13/orange/tall,
 /obj/structure/ms13/wall_decor/calendar/blank,
@@ -6255,6 +6244,28 @@
 	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
+"fLt" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ms13/twohanded/spear/throwing{
+	pixel_y = 6;
+	pixel_x = 14
+	},
+/obj/item/ms13/twohanded/spear/throwing{
+	pixel_y = 6;
+	pixel_x = 8
+	},
+/obj/item/ms13/twohanded/spear/throwing{
+	pixel_y = 6;
+	pixel_x = 11
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "fMa" = (
 /obj/structure/ms13/storage/bookshelf,
 /turf/open/floor/wood/ms13/wide,
@@ -7033,6 +7044,10 @@
 /obj/structure/ms13/wall_decor/calendar,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"gua" = (
+/obj/structure/table/ms13/crafting/ammobench,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "guL" = (
 /obj/machinery/door/unpowered/ms13/metal{
 	dir = 1
@@ -7095,6 +7110,10 @@
 /obj/effect/mob_spawn/corpse/human/ms13/nomad,
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/desert)
+"gyb" = (
+/obj/effect/spawner/ms13/wildlife_den/drought/predator/wolves,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
 "gyu" = (
 /obj/machinery/server/alt,
 /turf/open/floor/ms13/concrete,
@@ -7368,6 +7387,11 @@
 	},
 /turf/open/floor/ms13/concrete/small,
 /area/ms13/water_baron/interior)
+"gOE" = (
+/obj/effect/spawner/random/ms13/clothing/shoe,
+/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/town)
 "gOQ" = (
 /obj/structure/ms13/wall_decor/cross,
 /obj/structure/ms13/trash/glass/basic,
@@ -7612,6 +7636,11 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"hfC" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/item/storage/ms13/toolbox/filled,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "hgj" = (
 /obj/effect/decal/cleanable/blood/drip{
 	pixel_x = 5;
@@ -8089,13 +8118,6 @@
 /obj/structure/stairs/north,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/town)
-"hAS" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "hBs" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 1
@@ -8661,6 +8683,17 @@
 	},
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
+"icc" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "ice" = (
 /obj/structure/stairs/west,
 /obj/structure/railing/ms13/solo,
@@ -8812,6 +8845,22 @@
 /obj/structure/bonfire/ms13/fire_barrel/prelit,
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/desert)
+"ijV" = (
+/obj/structure/ms13/storage/large/shelf,
+/obj/structure/ms13_rail_call_button{
+	id_tag = "bos_blast_mines";
+	pixel_y = 32
+	},
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "ikx" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 8
@@ -9432,6 +9481,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/town)
+"iOw" = (
+/obj/structure/ms13/rug/red{
+	dir = 4
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "iOH" = (
 /mob/living/basic/ms13/ghoul/brown,
 /turf/open/floor/ms13/concrete,
@@ -9528,8 +9583,12 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/legioncamp/building)
 "iSd" = (
-/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/bars/slot/rusty{
 	dir = 8
+	},
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 4
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/legioncamp)
@@ -9584,6 +9643,15 @@
 	},
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/town)
+"iWn" = (
+/obj/machinery/ms13/fusion_generator/petrol{
+	power_gen = 25000
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "iWr" = (
 /obj/structure/bed/ms13/bedframe/metal,
 /obj/structure/ms13/wall_decor/flag/legion,
@@ -9628,14 +9696,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
-"iXv" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/sandbag,
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 8
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "iXV" = (
 /obj/structure/ms13/barricade{
 	dir = 8
@@ -9697,12 +9757,6 @@
 /obj/effect/spawner/random/ms13/ammo/lowrandom,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"jbz" = (
-/obj/structure/table/ms13/no_smooth/large/metal/desk{
-	dir = 1
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "jck" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red,
 /obj/effect/spawner/random/ms13/locked/random/lowchance,
@@ -9931,8 +9985,18 @@
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
 "jmt" = (
-/turf/closed/wall/ms13/vault,
-/area/ms13/underground/mountain)
+/obj/machinery/ms13/terminal/wasteland{
+	dir = 1;
+	remote_capability = 1;
+	signal_id_1 = "autopsy_elevator";
+	signal_id_2 = "post_shutters";
+	signal_title_1 = "Autopsy Elevator";
+	signal_title_2 = "Windows Shutters"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "jmQ" = (
 /obj/structure/table/ms13/no_smooth/counter/wood{
 	dir = 8
@@ -10005,6 +10069,11 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"jqT" = (
+/obj/structure/ms13/sandbag,
+/obj/structure/table/ms13/low_wall/adobe,
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/legioncamp)
 "jrs" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 4
@@ -10662,9 +10731,12 @@
 /turf/open/floor/ms13/ceramic,
 /area/ms13/desert)
 "kaR" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/predator/wolves,
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
+/obj/structure/table/ms13/low_wall/vault,
+/obj/structure/window/reinforced/fulltile/ms13/glass,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "kaU" = (
 /obj/machinery/light/ms13{
 	dir = 8
@@ -11272,6 +11344,15 @@
 /obj/effect/spawner/random/ms13/food/packaged,
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
+"kEs" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/precious,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
+/obj/effect/spawner/random/ms13/crafting/refined,
+/obj/effect/spawner/random/ms13/crafting/lowrandom,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "kEw" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 4
@@ -11386,6 +11467,12 @@
 /obj/structure/table/ms13/metal/constructed,
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
+"kLF" = (
+/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "kLJ" = (
 /obj/structure/bed/ms13/bedframe/wood,
 /obj/structure/bed/ms13/mattress/stained,
@@ -11520,6 +11607,14 @@
 /obj/structure/ms13/foundation/wide/variantfive,
 /turf/open/openspace/ms13,
 /area/ms13/town)
+"kQz" = (
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/sandbag,
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "kQF" = (
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/water_baron/interior)
@@ -11758,20 +11853,6 @@
 /obj/structure/ms13/barrel/quadruple/grey/one,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
-"lcc" = (
-/obj/structure/ms13/storage/large/shelf,
-/obj/structure/ms13_rail_call_button{
-	id_tag = "bos_blast_mines";
-	pixel_y = 32
-	},
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/obj/item/shield/riot,
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "lch" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red{
 	dir = 8
@@ -12461,10 +12542,6 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"lHn" = (
-/obj/structure/ms13/trash/books/pile_alt,
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "lHw" = (
 /obj/machinery/door/unpowered/ms13/metal/red{
 	dir = 1
@@ -12944,6 +13021,13 @@
 /mob/living/basic/ms13/ghoul/brown,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"mfB" = (
+/obj/structure/chair/ms13/wood,
+/obj/structure/ms13/rug/yellow{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "mfD" = (
 /obj/structure/chair/ms13/wood,
 /turf/open/floor/plating/ms13/ground/road,
@@ -13382,14 +13466,6 @@
 "mzM" = (
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/drylanders)
-"mAd" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/sandbag,
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 4
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "mAy" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -13399,8 +13475,11 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
 "mAO" = (
+/obj/structure/cable/smart_cable/color/yellow,
 /turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "mBU" = (
 /obj/structure/closet/crate/ms13/footlocker{
 	dir = 4
@@ -13634,16 +13713,6 @@
 /obj/structure/ms13/trash/food/glass,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
-"mPp" = (
-/obj/structure/ms13/storage/bookshelf,
-/obj/effect/spawner/random/ms13/gun/tier2,
-/obj/effect/spawner/random/ms13/gun/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "mQd" = (
 /obj/structure/table/ms13/no_smooth/cable_reel,
 /obj/item/ms13/fluff/ashtray,
@@ -14561,11 +14630,6 @@
 /obj/effect/spawner/random/ms13/drugs/lowrandom,
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/water_baron/interior)
-"nJW" = (
-/obj/structure/table/ms13/low_wall/vault,
-/obj/structure/window/reinforced/fulltile/ms13/glass,
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain)
 "nKF" = (
 /obj/machinery/light/ms13/bulb/industrial{
 	dir = 8
@@ -15027,11 +15091,6 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
-"oix" = (
-/obj/structure/ms13/sandbag,
-/obj/structure/table/ms13/low_wall/adobe,
-/turf/open/floor/plating/ms13/ground/desertalt,
-/area/ms13/legioncamp)
 "oiF" = (
 /mob/living/basic/ms13/hostile_animal/radroach,
 /turf/open/floor/ms13/metal/grate/border/warning,
@@ -15160,6 +15219,16 @@
 /obj/effect/mob_spawn/corpse/human/ms13/nomad,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"oqu" = (
+/obj/machinery/power/apc/ms13/directional{
+	dir = 1;
+	pixel_y = 22
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "oqM" = (
 /obj/effect/spawner/random/ms13/drugs/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -15436,6 +15505,15 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/town)
+"oDO" = (
+/obj/structure/ms13/trash/books/pile_alt,
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "oDY" = (
 /obj/structure/table/ms13/no_smooth/counter/metal/bend,
 /obj/effect/spawner/random/ms13/medical/dbag,
@@ -15618,6 +15696,17 @@
 /obj/structure/chair/ms13/metal/folding,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/water_baron)
+"oJF" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "oKd" = (
 /obj/item/ms13/brick{
 	pixel_x = 14;
@@ -15814,6 +15903,14 @@
 	},
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
+"oRZ" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "oSs" = (
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
@@ -16041,12 +16138,10 @@
 /turf/closed/mineral/random/ms13/drought,
 /area/ms13/underground/mountain)
 "pci" = (
-/obj/machinery/door/airlock/ms13/brotherhood{
-	dir = 1
-	},
-/obj/structure/cable/smart_cable/color/yellow,
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain)
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "pcm" = (
 /obj/structure/ms13/road_barrier/concrete{
 	dir = 4
@@ -16173,6 +16268,11 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"pgT" = (
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/sandbag,
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/legioncamp)
 "phm" = (
 /obj/structure/table/ms13/wood/constructed,
 /obj/effect/spawner/random/ms13/tools/farming,
@@ -16187,20 +16287,6 @@
 /obj/structure/chair/office/ms13/green,
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
-"phJ" = (
-/obj/structure/table/ms13/no_smooth/large/metal/desk{
-	dir = 4
-	},
-/obj/machinery/ms13/terminal/wasteland{
-	dir = 8;
-	remote_capability = 1;
-	signal_id_1 = "autopsy_elevator";
-	signal_id_2 = "post_shutters";
-	signal_title_1 = "Autopsy Elevator";
-	signal_title_2 = "Windows Shutters"
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "piU" = (
 /obj/structure/ms13/storage/bookshelf,
 /obj/item/gun/ballistic/revolver/ms13/rev357{
@@ -16380,6 +16466,15 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
+"psd" = (
+/obj/item/paper_bin/ms13{
+	pixel_y = 2;
+	pixel_x = 5
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "pse" = (
 /obj/structure/chair/ms13/metal/broken{
 	dir = 4
@@ -17920,11 +18015,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
-"qGQ" = (
-/obj/structure/ms13/sandbag,
-/obj/structure/table/ms13/low_wall/adobe,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/drylanders)
 "qHE" = (
 /obj/effect/decal/cleanable/blood/gibs/old,
 /obj/effect/decal/cleanable/blood/old,
@@ -18016,6 +18106,21 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"qMj" = (
+/obj/structure/ms13_rail_call_button{
+	pixel_y = 5;
+	pixel_x = 25;
+	id_tag = "bos_tram"
+	},
+/obj/structure/ms13_rail_call_button{
+	pixel_y = -5;
+	pixel_x = 25;
+	id_tag = "bos_blast_door"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "qMq" = (
 /obj/structure/closet/crate/ms13/footlocker{
 	dir = 4
@@ -18100,11 +18205,6 @@
 	},
 /obj/item/radio/ms13/ham/receiver/radioking,
 /obj/machinery/light/ms13,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/town)
-"qOT" = (
-/obj/effect/spawner/random/ms13/clothing/shoe,
-/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
 "qPn" = (
@@ -18343,13 +18443,6 @@
 /obj/structure/stairs/west,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/water_baron/interior)
-"qZy" = (
-/obj/structure/chair/ms13/wood,
-/obj/structure/ms13/rug/yellow{
-	dir = 8
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "raq" = (
 /obj/structure/table/ms13/no_smooth/large/wood/desk{
 	dir = 8
@@ -18543,6 +18636,12 @@
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/desert)
+"rne" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "rnj" = (
 /obj/effect/turf_decal/ms13/covering/paint/yellow,
 /obj/effect/turf_decal/ms13/covering/paint/white,
@@ -18601,29 +18700,35 @@
 "rpg" = (
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/water_baron/interior)
-"rpp" = (
-/obj/structure/ms13_rail_call_button{
-	pixel_y = 5;
-	pixel_x = 25;
-	id_tag = "bos_tram"
-	},
-/obj/structure/ms13_rail_call_button{
-	pixel_y = -5;
-	pixel_x = 25;
-	id_tag = "bos_blast_door"
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "rpv" = (
 /obj/effect/spawner/random/ms13/gun/lowrandom,
 /turf/open/floor/wood/ms13/carpet/shaggy,
 /area/ms13/town)
+"rpE" = (
+/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/drylanders)
 "rqg" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored{
 	dir = 8
 	},
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
+"rqC" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/obj/item/clothing/head/hardhat/ms13/mining,
+/obj/item/clothing/head/hardhat/ms13/mining,
+/obj/item/gun/energy/ms13/plasma/pistol{
+	pixel_y = -8
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "rqT" = (
 /obj/structure/closet/crate/ms13/footlocker,
 /obj/effect/spawner/random/ms13/medical/herbal,
@@ -18842,10 +18947,6 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
-"rzE" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
-/turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/underground/mountain)
 "rzP" = (
 /obj/effect/decal/cleanable/glass{
 	dir = 4
@@ -18914,16 +19015,6 @@
 /obj/item/ms13/brick,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"rCr" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/obj/structure/railing/ms13/solo/industrial{
-	dir = 4
-	},
-/obj/structure/railing/ms13/solo/industrial{
-	dir = 1
-	},
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain)
 "rCv" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 4
@@ -19466,6 +19557,11 @@
 /obj/structure/ms13/rug/mat/rubber/single,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"scm" = (
+/obj/structure/ms13/sandbag,
+/obj/structure/table/ms13/low_wall/adobe,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/drylanders)
 "sct" = (
 /obj/structure/chair/ms13/metal/folding{
 	dir = 8
@@ -19591,6 +19687,14 @@
 /obj/effect/spawner/random/ms13/medical/surgical,
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/town)
+"skT" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "sln" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 1
@@ -19665,6 +19769,12 @@
 /obj/structure/ms13/trash/food/glass,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"sqb" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "sqo" = (
 /obj/effect/decal/cleanable/blood/gibs/limb,
 /obj/effect/decal/cleanable/blood/old,
@@ -20128,6 +20238,10 @@
 /obj/structure/table/ms13/no_smooth/large/wood/desk/alt,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"sNe" = (
+/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
+/turf/open/floor/wood/ms13/mosaic,
+/area/ms13/town)
 "sNk" = (
 /obj/machinery/door/poddoor/shutters/ms13/horizontal/red/mid{
 	id = "junkyard-gate"
@@ -20203,6 +20317,14 @@
 /obj/effect/spawner/random/ms13/ammo/highrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"sRA" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "sRI" = (
 /obj/structure/sink/ms13/functional/tainted{
 	pixel_y = 14
@@ -20234,28 +20356,6 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"sTs" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ms13/twohanded/spear/throwing{
-	pixel_y = 6;
-	pixel_x = 14
-	},
-/obj/item/ms13/twohanded/spear/throwing{
-	pixel_y = 6;
-	pixel_x = 8
-	},
-/obj/item/ms13/twohanded/spear/throwing{
-	pixel_y = 6;
-	pixel_x = 11
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "sTw" = (
 /obj/structure/bed/ms13/mattress/filthy,
 /turf/open/floor/wood/ms13/wide,
@@ -20306,12 +20406,6 @@
 /obj/effect/spawner/random/ms13/drink/soda,
 /turf/open/floor/ms13/tile/large/black,
 /area/ms13/town)
-"sVE" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 8
-	},
-/turf/open/openspace/ms13,
-/area/ms13/underground/mountain)
 "sVY" = (
 /obj/structure/ms13/fence/corner/wire{
 	dir = 8
@@ -20502,6 +20596,15 @@
 /obj/structure/table/ms13/crafting/tinkerbench,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"tfT" = (
+/obj/machinery/door/airlock/ms13/brotherhood{
+	dir = 1
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "tfV" = (
 /obj/structure/table/ms13/no_smooth/counter/wood{
 	dir = 4
@@ -20604,12 +20707,6 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
-"tix" = (
-/obj/structure/railing/ms13/solo/industrial{
-	dir = 1
-	},
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain)
 "tiI" = (
 /obj/structure/bed/ms13/sleepingbag/green,
 /obj/effect/landmark/start/ms13/goldman_unprov,
@@ -20809,13 +20906,6 @@
 /obj/machinery/light/ms13/bulb,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/legioncamp)
-"tuz" = (
-/obj/structure/ms13/trash/books/pile_alt,
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "tuR" = (
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/water_baron/interior)
@@ -20876,10 +20966,6 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"tyb" = (
-/obj/effect/spawner/random/ms13/food/trash,
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "tyD" = (
 /obj/item/ms13/fluff/ruined_book{
 	pixel_y = -7
@@ -20900,6 +20986,10 @@
 /obj/structure/noticeboard/ms13/cork,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"tzA" = (
+/obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/desert)
 "tzE" = (
 /obj/structure/ms13/pipes/horizontal/single/valve,
 /turf/open/floor/ms13/concrete,
@@ -20998,13 +21088,6 @@
 /obj/structure/ms13/fence/vertical/wire/west,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
-"tEu" = (
-/obj/machinery/ms13/fusion_generator/petrol{
-	power_gen = 25000
-	},
-/obj/structure/cable/smart_cable/color/yellow,
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "tEz" = (
 /obj/structure/ms13/rug/mat/rubber/single,
 /obj/structure/sink/ms13{
@@ -21120,16 +21203,6 @@
 /obj/structure/ms13/trash/glass/basic,
 /turf/open/floor/ms13/ceramic,
 /area/ms13/desert)
-"tHZ" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 8
-	},
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 4
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "tIa" = (
 /obj/structure/bonfire/ms13/fire_barrel,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -21423,10 +21496,10 @@
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/desert)
 "tUM" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/sandbag,
-/turf/open/floor/plating/ms13/ground/desertalt,
-/area/ms13/legioncamp)
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "tVk" = (
 /obj/structure/kitchenspike/ms13/cross,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -21558,12 +21631,6 @@
 /obj/structure/ms13/storage/shelf/wood/alt,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
-"ueZ" = (
-/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
-	dir = 8
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/drylanders)
 "ufb" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red{
 	dir = 8
@@ -21581,17 +21648,6 @@
 /obj/structure/table/ms13/low_wall/adobe,
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
-"ufw" = (
-/obj/machinery/ms13/terminal/wasteland{
-	dir = 1;
-	remote_capability = 1;
-	signal_id_1 = "autopsy_elevator";
-	signal_id_2 = "post_shutters";
-	signal_title_1 = "Autopsy Elevator";
-	signal_title_2 = "Windows Shutters"
-	},
-/turf/open/floor/ms13/tile/full/white,
-/area/ms13/underground/mountain)
 "ufZ" = (
 /obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -21949,6 +22005,14 @@
 /obj/structure/ms13/brickstack,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"uDa" = (
+/obj/structure/table/ms13/no_smooth/large/metal/desk{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "uDo" = (
 /obj/structure/ms13/foundation/common/variantsix{
 	dir = 4
@@ -22014,12 +22078,6 @@
 /obj/structure/ms13/brickstack,
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
-"uFQ" = (
-/obj/structure/railing/ms13/wood{
-	dir = 1
-	},
-/turf/open/floor/plating/ms13/ground/desertalt,
-/area/ms13/legioncamp)
 "uGb" = (
 /obj/structure/ms13/trash/papers{
 	dir = 1
@@ -22883,15 +22941,6 @@
 /obj/structure/chair/ms13/metal,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
-"vrE" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 1
-	},
-/obj/structure/railing/ms13/solo/industrial{
-	dir = 1
-	},
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain)
 "vrH" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 4
@@ -22918,15 +22967,6 @@
 /obj/structure/filingcabinet/ms13,
 /turf/open/floor/ms13/concrete/small,
 /area/ms13/desert)
-"vsZ" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/precious,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
-/obj/effect/spawner/random/ms13/crafting/refined,
-/obj/effect/spawner/random/ms13/crafting/lowrandom,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "vtr" = (
 /obj/structure/ms13/storage/large/shelf/wood/alt,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -23299,9 +23339,11 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
 "vQi" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain)
+/obj/structure/railing/ms13/wood{
+	dir = 1
+	},
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/legioncamp)
 "vQs" = (
 /obj/structure/table/ms13/crafting/ammobench,
 /turf/open/floor/ms13/concrete,
@@ -23354,6 +23396,22 @@
 /obj/structure/ms13/sign/mine,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"vSk" = (
+/obj/structure/table/ms13/no_smooth/large/metal/desk{
+	dir = 4
+	},
+/obj/machinery/ms13/terminal/wasteland{
+	dir = 8;
+	remote_capability = 1;
+	signal_id_1 = "autopsy_elevator";
+	signal_id_2 = "post_shutters";
+	signal_title_1 = "Autopsy Elevator";
+	signal_title_2 = "Windows Shutters"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "vSu" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 1
@@ -23827,6 +23885,12 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"wxd" = (
+/obj/structure/ms13/trash/books/pile_alt,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain_bunker{
+	name = "Brotherhood Tram"
+	})
 "wxq" = (
 /obj/machinery/light/ms13{
 	dir = 4
@@ -24746,15 +24810,6 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"xvY" = (
-/obj/machinery/light/ms13/bulb{
-	dir = 8
-	},
-/obj/machinery/light/ms13/bulb{
-	dir = 4
-	},
-/turf/open/openspace/ms13,
-/area/ms13/underground/mountain)
 "xwt" = (
 /obj/structure/ms13/fence/wire,
 /turf/open/floor/plating/ms13/ground/sidewalk,
@@ -25245,7 +25300,7 @@
 "xXN" = (
 /obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
 /turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/desert)
+/area/ms13/underground/mountain)
 "xXR" = (
 /obj/machinery/door/unpowered/ms13/wood/mirrored/white{
 	dir = 1
@@ -43490,11 +43545,11 @@ qBF
 qBF
 qBF
 qBF
-jmt
-jmt
-jmt
-jmt
-jmt
+pci
+pci
+pci
+pci
+pci
 qBF
 qBF
 qBF
@@ -43692,11 +43747,11 @@ qBF
 qBF
 qBF
 qBF
-jmt
-vgb
-sVE
-vgb
-jmt
+pci
+cNX
+oRZ
+cNX
+pci
 qBF
 qBF
 qBF
@@ -43894,11 +43949,11 @@ qBF
 qBF
 qBF
 qBF
-jmt
-vgb
-vgb
-vgb
-jmt
+pci
+cNX
+cNX
+cNX
+pci
 qBF
 qBF
 qBF
@@ -44096,11 +44151,11 @@ qBF
 qBF
 qBF
 qBF
-jmt
-jmt
-nJW
-jmt
-jmt
+pci
+pci
+kaR
+pci
+pci
 qBF
 qBF
 qBF
@@ -44298,11 +44353,11 @@ qBF
 qBF
 qBF
 qBF
-jmt
-lcc
-mAO
-jbz
-jmt
+pci
+ijV
+tUM
+uDa
+pci
 qBF
 qBF
 qBF
@@ -44497,14 +44552,14 @@ blm
 "}
 (95,1,1) = {"
 qBF
+pci
+pci
+pci
+pci
+rqC
+tUM
 jmt
-jmt
-jmt
-jmt
-dYn
-mAO
-ufw
-jmt
+pci
 qBF
 qBF
 qBF
@@ -44699,14 +44754,14 @@ blm
 "}
 (96,1,1) = {"
 qBF
-jmt
-vgb
-tix
-jmt
-bjz
-dPu
-tEu
-jmt
+pci
+cNX
+skT
+pci
+oqu
+mAO
+iWn
+pci
 qBF
 qBF
 qBF
@@ -44901,14 +44956,14 @@ blm
 "}
 (97,1,1) = {"
 qBF
-jmt
-vgb
-vrE
-jmt
-dPu
-tyb
-lHn
-jmt
+pci
+cNX
+oJF
+pci
+mAO
+fBf
+wxd
+pci
 qBF
 qBF
 qBF
@@ -45103,14 +45158,14 @@ blm
 "}
 (98,1,1) = {"
 qBF
-jmt
-vQi
-vQi
 pci
-dPu
-rpp
+rne
+rne
+tfT
 mAO
-jmt
+qMj
+tUM
+pci
 qBF
 qBF
 qBF
@@ -45305,14 +45360,14 @@ blm
 "}
 (99,1,1) = {"
 qBF
-jmt
-vQi
-vQi
-jmt
-tuz
-eCv
-phJ
-jmt
+pci
+rne
+rne
+pci
+oDO
+psd
+vSk
+pci
 qBF
 qBF
 qBF
@@ -45507,14 +45562,14 @@ blm
 "}
 (100,1,1) = {"
 qBF
-jmt
-eVn
-rCr
-jmt
-jmt
-nJW
-nJW
-jmt
+pci
+sqb
+fqn
+pci
+pci
+kaR
+kaR
+pci
 qBF
 qBF
 qBF
@@ -45709,14 +45764,14 @@ blm
 "}
 (101,1,1) = {"
 qBF
-jmt
-vgb
-vgb
-vgb
-vgb
-vgb
-vgb
-jmt
+pci
+cNX
+cNX
+cNX
+cNX
+cNX
+cNX
+pci
 qBF
 qBF
 qBF
@@ -45911,14 +45966,14 @@ blm
 "}
 (102,1,1) = {"
 qBF
-jmt
-vgb
-vgb
-vgb
-vgb
-vgb
-vgb
-jmt
+pci
+cNX
+cNX
+cNX
+cNX
+cNX
+cNX
+pci
 qBF
 qBF
 qBF
@@ -46113,14 +46168,14 @@ blm
 "}
 (103,1,1) = {"
 qBF
-jmt
-vgb
-vgb
-vgb
-vgb
-vgb
-vgb
-jmt
+pci
+cNX
+cNX
+cNX
+cNX
+cNX
+cNX
+pci
 qBF
 qBF
 qBF
@@ -46315,14 +46370,14 @@ blm
 "}
 (104,1,1) = {"
 qBF
-jmt
-vgb
-vgb
-vgb
-vgb
-vgb
-vgb
-jmt
+pci
+cNX
+cNX
+cNX
+cNX
+cNX
+cNX
+pci
 qBF
 qBF
 qBF
@@ -46517,14 +46572,14 @@ blm
 "}
 (105,1,1) = {"
 qBF
-jmt
-vgb
-vgb
-vgb
-vgb
-vgb
-vgb
-jmt
+pci
+cNX
+cNX
+cNX
+cNX
+cNX
+cNX
+pci
 qBF
 qBF
 qBF
@@ -46719,14 +46774,14 @@ blm
 "}
 (106,1,1) = {"
 qBF
-jmt
-vgb
-xvY
-vgb
-vgb
-aCM
-vgb
-jmt
+pci
+cNX
+icc
+cNX
+cNX
+sRA
+cNX
+pci
 qBF
 qBF
 qBF
@@ -46921,14 +46976,14 @@ blm
 "}
 (107,1,1) = {"
 qBF
-jmt
-jmt
-jmt
-jmt
-jmt
-jmt
-jmt
-jmt
+pci
+pci
+pci
+pci
+pci
+pci
+pci
+pci
 qBF
 qBF
 qBF
@@ -47058,7 +47113,7 @@ qBF
 qBF
 jLI
 dFe
-kaR
+gyb
 dFe
 wJP
 dFe
@@ -49629,7 +49684,7 @@ blm
 blm
 blm
 qiN
-rzE
+xXN
 qBF
 qBF
 qBF
@@ -53020,7 +53075,7 @@ tPj
 tPj
 oSs
 oSs
-xXN
+tzA
 oSs
 oSs
 oSs
@@ -55503,7 +55558,7 @@ hDb
 hDb
 hDb
 kqA
-qOT
+gOE
 crx
 crx
 crx
@@ -62123,7 +62178,7 @@ uBJ
 jiC
 kEk
 uAb
-fgG
+sNe
 bLo
 whh
 uAb
@@ -62281,7 +62336,7 @@ qBF
 qBF
 hcf
 tDD
-cNX
+cQb
 pnO
 lkt
 hnZ
@@ -62486,7 +62541,7 @@ hXU
 pnO
 bGU
 pnO
-cNX
+cQb
 tLF
 hnZ
 hnZ
@@ -62685,7 +62740,7 @@ qBF
 qBF
 qBF
 tAH
-cNX
+cQb
 vTm
 kiy
 xRd
@@ -62894,9 +62949,9 @@ pnO
 wGi
 hnZ
 iGS
-eLs
+iOw
 fCL
-qZy
+mfB
 njq
 sdO
 hnZ
@@ -63509,7 +63564,7 @@ hnZ
 hnZ
 txq
 txq
-iXv
+kQz
 txq
 txq
 txq
@@ -63708,14 +63763,14 @@ kiy
 uqv
 txq
 txq
-iSd
+kLF
 txq
-fcF
+gua
 xti
-cQb
+ePH
 xti
 xti
-ajI
+hfC
 txq
 qBF
 kWF
@@ -64319,7 +64374,7 @@ txq
 txq
 txq
 naD
-tHZ
+iSd
 txq
 txq
 txq
@@ -64719,7 +64774,7 @@ txq
 piU
 xti
 xti
-sTs
+fLt
 txq
 xti
 xti
@@ -64918,7 +64973,7 @@ hnZ
 hnZ
 pnO
 txq
-mPp
+eKf
 xti
 xti
 njq
@@ -65121,14 +65176,14 @@ hnZ
 hnZ
 txq
 txq
-vsZ
-hAS
+kEs
+fgG
 txq
 txq
-iSd
+kLF
 txq
 txq
-mAd
+awM
 txq
 txq
 oGz
@@ -65328,8 +65383,8 @@ txq
 txq
 hnZ
 hnZ
-tUM
-uFQ
+pgT
+vQi
 hnZ
 hnZ
 pBI
@@ -65530,8 +65585,8 @@ txq
 hnZ
 hnZ
 hnZ
-oix
-uFQ
+jqT
+vQi
 hnZ
 hnZ
 pBI
@@ -66136,7 +66191,7 @@ kbJ
 ocK
 tkV
 uXm
-qGQ
+scm
 uXm
 cQL
 pEd
@@ -66540,7 +66595,7 @@ kbJ
 oVV
 lRc
 uXm
-ueZ
+rpE
 uXm
 cQL
 rQp
@@ -69603,7 +69658,7 @@ oSs
 djf
 oSs
 oSs
-xXN
+tzA
 oSs
 oSs
 hgp

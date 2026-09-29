@@ -39,6 +39,72 @@
 	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/small = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout, origin, network)
 	TEST_ASSERT(!small.handle_hive_idle_destruction(), "A small swarmer inherited large-unit idle destruction.")
 
+/datum/unit_test/ms13_hive_rock_escape
+	name = "MOJAVE SUN: Trapped Slasher Mines An Exit And Resumes Movement"
+	var/list/replaced_turfs = list()
+
+/datum/unit_test/ms13_hive_rock_escape/Destroy()
+	. = ..()
+	for(var/turf/site as anything in replaced_turfs)
+		site.ChangeTurf(replaced_turfs[site])
+
+/datum/unit_test/ms13_hive_rock_escape/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/unit = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier, origin, network)
+	unit.terrain_dependent = FALSE
+	unit.toggle_ai(AI_OFF)
+	for(var/turf/site in RANGE_TURFS(1, origin))
+		if(site == origin)
+			continue
+		replaced_turfs[site] = site.type
+		site.ChangeTurf(/turf/closed/indestructible/rock/ms13/drought)
+	var/turf/closed/mineral/random/ms13/rock = get_step(origin, EAST)
+	rock = rock.ChangeTurf(/turf/closed/mineral/random/ms13)
+	rock.damage_deflection = 0
+	TEST_ASSERT(unit.CanSmashTurfs(rock), "A slasher cannot recognise affordable mineable rock.")
+	var/health_before = rock.mining_health
+	TEST_ASSERT(unit.DestroyObjectsInDirection(EAST) && rock.mining_health < health_before && rock.density, "A normal attack failed to chip rock through the real obstruction handler.")
+	health_before = rock.mining_health
+	TEST_ASSERT(unit.hive_attack_obstacle(rock, 20) && rock.mining_health == health_before - 20, "A ram fails to damage the same mining health pool.")
+	rock.damage_deflection = 10000
+	TEST_ASSERT(!unit.can_hive_damage_obstacle(rock), "Rock deflection is ignored.")
+	rock.damage_deflection = 0
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout/small = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout, origin, network)
+	small.toggle_ai(AI_OFF)
+	rock.mining_health = 10000
+	TEST_ASSERT(!small.can_hive_damage_obstacle(rock), "A small unit commits to hundreds of rock attacks.")
+	rock.mining_health = health_before
+	qdel(small)
+	TEST_ASSERT(unit.handle_hive_idle_destruction(), "A trapped idle slasher does not choose its destructible exit.")
+	// Give the established hive another frontier outside this enclosure. Its failed patrol must yield to breaching.
+	var/turf/destination = get_step(rock, EAST)
+	allocate(/obj/structure/ms13_hivemind/terrain, destination, network)
+	unit.toggle_ai(AI_ON)
+	unit.roam_target = destination
+	COOLDOWN_START(unit, roam_retarget_cooldown, 1 MINUTES)
+	for(var/tick in 1 to 30)
+		unit.handle_automated_action()
+		sleep(1 SECONDS)
+		if(!rock.density)
+			break
+	TEST_ASSERT(!rock.density, "Normal AI ticks never opened the only exit after its patrol path failed.")
+	TEST_ASSERT(get_turf(unit) != origin || unit.Move(rock, EAST), "The slasher could not leave through the freshly mined exit.")
+	var/mob/living/simple_animal/victim = allocate(/mob/living/simple_animal, destination)
+	victim.maxHealth = 1000
+	victim.health = 1000
+	victim.toggle_ai(AI_OFF)
+	unit.toggle_ai(AI_ON)
+	unit.GiveTarget(victim)
+	for(var/tick in 1 to 4)
+		unit.handle_automated_action()
+		sleep(1 SECONDS)
+		if(victim.health < 1000)
+			break
+	TEST_ASSERT(victim.health < 1000, "Breaching an exit left the slasher unable to resume combat.")
+
 /datum/unit_test/ms13_hive_recovery
 	name = "MOJAVE SUN: Hive Failed Jobs Release And Retry"
 

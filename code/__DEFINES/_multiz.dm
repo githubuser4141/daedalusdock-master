@@ -6,6 +6,9 @@
 #define GetAbove(A) (HasAbove(A:z) ? get_step(A, UP) : null)
 #define GetBelow(A) (HasBelow(A:z) ? get_step(A, DOWN) : null)
 
+/// Distance charged for crossing one connected floor, for sound and ranged environmental effects.
+#define MULTIZ_LEVEL_DISTANCE 5
+
 
 /// Vertical Z movement
 #define ZMOVING_VERTICAL 1

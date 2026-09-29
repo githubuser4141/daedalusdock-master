@@ -140,9 +140,12 @@
 		return FALSE
 	if(isnull(damage))
 		damage = obj_damage || melee_damage_upper
+	if(ismineralturf(obstacle))
+		if(!ramming && (environment_smash & (ENVIRONMENT_SMASH_WALLS | ENVIRONMENT_SMASH_RWALLS)))
+			return TRUE
+		var/turf/closed/mineral/random/ms13/rock = obstacle
+		return istype(rock) && (melee_damage_type in list(BRUTE, BURN)) && damage >= max(rock.damage_deflection, DAMAGE_PRECISION) && (last_resort || rock.mining_health <= damage * hive_max_breach_hits)
 	if(!ramming)
-		if(ismineralturf(obstacle))
-			return !!(environment_smash & (ENVIRONMENT_SMASH_WALLS | ENVIRONMENT_SMASH_RWALLS))
 		var/turf/closed/wall/wall = obstacle
 		if(istype(wall))
 			if(environment_smash & ENVIRONMENT_SMASH_RWALLS)
@@ -157,6 +160,8 @@
 	return effective_damage >= DAMAGE_PRECISION && (last_resort || obstacle.get_integrity() <= effective_damage * hive_max_breach_hits)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/CanSmashTurfs(turf/obstacle)
+	if(istype(obstacle, /turf/closed/mineral/random/ms13))
+		return environment_smash && can_hive_damage_obstacle(obstacle)
 	return ..() && can_hive_damage_obstacle(obstacle)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/hive_attack_obstacle(atom/obstacle, ram_damage, last_resort = FALSE)
@@ -188,6 +193,11 @@
 		return FALSE
 	if(!isturf(loc) || target || roam_target || corpse_target_ref || incapacitated() || !COOLDOWN_FINISHED(src, hive_breach_cooldown))
 		return FALSE
+	// Open an exit before spending idle turns on loose furniture inside the enclosure.
+	for(var/turf/closed/wall in orange(1, src))
+		if(Adjacent(wall) && hive_attack_obstacle(wall, last_resort = TRUE))
+			COOLDOWN_START(src, hive_breach_cooldown, 2 SECONDS)
+			return TRUE
 	for(var/obj/obstacle in range(1, src))
 		if(!isturf(obstacle.loc) || !Adjacent(obstacle) || obstacle.IsObscured())
 			continue

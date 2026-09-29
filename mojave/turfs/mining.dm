@@ -51,6 +51,28 @@
 		var/mob/living/miner = user
 		return miner.ms13_mine(src, tool)
 
+/// Rock uses mining health rather than atom integrity; mob attacks must make progress on that same pool.
+/turf/closed/mineral/random/ms13/get_integrity()
+	return mining_health
+
+/turf/closed/mineral/random/ms13/attack_generic(mob/user, damage_amount = 0, damage_type = BRUTE, damage_flag = NONE, sound_effect = TRUE, armor_penetration = 0)
+	if((resistance_flags & INDESTRUCTIBLE) || !(damage_type in list(BRUTE, BURN)) || damage_amount < DAMAGE_PRECISION || (damage_flag == BLUNT && damage_amount < damage_deflection))
+		return FALSE
+	user.do_attack_animation(src)
+	user.changeNext_move(CLICK_CD_MELEE)
+	if(sound_effect)
+		playsound(src, SFX_ROCK_TAP, 50, TRUE)
+	mine(damage_amount, user = user)
+	return TRUE
+
+/turf/closed/mineral/random/ms13/attack_animal(mob/living/simple_animal/user, list/modifiers)
+	if(user.environment_smash & (ENVIRONMENT_SMASH_WALLS | ENVIRONMENT_SMASH_RWALLS))
+		return ..()
+	return attack_generic(user, user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT)
+
+/turf/closed/mineral/random/ms13/attack_basic_mob(mob/living/basic/user, list/modifiers)
+	return attack_generic(user, user.obj_damage, user.melee_damage_type, BLUNT)
+
 /turf/closed/mineral/random/ms13/MinedAway()
 	var/turf/site = src
 	. = ..()

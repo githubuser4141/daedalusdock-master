@@ -33,6 +33,23 @@
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 
+/// An EMP trips the physical breaker; channel settings survive so one click restores the room.
+/obj/machinery/power/apc/ms13/emp_act(severity)
+	var/list/channels = list(lighting, equipment, environ)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	lighting = channels[1]
+	equipment = channels[2]
+	environ = channels[3]
+	operating = FALSE
+	update_appearance()
+	update()
+
+/obj/machinery/power/apc/ms13/reset(wire)
+	if(wire != APC_RESET_EMP)
+		return ..()
+
 /// Utility boxes have no electronic shorting circuit, including when an EMP pulses their wiring.
 /datum/wires/apc/on_pulse(wire)
 	if(istype(holder, /obj/machinery/power/apc/ms13) && (wire == WIRE_POWER1 || wire == WIRE_POWER2))

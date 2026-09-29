@@ -139,6 +139,7 @@
 	//grid_width = 32
 	var/base_icon = ""
 	var/multiple_states = FALSE
+	emp_charge_loss = 50 // 95% less than a standard cell: 50 charge for a heavy EMP, 25 for a light one.
 
 /obj/item/stock_parts/cell/ms13/Initialize()
 	. = ..()

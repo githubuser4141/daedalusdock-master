@@ -338,6 +338,32 @@ TYPEINFO_DEF(/obj/structure/ms13/storage)
 	icon_state = "wood_shelf"
 	materialtype = /obj/item/stack/sheet/ms13/wood/scrap_wood
 
+/// As with tables, a normal click places the item; combat mode still permits deliberate attacks.
+/obj/structure/ms13/storage/large/shelf/base_item_interaction(mob/living/user, obj/item/item, list/modifiers)
+	. = ..()
+	if(. || user.combat_mode || LAZYACCESS(modifiers, RIGHT_CLICK))
+		return
+	if(!user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY) || !isturf(loc))
+		return ITEM_INTERACT_BLOCKING
+	var/click_x = text2num(LAZYACCESS(modifiers, ICON_X))
+	var/click_y = text2num(LAZYACCESS(modifiers, ICON_Y))
+	click_x = isnum(click_x) ? clamp(click_x, 1, 64) : 16
+	click_y = isnum(click_y) ? clamp(click_y, 1, 64) : 16
+	// Store the item on the clicked part of the footprint, so either half remains reachable.
+	var/tile_x = FLOOR(clamp(pixel_x + click_x - 1, 0, bound_width - 1) / world.icon_size, 1)
+	var/tile_y = FLOOR(clamp(pixel_y + click_y - 1, 0, bound_height - 1) / world.icon_size, 1)
+	var/turf/spot = locate(x + tile_x, y + tile_y, z)
+	if(!spot || !user.transferItemToLoc(item, spot, silent = FALSE))
+		return ITEM_INTERACT_BLOCKING
+	var/list/center = item.get_icon_center()
+	item.pixel_x = pixel_x + click_x - tile_x * world.icon_size + center["x"] - world.icon_size
+	item.pixel_y = pixel_y + click_y - tile_y * world.icon_size + center["y"] - world.icon_size
+	return ITEM_INTERACT_SUCCESS
+
+#ifdef UNIT_TESTS
+#include "shelf_unit_test.dm"
+#endif
+
 /obj/structure/ms13/storage/large/shelf/wood/alt
 	icon_state = "wood_shelf-alt"
 

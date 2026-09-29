@@ -64,9 +64,13 @@ GLOBAL_VAR(ms13_hit_force)
 	if(far_range <= near_range)
 		return
 	var/blend_start = near_range * DISTANT_SOUND_BLEND_START
-	var/list/listeners = SSmobs.clients_by_zlevel[turf_source.z] | SSmobs.dead_players_by_zlevel[turf_source.z]
+	var/list/listeners = list()
+	for(var/level in SSmapping.get_zstack(turf_source.z))
+		if(abs(level - turf_source.z) * MULTIZ_LEVEL_DISTANCE <= far_range)
+			listeners |= SSmobs.clients_by_zlevel[level]
+			listeners |= SSmobs.dead_players_by_zlevel[level]
 	for(var/mob/listener as anything in listeners)
-		var/distance = get_dist(listener, turf_source)
+		var/distance = get_dist_multiz(listener, turf_source)
 		if(distance <= blend_start || distance > far_range)
 			continue
 		var/fade_in = min((distance - blend_start) / max(near_range - blend_start, 1), 1)
@@ -91,9 +95,9 @@ GLOBAL_VAR(ms13_hit_force)
 	var/near_reach = round(near_distance + world.view - 2, 1)
 	for(var/mob/listener as anything in GLOB.player_list)
 		var/turf/listener_turf = get_turf(listener)
-		if(!listener_turf || listener_turf.z != epicenter.z)
+		var/distance = get_dist_multiz(epicenter, listener_turf)
+		if(distance == INFINITY)
 			continue
-		var/distance = get_dist(epicenter, listener_turf)
 		var/shake = isobserver(listener) ? 0 : sqrt(near_distance / (distance + 1))
 		if(distance <= near_reach)
 			listener.playsound_local(epicenter, null, 100, TRUE, frequency, sound_to_use = near_sound)
@@ -132,6 +136,8 @@ GLOBAL_VAR(ms13_hit_force)
 	if(!client || !can_hear())
 		return
 	var/turf/ear = get_turf(src)
+	if(get_dist_multiz(turf_source, ear) == INFINITY)
+		return
 	// Through walls it's quieter, and duller, as if from further off.
 	var/walls = ms13_walls_between(turf_source, ear)
 	vol *= SOUND_WALL_MUFFLE ** walls
@@ -146,7 +152,7 @@ GLOBAL_VAR(ms13_hit_force)
 	var/sound/echo = make_distant_sound(turf_source, ear, soundin, vol * 0.4, min(remoteness + 0.3, 1), vary)
 	echo.x = -echo.x + rand(-4, 4)
 	echo.z = -echo.z + rand(-4, 4)
-	echo.falloff = get_dist(ear, turf_source) + 5
+	echo.falloff = get_dist_multiz(ear, turf_source) + 5
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(send_distant_echo), src, echo), (0.3 + 0.5 * remoteness) SECONDS)
 
 /proc/send_distant_echo(mob/listener, sound/echo)
@@ -169,7 +175,8 @@ GLOBAL_VAR(ms13_hit_force)
 	// From the direction it came, without BYOND fading it further.
 	far.x = turf_source.x - ear.x
 	far.z = turf_source.y - ear.y
-	far.falloff = get_dist(ear, turf_source) + 1
+	far.y = (turf_source.z - ear.z) * MULTIZ_LEVEL_DISTANCE
+	far.falloff = get_dist_multiz(ear, turf_source) + 1
 	if(baked)
 		return far
 	var/area/ear_area = get_area(ear)
@@ -213,6 +220,7 @@ GLOBAL_VAR(ms13_hit_force)
 	return shot && initial(shot.fallback_fire_sound)
 
 #ifdef UNIT_TESTS
+#include "multiz_effects_unit_test.dm"
 /// A sound heard from further off is quieter and duller, and comes from the way it was made.
 /datum/unit_test/ms13_distant_sound
 	name = "SOUND: Distant Sounds Are Quieter, Duller And Directional"

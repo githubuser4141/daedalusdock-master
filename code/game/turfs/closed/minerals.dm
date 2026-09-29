@@ -157,7 +157,8 @@
 	mining_health -= damage
 	if(mining_health < 0)
 		MinedAway()
-		SSblackbox.record_feedback("tally", "pick_used_mining", 1, I.type)
+		if(I)
+			SSblackbox.record_feedback("tally", "pick_used_mining", 1, I.type)
 	else
 		update_appearance(UPDATE_OVERLAYS)
 

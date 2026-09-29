@@ -310,6 +310,7 @@
 	box.emp_act(EMP_HEAVY)
 	if(box.shorted)
 		Fail("An EMP short-circuited a utility box through its wiring.")
+	box.operating = TRUE // EMP now trips the breaker; start the independent remote-toggle check powered.
 	box.lighting = APC_CHANNEL_ON
 	box.equipment = APC_CHANNEL_ON
 	box.environ = APC_CHANNEL_ON

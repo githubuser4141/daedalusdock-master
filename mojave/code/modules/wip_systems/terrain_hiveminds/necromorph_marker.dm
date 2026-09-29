@@ -72,9 +72,9 @@
 	plane = ABOVE_GAME_PLANE
 	max_integrity = 1500
 	var/influence_radius = 45
-	/// Same-floor radius for electrical light dimming/flicker only. Zero disables the effect.
+	/// Electrical light radius; each connected floor costs five tiles. Zero disables the effect.
 	var/light_flicker_radius = 75
-	/// How far it reaches for the dead, on its own floor and those just above and below, and how many it remakes a pulse.
+	/// How far it reaches for the dead across connected floors, and how many it remakes a pulse.
 	var/corpse_reach = 45
 	var/corpses_per_pulse = 3
 	/// Default unsafe; a live nearby suppression projector maintains containment.
@@ -95,7 +95,10 @@
 		// A mapper-placed Marker starts a network, which creates its actual registered core.
 		var/datum/ms13_terrain_hivemind/necromorph/marker/hive = new(get_turf(src), 120)
 		var/obj/structure/ms13_hivemind/core/marker/registered_core = hive.core
+		registered_core.influence_radius = influence_radius
 		registered_core.light_flicker_radius = light_flicker_radius
+		registered_core.corpse_reach = corpse_reach
+		registered_core.corpses_per_pulse = corpses_per_pulse
 		registered_core.containment_emp_arm_time = containment_emp_arm_time
 		registered_core.containment_emp_heavy_range = containment_emp_heavy_range
 		registered_core.containment_emp_light_range = containment_emp_light_range
@@ -114,7 +117,7 @@
 
 /obj/structure/ms13_hivemind/core/marker/examine(mob/user)
 	. = ..()
-	. += span_notice("A cable node beneath it can draw 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles on this floor.")
+	. += span_notice("A cable node beneath it can draw 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles, with each connected floor counting as five tiles.")
 	. += span_notice((is_suppressed() ? "Its signal is suppressed. Power and public radio remain available." : "Its signal is uncontained. An operating Marker suppression projector within four tiles can contain it."))
 	if(suppressed)
 		var/seconds_remaining = CEILING(max(0, containment_emp_arm_time - (world.time - containment_started_at)) / (1 SECONDS), 1)
@@ -139,10 +142,30 @@
 		visible_message(span_warning((suppressed ? "[src]'s ominous hum subsides inside a containment field." : "[src]'s containment fails! Its ominous hum returns.")))
 		if(release_emp)
 			visible_message(span_userdanger("[src] discharges a massive electromagnetic pulse as its containment collapses!"))
-			empulse(get_turf(src), containment_emp_heavy_range, containment_emp_light_range, TRUE)
+			release_containment_pulse()
 		else if(!suppressed)
 			visible_message(span_notice("[src]'s containment feedback dissipates before fully charging. No electromagnetic pulse is released."))
 	return suppressed
+
+/// A charged release hits each connected floor once, after its stored charge has been cleared.
+/obj/structure/ms13_hivemind/core/marker/proc/release_containment_pulse()
+	var/turf/site = get_turf(src)
+	if(!site)
+		return
+	for(var/mob/living/carbon/human/human as anything in GLOB.human_list)
+		if(human.stat == DEAD || get_dist_multiz(src, human) > influence_radius)
+			continue
+		to_chat(human, span_userdanger("An impossible pressure tears through your head and throws you to the ground!"))
+		human.Knockdown(3 SECONDS)
+		human.blind_eyes(2.5) // Normal recovery is half a point per second: five seconds.
+		COOLDOWN_START(human, ms13_marker_haunt, MS13_MARKER_HAUNT_COOLDOWN)
+		new /datum/hallucination/ms13_marker(human, TRUE, 1, TRUE)
+	for(var/level in SSmapping.get_zstack(site.z))
+		var/vertical_cost = abs(level - site.z) * MULTIZ_LEVEL_DISTANCE
+		var/light_range = max(containment_emp_heavy_range, containment_emp_light_range) - vertical_cost
+		if(light_range >= 0)
+			empulse(locate(site.x, site.y, level), containment_emp_heavy_range - vertical_cost, light_range, level == site.z)
+		CHECK_TICK
 
 /// The Marker's hum. Its sound goes in mid_sounds, and mid_length is how long that sound runs (deciseconds), so each
 /// play starts as the last ends.
@@ -172,10 +195,10 @@
 		return
 	COOLDOWN_START(src, influence_cooldown, 10 SECONDS)
 	for(var/mob/living/carbon/human/human in GLOB.player_list)
-		if(!human.client || human.stat != CONSCIOUS || human.z != z || !COOLDOWN_FINISHED(human, ms13_marker_haunt))
+		if(!human.client || human.stat != CONSCIOUS || !COOLDOWN_FINISHED(human, ms13_marker_haunt))
 			continue
-		var/distance = get_dist(src, human)
-		if(distance > influence_radius)
+		var/distance = get_dist_multiz(src, human)
+		if(influence_radius <= 0 || distance > influence_radius)
 			continue
 		// The nearer, the more often and the worse: 10% a pulse at the edge of its reach, up to 40% beside it.
 		var/closeness = 1 - distance / influence_radius
@@ -188,9 +211,7 @@
 	var/remade = 0
 	for(var/mob/living/corpse in GLOB.dead_mob_list)
 		// dead_mob_list also contains observers; the typed loop skips them.
-		if(abs(corpse.x - x) > corpse_reach || abs(corpse.y - y) > corpse_reach)
-			continue
-		if(corpse.z != z && !(corpse.z == z + 1 && HasAbove(z)) && !(corpse.z == z - 1 && HasBelow(z)))
+		if(get_dist_multiz(src, corpse) > corpse_reach)
 			continue
 		if(!network.is_convertible_corpse(corpse))
 			continue
@@ -364,9 +385,21 @@
 	var/image/phantom
 	var/client/viewer
 
-/datum/hallucination/ms13_marker/New(mob/living/carbon/human/victim, forced = TRUE, closeness = 0)
+/datum/hallucination/ms13_marker/New(mob/living/carbon/human/victim, forced = TRUE, closeness = 0, backlash = FALSE)
 	. = ..()
 	viewer = victim.client
+	if(backlash)
+		// Do not raise generic hallucination: its random pool includes cartoon monsters and fake deaths.
+		feedback_details = "Marker containment backlash: intrusive voices and visual disorientation."
+		whisper()
+		voice()
+		victim.blur_eyes(10)
+		victim.apply_status_effect(/datum/status_effect/confusion, 15 SECONDS)
+		shake_camera(victim, 3 SECONDS, 3)
+		for(var/delay in list(4 SECONDS, 8 SECONDS, 12 SECONDS))
+			addtimer(CALLBACK(src, PROC_REF(voice)), delay)
+		QDEL_IN(src, 15 SECONDS)
+		return
 	var/list/kinds = list("whisper" = 4)
 	if(closeness >= 0.25)
 		kinds["voice"] = 2

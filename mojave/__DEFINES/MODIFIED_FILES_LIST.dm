@@ -169,6 +169,11 @@ tools/DM_CODE_REVIEW.md,
 code/__DEFINES/sound.dm,
 code/modules/power/multiz.dm,
 code/modules/power/cable.dm,
+code/__DEFINES/_multiz.dm,
+code/modules/mapping/space_management/multiz_helpers.dm,
+code/controllers/subsystem/mapping.dm,
+code/game/turfs/closed/minerals.dm,
+code/modules/power/cell.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.

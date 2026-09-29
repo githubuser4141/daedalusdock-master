@@ -130,7 +130,6 @@ SUBSYSTEM_DEF(explosions)
  */
 /datum/controller/subsystem/explosions/proc/shake_the_room(turf/epicenter, near_distance, far_distance, quake_factor, echo_factor, creaking, sound/near_sound = sound(get_sfx(SFX_EXPLOSION)), sound/far_sound = sound('sound/effects/explosionfar.ogg'), sound/echo_sound = sound('sound/effects/explosion_distant.ogg'), sound/creaking_sound = sound(get_sfx(SFX_EXPLOSION_CREAKING)), hull_creaking_sound = sound(get_sfx(SFX_HULL_CREAKING)))
 	var/frequency = get_rand_frequency()
-	var/blast_z = epicenter.z
 	if(isnull(creaking)) // Autoset creaking.
 		var/on_station = SSmapping.level_trait(epicenter.z, ZTRAIT_STATION)
 		if(on_station && prob((quake_factor * QUAKE_CREAK_PROB) + (echo_factor * ECHO_CREAK_PROB))) // Huge explosions are near guaranteed to make the station creak and whine, smaller ones might.
@@ -140,12 +139,9 @@ SUBSYSTEM_DEF(explosions)
 
 	for(var/mob/listener as anything in GLOB.player_list)
 		var/turf/listener_turf = get_turf(listener)
-		if(!listener_turf || listener_turf.z != blast_z)
+		var/distance = get_dist_multiz(epicenter, listener_turf)
+		if(distance == INFINITY)
 			continue
-
-		var/distance = get_dist(epicenter, listener_turf)
-		if(epicenter == listener_turf)
-			distance = 0
 
 		var/base_shake_amount = isobserver(listener) ? 0 : sqrt(near_distance / (distance + 1))
 

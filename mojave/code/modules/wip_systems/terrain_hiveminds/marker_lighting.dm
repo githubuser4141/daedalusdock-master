@@ -4,13 +4,29 @@
 
 /obj/machinery/light/emp_act(severity)
 	ms13_emp_bulb_protection_until = world.time + 90 SECONDS
-	return ..()
+	. = ..()
+	if(!(. & EMP_PROTECT_SELF) && !QDELETED(src) && on && status == LIGHT_OK)
+		var/datum/component/ms13_light_flicker/effect = AddComponent(/datum/component/ms13_light_flicker)
+		effect.start_flicker(TRUE)
+
+/obj/machinery/light/update_overlays()
+	. = ..()
+	var/datum/component/ms13_light_flicker/effect = GetComponent(/datum/component/ms13_light_flicker)
+	if(effect)
+		for(var/mutable_appearance/glow as anything in .)
+			glow.alpha *= effect.brightness_multiplier
 
 /// Only electrical handheld lights and fixtures are affected, not fire or unrelated glowing objects.
 /obj/structure/ms13_hivemind/core/marker/proc/disturb_lights()
 	if(light_flicker_radius <= 0)
 		return
-	for(var/atom/movable/nearby in range(light_flicker_radius, src))
+	for(var/level in SSmapping.get_zstack(z))
+		var/radius = light_flicker_radius - abs(level - z) * MULTIZ_LEVEL_DISTANCE
+		if(radius >= 0)
+			disturb_lights_on_floor(locate(x, y, level), radius)
+
+/obj/structure/ms13_hivemind/core/marker/proc/disturb_lights_on_floor(turf/center, radius)
+	for(var/atom/movable/nearby in range(radius, center))
 		if(istype(nearby, /obj/machinery/light))
 			nearby.AddComponent(/datum/component/ms13_light_flicker, src)
 		else if(istype(nearby, /obj/item/flashlight) && !istype(nearby, /obj/item/flashlight/flare))
@@ -30,7 +46,7 @@
 	// Resolve influence now: the first APC startup can precede the Marker's periodic influence pulse.
 	for(var/datum/ms13_terrain_hivemind/necromorph/marker/hive in GLOB.ms13_terrain_hiveminds)
 		var/obj/structure/ms13_hivemind/core/marker/marker = hive.core
-		if(hive.active && marker && marker.z == z && marker.light_flicker_radius > 0 && get_dist(marker, src) <= marker.light_flicker_radius && !marker.is_suppressed())
+		if(hive.active && marker && marker.light_flicker_radius > 0 && get_dist_multiz(marker, src) <= marker.light_flicker_radius && !marker.is_suppressed())
 			AddComponent(/datum/component/ms13_light_flicker, marker)
 	if(!QDELETED(effect))
 		effect.start_flicker(TRUE)
@@ -98,6 +114,8 @@
 	if(lamp.light_system == COMPLEX_LIGHT)
 		lamp.update_light()
 	changing_power = FALSE
+	if(istype(lamp, /obj/machinery/light))
+		lamp.update_appearance(UPDATE_OVERLAYS)
 
 /datum/component/ms13_light_flicker/proc/light_toggled(atom/lamp)
 	SIGNAL_HANDLER
@@ -125,7 +143,7 @@
 	var/had_marker = length(markers)
 	for(var/datum/weakref/ref as anything in markers.Copy())
 		var/obj/structure/ms13_hivemind/core/marker/marker = ref.resolve()
-		if(!site || !marker?.network?.active || marker.suppressed || marker.z != site.z || marker.light_flicker_radius <= 0 || get_dist(marker, site) > marker.light_flicker_radius)
+		if(!site || !marker?.network?.active || marker.suppressed || marker.light_flicker_radius <= 0 || get_dist_multiz(marker, site) > marker.light_flicker_radius)
 			markers -= ref
 	if(!length(markers))
 		if(had_marker || !flicker_steps)
@@ -188,6 +206,12 @@
 	var/datum/component/ms13_light_flicker/effect = fixture.GetComponent(/datum/component/ms13_light_flicker)
 	if(!effect || effect.flicker_steps != 3 || abs(fixture.light_power - fixture.bulb_power * 0.4) > 0.001)
 		Fail("An APC powering a normal fixture did not start its brief flicker.")
+	sleep(0.1 SECONDS)
+	if(!fixture.light || abs(fixture.light.light_power - fixture.bulb_power * 0.4) > 0.001)
+		Fail("Normal startup did not reach the lighting renderer during its brightness dip.")
+	for(var/image/glow as anything in fixture.overlays)
+		if(glow.alpha > 102)
+			Fail("The normal startup dip left the fixture sprite fully lit.")
 	sleep(1.6 SECONDS)
 	if(!QDELETED(effect) || fixture.light_power != fixture.bulb_power || fixture.switchcount != 0)
 		Fail("Normal startup did not finish at full brightness without extra bulb wear.")
