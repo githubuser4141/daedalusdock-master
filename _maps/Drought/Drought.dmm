@@ -202,6 +202,11 @@
 /obj/effect/spawner/random/ms13/tools/hardware,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/town)
+"ajI" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/item/storage/ms13/toolbox/filled,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "ajL" = (
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/ms13/tile/large/cafeteria,
@@ -608,6 +613,12 @@
 	},
 /turf/open/floor/ms13/tile/large/checkered,
 /area/ms13/town)
+"aCM" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain)
 "aEj" = (
 /obj/structure/table/ms13/no_smooth/counter/wood,
 /obj/machinery/light/ms13/bulb{
@@ -1298,6 +1309,14 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"bjz" = (
+/obj/machinery/power/apc/ms13/directional{
+	dir = 1;
+	pixel_y = 22
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "bjH" = (
 /obj/structure/filingcabinet/ms13{
 	dir = 8
@@ -3200,8 +3219,8 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "cNX" = (
-/obj/structure/table/ms13/crafting/ammobench,
-/turf/open/floor/wood/ms13/wide,
+/obj/effect/spawner/random/ms13/food/produce_random,
+/turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/legioncamp)
 "cNY" = (
 /obj/structure/ms13/tank/chemical,
@@ -3228,25 +3247,7 @@
 /turf/closed/wall/ms13/siding/blue,
 /area/ms13/town)
 "cQb" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ammo_box/ms13/a357box/junk,
-/obj/item/ms13/twohanded/spear/throwing{
-	pixel_y = 6;
-	pixel_x = 14
-	},
-/obj/item/ms13/twohanded/spear/throwing{
-	pixel_y = 6;
-	pixel_x = 8
-	},
-/obj/item/ms13/twohanded/spear/throwing{
-	pixel_y = 6;
-	pixel_x = 11
-	},
+/obj/structure/table/ms13/crafting/weaponbench,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/legioncamp)
 "cQc" = (
@@ -4285,6 +4286,10 @@
 	},
 /turf/open/floor/ms13/concrete/bricks,
 /area/ms13/town)
+"dPu" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "dPG" = (
 /obj/structure/closet/ms13/metal,
 /obj/effect/spawner/random/ms13/clothing/under,
@@ -4480,6 +4485,17 @@
 /obj/structure/chair/ms13/metal/broken,
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
+"dYn" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/obj/item/clothing/head/hardhat/ms13/mining,
+/obj/item/clothing/head/hardhat/ms13/mining,
+/obj/item/gun/energy/ms13/plasma/pistol{
+	pixel_y = -8
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "dYO" = (
 /obj/structure/ms13/trash/glass/basic,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -5094,6 +5110,13 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"eCv" = (
+/obj/item/paper_bin/ms13{
+	pixel_y = 2;
+	pixel_x = 5
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "eCL" = (
 /obj/structure/chair/ms13/overlaypickup/plastic,
 /obj/structure/ms13/wall_decor/clock,
@@ -5221,6 +5244,12 @@
 /obj/structure/ms13/rug/rubber,
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
+"eLs" = (
+/obj/structure/ms13/rug/red{
+	dir = 4
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "eLV" = (
 /obj/effect/landmark/start/ms13/dry_shaman,
 /turf/open/floor/wood/ms13/wide,
@@ -5429,6 +5458,10 @@
 	},
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/town)
+"eVn" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain)
 "eVE" = (
 /obj/structure/table/ms13/no_smooth/counter/wood{
 	dir = 4
@@ -5533,6 +5566,10 @@
 /obj/effect/turf_decal/ms13/showerdrains/square,
 /turf/open/floor/ms13/tile/brown,
 /area/ms13/town)
+"fcF" = (
+/obj/structure/table/ms13/crafting/ammobench,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "fcI" = (
 /obj/structure/ms13/fence,
 /obj/structure/ms13/barricade,
@@ -5623,14 +5660,9 @@
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/town)
 "fgG" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/precious,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
-/obj/effect/spawner/random/ms13/crafting/refined,
-/obj/effect/spawner/random/ms13/crafting/lowrandom,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
+/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
+/turf/open/floor/wood/ms13/mosaic,
+/area/ms13/town)
 "fhq" = (
 /obj/structure/ms13/storage/store/metal{
 	dir = 4
@@ -6639,14 +6671,6 @@
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/ms13/tile/large/cafeteria,
 /area/ms13/town)
-"gfh" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/sandbag,
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 4
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "gfA" = (
 /obj/structure/table/ms13/metal/heavy,
 /obj/structure/ms13/lamp/makeshift,
@@ -7349,10 +7373,6 @@
 /obj/structure/ms13/trash/glass/basic,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"gPm" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
-/turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/underground/mountain)
 "gPy" = (
 /obj/structure/cable/smart_cable/color,
 /obj/structure/table/ms13/metal/grate,
@@ -7530,16 +7550,6 @@
 /obj/effect/spawner/random/ms13/clothing/under,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
-"haD" = (
-/obj/structure/ms13/storage/bookshelf,
-/obj/effect/spawner/random/ms13/gun/tier2,
-/obj/effect/spawner/random/ms13/gun/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "hbn" = (
 /obj/machinery/button/ms13{
 	dir = 4;
@@ -8079,6 +8089,13 @@
 /obj/structure/stairs/north,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/town)
+"hAS" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "hBs" = (
 /obj/structure/table/ms13/no_smooth/counter/metal{
 	dir = 1
@@ -8120,12 +8137,6 @@
 "hDb" = (
 /turf/open/floor/wood/ms13/carpet/shaggy/green,
 /area/ms13/town)
-"hDv" = (
-/obj/structure/ms13/rug/red{
-	dir = 4
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "hDQ" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red{
 	dir = 1
@@ -9517,9 +9528,7 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/legioncamp/building)
 "iSd" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/sandbag,
-/obj/structure/ms13/bars/slot/rusty{
+/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
 	dir = 8
 	},
 /turf/open/floor/wood/ms13/wide,
@@ -9619,6 +9628,14 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"iXv" = (
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/sandbag,
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "iXV" = (
 /obj/structure/ms13/barricade{
 	dir = 8
@@ -9680,6 +9697,12 @@
 /obj/effect/spawner/random/ms13/ammo/lowrandom,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"jbz" = (
+/obj/structure/table/ms13/no_smooth/large/metal/desk{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "jck" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red,
 /obj/effect/spawner/random/ms13/locked/random/lowchance,
@@ -9908,10 +9931,8 @@
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/town)
 "jmt" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/sandbag,
-/turf/open/floor/plating/ms13/ground/desertalt,
-/area/ms13/legioncamp)
+/turf/closed/wall/ms13/vault,
+/area/ms13/underground/mountain)
 "jmQ" = (
 /obj/structure/table/ms13/no_smooth/counter/wood{
 	dir = 8
@@ -10641,10 +10662,9 @@
 /turf/open/floor/ms13/ceramic,
 /area/ms13/desert)
 "kaR" = (
-/obj/structure/ms13/sandbag,
-/obj/structure/table/ms13/low_wall/adobe,
-/turf/open/floor/plating/ms13/ground/desertalt,
-/area/ms13/legioncamp)
+/obj/effect/spawner/ms13/wildlife_den/drought/predator/wolves,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
 "kaU" = (
 /obj/machinery/light/ms13{
 	dir = 8
@@ -11733,16 +11753,25 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/water_baron)
-"lbV" = (
-/obj/effect/spawner/random/ms13/clothing/shoe,
-/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/town)
 "lbX" = (
 /obj/structure/ms13/fence/wire/barb,
 /obj/structure/ms13/barrel/quadruple/grey/one,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
+"lcc" = (
+/obj/structure/ms13/storage/large/shelf,
+/obj/structure/ms13_rail_call_button{
+	id_tag = "bos_blast_mines";
+	pixel_y = 32
+	},
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/obj/item/shield/riot,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "lch" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red{
 	dir = 8
@@ -12432,6 +12461,10 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"lHn" = (
+/obj/structure/ms13/trash/books/pile_alt,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "lHw" = (
 /obj/machinery/door/unpowered/ms13/metal/red{
 	dir = 1
@@ -13349,6 +13382,14 @@
 "mzM" = (
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/drylanders)
+"mAd" = (
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/sandbag,
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 4
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "mAy" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -13358,15 +13399,8 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
 "mAO" = (
-/obj/structure/table/ms13/low_wall/adobe,
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 8
-	},
-/obj/structure/ms13/bars/slot/rusty{
-	dir = 4
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "mBU" = (
 /obj/structure/closet/crate/ms13/footlocker{
 	dir = 4
@@ -13564,11 +13598,6 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
-"mMO" = (
-/obj/structure/ms13/sandbag,
-/obj/structure/table/ms13/low_wall/adobe,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/drylanders)
 "mMZ" = (
 /obj/structure/chair/office/ms13/green/broken{
 	dir = 8
@@ -13605,6 +13634,16 @@
 /obj/structure/ms13/trash/food/glass,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
+"mPp" = (
+/obj/structure/ms13/storage/bookshelf,
+/obj/effect/spawner/random/ms13/gun/tier2,
+/obj/effect/spawner/random/ms13/gun/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/obj/effect/spawner/random/ms13/guaranteed/ammo/tier2,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "mQd" = (
 /obj/structure/table/ms13/no_smooth/cable_reel,
 /obj/item/ms13/fluff/ashtray,
@@ -14522,6 +14561,11 @@
 /obj/effect/spawner/random/ms13/drugs/lowrandom,
 /turf/open/floor/ms13/tile/large/white,
 /area/ms13/water_baron/interior)
+"nJW" = (
+/obj/structure/table/ms13/low_wall/vault,
+/obj/structure/window/reinforced/fulltile/ms13/glass,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "nKF" = (
 /obj/machinery/light/ms13/bulb/industrial{
 	dir = 8
@@ -14983,6 +15027,11 @@
 	},
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"oix" = (
+/obj/structure/ms13/sandbag,
+/obj/structure/table/ms13/low_wall/adobe,
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/legioncamp)
 "oiF" = (
 /mob/living/basic/ms13/hostile_animal/radroach,
 /turf/open/floor/ms13/metal/grate/border/warning,
@@ -15569,11 +15618,6 @@
 /obj/structure/chair/ms13/metal/folding,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/water_baron)
-"oJR" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/item/storage/ms13/toolbox/filled,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "oKd" = (
 /obj/item/ms13/brick{
 	pixel_x = 14;
@@ -15997,9 +16041,12 @@
 /turf/closed/mineral/random/ms13/drought,
 /area/ms13/underground/mountain)
 "pci" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
-/turf/open/floor/wood/ms13/mosaic,
-/area/ms13/town)
+/obj/machinery/door/airlock/ms13/brotherhood{
+	dir = 1
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "pcm" = (
 /obj/structure/ms13/road_barrier/concrete{
 	dir = 4
@@ -16140,6 +16187,20 @@
 /obj/structure/chair/office/ms13/green,
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
+"phJ" = (
+/obj/structure/table/ms13/no_smooth/large/metal/desk{
+	dir = 4
+	},
+/obj/machinery/ms13/terminal/wasteland{
+	dir = 8;
+	remote_capability = 1;
+	signal_id_1 = "autopsy_elevator";
+	signal_id_2 = "post_shutters";
+	signal_title_1 = "Autopsy Elevator";
+	signal_title_2 = "Windows Shutters"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "piU" = (
 /obj/structure/ms13/storage/bookshelf,
 /obj/item/gun/ballistic/revolver/ms13/rev357{
@@ -17859,6 +17920,11 @@
 	},
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"qGQ" = (
+/obj/structure/ms13/sandbag,
+/obj/structure/table/ms13/low_wall/adobe,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/drylanders)
 "qHE" = (
 /obj/effect/decal/cleanable/blood/gibs/old,
 /obj/effect/decal/cleanable/blood/old,
@@ -18034,6 +18100,11 @@
 	},
 /obj/item/radio/ms13/ham/receiver/radioking,
 /obj/machinery/light/ms13,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/town)
+"qOT" = (
+/obj/effect/spawner/random/ms13/clothing/shoe,
+/obj/effect/spawner/ms13/wildlife_den/drought/prey/radroaches,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
 "qPn" = (
@@ -18272,6 +18343,13 @@
 /obj/structure/stairs/west,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/water_baron/interior)
+"qZy" = (
+/obj/structure/chair/ms13/wood,
+/obj/structure/ms13/rug/yellow{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "raq" = (
 /obj/structure/table/ms13/no_smooth/large/wood/desk{
 	dir = 8
@@ -18523,6 +18601,19 @@
 "rpg" = (
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/water_baron/interior)
+"rpp" = (
+/obj/structure/ms13_rail_call_button{
+	pixel_y = 5;
+	pixel_x = 25;
+	id_tag = "bos_tram"
+	},
+/obj/structure/ms13_rail_call_button{
+	pixel_y = -5;
+	pixel_x = 25;
+	id_tag = "bos_blast_door"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "rpv" = (
 /obj/effect/spawner/random/ms13/gun/lowrandom,
 /turf/open/floor/wood/ms13/carpet/shaggy,
@@ -18751,6 +18842,10 @@
 	},
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
+"rzE" = (
+/obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
+/turf/open/floor/plating/ms13/ground/desert,
+/area/ms13/underground/mountain)
 "rzP" = (
 /obj/effect/decal/cleanable/glass{
 	dir = 4
@@ -18819,6 +18914,16 @@
 /obj/item/ms13/brick,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"rCr" = (
+/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 4
+	},
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "rCv" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 4
@@ -19266,13 +19371,6 @@
 /obj/structure/ms13/pipes/horizontal/random,
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/water_baron/interior)
-"rWP" = (
-/obj/structure/chair/ms13/wood,
-/obj/structure/ms13/rug/yellow{
-	dir = 8
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "rWT" = (
 /obj/structure/chair/ms13/overlaypickup/plastic,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -20136,6 +20234,28 @@
 	},
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"sTs" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ammo_box/ms13/a357box/junk,
+/obj/item/ms13/twohanded/spear/throwing{
+	pixel_y = 6;
+	pixel_x = 14
+	},
+/obj/item/ms13/twohanded/spear/throwing{
+	pixel_y = 6;
+	pixel_x = 8
+	},
+/obj/item/ms13/twohanded/spear/throwing{
+	pixel_y = 6;
+	pixel_x = 11
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "sTw" = (
 /obj/structure/bed/ms13/mattress/filthy,
 /turf/open/floor/wood/ms13/wide,
@@ -20186,6 +20306,12 @@
 /obj/effect/spawner/random/ms13/drink/soda,
 /turf/open/floor/ms13/tile/large/black,
 /area/ms13/town)
+"sVE" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain)
 "sVY" = (
 /obj/structure/ms13/fence/corner/wire{
 	dir = 8
@@ -20478,6 +20604,12 @@
 /obj/effect/spawner/random/ms13/tools/tool,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"tix" = (
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "tiI" = (
 /obj/structure/bed/ms13/sleepingbag/green,
 /obj/effect/landmark/start/ms13/goldman_unprov,
@@ -20576,12 +20708,6 @@
 /mob/living/basic/ms13/ghoul/radioactive,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
-"tny" = (
-/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
-	dir = 8
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "tnC" = (
 /obj/machinery/door/poddoor/shutters/ms13/vertical/red/mid/pre_open{
 	id = "farm_barn"
@@ -20683,6 +20809,13 @@
 /obj/machinery/light/ms13/bulb,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/legioncamp)
+"tuz" = (
+/obj/structure/ms13/trash/books/pile_alt,
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "tuR" = (
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/water_baron/interior)
@@ -20743,6 +20876,10 @@
 	},
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
+"tyb" = (
+/obj/effect/spawner/random/ms13/food/trash,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "tyD" = (
 /obj/item/ms13/fluff/ruined_book{
 	pixel_y = -7
@@ -20861,6 +20998,13 @@
 /obj/structure/ms13/fence/vertical/wire/west,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/desert)
+"tEu" = (
+/obj/machinery/ms13/fusion_generator/petrol{
+	power_gen = 25000
+	},
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "tEz" = (
 /obj/structure/ms13/rug/mat/rubber/single,
 /obj/structure/sink/ms13{
@@ -20976,6 +21120,16 @@
 /obj/structure/ms13/trash/glass/basic,
 /turf/open/floor/ms13/ceramic,
 /area/ms13/desert)
+"tHZ" = (
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 8
+	},
+/obj/structure/ms13/bars/slot/rusty{
+	dir = 4
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "tIa" = (
 /obj/structure/bonfire/ms13/fire_barrel,
 /turf/open/floor/plating/ms13/ground/desert,
@@ -21269,9 +21423,8 @@
 /turf/open/floor/plating/ms13/ground/road,
 /area/ms13/desert)
 "tUM" = (
-/obj/structure/railing/ms13/wood{
-	dir = 1
-	},
+/obj/structure/table/ms13/low_wall/adobe,
+/obj/structure/ms13/sandbag,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/legioncamp)
 "tVk" = (
@@ -21405,6 +21558,12 @@
 /obj/structure/ms13/storage/shelf/wood/alt,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
+"ueZ" = (
+/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
+	dir = 8
+	},
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/drylanders)
 "ufb" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/red{
 	dir = 8
@@ -21422,6 +21581,17 @@
 /obj/structure/table/ms13/low_wall/adobe,
 /turf/open/floor/wood/ms13/common,
 /area/ms13/town)
+"ufw" = (
+/obj/machinery/ms13/terminal/wasteland{
+	dir = 1;
+	remote_capability = 1;
+	signal_id_1 = "autopsy_elevator";
+	signal_id_2 = "post_shutters";
+	signal_title_1 = "Autopsy Elevator";
+	signal_title_2 = "Windows Shutters"
+	},
+/turf/open/floor/ms13/tile/full/white,
+/area/ms13/underground/mountain)
 "ufZ" = (
 /obj/effect/spawner/random/ms13/guaranteed/tools/hardware,
 /turf/open/floor/plating/ms13/ground/desertalt,
@@ -21442,13 +21612,6 @@
 /obj/effect/spawner/random/ms13/smokeable/highrandom,
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
-"ugW" = (
-/obj/structure/table/ms13/wood/constructed,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
-/obj/effect/spawner/random/ms13/guaranteed/crafting/refined,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "ugY" = (
 /obj/structure/ms13/wall_decor/clock,
 /obj/structure/ms13/trash/papers/one{
@@ -21847,16 +22010,16 @@
 	},
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
-"uFp" = (
-/obj/machinery/door/unpowered/ms13/seethrough/mirrored/grate{
-	dir = 8
-	},
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/drylanders)
 "uFG" = (
 /obj/structure/ms13/brickstack,
 /turf/open/floor/wood/ms13/mosaic,
 /area/ms13/town)
+"uFQ" = (
+/obj/structure/railing/ms13/wood{
+	dir = 1
+	},
+/turf/open/floor/plating/ms13/ground/desertalt,
+/area/ms13/legioncamp)
 "uGb" = (
 /obj/structure/ms13/trash/papers{
 	dir = 1
@@ -21884,10 +22047,6 @@
 /area/ms13/town)
 "uHa" = (
 /obj/structure/ms13/cave_decor/minecart,
-/turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/desert)
-"uHe" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
 "uHM" = (
@@ -22724,6 +22883,15 @@
 /obj/structure/chair/ms13/metal,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"vrE" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 1
+	},
+/obj/structure/railing/ms13/solo/industrial{
+	dir = 1
+	},
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "vrH" = (
 /obj/machinery/light/ms13/bulb{
 	dir = 4
@@ -22750,6 +22918,15 @@
 /obj/structure/filingcabinet/ms13,
 /turf/open/floor/ms13/concrete/small,
 /area/ms13/desert)
+"vsZ" = (
+/obj/structure/table/ms13/wood/constructed,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/precious,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
+/obj/effect/spawner/random/ms13/guaranteed/crafting/lowrandom,
+/obj/effect/spawner/random/ms13/crafting/refined,
+/obj/effect/spawner/random/ms13/crafting/lowrandom,
+/turf/open/floor/wood/ms13/wide,
+/area/ms13/legioncamp)
 "vtr" = (
 /obj/structure/ms13/storage/large/shelf/wood/alt,
 /obj/effect/spawner/random/ms13/crafting/lowrandom,
@@ -23122,8 +23299,8 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/water_baron/interior)
 "vQi" = (
-/obj/effect/spawner/ms13/wildlife_den/drought/predator/wolves,
-/turf/open/floor/plating/ms13/ground/mountain/drought,
+/obj/structure/cable/smart_cable/color/yellow,
+/turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain)
 "vQs" = (
 /obj/structure/table/ms13/crafting/ammobench,
@@ -24481,10 +24658,6 @@
 /obj/item/ammo_casing/ms13/spent,
 /turf/open/floor/wood/ms13/carpet/green,
 /area/ms13/town)
-"xqM" = (
-/obj/structure/table/ms13/crafting/weaponbench,
-/turf/open/floor/wood/ms13/wide,
-/area/ms13/legioncamp)
 "xqT" = (
 /obj/structure/table/ms13/metal/grate,
 /obj/effect/spawner/random/ms13/medical/lowrandom,
@@ -24573,6 +24746,15 @@
 /obj/effect/spawner/random/ms13/tools/lights,
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
+"xvY" = (
+/obj/machinery/light/ms13/bulb{
+	dir = 8
+	},
+/obj/machinery/light/ms13/bulb{
+	dir = 4
+	},
+/turf/open/openspace/ms13,
+/area/ms13/underground/mountain)
 "xwt" = (
 /obj/structure/ms13/fence/wire,
 /turf/open/floor/plating/ms13/ground/sidewalk,
@@ -25061,9 +25243,9 @@
 /turf/open/floor/plating/ms13/ground/sidewalk,
 /area/ms13/desert)
 "xXN" = (
-/obj/effect/spawner/random/ms13/food/produce_random,
+/obj/effect/spawner/ms13/wildlife_den/drought/predator/golden_geckos,
 /turf/open/floor/plating/ms13/ground/desert,
-/area/ms13/legioncamp)
+/area/ms13/desert)
 "xXR" = (
 /obj/machinery/door/unpowered/ms13/wood/mirrored/white{
 	dir = 1
@@ -43308,11 +43490,11 @@ qBF
 qBF
 qBF
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+jmt
+jmt
+jmt
+jmt
 qBF
 qBF
 qBF
@@ -43510,11 +43692,11 @@ qBF
 qBF
 qBF
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+sVE
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -43712,11 +43894,11 @@ qBF
 qBF
 qBF
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vgb
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -43914,11 +44096,11 @@ qBF
 qBF
 qBF
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+jmt
+nJW
+jmt
+jmt
 qBF
 qBF
 qBF
@@ -44116,11 +44298,11 @@ qBF
 qBF
 qBF
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+lcc
+mAO
+jbz
+jmt
 qBF
 qBF
 qBF
@@ -44315,14 +44497,14 @@ blm
 "}
 (95,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+jmt
+jmt
+jmt
+dYn
+mAO
+ufw
+jmt
 qBF
 qBF
 qBF
@@ -44517,14 +44699,14 @@ blm
 "}
 (96,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+tix
+jmt
+bjz
+dPu
+tEu
+jmt
 qBF
 qBF
 qBF
@@ -44719,14 +44901,14 @@ blm
 "}
 (97,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vrE
+jmt
+dPu
+tyb
+lHn
+jmt
 qBF
 qBF
 qBF
@@ -44921,14 +45103,14 @@ blm
 "}
 (98,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vQi
+vQi
+pci
+dPu
+rpp
+mAO
+jmt
 qBF
 qBF
 qBF
@@ -45123,14 +45305,14 @@ blm
 "}
 (99,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vQi
+vQi
+jmt
+tuz
+eCv
+phJ
+jmt
 qBF
 qBF
 qBF
@@ -45325,14 +45507,14 @@ blm
 "}
 (100,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+eVn
+rCr
+jmt
+jmt
+nJW
+nJW
+jmt
 qBF
 qBF
 qBF
@@ -45527,14 +45709,14 @@ blm
 "}
 (101,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vgb
+vgb
+vgb
+vgb
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -45729,14 +45911,14 @@ blm
 "}
 (102,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vgb
+vgb
+vgb
+vgb
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -45931,14 +46113,14 @@ blm
 "}
 (103,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vgb
+vgb
+vgb
+vgb
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -46133,14 +46315,14 @@ blm
 "}
 (104,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vgb
+vgb
+vgb
+vgb
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -46335,14 +46517,14 @@ blm
 "}
 (105,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+vgb
+vgb
+vgb
+vgb
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -46537,14 +46719,14 @@ blm
 "}
 (106,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+vgb
+xvY
+vgb
+vgb
+aCM
+vgb
+jmt
 qBF
 qBF
 qBF
@@ -46739,14 +46921,14 @@ blm
 "}
 (107,1,1) = {"
 qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
-qBF
+jmt
+jmt
+jmt
+jmt
+jmt
+jmt
+jmt
+jmt
 qBF
 qBF
 qBF
@@ -46876,7 +47058,7 @@ qBF
 qBF
 jLI
 dFe
-vQi
+kaR
 dFe
 wJP
 dFe
@@ -49447,7 +49629,7 @@ blm
 blm
 blm
 qiN
-gPm
+rzE
 qBF
 qBF
 qBF
@@ -52838,7 +53020,7 @@ tPj
 tPj
 oSs
 oSs
-uHe
+xXN
 oSs
 oSs
 oSs
@@ -55321,7 +55503,7 @@ hDb
 hDb
 hDb
 kqA
-lbV
+qOT
 crx
 crx
 crx
@@ -61941,7 +62123,7 @@ uBJ
 jiC
 kEk
 uAb
-pci
+fgG
 bLo
 whh
 uAb
@@ -62099,7 +62281,7 @@ qBF
 qBF
 hcf
 tDD
-xXN
+cNX
 pnO
 lkt
 hnZ
@@ -62304,7 +62486,7 @@ hXU
 pnO
 bGU
 pnO
-xXN
+cNX
 tLF
 hnZ
 hnZ
@@ -62503,7 +62685,7 @@ qBF
 qBF
 qBF
 tAH
-xXN
+cNX
 vTm
 kiy
 xRd
@@ -62712,9 +62894,9 @@ pnO
 wGi
 hnZ
 iGS
-hDv
+eLs
 fCL
-rWP
+qZy
 njq
 sdO
 hnZ
@@ -63327,7 +63509,7 @@ hnZ
 hnZ
 txq
 txq
-iSd
+iXv
 txq
 txq
 txq
@@ -63526,14 +63708,14 @@ kiy
 uqv
 txq
 txq
-tny
+iSd
 txq
-cNX
+fcF
 xti
-xqM
+cQb
 xti
 xti
-oJR
+ajI
 txq
 qBF
 kWF
@@ -64137,7 +64319,7 @@ txq
 txq
 txq
 naD
-mAO
+tHZ
 txq
 txq
 txq
@@ -64537,7 +64719,7 @@ txq
 piU
 xti
 xti
-cQb
+sTs
 txq
 xti
 xti
@@ -64736,7 +64918,7 @@ hnZ
 hnZ
 pnO
 txq
-haD
+mPp
 xti
 xti
 njq
@@ -64939,14 +65121,14 @@ hnZ
 hnZ
 txq
 txq
-fgG
-ugW
+vsZ
+hAS
 txq
 txq
-tny
+iSd
 txq
 txq
-gfh
+mAd
 txq
 txq
 oGz
@@ -65146,8 +65328,8 @@ txq
 txq
 hnZ
 hnZ
-jmt
 tUM
+uFQ
 hnZ
 hnZ
 pBI
@@ -65348,8 +65530,8 @@ txq
 hnZ
 hnZ
 hnZ
-kaR
-tUM
+oix
+uFQ
 hnZ
 hnZ
 pBI
@@ -65954,7 +66136,7 @@ kbJ
 ocK
 tkV
 uXm
-mMO
+qGQ
 uXm
 cQL
 pEd
@@ -66358,7 +66540,7 @@ kbJ
 oVV
 lRc
 uXm
-uFp
+ueZ
 uXm
 cQL
 rQp
@@ -69421,7 +69603,7 @@ oSs
 djf
 oSs
 oSs
-uHe
+xXN
 oSs
 oSs
 hgp

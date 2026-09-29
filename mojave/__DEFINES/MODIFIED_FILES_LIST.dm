@@ -161,6 +161,14 @@ modular_pariah/modules/aesthetics/lights/code/lighting.dm,
 code/game/objects/items/devices/flashlight.dm,
 
 
+AGENTS.md,
+CLAUDE.md,
+.mcp.json,
+.codex/config.toml,
+tools/DM_CODE_REVIEW.md,
+code/__DEFINES/sound.dm,
+code/modules/power/multiz.dm,
+code/modules/power/cable.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.

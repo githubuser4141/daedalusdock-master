@@ -3,6 +3,18 @@
 //like any other power machine (mojave/machinery/generators.dm's fusion_generator), plus
 //(obj_defines.dm) an optional physical padlock like any other MS13 door.
 
+/// Broken APCs remain repairable at low integrity, but zero integrity destroys the casing.
+/obj/machinery/power/apc/deconstruct(disassembled = TRUE)
+	. = ..()
+	if(!is_destroyed())
+		return
+	if(!(flags_1 & NODECONSTRUCT_1))
+		new /obj/item/stack/sheet/ms13/scrap_parts(drop_location(), 2)
+		if(!QDELETED(cell))
+			cell.forceMove(drop_location())
+			cell = null
+	qdel(src)
+
 /obj/machinery/power/apc/ms13
 	name = "utility box"
 	desc = "A crude, unshielded fusebox wired straight to whatever's feeding it. No fancy electronics, no backup cell - just a breaker and a cover."

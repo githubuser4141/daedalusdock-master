@@ -59,22 +59,15 @@
 		// MOJAVE EDIT - the smash sounds as hard as it lands (mojave/code/game/distant_sound.dm)
 		var/force = user.obj_damage || rand(user.melee_damage_lower, user.melee_damage_upper)
 		. = attack_generic(user, force, user.melee_damage_type, BLUNT, TRUE, user.armor_penetration)
-		if(.)
-			playsound_hit(src, 'sound/effects/meteorimpact.ogg', 50, force)
 
 /obj/attack_animal(mob/living/simple_animal/user, list/modifiers)
 	if(!user.melee_damage_upper && !user.obj_damage)
 		user.emote("custom", message = "[user.friendly_verb_continuous] [src].")
 		return FALSE
 	else
-		var/play_soundeffect = TRUE
-		if(user.environment_smash)
-			play_soundeffect = FALSE
-		// MOJAVE EDIT - the smash sounds as hard as it lands (mojave/code/game/distant_sound.dm)
+		// Play the material impact during damage, before a killing blow deletes the sound source.
 		var/force = user.obj_damage || rand(user.melee_damage_lower, user.melee_damage_upper)
-		. = attack_generic(user, force, user.melee_damage_type, BLUNT, play_soundeffect, user.armor_penetration)
-		if(. && !play_soundeffect)
-			playsound_hit(src, 'sound/effects/meteorimpact.ogg', 50, force)
+		. = attack_generic(user, force, user.melee_damage_type, BLUNT, TRUE, user.armor_penetration)
 		if(user.client)
 			log_combat(user, src, "attacked")
 

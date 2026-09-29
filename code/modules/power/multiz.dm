@@ -14,6 +14,8 @@
 
 /obj/structure/cable/multiz/proc/set_multiz_linked_dirs()
 	linked_dirs = CABLE_NORTH|CABLE_SOUTH|CABLE_EAST|CABLE_WEST
+	if(SSmachines.initialized)
+		merge_new_connections()
 
 /obj/structure/cable/multiz/is_knotted()
 	return FALSE
@@ -25,14 +27,20 @@
 	. = ..()
 	icon_state = "cablerelay-on"
 
-/obj/structure/cable/multiz/get_cable_connections(powernetless_only)
+/obj/structure/cable/multiz/get_cable_connections(powernetless_only = FALSE, ignore_conduits = FALSE)
 	. = ..()
 	var/turf/T = get_turf(src)
-	. += locate(/obj/structure/cable/multiz) in (GetBelow(T))
-	. += locate(/obj/structure/cable/multiz) in (GetAbove(T))
+	if(!ignore_conduits && ms13_conduit_blocks(T))
+		return
+	for(var/turf/other_level in list(GetBelow(T), GetAbove(T)))
+		if(!ignore_conduits && ms13_conduit_blocks(other_level))
+			continue
+		for(var/obj/structure/cable/multiz/hub in other_level)
+			if(!powernetless_only || !hub.powernet)
+				. |= hub
 
 /obj/structure/cable/multiz/examine(mob/user)
 	. += ..()
 	var/turf/T = get_turf(src)
-	. += span_notice("[locate(/obj/structure/cable/multiz) in (GetBelow(T)) ? "Detected" : "Undetected"] hub UP.")
-	. += span_notice("[locate(/obj/structure/cable/multiz) in (GetAbove(T)) ? "Detected" : "Undetected"] hub DOWN.")
+	. += span_notice("[locate(/obj/structure/cable/multiz) in (GetAbove(T)) ? "Detected" : "Undetected"] hub UP.")
+	. += span_notice("[locate(/obj/structure/cable/multiz) in (GetBelow(T)) ? "Detected" : "Undetected"] hub DOWN.")

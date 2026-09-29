@@ -25,7 +25,7 @@
 /// Setting SOUND_AUDIBLE_VOLUME_MIN to 0 for the above will result in 17x17 radius (289 turfs)
 /// Setting SOUND_AUDIBLE_VOLUME_MIN to 5 for the above will result in 14x14 radius (196 turfs)
 /// Setting SOUND_AUDIBLE_VOLUME_MIN to 10 for the above will result in 11x11 radius (121 turfs)
-#define SOUND_AUDIBLE_VOLUME_MIN 3
+#define SOUND_AUDIBLE_VOLUME_MIN 0.1
 
 /* Calculates the max distance of a sound based on audible volume
  *

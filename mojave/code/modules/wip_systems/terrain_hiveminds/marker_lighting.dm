@@ -173,7 +173,7 @@
 	var/area/test_area = get_area(site)
 	powered_area = test_area
 	saved_channels = list(test_area.power_light, test_area.power_equip, test_area.power_environ)
-	var/obj/machinery/power/apc/ms13/conduit/box = allocate(/obj/machinery/power/apc/ms13/conduit, site)
+	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, site)
 	box.area = test_area
 	box.always_powered = TRUE
 	box.lighting = APC_CHANNEL_ON
@@ -204,7 +204,7 @@
 	allocated += hive
 	hive.resources = 0
 	hive.territory_limit = 0
-	if(marker == mapped_marker || marker.light_flicker_radius != 2 || marker.influence_radius != 30)
+	if(marker == mapped_marker || marker.light_flicker_radius != 2 || marker.influence_radius != initial(marker.influence_radius))
 		Fail("A mapped lighting radius was lost during Marker creation or changed its other influence.")
 	if(marker.containment_emp_arm_time != 12 SECONDS || marker.containment_emp_heavy_range != 3 || marker.containment_emp_light_range != 6)
 		Fail("A mapped Marker lost its containment charge time or EMP ranges.")

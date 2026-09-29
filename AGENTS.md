@@ -80,3 +80,7 @@ These are procedural conventions specific to this codebase, on top of the ponyta
   preference going forward, not a one-off. Split unrelated fixes into separate commits rather than
   bundling them. Commit messages should explain *why* (the actual root cause traced), not just what
   changed.
+
+## BYOND code review protocol
+
+For DM changes, follow `tools/DM_CODE_REVIEW.md`. Search existing helpers and trace callers/overrides before adding code. Before finishing, run the local `dm-mcp` tool `dm_review_code` on the changed files (use the relevant normal/test DME), inspect coverage and resolve confirmed new defects. Treat unused-proc, forwarding-wrapper and expensive-loop findings as evidence to review, not permission to delete or inline blindly. Prefer fewer abstractions and shared fixes, preserving behaviour. Compile and test actual progress/recovery paths; a runtime-free early return is not proof that stuck work recovers. If the MCP is unavailable, use the documented fallback and report that limitation.

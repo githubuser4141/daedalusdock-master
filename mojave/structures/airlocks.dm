@@ -17,6 +17,8 @@ TYPEINFO_DEF(/obj/machinery/door/airlock/ms13)
 	assemblytype = /obj/item/stack/sheet/ms13/scrap/two
 	resistance_flags = INDESTRUCTIBLE
 	hitted_sound = 'mojave/sound/ms13effects/impact/metal/metal_generic_2.wav'
+	/// Time to pull an unpowered, unsecured door open by hand.
+	var/manual_open_time = 10 SECONDS
 
 // AI EDIT: Bumped() doesn't exist in DD - renamed to BumpedBy() (code/game/atom/atoms.dm), same single-arg signature
 /obj/machinery/door/airlock/ms13/BumpedBy(atom/movable/AM)
@@ -35,13 +37,24 @@ TYPEINFO_DEF(/obj/machinery/door/airlock/ms13)
 		to_chat(M, "<span class='warning'> The [name] is locked.</span>")
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
-	if(.)
-		return
-	if(flags_1 & LOCKABLE_1 && lock_locked)
+	if(ms13_flags_1 & LOCKABLE_1 && lock_locked)
 		to_chat(M, span_warning("The [name] is locked."))
 		playsound(src, 'mojave/sound/ms13effects/door_locked.ogg', 50, TRUE)
 		return
+	if(density && !hasPower())
+		if(prying_so_hard || !can_manually_open(M))
+			return
+		prying_so_hard = TRUE
+		to_chat(M, span_notice("You begin slowly pulling [src] open..."))
+		var/finished = do_after(M, src, manual_open_time, extra_checks = CALLBACK(src, PROC_REF(can_manually_open), M))
+		prying_so_hard = FALSE
+		if(finished && can_manually_open(M))
+			return open(2)
+		return
 	. = ..()
+
+/obj/machinery/door/airlock/ms13/proc/can_manually_open(mob/living/user)
+	return !QDELETED(src) && density && !hasPower() && !operating && !locked && !welded && !seal && !lock_locked && user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY)
 
 /obj/machinery/door/airlock/ms13/screwdriver_act(mob/living/user, obj/item/tool)
 	return

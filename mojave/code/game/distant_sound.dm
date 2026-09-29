@@ -29,7 +29,7 @@
 /// A blow this hard sounds as every hit used to: a ghoul's claw, a pipe swung at a door.
 #define MS13_SOLID_HIT 25
 
-/// Set while a blow's sounds play (take_damage(), playsound_hit()): how hard it landed, before armor.
+/// Set while a blow's sounds play (take_damage()): how hard it landed, before armor.
 GLOBAL_VAR(ms13_hit_force)
 
 /**
@@ -42,13 +42,6 @@ GLOBAL_VAR(ms13_hit_force)
 		return 1
 	// A blow too light to hurt still taps.
 	return min(sqrt(max(GLOB.ms13_hit_force, 1) / MS13_SOLID_HIT), 2)
-
-/// Plays a blow's sound, as hard as it landed.
-/proc/playsound_hit(atom/source, soundin, vol, force)
-	var/heard_force = GLOB.ms13_hit_force
-	GLOB.ms13_hit_force = force
-	playsound(source, soundin, vol, TRUE)
-	GLOB.ms13_hit_force = heard_force
 
 #undef MS13_SOLID_HIT
 
@@ -169,7 +162,8 @@ GLOBAL_VAR(ms13_hit_force)
 /proc/make_distant_sound(turf/turf_source, turf/ear, soundin, vol, remoteness, vary, baked = FALSE)
 	var/sound/far = sound(get_sfx(soundin))
 	far.channel = SSsounds.random_available_channel()
-	far.volume = vol * (1 - 0.7 * remoteness)
+	// Reach silence at the range boundary, rather than cutting off at 30% volume.
+	far.volume = vol * (1 - clamp(remoteness, 0, 1)) ** 2
 	if(vary)
 		far.frequency = get_rand_frequency()
 	// From the direction it came, without BYOND fading it further.
@@ -230,6 +224,17 @@ GLOBAL_VAR(ms13_hit_force)
 	var/sound/far = make_distant_sound(source, ear, 'sound/weapons/gun/rifle/shot.ogg', 40, 1, FALSE)
 	if(far.volume >= near.volume || far.echo[2] >= near.echo[2] || far.echo[1] >= near.echo[1])
 		Fail("A sound heard further off wasn't quieter and duller.")
+	var/previous_volume = near.volume
+	for(var/remoteness in list(0.25, 0.5, 0.75, 0.95, 0.99, 1))
+		var/sound/sample = make_distant_sound(source, ear, 'sound/weapons/gun/rifle/shot.ogg', 40, remoteness, FALSE, TRUE)
+		if(!(sample.volume < previous_volume && sample.volume >= 0))
+			Fail("A distant sound did not fade continuously toward silence.")
+		if(remoteness >= 0.99)
+			if(!(sample.volume < 0.1))
+				Fail("The last audible part of the distant sound is still loud at the cutoff.")
+		previous_volume = sample.volume
+	if(!((far.volume) == (0)))
+		Fail("A sound still has volume at its maximum distance.")
 	if(near.x != source.x - ear.x || near.z != source.y - ear.y || near.environment == SOUND_ENVIRONMENT_NONE)
 		Fail("A distant sound didn't come from the way it was made, or had no echo to it.")
 	var/mob/living/simple_animal/hostile/shooter = allocate(/mob/living/simple_animal/hostile)
@@ -255,6 +260,35 @@ GLOBAL_VAR(ms13_hit_force)
 	probe.take_damage(100)
 	if(probe.heard_force != 100 || !isnull(GLOB.ms13_hit_force))
 		Fail("A blow's sound didn't hear how hard it landed, or kept hearing it after.")
+	var/mob/living/simple_animal/hostile/animal = allocate(/mob/living/simple_animal/hostile, ear)
+	animal.toggle_ai(AI_OFF)
+	animal.obj_damage = 25
+	animal.environment_smash = ENVIRONMENT_SMASH_STRUCTURES
+	probe.heard_force = null
+	probe.attack_animal(animal)
+	if(!((probe.heard_force) == (25)))
+		Fail("A smashing animal skipped the material impact sound.")
+	var/mob/living/basic/basic = allocate(/mob/living/basic, ear)
+	basic.obj_damage = 30
+	probe.heard_force = null
+	probe.attack_basic_mob(basic)
+	if(!((probe.heard_force) == (30)))
+		Fail("A basic mob skipped the material impact sound.")
+	var/turf/test_turf = get_step(source, WEST)
+	var/original_type = test_turf.type
+	var/turf/closed/wall/ms13_sound_probe/wall = test_turf.ChangeTurf(/turf/closed/wall/ms13_sound_probe)
+	animal.environment_smash = NONE
+	for(var/reinforced in list(FALSE, TRUE))
+		wall.hard_decon = reinforced
+		wall.heard_force = null
+		wall.attack_animal(animal)
+		if(!((wall.heard_force) == (25)))
+			Fail("An animal hit a wall silently.")
+	wall.heard_force = null
+	wall.attack_basic_mob(basic)
+	if(!((wall.heard_force) == (30)))
+		Fail("A basic mob hit a wall silently.")
+	wall.ChangeTurf(original_type)
 	var/list/scales = list()
 	for(var/force in list(25, 6.25, 100, 300))
 		GLOB.ms13_hit_force = force
@@ -272,6 +306,13 @@ GLOBAL_VAR(ms13_hit_force)
 	var/heard_force
 
 /obj/structure/ms13_hit_probe/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
+	heard_force = GLOB.ms13_hit_force
+
+/turf/closed/wall/ms13_sound_probe
+	max_integrity = 1000
+	var/heard_force
+
+/turf/closed/wall/ms13_sound_probe/play_attack_sound(damage_amount, damage_type = BRUTE, damage_flag = 0)
 	heard_force = GLOB.ms13_hit_force
 #endif
 

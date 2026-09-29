@@ -951,6 +951,10 @@ INITIALIZE_IMMEDIATE(/obj/effect/mapping_helpers/no_lava)
 			dir_count++
 			passed_directions |= cardinal
 	if(dir_count == 0)
+		// A stair endpoint can be connected vertically without a same-floor neighbour.
+		if(length(ms13_stair_cable_turfs(my_turf)))
+			spawn_cable_for_direction(NONE)
+			return
 		WARNING("Smart cable mapping helper failed to spawn, connected to 0 directions, at [loc.x],[loc.y],[loc.z]")
 		return
 	switch(dir_count)

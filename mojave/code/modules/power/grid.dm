@@ -48,6 +48,63 @@
 	var/obj/structure/cable/node = target?.get_cable_node()
 	return node?.powernet
 
+/// A stair cable joins its upper opening and landing, using the same offset as stair_ascend().
+/// There is no implicit connection through ordinary floors or between unrelated region levels.
+/proc/ms13_stair_cable_turfs(turf/site)
+	. = list()
+	if(!site)
+		return
+	var/list/candidates = list(site)
+	var/turf/below = GetBelow(site)
+	if(below)
+		candidates += below
+		for(var/direction in GLOB.cardinals)
+			candidates += get_step(below, direction)
+	for(var/turf/candidate as anything in candidates)
+		for(var/obj/structure/stairs/stairs in candidate)
+			if(QDELETED(stairs) || !stairs.isTerminator())
+				continue
+			var/turf/above = GetAbove(candidate)
+			var/turf/landing = get_step(above, stairs.dir)
+			if(!above || !landing)
+				continue
+			if(candidate == site)
+				. |= above
+				. |= landing
+			else if(site == above || site == landing)
+				. |= candidate
+
+/// A changed stair can also change which adjacent stair is the end of its flight.
+/proc/ms13_rebuild_stair_cables(turf/site)
+	if(!site || !SSmachines.initialized)
+		return
+	ms13_rebuild_cables_at(site)
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(site, direction)
+		if(locate(/obj/structure/stairs) in neighbor)
+			ms13_rebuild_cables_at(neighbor)
+
+/obj/structure/stairs/Initialize(mapload)
+	. = ..()
+	ms13_rebuild_stair_cables(get_turf(src))
+
+/obj/structure/stairs/Destroy()
+	var/turf/site = get_turf(src)
+	. = ..()
+	ms13_rebuild_stair_cables(site)
+
+/obj/structure/stairs/Moved(atom/old_loc, movement_dir, forced, list/old_locs)
+	. = ..()
+	if(initialized && !QDELETED(src) && old_loc != loc)
+		ms13_rebuild_stair_cables(get_turf(old_loc))
+		ms13_rebuild_stair_cables(get_turf(src))
+
+/obj/structure/stairs/setDir(newdir)
+	var/old_dir = dir
+	. = ..()
+	if(initialized && dir != old_dir)
+		ms13_rebuild_stair_cables(get_turf(src))
+
 /// Smart cables (the mapping helper) leave a knot mid-line wherever a grid machine takes power: under any power machine,
 /// generator or substation, and on the tile a substation or capacitor faces.
 /obj/structure/cable/smart_cable/knot_desirable()

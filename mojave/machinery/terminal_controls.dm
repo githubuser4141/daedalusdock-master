@@ -70,23 +70,77 @@
 			continue
 		boxes += box
 		turn_on ||= !box.operating
+	var/list/conduits = list()
+	for(var/obj/machinery/power/apc/ms13/conduit/conduit as anything in INSTANCES_OF(/obj/machinery/power/apc/ms13/conduit))
+		if(conduit.id_tag != channel || !conduit.is_operational)
+			continue
+		conduits += conduit
+		turn_on ||= !conduit.operating
 	. = 0
 	for(var/obj/machinery/power/apc/box as anything in boxes)
 		if(box.operating != turn_on)
 			box.toggle_breaker(user)
 			.++
+	for(var/obj/machinery/power/apc/ms13/conduit/conduit as anything in conduits)
+		if(conduit.operating != turn_on)
+			conduit.toggle_breaker(user)
+			.++
 
-// A conduit is the existing wired, cell-less utility box with an explicit mapper-facing purpose.
+// Keep the mapped path, but do not inherit APC area ownership or household fusebox processing.
+DEFINE_INTERACTABLE(/obj/machinery/power/apc/ms13/conduit)
 /obj/machinery/power/apc/ms13/conduit
+	parent_type = /obj/machinery/power
 	name = "remote power conduit"
-	desc = "An industrial area power switch rated for plant voltage. Click to flip its breaker, or operate it remotely with a switch or terminal sharing its circuit ID."
+	desc = "An inline cable switch. Place it over the wire to interrupt connections through this tile. Click to toggle, or use a remote switch or terminal with the same circuit ID. Alternate cable routes can still carry power."
+	icon = 'icons/obj/apc.dmi'
+	icon_state = "apc0"
+	max_integrity = 200
+	integrity_failure = 0.25
+	var/operating = TRUE
 
-// This is industrial switchgear, not the household fusebox that burns out on plant voltage.
-/obj/machinery/power/apc/ms13/conduit/suffer_grid(datum/powernet/line)
-	return FALSE
+/obj/machinery/power/apc/ms13/conduit/Initialize(mapload)
+	. = ..()
+	SET_TRACKING(__TYPE__)
+	if(SSmachines.initialized)
+		ms13_rebuild_cables_at(get_turf(src))
+	update_appearance()
+
+/obj/machinery/power/apc/ms13/conduit/Destroy()
+	UNSET_TRACKING(__TYPE__)
+	// QDELETED switches no longer block the still-present wire.
+	ms13_rebuild_cables_at(get_turf(src))
+	return ..()
+
+/obj/machinery/power/apc/ms13/conduit/Moved(atom/old_loc, movement_dir, forced, list/old_locs)
+	. = ..()
+	if(initialized && old_loc != loc)
+		ms13_rebuild_cables_at(get_turf(old_loc))
+		ms13_rebuild_cables_at(get_turf(src))
+
+/obj/machinery/power/apc/ms13/conduit/atom_break(damage_flag)
+	. = ..()
+	if(operating)
+		toggle_breaker()
+
+/obj/machinery/power/apc/ms13/conduit/proc/toggle_breaker(mob/user)
+	operating = !operating
+	ms13_rebuild_cables_at(get_turf(src))
+	update_appearance()
+	playsound(src, 'sound/machines/click.ogg', 40, TRUE)
+
+/obj/machinery/power/apc/ms13/conduit/update_overlays()
+	. = ..()
+	var/mutable_appearance/indicator = mutable_appearance(icon, "apco0")
+	indicator.color = operating && is_operational ? COLOR_LIME : COLOR_RED
+	. += indicator
+
+/obj/machinery/power/apc/ms13/conduit/deconstruct(disassembled = TRUE)
+	if(!(flags_1 & NODECONSTRUCT_1))
+		new /obj/item/stack/sheet/ms13/scrap_parts(drop_location(), 2)
+	qdel(src)
 
 /obj/machinery/power/apc/ms13/conduit/interact(mob/user)
-	if(!can_interact(user) || !can_use(user) || (machine_stat & MAINT) || failure_timer)
+	if(!is_operational || !can_interact(user) || !user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	add_fingerprint(user)
 	toggle_breaker(user)
@@ -100,6 +154,44 @@
 	return UI_CLOSE
 
 MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13/conduit, APC_PIXEL_OFFSET)
+
+/// Both ends of each cable connection must agree, including when new cables are laid later.
+/proc/ms13_conduit_blocks(turf/site)
+	for(var/obj/machinery/power/apc/ms13/conduit/conduit in site)
+		if(!QDELETED(conduit) && !conduit.operating)
+			return TRUE
+	return FALSE
+
+/obj/structure/cable/get_cable_connections(powernetless_only = FALSE, ignore_conduits = FALSE)
+	. = ..(powernetless_only)
+	for(var/turf/other_level as anything in ms13_stair_cable_turfs(get_turf(src)))
+		for(var/obj/structure/cable/other in other_level)
+			if(!powernetless_only || !other.powernet)
+				. |= other
+	if(ignore_conduits)
+		return
+	if(ms13_conduit_blocks(get_turf(src)))
+		return list()
+	var/list/connections = .
+	for(var/obj/structure/cable/other as anything in connections.Copy())
+		if(ms13_conduit_blocks(get_turf(other)))
+			. -= other
+
+/// Reuse the normal cable flood fill, once per affected connected component. No per-tick conduit work.
+/proc/ms13_rebuild_cables_at(turf/site)
+	if(!site || !SSmachines.initialized)
+		return
+	var/list/seeds = list()
+	for(var/obj/structure/cable/cable in site)
+		seeds |= cable
+		seeds |= cable.get_cable_connections(ignore_conduits = TRUE)
+	var/list/rebuilt = list()
+	for(var/obj/structure/cable/cable as anything in seeds)
+		if(cable.powernet in rebuilt)
+			continue
+		var/datum/powernet/line = new
+		propagate_network(cable, line)
+		rebuilt += line
 
 /obj/item/assembly/control/ms13_power
 	name = "power breaker controller"

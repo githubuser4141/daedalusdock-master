@@ -365,7 +365,7 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 		user.do_attack_animation(src)
 		if(!user.environment_smash)
 			if(!QDELETED(src))
-				take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
+				take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, TRUE, get_dir(src, user), user.armor_penetration)
 			return
 		if(user.environment_smash & ENVIRONMENT_SMASH_RWALLS)
 			dismantle_wall(1)
@@ -381,7 +381,12 @@ GLOBAL_REAL_VAR(wall_overlays_cache) = list()
 			dismantle_wall(1)
 			return
 		if(!QDELETED(src))
-			take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, FALSE, get_dir(src, user), user.armor_penetration)
+			take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, TRUE, get_dir(src, user), user.armor_penetration)
+
+/turf/closed/wall/attack_basic_mob(mob/living/basic/user, list/modifiers)
+	. = ..()
+	if(user.obj_damage || user.melee_damage_upper)
+		return attack_generic(user, user.obj_damage || rand(user.melee_damage_lower, user.melee_damage_upper), user.melee_damage_type, BLUNT, TRUE, user.armor_penetration)
 
 /turf/closed/wall/attack_hulk(mob/living/carbon/user)
 	..()

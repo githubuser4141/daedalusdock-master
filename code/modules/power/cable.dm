@@ -66,8 +66,7 @@
 	update_appearance()
 
 /obj/structure/cable/proc/merge_new_connections()
-	if(linked_dirs == NONE)
-		return
+	// A knot without horizontal arms can still join machines, other knots, or stair cables.
 	merge_connected_cables()
 	merge_connected_machines()
 

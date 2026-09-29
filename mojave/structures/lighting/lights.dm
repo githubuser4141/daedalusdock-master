@@ -18,26 +18,20 @@
 	if(flags_1 & NODECONSTRUCT_1)
 		qdel(src)
 		return
-	var/obj/structure/light_construct/new_light = null
-	switch(fitting)
-		if("tube")
-			new_light = new /obj/machinery/light/ms13/built(loc)
-			new_light.pixel_x = pixel_x
-			new_light.pixel_y = pixel_y
-
-		if("bulb")
-			new_light = new /obj/machinery/light/ms13/bulb/built(loc)
-			new_light.pixel_x = pixel_x
-			new_light.pixel_y = pixel_y
-
-	new_light.setDir(dir)
-	if(!disassembled)
-		new_light.take_damage(new_light.max_integrity * 0.5, sound_effect=FALSE)
+	// A destroyed fixture must not respawn as another attackable, empty fixture.
+	if(disassembled)
+		var/frame_type = fitting == "tube" ? /obj/item/wallframe/light_fixture/ms13 : /obj/item/wallframe/light_fixture/ms13/bulb
+		var/obj/item/frame = new frame_type(drop_location())
+		transfer_fingerprints_to(frame)
+	else
+		new /obj/item/stack/sheet/ms13/scrap_parts(drop_location())
 		if(status != LIGHT_BROKEN)
 			break_light_tube()
-		if(status != LIGHT_EMPTY)
+		if(status != LIGHT_EMPTY && removable_bulb)
 			drop_light_tube()
-	transfer_fingerprints_to(new_light)
+	if(!QDELETED(cell))
+		cell.forceMove(drop_location())
+		cell = null
 	qdel(src)
 
 /obj/machinery/light/ms13/Initialize(mapload)

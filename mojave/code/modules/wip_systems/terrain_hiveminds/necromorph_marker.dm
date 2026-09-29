@@ -71,9 +71,9 @@
 	layer = 4.9
 	plane = ABOVE_GAME_PLANE
 	max_integrity = 1500
-	var/influence_radius = 30
+	var/influence_radius = 45
 	/// Same-floor radius for electrical light dimming/flicker only. Zero disables the effect.
-	var/light_flicker_radius = 30
+	var/light_flicker_radius = 75
 	/// How far it reaches for the dead, on its own floor and those just above and below, and how many it remakes a pulse.
 	var/corpse_reach = 45
 	var/corpses_per_pulse = 3
