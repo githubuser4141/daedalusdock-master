@@ -13,6 +13,8 @@
 	// AI EDIT: static_lighting -> area_lighting, DD's real var name for this (see code/modules/lighting/lighting_area.dm)
 	area_lighting = AREA_LIGHTING_STATIC
 	ambientsounds = GENERIC_AMBIENCE // To Do, Make actual Ambience and Seperate Music Component - Scar 2022
+	/// None of SS13's ship hum: MS13's own drone (modules/atmosphere) plays on that channel.
+	ambient_buzz = null
 	flags_1 = NONE
 	var/dissipation_rate = 1 // higher numbers = quicker dissipation, 0.05 is neutral //default indoor rate 2 is outdoors//generic
 	/// Whether buildings here get a random power setup at round start (house_power.dm).

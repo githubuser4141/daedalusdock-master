@@ -67,6 +67,17 @@ SUBSYSTEM_DEF(atmosphere)
 		//Ambience if combat mode is off
 		SSatmosphere.area_entered(src, boarder.client)
 
+/// A wasteland area with no ambience of its own stays quiet: DD would fill it with SS13's station ambience.
+/area/ms13/Initialize(mapload)
+	var/list/own_sounds = ambientsounds
+	. = ..()
+	ambientsounds = own_sounds
+
+/area/ms13/play_ambience(mob/M, sound/override_sound, volume)
+	if(!override_sound && !length(ambientsounds))
+		return 1 MINUTES
+	return ..()
+
 //MS13 Base Client/Living Tweaks for Atmosphere
 
 /client
