@@ -129,7 +129,7 @@
 		return FALSE
 	return TRUE
 
-/// Test the same armor/deflection as attack_animal, including native wall-smash exceptions.
+/// Test the same armor/deflection as attack_animal: wall-smashers wear walls and rock down too (turfs/wall.dm).
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/can_hive_damage_obstacle(atom/obstacle, damage, ramming = FALSE, last_resort = FALSE)
 	if(!obstacle || QDELETED(obstacle) || (!last_resort && !obstacle.density) || istype(obstacle, /turf/closed/indestructible) || (obstacle.resistance_flags & INDESTRUCTIBLE) || hive_goal_blocked(obstacle))
 		return FALSE
@@ -142,19 +142,11 @@
 	if(isnull(damage))
 		damage = obj_damage || melee_damage_upper
 	if(ismineralturf(obstacle))
-		if(!ramming && (environment_smash & (ENVIRONMENT_SMASH_WALLS | ENVIRONMENT_SMASH_RWALLS)))
-			return TRUE
 		var/turf/closed/mineral/random/ms13/rock = obstacle
 		return istype(rock) && (melee_damage_type in list(BRUTE, BURN)) && damage >= max(rock.damage_deflection, DAMAGE_PRECISION) && (last_resort || rock.mining_health <= damage * hive_max_breach_hits)
-	if(!ramming)
-		var/turf/closed/wall/wall = obstacle
-		if(istype(wall))
-			if(environment_smash & ENVIRONMENT_SMASH_RWALLS)
-				return TRUE
-			if(wall.hard_decon && environment_smash)
-				return FALSE
-			if(!wall.hard_decon && (environment_smash & ENVIRONMENT_SMASH_WALLS))
-				return TRUE
+	var/turf/closed/wall/wall = obstacle
+	if(!ramming && istype(wall) && wall.hard_decon && environment_smash && !(environment_smash & (ENVIRONMENT_SMASH_WALLS|ENVIRONMENT_SMASH_RWALLS)))
+		return FALSE
 	if(!obstacle.uses_integrity)
 		return FALSE
 	var/effective_damage = obstacle.run_atom_armor(damage, melee_damage_type, BLUNT, get_dir(obstacle, src), armor_penetration)

@@ -653,7 +653,14 @@
 	TEST_ASSERT(live_network.door_breach_requests[WEAKREF(blocked_door)], "A failed pry does not report a bypass to wall-breakers.")
 	test_heavy.forceMove(get_step(bypass_site, SOUTH))
 	TEST_ASSERT(test_heavy.handle_door_breach_requests(), "A nearby heavy ignores a reported blocked door.")
-	TEST_ASSERT(!get_step(blocked_door, EAST).density && !length(live_network.door_breach_requests), "Opening a wall bypass does not clear the door request.")
+	// A wall-smasher wears the wall down with its damage; it doesn't vanish on the first touch.
+	TEST_ASSERT(get_step(blocked_door, EAST).density, "A heavy broke through a wall in one blow.")
+	for(var/blow in 1 to 30)
+		if(!get_step(blocked_door, EAST).density)
+			break
+		test_heavy.handle_door_breach_requests()
+		sleep(1)
+	TEST_ASSERT(!get_step(blocked_door, EAST).density && !length(live_network.door_breach_requests), "A heavy couldn't wear through a wall to bypass a blocked door, or the door request wasn't cleared.")
 	get_step(blocked_door, EAST).ChangeTurf(old_bypass_type)
 	test_heavy.forceMove(claimed_turf)
 	qdel(blocked_door)

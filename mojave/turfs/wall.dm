@@ -29,6 +29,15 @@ TYPEINFO_DEF(/turf/closed/wall/ms13)
 	damage_deflection = 20
 	sheet_type = WALL_MATS_SCRAP
 
+/// Nothing tears a wall down on first touch (DD's wall-smashers dismantled it outright): a wall-smasher hits it with its
+/// obj_damage like anything else, only harder, and it comes down when its integrity runs out.
+/turf/closed/wall/attack_animal(mob/living/simple_animal/user, list/modifiers)
+	if(!(user.environment_smash & (ENVIRONMENT_SMASH_WALLS|ENVIRONMENT_SMASH_RWALLS)))
+		return ..()
+	user.changeNext_move(CLICK_CD_MELEE)
+	user.do_attack_animation(src)
+	take_damage(user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT, TRUE, get_dir(src, user), user.armor_penetration)
+
 /turf/closed/wall/ms13/try_decon(obj/item/I, mob/user, turf/T)
 	if(!weldable)
 		return

@@ -65,9 +65,8 @@
 	mine(damage_amount, user = user)
 	return TRUE
 
+/// Wall-smashers dig rock by their damage too, rather than DD's instant drilling.
 /turf/closed/mineral/random/ms13/attack_animal(mob/living/simple_animal/user, list/modifiers)
-	if(user.environment_smash & (ENVIRONMENT_SMASH_WALLS | ENVIRONMENT_SMASH_RWALLS))
-		return ..()
 	return attack_generic(user, user.obj_damage || user.melee_damage_upper, user.melee_damage_type, BLUNT)
 
 /turf/closed/mineral/random/ms13/attack_basic_mob(mob/living/basic/user, list/modifiers)
