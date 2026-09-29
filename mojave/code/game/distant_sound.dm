@@ -112,25 +112,56 @@ GLOBAL_VAR(ms13_hit_force)
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
  * limit of hearing it at all.
  */
-/// Each wall between a sound and whoever hears it takes a quarter off: most walls out here are thin, and a creature
-/// on the other side is still heard. Past a few, it goes no quieter.
+/// Each wall takes a quarter off. Stop counting only once even a full-volume sound would be inaudible.
 #define SOUND_WALL_MUFFLE 0.75
-#define SOUND_WALLS_HEARD_THROUGH 3
+#define SOUND_WALLS_HEARD_THROUGH 25
+
+/// Fraction transmitted through this floor/ceiling. Open shafts use their atmospheric connection instead.
+/turf
+	var/ms13_sound_transmission = 0.05
+
+/turf/closed
+	ms13_sound_transmission = 0.001
+
+/turf/open/floor/plating/ms13/ground
+	ms13_sound_transmission = 0.001
+
+/turf/open/floor/plating/ms13/roof
+	ms13_sound_transmission = 0.2
+
+/turf/open/floor/plating/ms13/roof/metal
+	ms13_sound_transmission = 0.01
+
+/turf/open/floor/wood
+	ms13_sound_transmission = 0.2
 
 /// Walls between source and listener, counting up to SOUND_WALLS_HEARD_THROUGH: solid turfs, and turfs with something
 /// opaque in them, like a shut door.
 /proc/ms13_walls_between(turf/source, turf/listener)
 	. = 0
-	if(!source || !listener || source == listener || source.z != listener.z)
+	if(!source || !listener || source == listener)
 		return
+	// Project the lower endpoint onto the upper floor, matching the ceiling trace below.
+	if(source.z < listener.z)
+		source = locate(source.x, source.y, listener.z)
+	else if(listener.z < source.z)
+		listener = locate(listener.x, listener.y, source.z)
 	for(var/turf/between as anything in get_line(source, listener))
 		if(between != source && between != listener && (between.density || between.directional_opacity))
 			if(++. >= SOUND_WALLS_HEARD_THROUGH)
 				return
 
-/// What's left of a sound after the walls between: heard, but muffled.
+/// Shared by ordinary sounds and distant versions, in either direction between floors.
 /proc/ms13_wall_muffle(turf/source, turf/listener)
-	return SOUND_WALL_MUFFLE ** ms13_walls_between(source, listener)
+	if(!source || !listener || get_dist_multiz(source, listener) == INFINITY)
+		return 0
+	. = SOUND_WALL_MUFFLE ** ms13_walls_between(source, listener)
+	var/turf/lower = source.z < listener.z ? source : listener
+	// ponytail: bounded ceiling-column plus upper-floor line; no around-corner acoustic pathfinding.
+	for(var/level = lower.z + 1, level <= max(source.z, listener.z), level++)
+		var/turf/ceiling = locate(lower.x, lower.y, level)
+		if(!(ceiling.z_flags & Z_ATMOS_IN_DOWN) || !(ceiling.z_flags & Z_ATMOS_OUT_DOWN))
+			. *= ceiling.ms13_sound_transmission
 
 /mob/proc/hear_distant_sound(turf/turf_source, soundin, far_sound, vol, remoteness, vary)
 	if(!client || !can_hear())
@@ -140,14 +171,15 @@ GLOBAL_VAR(ms13_hit_force)
 		return
 	// Through walls it's quieter, and duller, as if from further off.
 	var/walls = ms13_walls_between(turf_source, ear)
-	vol *= SOUND_WALL_MUFFLE ** walls
 	remoteness = min(remoteness + 0.15 * walls, 1)
 	var/baked = distant_version(soundin, remoteness)
+	var/sound/distant = make_distant_sound(turf_source, ear, baked || far_sound || soundin, vol, remoteness, vary, !!baked)
+	if(distant.volume < SOUND_AUDIBLE_VOLUME_MIN)
+		return
+	SEND_SOUND(src, distant)
 	if(baked)
-		SEND_SOUND(src, make_distant_sound(turf_source, ear, baked, vol, remoteness, vary, TRUE))
 		return
 	soundin = far_sound || soundin
-	SEND_SOUND(src, make_distant_sound(turf_source, ear, soundin, vol, remoteness, vary))
 	// Then its echo off the land: fainter, duller, later the further off, and from somewhere else.
 	var/sound/echo = make_distant_sound(turf_source, ear, soundin, vol * 0.4, min(remoteness + 0.3, 1), vary)
 	echo.x = -echo.x + rand(-4, 4)
@@ -156,7 +188,7 @@ GLOBAL_VAR(ms13_hit_force)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(send_distant_echo), src, echo), (0.3 + 0.5 * remoteness) SECONDS)
 
 /proc/send_distant_echo(mob/listener, sound/echo)
-	if(listener.client && listener.can_hear())
+	if(listener.client && listener.can_hear() && echo.volume >= SOUND_AUDIBLE_VOLUME_MIN)
 		SEND_SOUND(listener, echo)
 
 /// The baked version of soundin for how far off it's heard: the far one out to halfway, then the one at the edge of hearing.
@@ -169,7 +201,7 @@ GLOBAL_VAR(ms13_hit_force)
 	var/sound/far = sound(get_sfx(soundin))
 	far.channel = SSsounds.random_available_channel()
 	// Reach silence at the range boundary, rather than cutting off at 30% volume.
-	far.volume = vol * (1 - clamp(remoteness, 0, 1)) ** 2
+	far.volume = vol * (1 - clamp(remoteness, 0, 1)) ** 2 * ms13_wall_muffle(turf_source, ear)
 	if(vary)
 		far.frequency = get_rand_frequency()
 	// From the direction it came, without BYOND fading it further.
@@ -297,6 +329,17 @@ GLOBAL_VAR(ms13_hit_force)
 	if(!((wall.heard_force) == (30)))
 		Fail("A basic mob hit a wall silently.")
 	wall.ChangeTurf(original_type)
+	var/turf/closed/wall/ms13/dungeon/bunker_wall = test_turf.ChangeTurf(/turf/closed/wall/ms13/dungeon)
+	var/datum/gas_mixture/impact_air = bunker_wall.sound_air(ear)
+	if(!impact_air || impact_air.returnPressure() <= SOUND_MINIMUM_PRESSURE)
+		Fail("A bunker wall impact still samples vacuum inside the wall instead of the surrounding air.")
+	animal.environment_smash = ENVIRONMENT_SMASH_STRUCTURES
+	animal.obj_damage = 100
+	var/integrity_before = bunker_wall.get_integrity()
+	bunker_wall.attack_animal(animal)
+	if(bunker_wall.get_integrity() >= integrity_before)
+		Fail("The structure-smashing animal did not exercise the actual bunker-wall damage path.")
+	bunker_wall.ChangeTurf(original_type)
 	var/list/scales = list()
 	for(var/force in list(25, 6.25, 100, 300))
 		GLOB.ms13_hit_force = force

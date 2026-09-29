@@ -122,6 +122,9 @@
 			var/pressure_factor = 1
 			var/datum/gas_mixture/hearer_env = turf_loc.unsafe_return_air()
 			var/datum/gas_mixture/source_env = turf_source.unsafe_return_air()
+			// Solid walls contain no air. Their impacts radiate into the adjacent air instead.
+			if(isclosedturf(turf_source))
+				source_env = turf_source.sound_air(turf_loc)
 
 			if(hearer_env && source_env)
 				var/pressure = min(hearer_env.returnPressure(), source_env.returnPressure())
@@ -168,6 +171,15 @@
 		for(var/mob/dead/observer/O as anything in observers)
 			SEND_SOUND(src, sound_to_use)
 	return TRUE
+
+/// Air beside a solid sound source, preferring the listener's side of the wall.
+/turf/proc/sound_air(turf/listener)
+	var/turf/open/nearest
+	for(var/direction in GLOB.cardinals)
+		var/turf/open/neighbor = get_step(src, direction)
+		if(istype(neighbor) && (!nearest || get_dist(neighbor, listener) < get_dist(nearest, listener)))
+			nearest = neighbor
+	return nearest?.unsafe_return_air()
 
 /proc/sound_to_playing_players(soundin, volume = 100, vary = FALSE, frequency = 0, channel = 0, pressure_affected = FALSE, sound/S)
 	if(!S)
