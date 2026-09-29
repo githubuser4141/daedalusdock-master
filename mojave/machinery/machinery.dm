@@ -14,9 +14,11 @@
 	name = "shutters"
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 
+/// The mapped breaker is a utility box (power/apc_ms13.dm): its breaker switches the cable at its terminal onto the wall
+/// it's on. A DD APC here ran on area power the wasteland doesn't use.
 /obj/machinery/power/apc/unlocked/ms13
+	parent_type = /obj/machinery/power/apc/ms13
 	name = "breaker"
-	start_charge = 0
 
 /obj/machinery/power/apc/unlocked/ms13/north
 	dir = NORTH
