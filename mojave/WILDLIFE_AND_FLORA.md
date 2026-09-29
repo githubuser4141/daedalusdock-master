@@ -59,6 +59,8 @@ Outside urgent danger and injury recovery, food opportunities compete by hunger,
 
 Unreachable jobs expire after ten seconds without progress, with a 45-second limit per trip. Failed targets are avoided for 30 seconds. A blocked home route releases carried food and permits local movement before another attempt; animals never chew indestructible scenery to path through it. Death, possession, controller replacement and den deletion release food claims and grabs. Deleting a den leaves peaceful roaming survivors that can still retaliate.
 
+Radroaches (including glowroaches and legacy placed radroaches) can slip under closed ordinary Mojave doors, including locked ones and ordinary doors fitted with motors, and manual mineral/CDDA doors. Sealed mechanical airlocks, shutters and blast doors remain barriers while closed. Their pathfinding uses the same rule as physical movement; other animals do not gain this ability. This applies to ordinary map radroaches as well as den wildlife.
+
 ## Regrowing flora
 
 Place one of these editor objects:

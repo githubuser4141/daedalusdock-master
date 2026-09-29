@@ -544,7 +544,7 @@ GLOBAL_LIST_EMPTY(ms13_wildlife)
 		// Check every adjacent exit before deciding we are cornered. Never flee through the threat.
 		for(var/direction in shuffle(GLOB.alldirs))
 			var/turf/exit = get_step(pawn, direction)
-			if(!exit || ignored(exit) || !ms13_ecology_clear_tile(exit) || get_dist(exit, away_from) <= get_dist(pawn, away_from))
+			if(!isfloorturf(exit) || ignored(exit) || exit.is_blocked_turf(source_atom = pawn) || get_dist(exit, away_from) <= get_dist(pawn, away_from))
 				continue
 			if(!length(SSpathfinder.jps_pathfind_now(pawn, exit, max_steps = 2, mintargetdist = 0, exclude = away_from)))
 				continue

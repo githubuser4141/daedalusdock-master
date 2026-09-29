@@ -295,6 +295,45 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 /obj/machinery/door/unpowered/ms13/BumpedBy(atom/movable/AM)
 	return
 
+// Both placed/legacy radroaches and den wildlife use the same physical door gaps.
+// Use a pass flag so pathfinding snapshots also distinguish them from larger animals.
+/mob/living/basic/ms13/hostile_animal/radroach/Initialize(mapload)
+	. = ..()
+	pass_flags |= PASSDOORGAP
+
+/mob/living/simple_animal/hostile/ms13/radroach/Initialize(mapload)
+	. = ..()
+	pass_flags |= PASSDOORGAP
+
+/obj/machinery/door/unpowered/ms13/CanAllowThrough(atom/movable/mover, border_dir)
+	. = ..()
+	if(mover.pass_flags & PASSDOORGAP)
+		return TRUE
+
+// Roaches cannot operate doors: plan using the actual opening/gap, not human access permissions.
+// Airlocks and windoors have their own path checks which do not call the base door implementation.
+/obj/machinery/door/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	if(pass_info.pass_flags & PASSDOORGAP)
+		var/atom/movable/mover = pass_info.caller_ref?.resolve()
+		return mover && CanAllowThrough(mover, to_dir)
+	return ..()
+
+/obj/machinery/door/airlock/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	if(pass_info.pass_flags & PASSDOORGAP)
+		var/atom/movable/mover = pass_info.caller_ref?.resolve()
+		return mover && CanAllowThrough(mover, to_dir)
+	return ..()
+
+/obj/machinery/door/window/CanAStarPass(to_dir, datum/can_pass_info/pass_info)
+	if(pass_info.pass_flags & PASSDOORGAP)
+		var/atom/movable/mover = pass_info.caller_ref?.resolve()
+		return mover && CanAllowThrough(mover, to_dir)
+	return ..()
+
+// Includes the manual wooden/metal CDDA doors; powered shutters are a different branch.
+/obj/structure/mineral_door
+	pass_flags_self = PASSDOORGAP
+
 /// Share of its integrity a door's latch gives at: then it won't lock, and swings at a touch.
 #define MS13_DOOR_BUSTED 0.25
 /// What a door flung open does to whoever's standing where it swings.
@@ -816,6 +855,123 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/frame)
 #undef MS13_DOOR_MOTOR_DRAW
 
 #ifdef UNIT_TESTS
+/datum/unit_test/ms13_radroach_doors
+	name = "DOORS: Radroaches Slip Under Ordinary Doors Only"
+
+/datum/unit_test/ms13_radroach_doors/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/turf/door_tile = get_step(origin, EAST)
+	var/turf/destination = get_step(door_tile, EAST)
+	var/list/roach_types = list(/mob/living/basic/ms13/hostile_animal/radroach, /mob/living/basic/ms13/hostile_animal/radroach/glowie, /mob/living/simple_animal/hostile/ms13/radroach)
+	var/list/door_types = list(
+		/obj/machinery/door/unpowered/ms13/wood,
+		/obj/machinery/door/unpowered/ms13/metal,
+		/obj/machinery/door/unpowered/ms13/seethrough/metal,
+		/obj/structure/mineral_door/wood/cdda/t_door,
+		/obj/structure/mineral_door/iron/cdda/t_door_metal,
+		/obj/machinery/door/airlock/ms13,
+		/obj/machinery/door/window,
+		/obj/machinery/door/poddoor/shutters/ms13/horizontal/red/solo,
+		/obj/machinery/door/poddoor,
+		/obj/structure/ms13_vehicle_frame/blast_door_slab,
+	)
+	for(var/roach_type in roach_types)
+		var/mob/living/roach = allocate(roach_type, origin)
+		roach.ai_controller?.set_ai_status(AI_STATUS_OFF)
+		if(isanimal(roach))
+			var/mob/living/simple_animal/legacy = roach
+			legacy.toggle_ai(AI_OFF)
+		var/datum/can_pass_info/pass_info = new(roach)
+		allocated += pass_info
+		for(var/door_type in door_types)
+			var/obj/door = allocate(door_type, door_tile)
+			if(istype(door, /obj/machinery/door/window))
+				door.setDir(WEST)
+			var/ordinary = istype(door, /obj/machinery/door/unpowered/ms13) || istype(door, /obj/structure/mineral_door)
+			var/obj/machinery/door/machine = door
+			if(istype(machine) && ordinary)
+				machine.locked = TRUE
+			if(!!door.CanPass(roach, WEST) != ordinary || !!door.CanAStarPass(WEST, pass_info) != ordinary)
+				Fail("[roach_type] movement/pathfinding disagrees about closed [door_type].")
+			var/list/route = SSpathfinder.jps_pathfind_now(roach, destination, max_steps = 2, mintargetdist = 0)
+			if(ordinary && !(door_tile in route))
+				Fail("[roach_type] did not plan a direct route under closed [door_type].")
+			roach.Move(door_tile, EAST)
+			if((get_turf(roach) == door_tile) != ordinary || !door.density)
+				Fail("[roach_type] failed to slip under [door_type], opened it, or passed an excluded door.")
+			roach.forceMove(origin)
+			// A route around the barrier is valid; every actual step must agree with pathfinding.
+			// The synchronous helper returns the raw route; match the move loop's diagonal cleanup.
+			route = remove_clunky_diagonals(route, pass_info, TRUE)
+			for(var/turf/route_step as anything in route)
+				if(get_turf(roach) == route_step)
+					continue
+				if(!roach.Move(route_step, get_dir(roach, route_step)))
+					Fail("[roach_type] could not follow its planned route at [COORD(route_step)] beside [door_type].")
+					break
+			if(!door.density)
+				Fail("[roach_type] opened [door_type] instead of using a gap or walking around it.")
+			roach.forceMove(origin)
+			door.set_density(FALSE)
+			if(!door.CanPass(roach, WEST) || !door.CanAStarPass(WEST, pass_info))
+				Fail("An open [door_type] still blocks [roach_type].")
+			qdel(door)
+		qdel(roach)
+	// Fitting a motor to an ordinary door does not seal its gap.
+	var/mob/living/basic/roach = allocate(/mob/living/basic/ms13/hostile_animal/radroach, origin)
+	roach.ai_controller.set_ai_status(AI_STATUS_OFF)
+	var/obj/machinery/door/unpowered/ms13/wood/door = allocate(/obj/machinery/door/unpowered/ms13/wood, door_tile)
+	door.install_motor()
+	var/datum/can_pass_info/pass_info = new(roach)
+	allocated += pass_info
+	if(!door.CanPass(roach, WEST) || !door.CanAStarPass(WEST, pass_info))
+		Fail("Fitting a motor blocked an ordinary door's gap in movement or pathfinding.")
+	roach.Move(door_tile, EAST)
+	if(get_turf(roach) != door_tile || !door.density)
+		Fail("A radroach failed to slip under a motorised ordinary door while it stayed closed.")
+	roach.forceMove(origin)
+	door.set_density(FALSE)
+	if(!door.CanPass(roach, WEST) || !door.CanAStarPass(WEST, pass_info))
+		Fail("An open motorised door still blocks radroaches.")
+	door.set_density(TRUE)
+	door.motorised = FALSE
+	var/mob/living/basic/wolf = allocate(/mob/living/basic/ms13/hostile_animal/wolf, origin)
+	wolf.ai_controller?.set_ai_status(AI_STATUS_OFF)
+	if(door.CanPass(wolf, WEST))
+		Fail("The radroach door gap also allowed larger animals through.")
+	var/datum/can_pass_info/wolf_pass = new(wolf)
+	allocated += wolf_pass
+	if(pass_info.pass_flags == wolf_pass.pass_flags)
+		Fail("Pathfinding snapshots lost the distinction between radroach and wolf passage permissions.")
+	qdel(door)
+	var/obj/structure/closet/crate/wall = allocate(/obj/structure/closet/crate, door_tile)
+	if(wall.CanPass(roach, WEST) || wall.CanAStarPass(WEST, pass_info))
+		Fail("A door gap also allowed radroaches through solid obstacles.")
+	qdel(wall)
+	// Fleeing must discover the gap when it is the only available exit, not just accept manual movement.
+	door = allocate(/obj/machinery/door/unpowered/ms13/wood, door_tile)
+	wolf.forceMove(get_step(origin, WEST))
+	for(var/direction in GLOB.alldirs)
+		if(direction != EAST && direction != WEST)
+			allocate(/obj/structure/closet/crate, get_step(origin, direction))
+	var/obj/effect/spawner/ms13/wildlife_den/den = allocate(/obj/effect/spawner/ms13/wildlife_den/test_fixture, origin)
+	var/datum/ai_controller/basic_controller/ms13_wildlife/controller = new(roach, den)
+	controller.set_ai_status(AI_STATUS_OFF)
+	for(var/motorised in list(FALSE, TRUE))
+		if(motorised)
+			door.install_motor()
+		if(!controller.choose_patrol(TRUE, get_turf(wolf)) || controller.job_target?.resolve() != door_tile)
+			Fail("A fleeing radroach rejected its only usable door gap (motorised: [motorised]).")
+		for(var/tick in 1 to 3)
+			controller.process(1)
+			sleep(1 SECONDS)
+			if(get_turf(roach) == door_tile)
+				break
+		if(get_turf(roach) != door_tile || !door.density)
+			Fail("A fleeing radroach did not actually slip under the closed door (motorised: [motorised]).")
+		controller.clear_job()
+		roach.forceMove(origin)
+
 /datum/unit_test/ms13_door_frames
 	name = "DOORS: Frames Take Motors, Locks And Panels"
 
