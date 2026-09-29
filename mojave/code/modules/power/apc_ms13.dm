@@ -1,7 +1,6 @@
 //MOJAVE SUN UTILITY BOX - an old-style fusebox standing in for a real APC.
 //No electronics lock, no backup cell - just a breaker and a cover, wired to real cables/generators
-//like any other power machine (mojave/machinery/generators.dm's fusion_generator), plus
-//(obj_defines.dm) an optional physical padlock like any other MS13 door.
+//like any other power machine (mojave/machinery/generators.dm's fusion_generator).
 
 /// Broken APCs remain repairable at low integrity, but zero integrity destroys the casing.
 /obj/machinery/power/apc/deconstruct(disassembled = TRUE)
@@ -21,9 +20,8 @@
 	cell_type = null // no cell is ever installed - see process() below for what that changes
 	locked = FALSE
 	coverlocked = FALSE
-	req_access = null
-	ms13_flags_1 = LOCKABLE_1
-	can_have_lock = TRUE
+	has_electronic_locks = FALSE
+	req_access = list()
 	/// Runs off pre-war grid power that somehow still works: powered with nothing wired to it.
 	var/always_powered = FALSE
 	/// Browned out: held off until then, rather than blinking on and off every tick while the line is short.
@@ -244,6 +242,36 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 	box.update()
 
 #ifdef UNIT_TESTS
+/datum/unit_test/ms13_utility_box_locks
+	name = "POWER: Utility Box EMP And Cover Never Relock"
+
+/datum/unit_test/ms13_utility_box_locks/Run()
+	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, run_loc_floor_bottom_left, NORTH, TRUE)
+	var/obj/machinery/power/apc/ordinary = allocate(/obj/machinery/power/apc, run_loc_floor_top_right, NORTH, TRUE)
+	var/obj/item/wallframe/ms13_utility_box/frame = allocate(/obj/item/wallframe/ms13_utility_box)
+	frame.after_attach(box)
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	var/obj/item/crowbar/tool = allocate(/obj/item/crowbar, user)
+	box.opened = APC_COVER_OPENED
+	box.crowbar_act(user, tool)
+	if(box.coverlocked || box.opened != APC_COVER_CLOSED)
+		Fail("Closing the utility cover latched it shut.")
+	box.crowbar_act(user, tool)
+	if(box.opened != APC_COVER_OPENED || box.can_have_lock || (box.ms13_flags_1 & LOCKABLE_1))
+		Fail("Utility cover cannot be reopened freely or still accepts padlocks.")
+	box.emp_act(EMP_HEAVY)
+	box.wires.on_pulse(WIRE_IDSCAN)
+	ordinary.wires.on_pulse(WIRE_IDSCAN)
+	box.reset(WIRE_IDSCAN) // Also reject any previously queued lock reset.
+	if(box.locked || box.shorted || box.operating || ordinary.locked)
+		Fail("EMP/ID pulse locked or shorted the utility box, or did not unlock the ordinary APC.")
+	sleep(31 SECONDS)
+	if(box.locked || !ordinary.locked)
+		Fail("Delayed ID reset relocked a utility box or stopped relocking an ordinary APC.")
+	box.toggle_breaker(user)
+	if(!box.operating)
+		Fail("The utility breaker could not be restored after the EMP lock timer elapsed.")
+
 /datum/unit_test/ms13_utility_box_frame
 	name = "POWER: A Crafted Utility Box Goes Up Whole"
 

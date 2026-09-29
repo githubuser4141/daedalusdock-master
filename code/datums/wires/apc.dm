@@ -33,6 +33,8 @@
 				A.shorted = TRUE
 				addtimer(CALLBACK(A, TYPE_PROC_REF(/obj/machinery/power/apc, reset), wire), 2 MINUTES)
 		if(WIRE_IDSCAN) // Unlock for a little while.
+			if(!A.has_electronic_locks)
+				return
 			A.locked = FALSE
 			addtimer(CALLBACK(A, TYPE_PROC_REF(/obj/machinery/power/apc, reset), wire), 30 SECONDS)
 		if(WIRE_AI) // Disable AI control for a very short time.

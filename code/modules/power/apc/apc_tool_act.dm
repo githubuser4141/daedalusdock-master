@@ -15,7 +15,7 @@
 
 	if((opened && has_electronics == APC_ELECTRONICS_SECURED) && !(machine_stat & BROKEN))
 		opened = APC_COVER_CLOSED
-		coverlocked = TRUE //closing cover relocks it
+		coverlocked = has_electronic_locks //closing a powered latch relocks it
 		update_appearance()
 		return
 
@@ -149,7 +149,7 @@
 		user.visible_message(span_notice("[user] fabricates a circuit and places it into [src]."), \
 		span_notice("You adapt a power control board and click it into place in [src]'s guts."))
 		has_electronics = TRUE
-		locked = TRUE
+		locked = has_electronic_locks
 		return TRUE
 
 	if(!cell)

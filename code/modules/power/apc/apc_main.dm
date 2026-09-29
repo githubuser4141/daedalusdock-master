@@ -58,6 +58,8 @@ DEFINE_INTERACTABLE(/obj/machinery/power/apc)
 	var/chargecount = 0
 	///Is the apc interface locked?
 	var/locked = TRUE
+	/// Utility boxes have neither an interface lock nor a powered cover latch.
+	var/has_electronic_locks = TRUE
 	///Is the apc cover locked?
 	var/coverlocked = TRUE
 	///Is the AI locked from using the APC
@@ -118,7 +120,7 @@ GLOBAL_REAL_VAR(default_apc_armor) = list(BLUNT = 20, PUNCTURE = 20, SLASH = 0, 
 	if(!req_access)
 		req_access = list(ACCESS_ENGINE_EQUIP)
 	if(!armor)
-		armor = global.default_apc_armor
+		armor = getArmor(arglist(global.default_apc_armor))
 	..()
 	SET_TRACKING(__TYPE__)
 
@@ -320,7 +322,7 @@ GLOBAL_REAL_VAR(default_apc_armor) = list(BLUNT = 20, PUNCTURE = 20, SLASH = 0, 
 
 	switch(action)
 		if("lock")
-			if(usr.has_unlimited_silicon_privilege)
+			if(has_electronic_locks && usr.has_unlimited_silicon_privilege)
 				if((obj_flags & EMAGGED) || (machine_stat & (BROKEN|MAINT)))
 					to_chat(usr, span_warning("The APC does not respond to the command!"))
 				else
@@ -329,7 +331,7 @@ GLOBAL_REAL_VAR(default_apc_armor) = list(BLUNT = 20, PUNCTURE = 20, SLASH = 0, 
 					usr.animate_interact(src)
 					. = TRUE
 		if("cover")
-			coverlocked = !coverlocked
+			coverlocked = has_electronic_locks && !coverlocked
 			usr.animate_interact(src)
 			. = TRUE
 
@@ -552,7 +554,7 @@ GLOBAL_REAL_VAR(default_apc_armor) = list(BLUNT = 20, PUNCTURE = 20, SLASH = 0, 
 /obj/machinery/power/apc/proc/reset(wire)
 	switch(wire)
 		if(WIRE_IDSCAN)
-			locked = TRUE
+			locked = has_electronic_locks
 		if(WIRE_POWER1, WIRE_POWER2)
 			if(!wires.is_cut(WIRE_POWER1) && !wires.is_cut(WIRE_POWER2))
 				shorted = FALSE

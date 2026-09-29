@@ -21,11 +21,11 @@
 	if(operator && (!operator.Adjacent(src) || machine_stat))
 		operator = null
 		if(active_apc)
-			if(!active_apc.locked)
+			if(active_apc.has_electronic_locks && !active_apc.locked)
 				active_apc.say("Remote access canceled. Interface locked.")
 				playsound(active_apc, 'sound/machines/boltsdown.ogg', 25, FALSE)
 				playsound(active_apc, 'sound/machines/terminal_alert.ogg', 50, FALSE)
-			active_apc.locked = TRUE
+			active_apc.locked = active_apc.has_electronic_locks
 			active_apc.update_appearance()
 			active_apc.remote_control = null
 			active_apc = null
@@ -126,10 +126,11 @@
 				return
 			if(active_apc)
 				to_chat(operator, "<span class='robot danger'>[icon2html(src, auth_id)] Disconnected from [active_apc].</span>")
-				active_apc.say("Remote access canceled. Interface locked.")
-				playsound(active_apc, 'sound/machines/boltsdown.ogg', 25, FALSE)
-				playsound(active_apc, 'sound/machines/terminal_alert.ogg', 50, FALSE)
-				active_apc.locked = TRUE
+				if(active_apc.has_electronic_locks)
+					active_apc.say("Remote access canceled. Interface locked.")
+					playsound(active_apc, 'sound/machines/boltsdown.ogg', 25, FALSE)
+					playsound(active_apc, 'sound/machines/terminal_alert.ogg', 50, FALSE)
+				active_apc.locked = active_apc.has_electronic_locks
 				active_apc.update_appearance()
 				active_apc.remote_control = null
 				active_apc = null

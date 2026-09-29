@@ -174,6 +174,12 @@ code/modules/mapping/space_management/multiz_helpers.dm,
 code/controllers/subsystem/mapping.dm,
 code/game/turfs/closed/minerals.dm,
 code/modules/power/cell.dm,
+code/datums/wires/apc.dm,
+code/game/machinery/computer/apc_control.dm,
+code/modules/power/apc/apc_main.dm,
+code/modules/power/apc/apc_tool_act.dm,
+code/modules/grab/grab_living.dm,
+code/modules/grab/grab_object.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.
