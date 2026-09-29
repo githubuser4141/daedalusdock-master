@@ -944,10 +944,17 @@
 	var/datum/powernet/marker_grid = new
 	marker_grid.add_machine(projector)
 	marker_grid.add_machine(marker.power_feed)
-	marker.power_feed.process(1)
-	var/unsuppressed_marker_output = marker_grid.newavail
-	TEST_ASSERT(unsuppressed_marker_output > 0, "The Marker did not produce power before containment.")
+	// Uncontained, its power stutters: a rippling supply that now and then drops out altogether.
+	var/dropouts = 0
+	for(var/tick in 1 to 200)
+		marker_grid.newavail = 0
+		marker.power_feed.process(1)
+		if(!marker_grid.newavail)
+			dropouts++
+	TEST_ASSERT(dropouts && dropouts < 200, "An uncontained Marker's power never dropped out, or never came on ([dropouts] of 200 ticks dark).")
+	TEST_ASSERT(marker_grid.ms13_new_ripple > 0, "An uncontained Marker's power didn't ripple.")
 	marker_grid.newavail = 0
+	marker_grid.ms13_new_ripple = 0
 	projector.enabled = TRUE
 	projector.process(1)
 	TEST_ASSERT(!marker.is_suppressed(), "An unpowered projector suppresses the Marker.")
@@ -957,7 +964,8 @@
 	TEST_ASSERT(marker.is_suppressed(), "A powered nearby projector does not suppress the Marker.")
 	TEST_ASSERT(!marker.hum.is_active(), "A suppressed Marker kept humming.")
 	marker.power_feed.process(1)
-	TEST_ASSERT_EQUAL(marker_grid.newavail, unsuppressed_marker_output, "Suppression changed Marker power production.")
+	TEST_ASSERT_EQUAL(marker_grid.newavail, 1000000, "A contained Marker's power wasn't a steady 1 MW.")
+	TEST_ASSERT(!marker_grid.ms13_new_ripple, "A contained Marker's power still rippled.")
 	marker_network.resources = 100
 	var/initial_growth_count = length(marker_network.territory)
 	marker_network.process(30)

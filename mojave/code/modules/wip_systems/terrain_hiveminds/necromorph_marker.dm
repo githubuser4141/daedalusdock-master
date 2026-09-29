@@ -1,6 +1,10 @@
 // Marker-only content. The shared hive has no dependency on its power, radio or hallucinations.
 /// The Marker leaves someone be this long between getting into their head.
 #define MS13_MARKER_HAUNT_COOLDOWN (45 SECONDS)
+/// Uncontained, the chance a second that its power drops out for a moment, and how far it wobbles meanwhile: the grid's
+/// ripple, kept under what pops bulbs (power/apc_ms13.dm).
+#define MS13_MARKER_DROPOUT_CHANCE 5
+#define MS13_MARKER_RIPPLE 0.3
 
 /datum/ms13_terrain_hivemind/necromorph/marker
 	name = "necromorph Marker"
@@ -118,7 +122,7 @@
 /obj/structure/ms13_hivemind/core/marker/examine(mob/user)
 	. = ..()
 	. += span_notice("A cable node beneath it can draw 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles, with each connected floor counting as five tiles.")
-	. += span_notice((is_suppressed() ? "Its signal is suppressed. Power and public radio remain available." : "Its signal is uncontained. An operating Marker suppression projector within four tiles can contain it."))
+	. += span_notice((is_suppressed() ? "Its signal is suppressed. Power and public radio remain available, and its power runs steady." : "Its signal is uncontained, and its power flickers. An operating Marker suppression projector within four tiles can contain it."))
 	if(suppressed)
 		var/seconds_remaining = CEILING(max(0, containment_emp_arm_time - (world.time - containment_started_at)) / (1 SECONDS), 1)
 		. += span_warning("Containment feedback: [seconds_remaining ? "charging — [seconds_remaining] seconds of uninterrupted containment remain before an EMP can discharge" : "charged — containment loss will release a massive EMP"].")
@@ -262,7 +266,15 @@
 		return PROCESS_KILL
 	if(!powernet)
 		connect_to_network()
-	add_avail(1000000)
+	if(marker.is_suppressed())
+		add_avail(1000000)
+		return
+	// Uncontained, it stutters: now and then nothing for a moment, and a wobbling supply meanwhile.
+	if(prob(MS13_MARKER_DROPOUT_CHANCE * delta_time))
+		return
+	add_avail(1000000 * (1 + MS13_MARKER_RIPPLE * (rand() * 2 - 1)))
+	if(powernet)
+		powernet.ms13_new_ripple = max(powernet.ms13_new_ripple, MS13_MARKER_RIPPLE)
 
 /obj/machinery/telecomms/allinone/ms13_marker_relay
 	name = "Marker public relay"
@@ -477,6 +489,8 @@
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(to_chat), target, span_notice("...There's nothing there.")), 1.5 SECONDS)
 
 #undef MS13_MARKER_HAUNT_COOLDOWN
+#undef MS13_MARKER_DROPOUT_CHANCE
+#undef MS13_MARKER_RIPPLE
 
 #ifdef UNIT_TESTS
 /datum/unit_test/ms13_marker_reanimation
