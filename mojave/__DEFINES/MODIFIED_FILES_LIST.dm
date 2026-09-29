@@ -180,6 +180,8 @@ code/modules/power/apc/apc_main.dm,
 code/modules/power/apc/apc_tool_act.dm,
 code/modules/grab/grab_living.dm,
 code/modules/grab/grab_object.dm,
+code/game/machinery/cell_charger.dm,
+code/game/machinery/recharger.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.

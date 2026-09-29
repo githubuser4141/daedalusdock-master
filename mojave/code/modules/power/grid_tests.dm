@@ -290,4 +290,145 @@
 	feeder.connect_to_network()
 	if(feeder.powernet != house_side)
 		Fail("A rail feeder beside a cable's end didn't join its line.")
+
+/// Machines run off wiring: a live knot on their tile, or a live wall they touch. Cables laid into one stretch of wall
+/// join through it, rock carries nothing, and a utility box's breaker switches the cable at its terminal onto its wall.
+/datum/unit_test/ms13_wired_power
+	name = "POWER: Machines Run Off Wires And Walls"
+	/// Turf -> the type it was, put back after.
+	var/list/changed = list()
+
+/datum/unit_test/ms13_wired_power/Run()
+	var/area/place = get_area(run_loc_floor_bottom_left)
+	place.ms13_wired = TRUE
+	var/x0 = run_loc_floor_bottom_left.x
+	var/y0 = run_loc_floor_bottom_left.y
+	var/z0 = run_loc_floor_bottom_left.z
+	// A wall three long, a heavy machine against its top, a cable laid into its bottom.
+	for(var/offset in 0 to 2)
+		build(locate(x0 + 2, y0 + offset, z0), /turf/closed/wall/ms13/wood)
+	var/obj/machinery/ms13_heft_test/machine = allocate(/obj/machinery/ms13_heft_test, locate(x0 + 1, y0 + 2, z0))
+	var/obj/structure/cable/plug = live_knot(locate(x0 + 1, y0, z0), EAST)
+	machine.check_wiring()
+	if(!machine.powered() || (machine.machine_stat & NOPOWER))
+		return Fail("A machine against a live wall didn't run.")
+
+	var/obj/structure/cable/other = live_knot(locate(x0 + 3, y0 + 1, z0), WEST)
+	if(other.powernet != plug.powernet)
+		return Fail("Two cables laid into one wall weren't joined through it.")
+
+	machine.forceMove(locate(x0 + 1, y0 + 3, z0))
+	if(!(machine.machine_stat & NOPOWER))
+		return Fail("A machine dragged off the wall kept running.")
+	machine.forceMove(locate(x0 + 1, y0 + 2, z0))
+
+	build(locate(x0 + 2, y0 + 1, z0), /turf/closed/indestructible/rock/ms13)
+	ms13_rebuild_rewalled()
+	plug.powernet.avail = 1000
+	machine.check_wiring()
+	if(machine.powered())
+		return Fail("Wiring ran through rock.")
+	if(other.powernet == plug.powernet)
+		return Fail("Cables stayed joined through rock.")
+
+	var/turf/box_spot = locate(x0 + 3, y0 + 2, z0)
+	var/obj/structure/cable/terminal = live_knot(box_spot)
+	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, box_spot, WEST, TRUE)
+	box.set_machine_stat(box.machine_stat & ~MAINT)
+	box.operating = TRUE
+	box.update()
+	ms13_rebuild_rewalled()
+	terminal.powernet.avail = 1000
+	machine.check_wiring()
+	if(!machine.powered())
+		return Fail("A utility box with its breaker closed didn't feed its wall.")
+	box.operating = FALSE
+	box.update()
+	ms13_rebuild_rewalled()
+	terminal.powernet.avail = 1000
+	machine.check_wiring()
+	if(machine.powered() || !(machine.machine_stat & NOPOWER))
+		return Fail("A utility box with its breaker open still fed its wall.")
+
+	var/obj/structure/cable/under = live_knot(get_turf(machine))
+	machine.check_wiring()
+	if(!machine.powered())
+		return Fail("A machine on a live knot didn't run.")
+	qdel(under)
+
+	// A window where the rock was carries the wiring across again, but nothing plugs into it.
+	build(locate(x0 + 2, y0 + 1, z0), /turf/open/floor/iron)
+	allocate(/obj/structure/window/fulltile, locate(x0 + 2, y0 + 1, z0))
+	ms13_rebuild_rewalled()
+	plug.powernet.avail = 1000
+	machine.check_wiring()
+	if(!machine.powered())
+		return Fail("A window didn't carry the wiring across between walls.")
+	if(other.powernet == plug.powernet)
+		return Fail("A cable laid into a window plugged into the wiring.")
+
+/datum/unit_test/ms13_wired_power/proc/build(turf/tile, type)
+	if(!changed[tile])
+		changed[tile] = tile.type
+	tile.ChangeTurf(type)
+
+/// A knot on tile, laid toward direction if given, on a live network.
+/datum/unit_test/ms13_wired_power/proc/live_knot(turf/tile, direction)
+	var/obj/structure/cable/knot = allocate(/obj/structure/cable, tile)
+	knot.set_directions(direction ? GLOB.real_dirs_to_cable_dirs["[direction]"] : NONE)
+	if(!knot.powernet)
+		new /datum/powernet().add_cable(knot)
+	knot.powernet.avail = 1000
+	return knot
+
+/datum/unit_test/ms13_wired_power/Destroy()
+	var/area/place = get_area(run_loc_floor_bottom_left)
+	place.ms13_wired = initial(place.ms13_wired)
+	for(var/turf/tile as anything in changed)
+		tile.ChangeTurf(changed[tile])
+	return ..()
+
+/// Heavy ground cable and concrete cable floor wire up the way they're drawn; smart ground cable takes its shape from
+/// what's around it, plain ground cable never joins plain ground cable, and connector and node pieces take machines and
+/// knots like a cable knot.
+/datum/unit_test/ms13_drawn_cables
+	name = "POWER: Drawn Cables Run The Way They're Drawn"
+	var/turf/floor_spot
+	var/floor_was
+
+/datum/unit_test/ms13_drawn_cables/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/turf/bend_spot = get_step(start, EAST)
+	floor_spot = get_step(bend_spot, NORTH)
+	floor_was = floor_spot.type
+	// Facing south, the node runs down into the bend; the connector runs east into it.
+	floor_spot.ChangeTurf(/turf/open/floor/ms13/concrete/cable/node)
+	var/obj/structure/ms13/cable/red/connector/connector = allocate(/obj/structure/ms13/cable/red/connector, start)
+	var/obj/structure/ms13/cable/red/smart/bend = allocate(/obj/structure/ms13/cable/red/smart, bend_spot)
+	if(connector.icon_state != "cable_red_connector")
+		return Fail("Heavy ground cable lost its sprite.")
+	if(bend.icon_state != "cable_red_curved" || bend.dir != WEST)
+		return Fail("Smart ground cable between a cable to its west and a floor node to its north drew [bend.icon_state] facing [dir2text(bend.dir)], not a curve.")
+	var/datum/powernet/line = connector.powernet
+	if(!line || bend.powernet != line || ms13_cable_net_at(floor_spot) != line)
+		return Fail("Ground cable and a concrete floor node didn't join up the way they're drawn.")
+	if(ms13_cable_net_at(start) != line)
+		return Fail("A connector didn't take machines like a cable knot.")
+	var/obj/structure/cable/tap = allocate(/obj/structure/cable, start)
+	tap.set_directions(CABLE_NORTH)
+	if(tap.powernet != line)
+		return Fail("A cable knotted on a connector's tile didn't join its line.")
+
+	var/turf/pile = locate(start.x + 2, start.y + 3, start.z)
+	var/obj/structure/ms13/cable/red/one = allocate(/obj/structure/ms13/cable/red, pile)
+	var/obj/structure/ms13/cable/blue/two = allocate(/obj/structure/ms13/cable/blue, get_step(pile, EAST))
+	var/obj/structure/ms13/cable/red/over = allocate(/obj/structure/ms13/cable/red, pile)
+	if((two in one.get_cable_connections()) || (one in two.get_cable_connections()) || (over in one.get_cable_connections()))
+		return Fail("Plain ground cable joined plain ground cable.")
+	if(ms13_drawn_cable_dirs("curve", EAST) != (CABLE_NORTH|CABLE_EAST) || ms13_drawn_cable_dirs("tail", WEST) != CABLE_EAST)
+		return Fail("Drawn cable shapes don't run the way their sprites do.")
+
+/datum/unit_test/ms13_drawn_cables/Destroy()
+	floor_spot?.ChangeTurf(floor_was)
+	return ..()
 #endif

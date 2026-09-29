@@ -16,7 +16,7 @@
 
 /obj/machinery/power/apc/ms13
 	name = "utility box"
-	desc = "A crude, unshielded fusebox wired straight to whatever's feeding it. No fancy electronics, no backup cell - just a breaker and a cover."
+	desc = "A crude, unshielded fusebox. Its breaker puts the cable at its terminal onto the wiring in the wall it's on. No fancy electronics, no backup cell."
 	cell_type = null // no cell is ever installed - see process() below for what that changes
 	locked = FALSE
 	coverlocked = FALSE
@@ -204,7 +204,7 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 /// own, if the room is a proper one: floored, walled in and more than a closet.
 /obj/item/wallframe/ms13_utility_box
 	name = "utility box frame"
-	desc = "A fusebox, breaker and cover, ready to screw to a wall. Put it up in a floored, walled-in room, wire a cable to the terminal under it, and the room runs off whatever feeds that cable."
+	desc = "A fusebox, breaker and cover, ready to screw to a wall. Put it up in a floored, walled-in room, wire a cable to the terminal under it, and whatever's on that wall's wiring runs off the cable."
 	icon_state = "apc"
 	result_path = /obj/machinery/power/apc/ms13
 

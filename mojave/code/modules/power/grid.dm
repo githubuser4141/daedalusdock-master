@@ -48,6 +48,480 @@
 	var/obj/structure/cable/node = target?.get_cable_node()
 	return node?.powernet
 
+/*
+ * Machines in the wasteland run off wiring, not their area: a live cable knotted on their tile, or a live wall they
+ * touch. Walls carry the house wiring. A cable laid into a wall joins every other cable laid into the same stretch of
+ * joined-up wall, so a run can go wall to wall; a utility box with its breaker closed does the same for the cable at its
+ * terminal, which makes it the house's main switch. Door and window frames carry it across between the walls either
+ * side, though nothing plugs into them. Rock carries nothing.
+ */
+/area
+	/// Machines here run off wiring rather than area power.
+	var/ms13_wired = FALSE
+
+/area/ms13
+	ms13_wired = TRUE
+
+GLOBAL_LIST_INIT(ms13_conductors, typecacheof(list(/turf/closed/wall, /turf/closed/indestructible/ms13)))
+GLOBAL_LIST_INIT(ms13_wall_frames, typecacheof(list(/obj/structure/window, /obj/structure/ms13/frame, /obj/structure/low_wall, /obj/machinery/door, /obj/structure/mineral_door, /obj/structure/ms13/celldoor)))
+/// Machines that use power, to check when the wiring changes: machine -> TRUE.
+GLOBAL_LIST_EMPTY(ms13_wired_machines)
+/// Cables whose networks ran through walls that changed, rebuilt next tick.
+GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
+
+/turf
+	/// The stretch of joined-up wall this is part of, found when first needed.
+	var/tmp/datum/ms13_wall_circuit/ms13_circuit
+
+/datum/ms13_wall_circuit
+	var/list/walls = list()
+	/// Cables laid into it.
+	var/list/plugs = list()
+
+/proc/ms13_is_frame(turf/target)
+	for(var/obj/thing in target)
+		if(GLOB.ms13_wall_frames[thing.type])
+			return TRUE
+	return FALSE
+
+/// target's stretch of wall, if it carries wiring.
+/proc/ms13_wall_circuit(turf/target)
+	if(target?.ms13_circuit)
+		return target.ms13_circuit
+	if(!target || (!GLOB.ms13_conductors[target.type] && !ms13_is_frame(target)))
+		return null
+	var/datum/ms13_wall_circuit/circuit = new
+	var/list/walls = circuit.walls
+	walls += target
+	target.ms13_circuit = circuit
+	var/index = 1
+	while(index <= length(walls))
+		var/turf/wall = walls[index++]
+		var/solid = GLOB.ms13_conductors[wall.type]
+		for(var/direction in GLOB.cardinals)
+			var/turf/next = get_step(wall, direction)
+			if(!next || next.ms13_circuit == circuit)
+				continue
+			if(GLOB.ms13_conductors[next.type] || ms13_is_frame(next))
+				next.ms13_circuit = circuit
+				walls += next
+				continue
+			if(!solid)
+				continue
+			for(var/obj/structure/cable/cable in next)
+				if(cable.ms13_plugs_into(wall))
+					circuit.plugs |= cable
+	return circuit
+
+/// Whether this cable runs into wall: laid into it, or knotted under a utility box on it with its breaker closed.
+/obj/structure/cable/proc/ms13_plugs_into(turf/wall)
+	var/direction = get_dir(loc, wall)
+	if(linked_dirs & GLOB.real_dirs_to_cable_dirs["[direction]"])
+		return TRUE
+	if(!is_knotted() && !ms13_node)
+		return FALSE
+	for(var/obj/machinery/power/apc/ms13/box in loc)
+		if(box.dir == direction && box.ms13_feeding)
+			return TRUE
+	return FALSE
+
+/// Cables laid into the same stretch of wall are joined through it, and a node piece joins the knots on its tile.
+/// Conduits (terminal_controls.dm) still cut them.
+/obj/structure/cable/get_cable_connections(powernetless_only = FALSE)
+	. = ..()
+	if(ms13_node || is_knotted())
+		for(var/obj/structure/cable/other in loc)
+			if(other != src && (other.ms13_node || other.is_knotted()) && (!powernetless_only || !other.powernet))
+				. |= other
+	for(var/direction in GLOB.cardinals)
+		var/turf/wall = get_step(src, direction)
+		if(!wall || !GLOB.ms13_conductors[wall.type] || !ms13_plugs_into(wall))
+			continue
+		var/datum/ms13_wall_circuit/circuit = ms13_wall_circuit(wall)
+		if(!(src in circuit.plugs))
+			continue
+		for(var/obj/structure/cable/other as anything in circuit.plugs)
+			if(other != src && isturf(other.loc) && (!powernetless_only || !other.powernet))
+				. |= other
+
+/// Forgets the stretches of wall at and beside site, to be found again when needed. Returns the cables laid into them.
+/proc/ms13_forget_walls(turf/site)
+	. = list()
+	if(!site)
+		return
+	var/list/near = list(site)
+	for(var/direction in GLOB.cardinals)
+		near += get_step(site, direction)
+	for(var/turf/tile in near)
+		var/datum/ms13_wall_circuit/circuit = tile.ms13_circuit
+		if(!circuit)
+			continue
+		. |= circuit.plugs
+		for(var/turf/wall as anything in circuit.walls)
+			if(wall.ms13_circuit == circuit)
+				wall.ms13_circuit = null
+
+/// Walls changed at site: forget them, and next tick rebuild the networks that ran through them, or might now.
+/proc/ms13_rewall(turf/site)
+	var/list/cables = ms13_forget_walls(site)
+	if(!site || !SSmachines.initialized)
+		return
+	for(var/obj/structure/cable/cable in range(1, site))
+		cables |= cable
+	GLOB.ms13_rewalled_cables |= cables
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ms13_rebuild_rewalled)), 1, TIMER_UNIQUE)
+
+/proc/ms13_rebuild_rewalled()
+	var/list/cables = GLOB.ms13_rewalled_cables
+	GLOB.ms13_rewalled_cables = list()
+	var/list/rebuilt = list()
+	for(var/obj/structure/cable/cable as anything in cables)
+		if(QDELETED(cable) || !isturf(cable.loc) || (cable.powernet && rebuilt[cable.powernet]))
+			continue
+		var/datum/powernet/line = new
+		propagate_network(cable, line)
+		rebuilt[line] = TRUE
+
+/// A wall going up or coming down joins or splits the wiring through it.
+/turf/ChangeTurf(path, list/new_baseturfs, flags)
+	if(!GLOB.ms13_conductors[type] && !(path && GLOB.ms13_conductors[path]))
+		return ..()
+	. = ..()
+	ms13_rewall(.)
+
+/obj/Initialize(mapload)
+	. = ..()
+	if(GLOB.ms13_wall_frames[type])
+		ms13_rewall(loc)
+
+/obj/Destroy(force)
+	if(!GLOB.ms13_wall_frames[type])
+		return ..()
+	var/turf/site = get_turf(src)
+	. = ..()
+	ms13_rewall(site)
+
+/obj/machinery/power/apc/ms13
+	/// Breaker closed and in one piece: the cable at its terminal feeds the wall it's on.
+	var/tmp/ms13_feeding = FALSE
+
+/obj/machinery/power/apc/ms13/update()
+	. = ..()
+	var/feeding = ms13_wired() && operating && !shorted && !failure_timer && !(machine_stat & (BROKEN|MAINT))
+	if(feeding != ms13_feeding)
+		ms13_feeding = feeding
+		ms13_rewall(loc)
+
+/// The live network feeding spot: a cable knotted on it, or wiring in a wall on or beside it.
+/proc/ms13_supply_at(turf/spot)
+	var/datum/powernet/net = ms13_cable_net_at(spot)
+	if(net?.avail > 0)
+		return net
+	var/list/sides = list(spot)
+	for(var/direction in GLOB.cardinals)
+		sides += get_step(spot, direction)
+	for(var/turf/side in sides)
+		var/datum/ms13_wall_circuit/circuit = ms13_wall_circuit(side)
+		for(var/obj/structure/cable/plug as anything in circuit?.plugs)
+			if(plug.powernet?.avail > 0 && isturf(plug.loc) && !ms13_conduit_blocks(plug.loc))
+				return plug.powernet
+	return null
+
+/obj/machinery
+	/// Whether it had power at the last wiring check, and the network it was drawing from.
+	var/tmp/ms13_live = FALSE
+	var/tmp/datum/powernet/ms13_net
+
+/obj/machinery/proc/ms13_wired()
+	var/area/place = get_area(src)
+	return place?.ms13_wired
+
+/obj/machinery/powered(chan = power_channel, ignore_use_power = FALSE)
+	if(!ms13_wired())
+		return ..()
+	if(!use_power && !ignore_use_power)
+		return TRUE
+	return isturf(loc) && !!ms13_supply_at(loc)
+
+/obj/machinery/use_power(amount, chan = power_channel)
+	if(!ms13_wired())
+		return ..()
+	if(ms13_live && ms13_net)
+		ms13_net.load += amount
+
+/// Standing draw goes on the network each cycle (see SSmachines below), not on the area.
+/obj/machinery/addStaticPower(value, powerchannel)
+	if(!ms13_wired())
+		return ..()
+
+/obj/machinery/use_power_from_net(amount, take_any = FALSE)
+	if(!ms13_wired())
+		return ..()
+	var/datum/powernet/net = isturf(loc) && ms13_supply_at(loc)
+	if(!net || amount <= 0)
+		return FALSE
+	var/surplus = max(net.avail - net.load, 0)
+	if(surplus < amount)
+		if(!take_any || !surplus)
+			return FALSE
+		amount = surplus
+	net.load += amount
+	return amount
+
+/obj/machinery/setup_area_power_relationship()
+	. = ..()
+	GLOB.ms13_wired_machines[src] = TRUE
+	check_wiring()
+
+/obj/machinery/remove_area_power_relationship()
+	. = ..()
+	GLOB.ms13_wired_machines -= src
+
+/obj/machinery/Destroy()
+	GLOB.ms13_wired_machines -= src
+	ms13_net = null
+	return ..()
+
+/// Powers a machine up or down if its wiring changed.
+/obj/machinery/proc/check_wiring()
+	ms13_net = isturf(loc) && ms13_wired() ? ms13_supply_at(loc) : null
+	var/live = !!powered(power_channel)
+	if(live != ms13_live)
+		ms13_live = live
+		power_change()
+
+/// A cable laid, cut, or gone live or dead: every machine checks its wiring next tick, all at once.
+/// ponytail: sweeps every powered machine for any change anywhere; keep a list per powernet if that ever shows in profiles.
+/proc/ms13_rewire()
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ms13_check_wiring)), 1, TIMER_UNIQUE)
+
+/proc/ms13_check_wiring()
+	for(var/obj/machinery/machine as anything in GLOB.ms13_wired_machines)
+		if(!QDELETED(machine))
+			machine.check_wiring()
+		CHECK_TICK
+	for(var/obj/item/radio/intercom/intercom as anything in INSTANCES_OF(/obj/item/radio/intercom))
+		intercom.AreaPowerCheck()
+		CHECK_TICK
+
+/// ponytail: machines draw whatever they like off a live network; nothing browns out an overloaded one yet.
+/datum/controller/subsystem/machines/fire(resumed = FALSE)
+	if(!resumed)
+		for(var/obj/machinery/machine as anything in GLOB.ms13_wired_machines)
+			if(machine.ms13_live && machine.ms13_net)
+				machine.ms13_net.delayedload += machine.static_power_usage
+	return ..()
+
+/datum/powernet/New()
+	. = ..()
+	ms13_rewire()
+
+/obj/structure/cable/Initialize(mapload)
+	ms13_forget_walls(loc)
+	. = ..()
+	ms13_rewire()
+
+/obj/structure/cable/set_directions(new_directions, merge_connections = TRUE)
+	ms13_forget_walls(loc)
+	. = ..()
+	ms13_rewire()
+
+/obj/structure/cable/Destroy()
+	var/turf/site = loc
+	ms13_forget_walls(site)
+	ms13_rewire()
+	. = ..()
+	ms13_forget_walls(site)
+
+/// The cable directions a cable drawn into a sprite runs, by its shape and dir, as cables.dmi and floors.dmi draw them.
+/proc/ms13_drawn_cable_dirs(shape, dir)
+	var/real_dirs
+	switch(shape)
+		if("curve")
+			real_dirs = (dir & (NORTH|SOUTH) ? SOUTH : NORTH) | (dir & (SOUTH|EAST) ? EAST : WEST)
+		if("tee")
+			real_dirs = dir | turn(dir, 90) | turn(dir, -90)
+		if("cross")
+			real_dirs = NORTH|SOUTH|EAST|WEST
+		if("junction")
+			real_dirs = dir == SOUTH ? NORTH|SOUTH|EAST|WEST : dir | turn(dir, 90) | turn(dir, -90)
+		if("end")
+			real_dirs = dir
+		if("tail")
+			real_dirs = turn(dir, 180)
+		else
+			real_dirs = dir & (SOUTH|WEST) ? EAST|WEST : NORTH|SOUTH
+	. = NONE
+	for(var/direction in GLOB.cardinals)
+		if(real_dirs & direction)
+			. |= GLOB.real_dirs_to_cable_dirs["[direction]"]
+
+/obj/structure/cable
+	/// A drawn connector, splice, junction box or node: takes machines and joins knots on its tile like a knot, though a
+	/// coil can't bend it.
+	var/ms13_node = FALSE
+
+/// Runs this cable the way shape and dir draw it.
+/obj/structure/cable/proc/ms13_lay_drawn(shape, dir)
+	var/static/list/node_shapes = list("connector", "tail", "box", "end")
+	ms13_node = (shape in node_shapes)
+	linked_dirs = ms13_drawn_cable_dirs(shape, dir)
+	if(SSmachines.initialized)
+		merge_new_connections()
+
+/obj/structure/cable/get_machine_connections(powernetless_only = FALSE)
+	. = ..()
+	if(!ms13_node || is_knotted())
+		return
+	for(var/obj/machinery/power/machine in loc)
+		if(machine.anchored && (!powernetless_only || !machine.powernet))
+			. += machine
+
+/turf/get_cable_node()
+	. = ..()
+	if(.)
+		return
+	for(var/obj/structure/cable/wire in src)
+		if(wire.ms13_node)
+			return wire
+
+/// Heavy ground cable (structures/decorative.dm) lies on top of the ground, never under it, and keeps its own sprite.
+/obj/structure/ms13/cable/Initialize(mapload)
+	. = ..()
+	RemoveElement(/datum/element/undertile, TRAIT_T_RAY_VISIBLE)
+
+/obj/structure/ms13/cable/mapping_init()
+	if(ms13_smart)
+		ms13_take_shape()
+	ms13_lay_drawn(ms13_shape, dir)
+
+/// Only smart ground cable joins other ground cable by itself, so the rest can be piled and crossed freely.
+/obj/structure/ms13/cable/get_cable_connections(powernetless_only = FALSE, ignore_conduits = FALSE)
+	. = ..()
+	if(ms13_smart)
+		return
+	var/list/joined = .
+	for(var/obj/structure/ms13/cable/other in joined.Copy())
+		if(!other.ms13_smart)
+			joined -= other
+
+/**
+ * Smart ground cable takes the sprite that joins it to what's around it: the same smart cable, or any other cable run
+ * into its tile. A lone end frays, unless it butts a wall, when it runs on into it; a straight run under a machine is a
+ * connector, taking it like a knot. Tees the sprites don't draw become a full crossing.
+ */
+/obj/structure/ms13/cable/proc/ms13_take_shape()
+	var/joins = NONE
+	var/count = 0
+	for(var/direction in GLOB.cardinals)
+		var/turf/next = get_step(src, direction)
+		var/joined = ms13_cable_dirs_on(next) & GLOB.real_dirs_to_cable_dirs["[turn(direction, 180)]"]
+		for(var/obj/structure/ms13/cable/other in next)
+			joined ||= other.type == type
+		if(joined)
+			joins |= direction
+			count++
+	var/sprite = "straight"
+	ms13_shape = "straight"
+	switch(count)
+		if(0)
+			dir = SOUTH
+		if(1)
+			var/turf/beyond = get_step(src, turn(joins, 180))
+			if(beyond && GLOB.ms13_conductors[beyond.type])
+				dir = joins & (NORTH|SOUTH) ? NORTH : SOUTH
+			else
+				sprite = "spliced"
+				ms13_shape = "tail"
+				dir = turn(joins, 180)
+		if(2)
+			if(joins == (NORTH|SOUTH) || joins == (EAST|WEST))
+				dir = joins == (NORTH|SOUTH) ? NORTH : SOUTH
+			else
+				sprite = "curved"
+				ms13_shape = "curve"
+				dir = joins == (SOUTH|EAST) ? SOUTH : joins == (SOUTH|WEST) ? NORTH : joins == (NORTH|EAST) ? EAST : WEST
+		else
+			sprite = "intersect"
+			ms13_shape = "junction"
+			var/open = (NORTH|SOUTH|EAST|WEST) & ~joins
+			dir = open == WEST ? EAST : open == EAST ? WEST : SOUTH
+	if(ms13_shape == "straight" && (locate(/obj/machinery) in loc))
+		sprite = "connector"
+		ms13_shape = "connector"
+	icon_state = "[ms13_smart]_[sprite]"
+
+/// The cable directions the cabling on target runs, drawn or laid, whether or not it's set up yet. Smart ground cable
+/// is left out, not having picked its shape.
+/proc/ms13_cable_dirs_on(turf/target)
+	. = NONE
+	var/turf/open/floor/ms13/concrete/cable/floor = target
+	if(istype(floor))
+		. |= ms13_drawn_cable_dirs(floor.ms13_shape, floor.dir)
+	for(var/obj/structure/cable/wire in target)
+		var/obj/structure/ms13/cable/ground = wire
+		if(istype(ground))
+			if(!ground.ms13_smart)
+				. |= ms13_drawn_cable_dirs(ground.ms13_shape, ground.dir)
+		else if(!istype(wire, /obj/structure/cable/ms13_cast))
+			. |= wire.linked_dirs || text2num(wire.icon_state)
+
+/obj/structure/ms13/cable/update_icon_state()
+	var/drawn = icon_state
+	. = ..()
+	icon_state = drawn
+
+/// The cabling cast into a concrete cable floor: unseen, and only ever goes with the floor.
+/obj/structure/cable/ms13_cast
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/obj/structure/cable/ms13_cast/Initialize(mapload)
+	. = ..()
+	RemoveElement(/datum/element/undertile, TRAIT_T_RAY_VISIBLE)
+	invisibility = INVISIBILITY_ABSTRACT
+
+/obj/structure/cable/ms13_cast/mapping_init()
+	var/turf/open/floor/ms13/concrete/cable/floor = loc
+	if(istype(floor))
+		ms13_lay_drawn(floor.ms13_shape, floor.dir)
+
+/turf/open/floor/ms13/concrete/cable/Initialize(mapload)
+	. = ..()
+	new /obj/structure/cable/ms13_cast(src)
+
+/turf/open/floor/ms13/concrete/cable/Destroy(force)
+	for(var/obj/structure/cable/ms13_cast/wire in src)
+		qdel(wire)
+	return ..()
+
+/// Doors that never needed power still don't; a door motor (structures/doors.dm) finds its own.
+/obj/machinery/door/unpowered
+	use_power = NO_POWER_USE
+
+/obj/machinery/light/has_power()
+	if(!ms13_wired())
+		return ..()
+	var/area/place = get_area(src)
+	return place.lightswitch && powered()
+
+/obj/machinery/light/turned_off()
+	if(!ms13_wired())
+		return ..()
+	var/area/place = get_area(src)
+	return !place.lightswitch && powered() || flickering || constant_flickering
+
+/obj/machinery/light/power_change()
+	if(!ms13_wired())
+		return ..()
+	set_on(has_power())
+
+/obj/item/radio/intercom/AreaPowerCheck(datum/source)
+	var/area/place = get_area(src)
+	if(!place?.ms13_wired)
+		return ..()
+	set_on(isturf(loc) && !!ms13_supply_at(loc))
+	update_appearance()
+
 /// A stair cable joins its upper opening and landing, using the same offset as stair_ascend().
 /// There is no implicit connection through ordinary floors or between unrelated region levels.
 /proc/ms13_stair_cable_turfs(turf/site)

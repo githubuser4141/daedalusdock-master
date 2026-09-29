@@ -42,17 +42,12 @@
  * say) keeps working; it only comes loose while dragged, and walking into it won't shove it. A mapped one given
  * heft = 0 stays put.
  *
- * A heavy machine that uses power is wired in where it first stood. Anywhere else it also needs a cable knot under it
- * carrying power.
+ * Moved, a machine checks its wiring (power/grid.dm).
  */
 /obj
 	var/heft = 0
 	/// Let loose to be dragged, and anchored again once let go.
 	var/tmp/hauled = FALSE
-
-/obj/machinery
-	/// Where a heavy machine first stood, wired in.
-	var/turf/wired_at
 
 /// Kilograms of drag that slow the one dragging as much again as their own walk.
 #define MS13_HEFT_PER_SLOWDOWN 60
@@ -61,8 +56,6 @@
 /// Straining to budge something heavier than that: how long it takes, and the brute a strain at twice the limit tears.
 #define MS13_STRAIN_TIME (2 SECONDS)
 #define MS13_STRAIN_HURT 15
-
-GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 
 /obj/Initialize(mapload)
 	. = ..()
@@ -83,14 +76,9 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 	RegisterSignal(target, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(check_move))
 	RegisterSignal(target, COMSIG_ATOM_NO_LONGER_GRABBED, PROC_REF(let_go))
 	RegisterSignal(target, COMSIG_MOVABLE_MOVED, PROC_REF(moved))
-	if(ismachinery(target))
-		var/obj/machinery/machine = target
-		machine.wired_at = get_turf(machine)
-		GLOB.ms13_heavy_machines += machine
 
 /datum/element/ms13_heavy/Detach(obj/source)
 	UnregisterSignal(source, list(COMSIG_ATOM_CAN_BE_GRABBED, COMSIG_MOVABLE_PRE_MOVE, COMSIG_ATOM_NO_LONGER_GRABBED, COMSIG_MOVABLE_MOVED))
-	GLOB.ms13_heavy_machines -= source
 	return ..()
 
 /datum/element/ms13_heavy/proc/check_grab(obj/source, mob/living/grabber)
@@ -161,39 +149,6 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 	. = ..()
 	if(!.)
 		heavy.settle()
-
-/obj/machinery/powered(chan = power_channel, ignore_use_power = FALSE)
-	. = ..()
-	if(!. || !heft || (!use_power && !ignore_use_power) || loc == wired_at)
-		return
-	return isturf(loc) && ms13_cable_net_at(loc)?.avail > 0
-
-/// Powers a heavy machine up or down if its wiring changed.
-/obj/machinery/proc/check_wiring()
-	if(!(machine_stat & NOPOWER) != !!powered(power_channel))
-		power_change()
-
-/// A cable laid, cut, or gone live or dead: heavy machines check their wiring next tick, all at once.
-/// ponytail: sweeps every heavy machine for any cable anywhere; keep a list per powernet if that ever shows in profiles.
-/proc/ms13_rewire()
-	if(length(GLOB.ms13_heavy_machines))
-		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(ms13_check_wiring)), 1, TIMER_UNIQUE)
-
-/proc/ms13_check_wiring()
-	for(var/obj/machinery/machine as anything in GLOB.ms13_heavy_machines)
-		machine.check_wiring()
-
-/obj/structure/cable/Initialize(mapload)
-	. = ..()
-	ms13_rewire()
-
-/obj/structure/cable/set_directions(new_directions, merge_connections = TRUE)
-	. = ..()
-	ms13_rewire()
-
-/obj/structure/cable/Destroy()
-	ms13_rewire()
-	return ..()
 
 /*
  * How heavy things are, in kilograms. Strength 5 drags up to 200, Strength 10 up to 400, a power armor frame 520.
@@ -337,33 +292,6 @@ GLOBAL_LIST_EMPTY(ms13_heavy_machines)
 	sleep(MS13_STRAIN_TIME + 1 SECONDS)
 	if(LAZYLEN(wardrobe.grabbed_by) || !strainer.getBruteLoss())
 		Fail("Straining at twice someone's limit budged it, or didn't hurt them.")
-
-/// A heavy machine runs where it was wired in; moved, only on a live cable knot.
-/datum/unit_test/ms13_heft_wiring
-	name = "OBJECTS: Heavy Machines Moved Need A Live Cable"
-
-/datum/unit_test/ms13_heft_wiring/Run()
-	var/turf/home = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
-	var/turf/away = get_step(home, EAST)
-	var/obj/machinery/ms13_heft_test/fridge = allocate(/obj/machinery/ms13_heft_test, home)
-	if(!fridge.powered())
-		Fail("A heavy machine wasn't powered where it was wired in.")
-	fridge.forceMove(away)
-	if(fridge.powered() || !(fridge.machine_stat & NOPOWER))
-		Fail("A heavy machine moved off its wiring kept running.")
-	var/obj/structure/cable/knot = allocate(/obj/structure/cable, away)
-	knot.set_directions(GLOB.real_dirs_to_cable_dirs["[NORTH]"])
-	if(!knot.powernet)
-		new /datum/powernet().add_cable(knot)
-	if(fridge.powered())
-		Fail("A heavy machine ran on a dead cable.")
-	knot.powernet.avail = 1000
-	ms13_check_wiring()
-	if(!fridge.powered() || (fridge.machine_stat & NOPOWER))
-		Fail("A heavy machine on a live cable didn't run.")
-	fridge.forceMove(home)
-	if(!fridge.powered())
-		Fail("A heavy machine back where it was wired in didn't run.")
 
 /obj/structure/ms13_heft_test
 	anchored = TRUE

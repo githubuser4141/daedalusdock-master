@@ -55,10 +55,7 @@
 			to_chat(user, span_warning("There is already a cell in the charger!"))
 			return
 		else
-			var/area/a = loc.loc // Gets our locations location, like a dream within a dream
-			if(!isarea(a))
-				return
-			if(a.power_equip == 0) // There's no APC in this area, don't try to cheat power!
+			if(!powered()) // MOJAVE EDIT - was the area's own equipment power, which wired machines don't use
 				to_chat(user, span_warning("[src] blinks red as you try to insert the cell!"))
 				return
 			if(!user.transferItemToLoc(W,src))

@@ -403,24 +403,32 @@ TYPEINFO_DEF(/obj/structure/ms13/foundation)
 
 ////Hybrid Floors////
 
+/// Real wiring, run the way it's drawn (power/grid.dm). A junction box or node takes machines like a cable knot.
 /turf/open/floor/ms13/concrete/cable
 	icon_state = "concrete_cable_straight"
 	desc = "Heavy duty cabling embedded in industrial grade concrete."
+	/// How it's drawn: ms13_drawn_cable_dirs() turns that and its dir into the ways the cable runs.
+	var/ms13_shape = "straight"
 
 /turf/open/floor/ms13/concrete/cable/curved
 	icon_state = "concrete_cable_curve"
+	ms13_shape = "curve"
 
 /turf/open/floor/ms13/concrete/cable/merge
 	icon_state = "concrete_cable_merge"
+	ms13_shape = "tee"
 
 /turf/open/floor/ms13/concrete/cable/intersection
 	icon_state = "concrete_cable_intersection"
+	ms13_shape = "cross"
 
 /turf/open/floor/ms13/concrete/cable/box
 	icon_state = "concrete_cable_box"
+	ms13_shape = "box"
 
 /turf/open/floor/ms13/concrete/cable/node
 	icon_state = "concrete_cable_node"
+	ms13_shape = "end"
 
 /turf/open/floor/ms13/sewer
 	icon = 'mojave/icons/turf/sewer_floor.dmi'

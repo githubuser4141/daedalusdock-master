@@ -79,72 +79,108 @@ TYPEINFO_DEF(/obj/structure/ms13)
 	layer = 4.9
 	plane = ABOVE_GAME_PLANE
 
-//Decorative Cable, functional WYCI//
+//Heavy ground cable: real wiring, run the way it's drawn (power/grid.dm). Only smart cable joins other ground cable by
+//itself; the rest can be piled and crossed freely, joining only smart cable, ordinary cable, walls and machines.//
 
 /obj/structure/ms13/cable
+	parent_type = /obj/structure/cable
 	name = "cable"
+	desc = "A heavy insulated power cable, laid along the ground."
 	icon = 'mojave/icons/objects/cables.dmi'
+	color = null
 	density = FALSE
+	/// How it's drawn: ms13_drawn_cable_dirs() turns that and its dir into the ways it runs.
+	var/ms13_shape = "straight"
+	/// Smart cable's sprite stem: as the map loads it takes the shape that joins it to the cable around it.
+	var/ms13_smart
 
 /obj/structure/ms13/cable/red
 	icon_state = "cable_red_straight"
 
 /obj/structure/ms13/cable/red/curve
 	icon_state = "cable_red_curved"
+	ms13_shape = "curve"
 
 /obj/structure/ms13/cable/red/intersection
 	icon_state = "cable_red_intersect"
+	ms13_shape = "junction"
 
 /obj/structure/ms13/cable/red/connector
 	icon_state = "cable_red_connector"
+	ms13_shape = "connector"
 
 /obj/structure/ms13/cable/red/splice
 	icon_state = "cable_red_spliced"
+	ms13_shape = "tail"
+
+/obj/structure/ms13/cable/red/smart
+	ms13_smart = "cable_red"
 
 /obj/structure/ms13/cable/blue
 	icon_state = "cable_blue_straight"
 
 /obj/structure/ms13/cable/blue/curve
 	icon_state = "cable_blue_curved"
+	ms13_shape = "curve"
 
 /obj/structure/ms13/cable/blue/intersection
 	icon_state = "cable_blue_intersect"
+	ms13_shape = "junction"
 
 /obj/structure/ms13/cable/blue/connector
 	icon_state = "cable_blue_connector"
+	ms13_shape = "connector"
 
 /obj/structure/ms13/cable/blue/splice
 	icon_state = "cable_blue_spliced"
+	ms13_shape = "tail"
+
+/obj/structure/ms13/cable/blue/smart
+	ms13_smart = "cable_blue"
 
 /obj/structure/ms13/cable/green
 	icon_state = "cable_green_straight"
 
 /obj/structure/ms13/cable/green/curve
 	icon_state = "cable_green_curved"
+	ms13_shape = "curve"
 
 /obj/structure/ms13/cable/green/intersection
 	icon_state = "cable_green_intersect"
+	ms13_shape = "junction"
 
 /obj/structure/ms13/cable/green/connector
 	icon_state = "cable_green_connector"
+	ms13_shape = "connector"
 
 /obj/structure/ms13/cable/green/splice
 	icon_state = "cable_green_spliced"
+	ms13_shape = "tail"
+
+/obj/structure/ms13/cable/green/smart
+	ms13_smart = "cable_green"
 
 /obj/structure/ms13/cable/black
 	icon_state = "cable_black_straight"
 
 /obj/structure/ms13/cable/black/curve
 	icon_state = "cable_black_curved"
+	ms13_shape = "curve"
 
 /obj/structure/ms13/cable/black/intersection
 	icon_state = "cable_black_intersect"
+	ms13_shape = "junction"
 
 /obj/structure/ms13/cable/black/connector
 	icon_state = "cable_black_connector"
+	ms13_shape = "connector"
 
 /obj/structure/ms13/cable/black/splice
 	icon_state = "cable_black_spliced"
+	ms13_shape = "tail"
+
+/obj/structure/ms13/cable/black/smart
+	ms13_smart = "cable_black"
 
 //Turf Decor//
 

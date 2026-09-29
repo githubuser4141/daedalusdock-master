@@ -29,7 +29,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	var/has_damage_overlay = TRUE
 	//used for mirrored overlays
 	var/mirrored = FALSE
-	/// Fitted with a door motor: it opens itself off the cable knotted under it, and has a wire panel.
+	/// Fitted with a door motor: it opens itself off a live cable knotted under it or the wall it sits in, and has a wire panel.
 	var/motorised = FALSE
 	/// The motor's bolts are thrown: it won't move, by motor or by hand.
 	var/bolted = FALSE
@@ -484,7 +484,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 		return ITEM_INTERACT_BLOCKING
 	qdel(motor)
 	install_motor()
-	to_chat(user, span_notice("You fit [motor] to [src]. It'll run off a live cable knotted under the door."))
+	to_chat(user, span_notice("You fit [motor] to [src]. It'll run off a live cable knotted under the door, or a live wall."))
 	return ITEM_INTERACT_SUCCESS
 
 /obj/machinery/door/unpowered/ms13/proc/install_motor()
@@ -513,20 +513,21 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13)
 	user.put_in_hands(new /obj/item/ms13/door_motor(drop_location()))
 	to_chat(user, span_notice("You pry the motor out of [src]."))
 
-/// Whether the motor has what it needs to run: its power wire whole and a live cable knotted under the door.
+/// Whether the motor has what it needs to run: its power wire whole and a live cable knotted under the door or a live wall beside it (power/grid.dm).
 /obj/machinery/door/unpowered/ms13/proc/motor_powered()
 	if(!motorised || wires?.is_cut(WIRE_POWER))
 		return FALSE
-	var/datum/powernet/line = ms13_cable_net_at(loc)
+	var/datum/powernet/line = ms13_supply_at(loc)
 	return line && line.avail - line.load >= MS13_DOOR_MOTOR_DRAW
 
-/// Swings the door by motor, drawing from the line under it. FALSE if it has no power to.
+/// Swings the door by motor, drawing from its line. FALSE if it has no power to.
 /obj/machinery/door/unpowered/ms13/proc/run_motor()
 	if(bolted || operating || !motor_powered())
 		return FALSE
 	if(density && (locked || lock_locked))
 		return FALSE
-	ms13_cable_net_at(loc).load += MS13_DOOR_MOTOR_DRAW
+	var/datum/powernet/line = ms13_supply_at(loc)
+	line.load += MS13_DOOR_MOTOR_DRAW
 	playsound(src, density ? 'mojave/sound/ms13machines/doorgear_open.ogg' : 'mojave/sound/ms13machines/doorgear_close.ogg', 40, TRUE)
 	return density ? open() : close()
 
@@ -814,7 +815,7 @@ TYPEINFO_DEF(/obj/machinery/door/unpowered/ms13/seethrough/frame)
 
 /obj/item/ms13/door_motor
 	name = "door motor"
-	desc = "A geared electric motor with a bolt throw and a little wiring loom. Fitted to a door with a live cable knotted under it, it swings the door on its own."
+	desc = "A geared electric motor with a bolt throw and a little wiring loom. Fitted to a door with a live cable knotted under it or a live wall beside it, it swings the door on its own."
 	icon = 'icons/obj/module.dmi'
 	icon_state = "servo"
 	w_class = WEIGHT_CLASS_NORMAL

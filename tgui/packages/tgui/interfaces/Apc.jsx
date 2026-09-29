@@ -13,7 +13,7 @@ import { InterfaceLockNoticeBox } from './common/InterfaceLockNoticeBox';
 export const Apc = (props) => {
   const { data } = useBackend();
   return (
-    <Window width={450} height={data.utilityBox ? 350 : 432}>
+    <Window width={450} height={data.utilityBox ? 180 : 432}>
       <Window.Content>
         <ApcContent />
       </Window.Content>
@@ -123,8 +123,8 @@ const ApcContent = (props) => {
           {!!data.utilityBox && (
             <LabeledList.Item label="Breaker" buttons={breakerButton}>
               {data.isOperating
-                ? 'On — the feed goes through to the room'
-                : 'Off — the room gets nothing'}
+                ? 'On — the feed goes into the wall wiring'
+                : 'Off — the walls get nothing'}
             </LabeledList.Item>
           )}
           {!data.utilityBox && (
@@ -150,59 +150,61 @@ const ApcContent = (props) => {
           )}
         </LabeledList>
       </Section>
-      <Section title="Power Channels">
-        <LabeledList>
-          {channelArray.map((channel) => {
-            const { topicParams } = channel;
-            return (
-              <LabeledList.Item
-                key={channel.title}
-                label={channel.title}
-                buttons={
-                  <>
-                    <Box
-                      inline
-                      mx={2}
-                      color={channel.status >= 2 ? 'good' : 'bad'}
-                    >
-                      {channel.status >= 2 ? 'On' : 'Off'}
-                    </Box>
-                    <Button
-                      icon="sync"
-                      content="Auto"
-                      selected={
-                        !locked &&
-                        (channel.status === 1 || channel.status === 3)
-                      }
-                      disabled={locked}
-                      onClick={() => act('channel', topicParams.auto)}
-                    />
-                    <Button
-                      icon="power-off"
-                      content="On"
-                      selected={!locked && channel.status === 2}
-                      disabled={locked}
-                      onClick={() => act('channel', topicParams.on)}
-                    />
-                    <Button
-                      icon="times"
-                      content="Off"
-                      selected={!locked && channel.status === 0}
-                      disabled={locked}
-                      onClick={() => act('channel', topicParams.off)}
-                    />
-                  </>
-                }
-              >
-                {channel.powerLoad}
-              </LabeledList.Item>
-            );
-          })}
-          <LabeledList.Item label="Total Load">
-            <b>{data.totalLoad}</b>
-          </LabeledList.Item>
-        </LabeledList>
-      </Section>
+      {!data.utilityBox && (
+        <Section title="Power Channels">
+          <LabeledList>
+            {channelArray.map((channel) => {
+              const { topicParams } = channel;
+              return (
+                <LabeledList.Item
+                  key={channel.title}
+                  label={channel.title}
+                  buttons={
+                    <>
+                      <Box
+                        inline
+                        mx={2}
+                        color={channel.status >= 2 ? 'good' : 'bad'}
+                      >
+                        {channel.status >= 2 ? 'On' : 'Off'}
+                      </Box>
+                      <Button
+                        icon="sync"
+                        content="Auto"
+                        selected={
+                          !locked &&
+                          (channel.status === 1 || channel.status === 3)
+                        }
+                        disabled={locked}
+                        onClick={() => act('channel', topicParams.auto)}
+                      />
+                      <Button
+                        icon="power-off"
+                        content="On"
+                        selected={!locked && channel.status === 2}
+                        disabled={locked}
+                        onClick={() => act('channel', topicParams.on)}
+                      />
+                      <Button
+                        icon="times"
+                        content="Off"
+                        selected={!locked && channel.status === 0}
+                        disabled={locked}
+                        onClick={() => act('channel', topicParams.off)}
+                      />
+                    </>
+                  }
+                >
+                  {channel.powerLoad}
+                </LabeledList.Item>
+              );
+            })}
+            <LabeledList.Item label="Total Load">
+              <b>{data.totalLoad}</b>
+            </LabeledList.Item>
+          </LabeledList>
+        </Section>
+      )}
       {!data.utilityBox && (
         <Section
           title="Misc"

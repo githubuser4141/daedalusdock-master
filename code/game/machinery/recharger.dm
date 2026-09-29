@@ -76,8 +76,7 @@
 				return 1
 
 			//Checks to make sure he's not in space doing it, and that the area got proper power.
-			var/area/a = get_area(src)
-			if(!isarea(a) || a.power_equip == 0)
+			if(!powered()) // MOJAVE EDIT - was the area's own equipment power, which wired machines don't use
 				to_chat(user, span_notice("[src] blinks red as you try to insert [G]."))
 				return 1
 
