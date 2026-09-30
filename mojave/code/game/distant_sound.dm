@@ -112,9 +112,9 @@ GLOBAL_VAR(ms13_hit_force)
  * Hears a sound from turf_source, far off: remoteness runs from 0, just past where it'd be heard plainly, to 1 at the
  * limit of hearing it at all.
  */
-/// Each wall takes a quarter off. Stop counting only once even a full-volume sound would be inaudible.
+/// Cap horizontal room-wall muffling at its original level; solid ceilings are handled separately.
 #define SOUND_WALL_MUFFLE 0.75
-#define SOUND_WALLS_HEARD_THROUGH 25
+#define SOUND_WALLS_HEARD_THROUGH 3
 
 /// Fraction transmitted through this floor/ceiling. Open shafts use their atmospheric connection instead.
 /turf
@@ -169,10 +169,9 @@ GLOBAL_VAR(ms13_hit_force)
 	var/turf/ear = get_turf(src)
 	if(get_dist_multiz(turf_source, ear) == INFINITY)
 		return
-	// Through walls it's quieter, and duller, as if from further off.
+	// Walls dull the sound, but must not turn muffling into extra distance and an early cutoff.
 	var/walls = ms13_walls_between(turf_source, ear)
-	remoteness = min(remoteness + 0.15 * walls, 1)
-	var/baked = distant_version(soundin, remoteness)
+	var/baked = distant_version(soundin, min(remoteness + 0.15 * walls, 1))
 	var/sound/distant = make_distant_sound(turf_source, ear, baked || far_sound || soundin, vol, remoteness, vary, !!baked)
 	if(distant.volume < SOUND_AUDIBLE_VOLUME_MIN)
 		return
@@ -211,6 +210,8 @@ GLOBAL_VAR(ms13_hit_force)
 	far.falloff = get_dist_multiz(ear, turf_source) + 1
 	if(baked)
 		return far
+	// Use perceived distance only for the tone/reverb, after calculating volume from actual distance.
+	remoteness = min(remoteness + 0.15 * ms13_walls_between(turf_source, ear), 1)
 	var/area/ear_area = get_area(ear)
 	var/indoors = !ear_area.outdoors
 	// The further off, the less of it arrives straight and the more as echo, and the duller both are. Walls muffle it more.
