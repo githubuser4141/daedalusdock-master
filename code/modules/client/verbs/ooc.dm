@@ -371,7 +371,8 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	// Fetch aspect ratio
 	var/view_size = getviewsize(view)
-	var/aspect_ratio = (view_size[1] + HUD_WIDTH) / view_size[2] // MOJAVE EDIT - room for MS13's side panel: view_size[1] / view_size[2]
+	var/panel_width = mob?.ms13_hud_width() || 0 // MOJAVE EDIT
+	var/aspect_ratio = (view_size[1] + panel_width) / view_size[2] // MOJAVE EDIT - room for the displayed side panel
 
 	// Calculate desired pixel width using window size and aspect ratio
 	var/list/sizes = params2list(winget(src, "mainwindow.split;mapwindow", "size"))
@@ -390,7 +391,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	var/desired_width = 0
 	if(zoom_value)
-		desired_width = round((view_size[1] + HUD_WIDTH) * zoom_value * world.icon_size) // MOJAVE EDIT - view_size[1] * zoom_value * world.icon_size
+		desired_width = round((view_size[1] + panel_width) * zoom_value * world.icon_size) // MOJAVE EDIT
 	else
 
 		// Looks like we expect mapwindow.size to be "ixj" where i and j are numbers.
@@ -401,7 +402,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		desired_width = round(height * aspect_ratio)
 
 	if (text2num(map_size[1]) == desired_width)
-		// Nothing to do
+		setHudBarVisible() // MOJAVE EDIT - the displayed HUD may have changed
 		return
 
 	var/split_size = splittext(sizes["mainwindow.split.size"], "x")

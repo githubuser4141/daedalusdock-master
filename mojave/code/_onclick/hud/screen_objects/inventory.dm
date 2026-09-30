@@ -1,12 +1,15 @@
-// The hands wear the player's UI style: its hand_l/hand_r, with the hand_active outline on the hand in use. (MS13's own
-// hand art, ms_ui_slots_hands.dmi, is drawn for its own HUD layout, which never came across.)
-
 /// Wielding two-handed, both hands are in use.
 /atom/movable/screen/inventory/hand/update_overlays()
 	. = ..()
+	var/ms13_art = icon == 'mojave/icons/hud/ms_ui_slots_hands.dmi'
+	var/hand_state = "[held_index % 2 ? "l" : "r"]hand"
+	if(ms13_art)
+		. -= "hand_active"
+		if(held_index == hud?.mymob?.active_hand_index)
+			. += "[hand_state]_active"
 	var/obj/item/held = hud?.mymob?.get_item_for_held_index(held_index)
 	if(held?.wielded || istype(held, /obj/item/offhand))
-		. += "hand_active"
+		. += ms13_art ? "[hand_state]_wield" : "hand_active"
 
 #ifdef UNIT_TESTS
 /datum/unit_test/ms13_hand_slots

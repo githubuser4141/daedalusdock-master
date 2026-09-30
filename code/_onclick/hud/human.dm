@@ -243,8 +243,7 @@
 	pull_icon.update_appearance()
 	static_inventory += pull_icon
 
-	zone_select = new /atom/movable/screen/zone_sel(null, src)
-	zone_select.icon = 'mojave/icons/hud/ms_ui_target.dmi' // MOJAVE EDIT
+	zone_select = new /atom/movable/screen/zone_sel/ms13(null, src) // MOJAVE EDIT
 	zone_select.update_appearance()
 	static_inventory += zone_select
 

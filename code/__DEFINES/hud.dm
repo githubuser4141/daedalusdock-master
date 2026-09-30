@@ -42,7 +42,7 @@
 /proc/ui_hand_position(i) //values based on old hand ui positions (CENTER:-/+16,SOUTH:5)
 	var/x_off = (i % 2) // MOJAVE EDIT - var/x_off = i % 2 ? 0 : -1
 	var/y_off = round((i-1) / 2)
-	return "CENTER:[42 * x_off - 42],SOUTH+[y_off]" // MOJAVE EDIT - return"CENTER+[x_off]:16,SOUTH+[y_off]:5"
+	return "CENTER:[42 * x_off - 42],BOTTOM+[y_off]" // MOJAVE EDIT - return"CENTER+[x_off]:16,SOUTH+[y_off]:5"
 
 /proc/ui_equip_position(mob/M)
 	var/y_off = round((M.held_items.len-1) / 2) //values based on old equip ui position (CENTER: +/-16,SOUTH+1:5)
@@ -62,11 +62,11 @@
 
 //Lower center, persistent menu
 #define ui_sstore1 "hud:EAST+0.23,SOUTH+1.36" // MOJAVE EDIT - #define ui_sstore1 "CENTER-5:10,SOUTH:5"
-#define ui_id "WEST:10,SOUTH:44" // MOJAVE EDIT - #define ui_id "CENTER-4:12,SOUTH:5"
+#define ui_id "LEFT:10,BOTTOM:44" // MOJAVE EDIT - #define ui_id "CENTER-4:12,SOUTH:5"
 #define ui_belt "hud:EAST+1.52,SOUTH+1.36" // MOJAVE EDIT - #define ui_belt "CENTER-3:14,SOUTH:5"
 #define ui_back "hud:EAST+0.875,SOUTH+0.28" // MOJAVE EDIT - #define ui_back "CENTER-2:14,SOUTH:5"
-#define ui_storage1 "CENTER:48,SOUTH" // MOJAVE EDIT - #define ui_storage1 "CENTER+1:18,SOUTH:5"
-#define ui_storage2 "CENTER:-80,SOUTH" // MOJAVE EDIT - #define ui_storage2 "CENTER+2:20,SOUTH:5"
+#define ui_storage1 "CENTER:48,BOTTOM" // MOJAVE EDIT - #define ui_storage1 "CENTER+1:18,SOUTH:5"
+#define ui_storage2 "CENTER:-80,BOTTOM" // MOJAVE EDIT - #define ui_storage2 "CENTER+2:20,SOUTH:5"
 #define ui_combo "CENTER+4:24,SOUTH+1:7" //combo meter for martial arts
 
 //Lower right, persistent menu
@@ -108,15 +108,15 @@
 #define ui_mood "hud:EAST,SOUTH+9.2" // MOJAVE EDIT - #define ui_mood "EAST-1:28,CENTER:21"
 
 //Pop-up inventory
-#define ui_shoes "WEST:10,SOUTH:9" // MOJAVE EDIT - #define ui_shoes "WEST+1:8,SOUTH:5"
-#define ui_iclothing "WEST:45,SOUTH:9" // MOJAVE EDIT - #define ui_iclothing "WEST:6,SOUTH+1:7"
-#define ui_oclothing "WEST:45,SOUTH:44" // MOJAVE EDIT - #define ui_oclothing "WEST+1:8,SOUTH+1:7"
-#define ui_gloves "WEST:80,SOUTH:9" // MOJAVE EDIT - #define ui_gloves "WEST+2:10,SOUTH+1:7"
-#define ui_glasses "WEST:80,SOUTH:79" // MOJAVE EDIT - #define ui_glasses "WEST:6,SOUTH+3:11"
-#define ui_mask "WEST:45,SOUTH:79" // MOJAVE EDIT - #define ui_mask "WEST+1:8,SOUTH+2:9"
-#define ui_ears "WEST:10,SOUTH:79" // MOJAVE EDIT - #define ui_ears "WEST+2:10,SOUTH+2:9"
-#define ui_neck "WEST:80,SOUTH:44" // MOJAVE EDIT - #define ui_neck "WEST:6,SOUTH+2:9"
-#define ui_head "WEST:45,SOUTH:114" // MOJAVE EDIT - #define ui_head "WEST+1:8,SOUTH+3:11"
+#define ui_shoes "LEFT:10,BOTTOM:9" // MOJAVE EDIT - #define ui_shoes "WEST+1:8,SOUTH:5"
+#define ui_iclothing "LEFT:45,BOTTOM:9" // MOJAVE EDIT - #define ui_iclothing "WEST:6,SOUTH+1:7"
+#define ui_oclothing "LEFT:45,BOTTOM:44" // MOJAVE EDIT - #define ui_oclothing "WEST+1:8,SOUTH+1:7"
+#define ui_gloves "LEFT:80,BOTTOM:9" // MOJAVE EDIT - #define ui_gloves "WEST+2:10,SOUTH+1:7"
+#define ui_glasses "LEFT:80,BOTTOM:79" // MOJAVE EDIT - #define ui_glasses "WEST:6,SOUTH+3:11"
+#define ui_mask "LEFT:45,BOTTOM:79" // MOJAVE EDIT - #define ui_mask "WEST+1:8,SOUTH+2:9"
+#define ui_ears "LEFT:10,BOTTOM:79" // MOJAVE EDIT - #define ui_ears "WEST+2:10,SOUTH+2:9"
+#define ui_neck "LEFT:80,BOTTOM:44" // MOJAVE EDIT - #define ui_neck "WEST:6,SOUTH+2:9"
+#define ui_head "LEFT:45,BOTTOM:114" // MOJAVE EDIT - #define ui_head "WEST+1:8,SOUTH+3:11"
 
 //Generic living
 #define ui_living_pull "EAST-1:28,CENTER-3:15"

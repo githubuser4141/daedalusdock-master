@@ -652,14 +652,18 @@
 
 	if(hovering == choice)
 		return
-	remove_viscontents(hover_overlays_cache[hovering])
+	remove_viscontents(hover_overlays_cache["[overlay_icon]:[hovering]"]) // MOJAVE EDIT - each HUD art set has its own overlays
 	hovering = choice
+	if(!choice)
+		return
 
-	var/obj/effect/overlay/zone_sel/overlay_object = hover_overlays_cache[choice]
+	var/hover_key = "[overlay_icon]:[choice]" // MOJAVE EDIT
+	var/obj/effect/overlay/zone_sel/overlay_object = hover_overlays_cache[hover_key]
 	if(!overlay_object)
 		overlay_object = new
+		overlay_object.icon = overlay_icon // MOJAVE EDIT
 		overlay_object.icon_state = "[choice]"
-		hover_overlays_cache[choice] = overlay_object
+		hover_overlays_cache[hover_key] = overlay_object
 	add_viscontents(overlay_object)
 
 /obj/effect/overlay/zone_sel
@@ -672,7 +676,7 @@
 /atom/movable/screen/zone_sel/MouseExited(location, control, params)
 	. = ..()
 	if(!isobserver(usr) && hovering)
-		remove_viscontents(hover_overlays_cache[hovering])
+		remove_viscontents(hover_overlays_cache["[overlay_icon]:[hovering]"]) // MOJAVE EDIT
 		hovering = null
 
 /atom/movable/screen/zone_sel/proc/get_zone_at(icon_x, icon_y)
