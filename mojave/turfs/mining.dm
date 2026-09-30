@@ -78,6 +78,9 @@
 	if(isopenturf(site))
 		site.ms13_unsupported_span = rand(3, 5)
 		site.ms13_check_roof()
+	// A deposit buried in the rock comes out with it, as nuggets.
+	for(var/obj/structure/ms13/ore_deposit/deposit in site)
+		deposit.deconstruct(FALSE)
 
 /turf
 	/// Zero means pre-existing terrain; newly excavated tiles get a fixed, random support spacing.
