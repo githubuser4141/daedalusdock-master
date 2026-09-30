@@ -371,7 +371,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	// Fetch aspect ratio
 	var/view_size = getviewsize(view)
-	var/aspect_ratio = view_size[1] / view_size[2]
+	var/aspect_ratio = (view_size[1] + HUD_WIDTH) / view_size[2] // MOJAVE EDIT - room for MS13's side panel: view_size[1] / view_size[2]
 
 	// Calculate desired pixel width using window size and aspect ratio
 	var/list/sizes = params2list(winget(src, "mainwindow.split;mapwindow", "size"))
@@ -390,7 +390,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 	var/desired_width = 0
 	if(zoom_value)
-		desired_width = round(view_size[1] * zoom_value * world.icon_size)
+		desired_width = round((view_size[1] + HUD_WIDTH) * zoom_value * world.icon_size) // MOJAVE EDIT - view_size[1] * zoom_value * world.icon_size
 	else
 
 		// Looks like we expect mapwindow.size to be "ixj" where i and j are numbers.
@@ -428,6 +428,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 		if (got_width == desired_width)
 			// success
+			setHudBarVisible() // MOJAVE EDIT
 			return
 		else if (isnull(delta))
 			// calculate a probable delta value based on the difference
@@ -438,6 +439,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 
 		pct += delta
 		winset(src, "mainwindow.split", "splitter=[pct]")
+	setHudBarVisible() // MOJAVE EDIT
 
 /// Attempt to automatically fit the viewport, assuming the user wants it
 /client/proc/attempt_auto_fit_viewport()

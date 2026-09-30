@@ -85,3 +85,52 @@
 	name = "Substantially Dehydrated"
 	desc = "You're already on deaths door, get that water, now!"
 	icon_state = "status_thirst"
+
+/atom/movable/screen/alert
+	/// On MS13's HUD, the side panel light shown instead. Those are on or off, so severity's dropped.
+	var/atom/movable/screen/alert/hudbar_alternative
+
+/mob/throw_alert(category, type, severity, obj/new_master, override = FALSE)
+	if(ispath(type, /atom/movable/screen/alert) && hud_used?.contains_off_screen_hud)
+		var/atom/movable/screen/alert/alert_type = type
+		if(initial(alert_type.hudbar_alternative))
+			type = initial(alert_type.hudbar_alternative)
+			severity = null
+	return ..(category, type, severity, new_master, override)
+
+/atom/movable/screen/alert/not_enough_oxy
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/oxy
+/atom/movable/screen/alert/not_enough_nitro
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/oxy
+/atom/movable/screen/alert/not_enough_co2
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/oxy
+/atom/movable/screen/alert/not_enough_plas
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/oxy
+/atom/movable/screen/alert/not_enough_n2o
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/oxy
+/atom/movable/screen/alert/too_much_oxy
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/toxin
+/atom/movable/screen/alert/too_much_nitro
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/toxin
+/atom/movable/screen/alert/too_much_co2
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/toxin
+/atom/movable/screen/alert/too_much_plas
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/toxin
+/atom/movable/screen/alert/too_much_n2o
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/toxin
+/atom/movable/screen/alert/fat
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/hunger/fat
+/atom/movable/screen/alert/hungry
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/hunger
+/atom/movable/screen/alert/starving
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/hunger/starving
+/atom/movable/screen/alert/hot
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/hot
+/atom/movable/screen/alert/cold
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/cold
+/atom/movable/screen/alert/lowpressure
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/low_pressure
+/atom/movable/screen/alert/highpressure
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/high_pressure
+/atom/movable/screen/alert/fire
+	hudbar_alternative = /atom/movable/screen/alert/hudbar/fire

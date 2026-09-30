@@ -34,10 +34,15 @@
 	Therefore, the top right corner (except during admin shenanigans) is at "15,15"
 */
 
+// MOJAVE EDIT - MS13's HUD: slots and buttons sit in a side panel (the "hud:" map, HUD_WIDTH tiles wide, left of the
+// view), the worn slots pop up over the view's left edge, and the hands sit bottom centre. Originals kept in comments.
+/// Width of the MS13 HUD side panel, in tiles.
+#define HUD_WIDTH 3
+
 /proc/ui_hand_position(i) //values based on old hand ui positions (CENTER:-/+16,SOUTH:5)
-	var/x_off = i % 2 ? 0 : -1
+	var/x_off = (i % 2) // MOJAVE EDIT - var/x_off = i % 2 ? 0 : -1
 	var/y_off = round((i-1) / 2)
-	return"CENTER+[x_off]:16,SOUTH+[y_off]:5"
+	return "CENTER:[42 * x_off - 42],SOUTH+[y_off]" // MOJAVE EDIT - return"CENTER+[x_off]:16,SOUTH+[y_off]:5"
 
 /proc/ui_equip_position(mob/M)
 	var/y_off = round((M.held_items.len-1) / 2) //values based on old equip ui position (CENTER: +/-16,SOUTH+1:5)
@@ -49,29 +54,31 @@
 	return "CENTER+[x_off]:16,SOUTH+[y_off+1]:5"
 
 //Lower left, persistent menu
-#define ui_inventory "WEST:6,SOUTH:5"
+#define ui_inventory "hud:EAST,SOUTH" // MOJAVE EDIT - #define ui_inventory "WEST:6,SOUTH:5"
 
 //Middle left indicators
 #define ui_lingchemdisplay "WEST,CENTER-1:15"
 #define ui_lingstingdisplay "WEST:6,CENTER-3:11"
 
 //Lower center, persistent menu
-#define ui_sstore1 "CENTER-5:10,SOUTH:5"
-#define ui_id "CENTER-4:12,SOUTH:5"
-#define ui_belt "CENTER-3:14,SOUTH:5"
-#define ui_back "CENTER-2:14,SOUTH:5"
-#define ui_storage1 "CENTER+1:18,SOUTH:5"
-#define ui_storage2 "CENTER+2:20,SOUTH:5"
+#define ui_sstore1 "hud:EAST+0.23,SOUTH+1.36" // MOJAVE EDIT - #define ui_sstore1 "CENTER-5:10,SOUTH:5"
+#define ui_id "WEST:10,SOUTH:44" // MOJAVE EDIT - #define ui_id "CENTER-4:12,SOUTH:5"
+#define ui_belt "hud:EAST+1.52,SOUTH+1.36" // MOJAVE EDIT - #define ui_belt "CENTER-3:14,SOUTH:5"
+#define ui_back "hud:EAST+0.875,SOUTH+0.28" // MOJAVE EDIT - #define ui_back "CENTER-2:14,SOUTH:5"
+#define ui_storage1 "CENTER:48,SOUTH" // MOJAVE EDIT - #define ui_storage1 "CENTER+1:18,SOUTH:5"
+#define ui_storage2 "CENTER:-80,SOUTH" // MOJAVE EDIT - #define ui_storage2 "CENTER+2:20,SOUTH:5"
 #define ui_combo "CENTER+4:24,SOUTH+1:7" //combo meter for martial arts
 
 //Lower right, persistent menu
-#define ui_drop_throw "EAST-1:28,SOUTH+1:7"
-#define ui_above_movement "EAST-2:26,SOUTH+1:7"
-#define ui_above_intent "EAST-3:24, SOUTH+1:7"
-#define ui_movi "EAST-2:26,SOUTH:5"
+#define ui_drop_throw "hud:EAST,SOUTH" // MOJAVE EDIT - #define ui_drop_throw "EAST-1:28,SOUTH+1:7"
+#define ui_above_movement "hud:EAST,SOUTH" // MOJAVE EDIT - #define ui_above_movement "EAST-2:26,SOUTH+1:7"
+#define ui_above_intent "hud:EAST,SOUTH" // MOJAVE EDIT - #define ui_above_intent "EAST-3:24, SOUTH+1:7"
+#define ui_movi "hud:EAST,SOUTH" // MOJAVE EDIT - #define ui_movi "EAST-2:26,SOUTH:5"
 #define ui_acti "EAST-3:24,SOUTH:5"
-#define ui_combat_toggle "EAST-3:24,SOUTH:5"
-#define ui_zonesel "EAST-1:28,SOUTH:5"
+#define ui_combat_toggle "hud:EAST,SOUTH+4.38" // MOJAVE EDIT - #define ui_combat_toggle "EAST-3:24,SOUTH:5"
+#define ui_resist "hud:EAST,SOUTH+4.38" // MOJAVE EDIT - new
+#define ui_wield "hud:EAST,SOUTH+4.38" // MOJAVE EDIT - new
+#define ui_zonesel "hud:EAST,SOUTH+6.2" // MOJAVE EDIT - #define ui_zonesel "EAST-1:28,SOUTH:5"
 #define ui_acti_alt "EAST-1:28,SOUTH:5" //alternative intent switcher for when the interface is hidden (F12)
 #define ui_crafting "EAST-4:22,SOUTH:5"
 #define ui_building "EAST-4:22,SOUTH:21"
@@ -93,23 +100,23 @@
 #define ui_palette_scroll_offset(north_offset) ("WEST+1:8,NORTH-[6+north_offset]:28")
 
 //Middle right (status indicators)
-#define ui_healthdoll "EAST-1:28,CENTER-1:19"
+#define ui_healthdoll "hud:EAST,SOUTH+9.2" // MOJAVE EDIT - #define ui_healthdoll "EAST-1:28,CENTER-1:19"
 #define ui_health "EAST-1:28,CENTER-1:19"
 #define ui_blob_health "EAST-1:28,CENTER+1:21"
 #define ui_spacesuit "EAST-1:28,CENTER-3:14"
 #define ui_stamina "EAST-1:28,CENTER-2:17"
-#define ui_mood "EAST-1:28,CENTER:21"
+#define ui_mood "hud:EAST,SOUTH+9.2" // MOJAVE EDIT - #define ui_mood "EAST-1:28,CENTER:21"
 
 //Pop-up inventory
-#define ui_shoes "WEST+1:8,SOUTH:5"
-#define ui_iclothing "WEST:6,SOUTH+1:7"
-#define ui_oclothing "WEST+1:8,SOUTH+1:7"
-#define ui_gloves "WEST+2:10,SOUTH+1:7"
-#define ui_glasses "WEST:6,SOUTH+3:11"
-#define ui_mask "WEST+1:8,SOUTH+2:9"
-#define ui_ears "WEST+2:10,SOUTH+2:9"
-#define ui_neck "WEST:6,SOUTH+2:9"
-#define ui_head "WEST+1:8,SOUTH+3:11"
+#define ui_shoes "WEST:10,SOUTH:9" // MOJAVE EDIT - #define ui_shoes "WEST+1:8,SOUTH:5"
+#define ui_iclothing "WEST:45,SOUTH:9" // MOJAVE EDIT - #define ui_iclothing "WEST:6,SOUTH+1:7"
+#define ui_oclothing "WEST:45,SOUTH:44" // MOJAVE EDIT - #define ui_oclothing "WEST+1:8,SOUTH+1:7"
+#define ui_gloves "WEST:80,SOUTH:9" // MOJAVE EDIT - #define ui_gloves "WEST+2:10,SOUTH+1:7"
+#define ui_glasses "WEST:80,SOUTH:79" // MOJAVE EDIT - #define ui_glasses "WEST:6,SOUTH+3:11"
+#define ui_mask "WEST:45,SOUTH:79" // MOJAVE EDIT - #define ui_mask "WEST+1:8,SOUTH+2:9"
+#define ui_ears "WEST:10,SOUTH:79" // MOJAVE EDIT - #define ui_ears "WEST+2:10,SOUTH+2:9"
+#define ui_neck "WEST:80,SOUTH:44" // MOJAVE EDIT - #define ui_neck "WEST:6,SOUTH+2:9"
+#define ui_head "WEST:45,SOUTH:114" // MOJAVE EDIT - #define ui_head "WEST+1:8,SOUTH+3:11"
 
 //Generic living
 #define ui_living_pull "EAST-1:28,CENTER-3:15"

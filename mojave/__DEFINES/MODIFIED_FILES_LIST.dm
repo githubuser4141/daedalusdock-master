@@ -183,6 +183,11 @@ code/modules/grab/grab_object.dm,
 code/game/machinery/cell_charger.dm,
 code/game/machinery/recharger.dm,
 code/modules/mob/dead/new_player/new_player.dm,
+code/__DEFINES/hud.dm,
+code/_onclick/hud/human.dm,
+code/modules/client/verbs/ooc.dm,
+interface/skin.dmf,
+code/_onclick/hud/alert.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.

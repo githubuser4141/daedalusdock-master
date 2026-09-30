@@ -63,44 +63,30 @@
 	var/mob/living/carbon/carbon_user = hud.mymob
 	carbon_user.unset_sting()
 
+// MOJAVE EDIT - MS13's side panel HUD (code/__DEFINES/hud.dm): MS13 art and buttons, and no language, navigation,
+// area, drop, swap-hand, equip or stamina buttons.
+/datum/hud/human
+	contains_off_screen_hud = TRUE
+
 /datum/hud/human/New(mob/living/carbon/human/owner)
 	..()
 
 	var/atom/movable/screen/using
 	var/atom/movable/screen/inventory/inv_box
 
-	using = new/atom/movable/screen/language_menu(null, src)
-	using.icon = ui_style
-	static_inventory += using
-
-	using = new/atom/movable/screen/navigate(null, src)
-	using.icon = ui_style
-	static_inventory += using
-
-	using = new /atom/movable/screen/area_creator(null, src)
-	using.icon = ui_style
-	static_inventory += using
-
-	action_intent = new /atom/movable/screen/combattoggle/flashy(null, src)
-	action_intent.icon = ui_style
+	action_intent = new /atom/movable/screen/combattoggle/ms13(null, src) // MOJAVE EDIT - combattoggle/flashy
 	action_intent.screen_loc = ui_combat_toggle
 	static_inventory += action_intent
 
 
-	using = new /atom/movable/screen/mov_intent(null, src)
-	using.icon = ui_style
+	using = new /atom/movable/screen/mov_intent/ms13(null, src) // MOJAVE EDIT - mov_intent
 	using.icon_state = (mymob.m_intent == MOVE_INTENT_WALK ? "walking" : "running")
 	using.screen_loc = ui_movi
 	static_inventory += using
 
-	using = new /atom/movable/screen/drop(null, src)
-	using.icon = ui_style
-	using.screen_loc = ui_drop_throw
-	static_inventory += using
-
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "i_clothing"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.slot_id = ITEM_SLOT_ICLOTHING
 	inv_box.icon_state = "uniform"
 	inv_box.screen_loc = ui_iclothing
@@ -108,7 +94,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "o_clothing"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.slot_id = ITEM_SLOT_OCLOTHING
 	inv_box.icon_state = "suit"
 	inv_box.screen_loc = ui_oclothing
@@ -116,29 +102,17 @@
 
 	build_hand_slots()
 
-	using = new /atom/movable/screen/swap_hand(null, src)
-	using.icon = ui_style
-	using.icon_state = "swap_1"
-	using.screen_loc = ui_swaphand_position(owner,1)
-	static_inventory += using
-
-	using = new /atom/movable/screen/swap_hand(null, src)
-	using.icon = ui_style
-	using.icon_state = "swap_2"
-	using.screen_loc = ui_swaphand_position(owner,2)
-	static_inventory += using
-
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "id"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "id"
 	inv_box.screen_loc = ui_id
 	inv_box.slot_id = ITEM_SLOT_ID
-	static_inventory += inv_box
+	toggleable_inventory += inv_box // MOJAVE EDIT - static_inventory
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "mask"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "mask"
 	inv_box.screen_loc = ui_mask
 	inv_box.slot_id = ITEM_SLOT_MASK
@@ -146,7 +120,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "neck"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "neck"
 	inv_box.screen_loc = ui_neck
 	inv_box.slot_id = ITEM_SLOT_NECK
@@ -154,7 +128,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "back"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_40.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "back"
 	inv_box.screen_loc = ui_back
 	inv_box.slot_id = ITEM_SLOT_BACK
@@ -162,46 +136,45 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "storage1"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "pocket"
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_pockets.dmi' // MOJAVE EDIT
+	inv_box.icon_state = "l_pocket" // MOJAVE EDIT - pocket
 	inv_box.screen_loc = ui_storage1
 	inv_box.slot_id = ITEM_SLOT_LPOCKET
 	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "storage2"
-	inv_box.icon = ui_style
-	inv_box.icon_state = "pocket"
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_pockets.dmi' // MOJAVE EDIT
+	inv_box.icon_state = "r_pocket" // MOJAVE EDIT - pocket
 	inv_box.screen_loc = ui_storage2
 	inv_box.slot_id = ITEM_SLOT_RPOCKET
 	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "suit storage"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_40.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "suit_storage"
 	inv_box.screen_loc = ui_sstore1
 	inv_box.slot_id = ITEM_SLOT_SUITSTORE
 	static_inventory += inv_box
 
 	using = new /atom/movable/screen/resist(null, src)
-	using.icon = ui_style
-	using.screen_loc = ui_above_intent
+	using.icon = 'mojave/icons/hud/ms_ui_combat.dmi' // MOJAVE EDIT
+	using.screen_loc = ui_resist // MOJAVE EDIT - ui_above_intent
 	hotkeybuttons += using
 
-	using = new /atom/movable/screen/human/toggle(null, src)
-	using.icon = ui_style
-	using.screen_loc = ui_inventory
-	static_inventory += using
+	// MOJAVE EDIT
+	using = new /atom/movable/screen/wield(null, src)
+	using.screen_loc = ui_wield
+	hotkeybuttons += using
 
-	using = new /atom/movable/screen/human/equip(null, src)
-	using.icon = ui_style
-	using.screen_loc = ui_equip_position(mymob)
+	using = new /atom/movable/screen/human/toggle/ms13(null, src) // MOJAVE EDIT - human/toggle
+	using.screen_loc = ui_inventory
 	static_inventory += using
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "gloves"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "gloves"
 	inv_box.screen_loc = ui_gloves
 	inv_box.slot_id = ITEM_SLOT_GLOVES
@@ -209,7 +182,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "eyes"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "glasses"
 	inv_box.screen_loc = ui_glasses
 	inv_box.slot_id = ITEM_SLOT_EYES
@@ -217,7 +190,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "ears"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "ears"
 	inv_box.screen_loc = ui_ears
 	inv_box.slot_id = ITEM_SLOT_EARS
@@ -225,7 +198,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "head"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "head"
 	inv_box.screen_loc = ui_head
 	inv_box.slot_id = ITEM_SLOT_HEAD
@@ -233,7 +206,7 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "shoes"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "shoes"
 	inv_box.screen_loc = ui_shoes
 	inv_box.slot_id = ITEM_SLOT_FEET
@@ -241,20 +214,18 @@
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "belt"
-	inv_box.icon = ui_style
+	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_40.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "belt"
 // inv_box.icon_full = "template_small"
 	inv_box.screen_loc = ui_belt
 	inv_box.slot_id = ITEM_SLOT_BELT
 	static_inventory += inv_box
 
-	throw_icon = new /atom/movable/screen/throw_catch(null, src)
-	throw_icon.icon = ui_style
+	throw_icon = new /atom/movable/screen/throw_catch/ms13(null, src) // MOJAVE EDIT - throw_catch
 	throw_icon.screen_loc = ui_drop_throw
 	hotkeybuttons += throw_icon
 
-	rest_icon = new /atom/movable/screen/rest(null, src)
-	rest_icon.icon = ui_style
+	rest_icon = new /atom/movable/screen/rest/ms13(null, src) // MOJAVE EDIT - rest
 	rest_icon.screen_loc = ui_above_movement
 	rest_icon.update_appearance()
 	static_inventory += rest_icon
@@ -263,20 +234,17 @@
 	infodisplay += spacesuit
 
 	healthdoll = new /atom/movable/screen/healthdoll(null, src)
+	healthdoll.icon = 'mojave/icons/hud/ms_ui_health.dmi' // MOJAVE EDIT
 	healthdoll.hud = src
 	infodisplay += healthdoll
 
-	stamina = new /atom/movable/screen/stamina(null, src)
-	infodisplay += stamina
-
-	pull_icon = new /atom/movable/screen/pull(null, src)
-	pull_icon.icon = ui_style
+	pull_icon = new /atom/movable/screen/pull/ms13(null, src) // MOJAVE EDIT - pull, and no stamina display
 	pull_icon.screen_loc = ui_above_intent
 	pull_icon.update_appearance()
 	static_inventory += pull_icon
 
 	zone_select = new /atom/movable/screen/zone_sel(null, src)
-	zone_select.icon = ui_style
+	zone_select.icon = 'mojave/icons/hud/ms_ui_target.dmi' // MOJAVE EDIT
 	zone_select.update_appearance()
 	static_inventory += zone_select
 
@@ -308,6 +276,11 @@
 		if(inv.slot_id)
 			inv_slots[TOBITSHIFT(inv.slot_id) + 1] = inv
 			inv.update_appearance()
+
+	// MOJAVE EDIT - the side panel's, pop-up slots' and hands' backgrounds
+	infodisplay += new /atom/movable/screen/ms13/button_background(null, src)
+	toggleable_inventory += new /atom/movable/screen/ms13/slot_background(null, src)
+	static_inventory += new /atom/movable/screen/ms13/hand_background(null, src)
 
 	update_locked_slots()
 

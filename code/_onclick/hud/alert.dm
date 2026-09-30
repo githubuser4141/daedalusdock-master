@@ -107,11 +107,18 @@
 		for(var/i in 1 to alerts.len)
 			screenmob.client.screen -= alerts[alerts[i]]
 		return 1
+	var/slot = 0 // MOJAVE EDIT - MS13's panel lights keep their own spot and take no slot
 	for(var/i in 1 to alerts.len)
 		var/atom/movable/screen/alert/alert = alerts[alerts[i]]
+		// MOJAVE EDIT BEGIN
+		if(istype(alert, /atom/movable/screen/alert/hudbar))
+			screenmob.client.screen |= alert
+			continue
+		slot++
+		// MOJAVE EDIT END
 		if(alert.icon_state == "template")
 			alert.icon = ui_style
-		switch(i)
+		switch(slot) // MOJAVE EDIT - switch(i)
 			if(1)
 				. = ui_alert1
 			if(2)
