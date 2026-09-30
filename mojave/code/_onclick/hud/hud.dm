@@ -44,6 +44,19 @@
 	. = ..()
 	winset(src, "mapwindow.hud", "right-click=[shift_only ? "true" : "false"]")
 
+// The side panel zooms and scales with the map, or it keeps a stale zoom and overflows its share of the window.
+/datum/view_data/assertFormat()
+	. = ..()
+	winset(chief, "mapwindow.hud", "zoom=0")
+
+/datum/view_data/resetFormat()
+	. = ..()
+	winset(chief, "mapwindow.hud", "zoom=[zoom]")
+
+/datum/view_data/setZoomMode()
+	. = ..()
+	winset(chief, "mapwindow.hud", "zoom-mode=[chief?.prefs.read_preference(/datum/preference/choiced/scaling_method)]")
+
 /// MS13 targeting art for the selected and hovered zones, matching the zone selector itself.
 /atom/movable/screen/zone_sel
 	overlay_icon = 'mojave/icons/hud/ms_ui_target.dmi'
