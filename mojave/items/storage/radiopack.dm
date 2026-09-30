@@ -8,7 +8,7 @@
 	lefthand_file = 'mojave/icons/mob/inhands/equipment/backpack_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/equipment/backpack_righthand.dmi'
 
-	// storage_type left unset - inherits /datum/storage/ms13/backpack from the shared /obj/item/storage/ms13 base
+	storage_type = /datum/storage/ms13/backpack/rad_pack
 	var/held = 0
 	var/obj/item/radio/ms13/ncr/radio
 
@@ -84,8 +84,8 @@
 	canhear_range = 3
 	radio_broadcast = RADIOSTATIC_LIGHT
 	static = TRUE
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	var/req_radio = TRUE
 	var/obj/item/storage/ms13/radiopack/radiopack
 
