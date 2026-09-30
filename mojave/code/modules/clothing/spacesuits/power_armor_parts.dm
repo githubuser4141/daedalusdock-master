@@ -474,3 +474,72 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
                 ENERGY = CLASS4_PLASMA, \
                 FIRE = CLASS5_FIRE)
 	chance = 0
+
+//Utility - civilian work power armor on a T-51 pattern frame fit: hard hat, hazard paint, light plating
+// Sprites are AI-generated (mojave/icons/AI_SPRITES.md).
+/obj/item/ms13/power_armor/leg/left/utility
+	name = "Utility Power Armor left leg"
+	icon_state = "utility_leftleg"
+	icon_state_pa = "utility_leftleg"
+	max_integrity = 125
+	subarmor = list(SUBARMOR_FLAGS = NONE,                 EDGE_PROTECTION = CLASS3_EDGE,                 CRUSHING = CLASS4_CRUSH,                 CUTTING = CLASS4_CUT,                 PIERCING = CLASS3_PIERCE,                 IMPALING = CLASS4_STAB,                 LASER = CLASS2_LASER,                 ENERGY = CLASS2_PLASMA,                 FIRE = CLASS4_FIRE)
+
+/obj/item/ms13/power_armor/leg/right/utility
+	name = "Utility Power Armor right leg"
+	icon_state = "utility_rightleg"
+	icon_state_pa = "utility_rightleg"
+	max_integrity = 125
+	subarmor = list(SUBARMOR_FLAGS = NONE,                 EDGE_PROTECTION = CLASS3_EDGE,                 CRUSHING = CLASS4_CRUSH,                 CUTTING = CLASS4_CUT,                 PIERCING = CLASS3_PIERCE,                 IMPALING = CLASS4_STAB,                 LASER = CLASS2_LASER,                 ENERGY = CLASS2_PLASMA,                 FIRE = CLASS4_FIRE)
+
+/obj/item/ms13/power_armor/chest/utility
+	name = "Utility Power Armor chest"
+	icon_state = "utility_chest"
+	icon_state_pa = "utility_chest"
+	max_integrity = 260
+	subarmor = list(SUBARMOR_FLAGS = NONE,                 EDGE_PROTECTION = CLASS3_EDGE,                 CRUSHING = CLASS4_CRUSH,                 CUTTING = CLASS4_CUT,                 PIERCING = CLASS3_PIERCE,                 IMPALING = CLASS4_STAB,                 LASER = CLASS2_LASER,                 ENERGY = CLASS2_PLASMA,                 FIRE = CLASS4_FIRE)
+
+/obj/item/ms13/power_armor/arm/left/utility
+	name = "Utility Power Armor left arm"
+	icon_state = "utility_lefthand"
+	icon_state_pa = "utility_lefthand"
+	max_integrity = 125
+	subarmor = list(SUBARMOR_FLAGS = NONE,                 EDGE_PROTECTION = CLASS3_EDGE,                 CRUSHING = CLASS4_CRUSH,                 CUTTING = CLASS4_CUT,                 PIERCING = CLASS3_PIERCE,                 IMPALING = CLASS4_STAB,                 LASER = CLASS2_LASER,                 ENERGY = CLASS2_PLASMA,                 FIRE = CLASS4_FIRE)
+
+/obj/item/ms13/power_armor/arm/right/utility
+	name = "Utility Power Armor right arm"
+	icon_state = "utility_righthand"
+	icon_state_pa = "utility_righthand"
+	max_integrity = 125
+	subarmor = list(SUBARMOR_FLAGS = NONE,                 EDGE_PROTECTION = CLASS3_EDGE,                 CRUSHING = CLASS4_CRUSH,                 CUTTING = CLASS4_CUT,                 PIERCING = CLASS3_PIERCE,                 IMPALING = CLASS4_STAB,                 LASER = CLASS2_LASER,                 ENERGY = CLASS2_PLASMA,                 FIRE = CLASS4_FIRE)
+
+/obj/item/ms13/power_armor/head/utility
+	name = "Utility Power Armor helmet"
+	icon_state = "utility_helmet"
+	type_helmet = /obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor/utility
+
+// Utility PA set //
+/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor/utility
+	name = "Utility Power Armor Helmet"
+	desc = "A hard-hat dome bolted over a power armor faceplate, built for linemen and road crews rather than soldiers. The work lamp still throws a good light."
+	icon_state = "helmet0-utility"
+	hardsuit_type = "utility"
+	light_outer_range = 4.5
+	light_power = 0.9
+	light_color = "#f2e2b4"
+	max_integrity = 180
+	radiotype = /obj/item/radio/headset/ms13/powerarmor/t45
+	subarmor = list(SUBARMOR_FLAGS = NONE,                 EDGE_PROTECTION = CLASS3_EDGE,                 CRUSHING = CLASS4_CRUSH,                 CUTTING = CLASS4_CUT,                 PIERCING = CLASS3_PIERCE,                 IMPALING = CLASS4_STAB,                 LASER = CLASS2_LASER,                 ENERGY = CLASS2_PLASMA,                 FIRE = CLASS4_FIRE)
+
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/utility
+	module_armor = list(
+		BODY_ZONE_HEAD = /obj/item/ms13/power_armor/head/utility,
+		BODY_ZONE_CHEST = /obj/item/ms13/power_armor/chest/utility,
+		BODY_ZONE_L_ARM = /obj/item/ms13/power_armor/arm/left/utility,
+		BODY_ZONE_R_ARM = /obj/item/ms13/power_armor/arm/right/utility,
+		BODY_ZONE_L_LEG = /obj/item/ms13/power_armor/leg/left/utility,
+		BODY_ZONE_R_LEG = /obj/item/ms13/power_armor/leg/right/utility
+	)
+
+#ifdef UNIT_TESTS
+#include "power_armor_unit_test.dm"
+#endif
