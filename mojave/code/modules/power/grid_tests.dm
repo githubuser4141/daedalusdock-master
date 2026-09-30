@@ -414,6 +414,17 @@
 		return Fail("Ground cable and a concrete floor node didn't join up the way they're drawn.")
 	if(ms13_cable_net_at(start) != line)
 		return Fail("A connector didn't take machines like a cable knot.")
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, start)
+	var/mob/living/carbon/human/player = allocate(/mob/living/carbon/human, start)
+	var/obj/structure/cable/ms13_cast/cast_wire = locate() in floor_spot
+	for(var/supply in list(0, 5000))
+		line.avail = supply
+		line.load = 1000
+		var/readout = cast_wire.get_power_info()
+		if(!(readout in floor_spot.examine(ghost)))
+			return Fail("A ghost cannot read the embedded cable's power at [supply] watts.")
+		if(readout in floor_spot.examine(player))
+			return Fail("The observer power readout is exposed to living players.")
 	var/obj/structure/cable/tap = allocate(/obj/structure/cable, start)
 	tap.set_directions(CABLE_NORTH)
 	if(tap.powernet != line)

@@ -488,6 +488,13 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	. = ..()
 	new /obj/structure/cable/ms13_cast(src)
 
+/turf/open/floor/ms13/concrete/cable/examine(mob/user)
+	. = ..()
+	if(isobserver(user))
+		var/obj/structure/cable/ms13_cast/wire = locate() in src
+		if(wire)
+			. += wire.get_power_info()
+
 /turf/open/floor/ms13/concrete/cable/Destroy(force)
 	for(var/obj/structure/cable/ms13_cast/wire in src)
 		qdel(wire)
