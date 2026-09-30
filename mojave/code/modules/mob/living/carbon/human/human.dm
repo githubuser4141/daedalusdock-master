@@ -41,3 +41,8 @@
 	update_damage_overlays()
 	if(rotting < 2)
 		addtimer(CALLBACK(src, PROC_REF(rot), wait), wait)
+
+/mob/living/carbon/human/examine_more(mob/user)
+	. = ..()
+	if(fatness == FATNESS_OBESE)
+		. += span_warning("[p_they(TRUE)] [p_are()] a bumbling tub of lard.")
