@@ -973,6 +973,13 @@
 	marker.power_feed.process(1)
 	TEST_ASSERT_EQUAL(marker_grid.newavail, 1000000, "A contained Marker's power wasn't a steady 1 MW.")
 	TEST_ASSERT(!marker_grid.ms13_new_ripple, "A contained Marker's power still rippled.")
+	// Cable run under its base draws too, without a knot on the Marker's own tile.
+	var/obj/structure/ms13/cable/red/base_line = new(get_step(get_turf(marker), EAST))
+	var/datum/powernet/base_grid = new
+	base_grid.add_cable(base_line)
+	marker.power_feed.process(1)
+	TEST_ASSERT_EQUAL(base_grid.newavail, 1000000, "Cable under the Marker's base didn't draw its power.")
+	qdel(base_line)
 	marker_network.resources = 100
 	var/initial_growth_count = length(marker_network.territory)
 	marker_network.process(30)

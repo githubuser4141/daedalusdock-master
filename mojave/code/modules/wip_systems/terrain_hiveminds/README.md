@@ -149,7 +149,7 @@ Its sprite is DS13's giant Marker (`mojave/icons/wip/terrain_hivemind/marker_gia
   below, and remakes up to three suitable unclaimed ones away from biomass. Rebirth requires resources,
   unit capacity and a clear spawn tile. Nearly all its necromorphs come this way: one grown from nothing
   needs 60 tiles of growth, 200 resources and nineteen corpses remade for each.
-- A cable node beneath the Marker receives 250 kW. Destroying the Marker removes its power output
+- Each line of cable run under the Marker's base (its tile and one either side) receives 1 MW. Destroying the Marker removes its power output
   and public-channel relay. No cell or APC bypass is involved.
 - The relay carries public radio globally. Unsuppressed, it occasionally adds unsettling messages
   under a living human's name, with a 45-second cooldown. Server logs identify the Marker as source.

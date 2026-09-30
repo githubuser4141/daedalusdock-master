@@ -121,7 +121,7 @@
 
 /obj/structure/ms13_hivemind/core/marker/examine(mob/user)
 	. = ..()
-	. += span_notice("A cable node beneath it can draw 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles, with each connected floor counting as five tiles.")
+	. += span_notice("Each line of cable run under its base draws 1 MW. It also carries public radio transmissions. Its influence extends [influence_radius] tiles, with each connected floor counting as five tiles.")
 	. += span_notice((is_suppressed() ? "Its signal is suppressed. Power and public radio remain available, and its power runs steady." : "Its signal is uncontained, and its power flickers. An operating Marker suppression projector within four tiles can contain it."))
 	if(suppressed)
 		var/seconds_remaining = CEILING(max(0, containment_emp_arm_time - (world.time - containment_started_at)) / (1 SECONDS), 1)
@@ -266,15 +266,28 @@
 		return PROCESS_KILL
 	if(!powernet)
 		connect_to_network()
+	var/list/lines = lines()
 	if(marker.is_suppressed())
-		add_avail(1000000)
+		for(var/datum/powernet/line as anything in lines)
+			line.newavail += 1000000
 		return
 	// Uncontained, it stutters: now and then nothing for a moment, and a wobbling supply meanwhile.
 	if(prob(MS13_MARKER_DROPOUT_CHANCE * delta_time))
 		return
-	add_avail(1000000 * (1 + MS13_MARKER_RIPPLE * (rand() * 2 - 1)))
+	var/supply = 1000000 * (1 + MS13_MARKER_RIPPLE * (rand() * 2 - 1))
+	for(var/datum/powernet/line as anything in lines)
+		line.newavail += supply
+		line.ms13_new_ripple = max(line.ms13_new_ripple, MS13_MARKER_RIPPLE)
+
+/// Its own line, and every line run under the Marker's base (its tile and one either side), knotted there or not.
+/obj/machinery/power/ms13_marker_feed/proc/lines()
+	. = list()
 	if(powernet)
-		powernet.ms13_new_ripple = max(powernet.ms13_new_ripple, MS13_MARKER_RIPPLE)
+		. += powernet
+	for(var/dx in -1 to 1)
+		for(var/obj/structure/cable/wire in locate(x + dx, y, z))
+			if(wire.powernet)
+				. |= wire.powernet
 
 /obj/machinery/telecomms/allinone/ms13_marker_relay
 	name = "Marker public relay"
