@@ -31,9 +31,13 @@
  * spot, turned if they only fit the other way, or exactly where the grid is clicked; ctrl-click the grid to turn what
  * you're holding, and a green or red outline shows whether it fits where you point. Drag the close button to move the
  * window once ctrl-clicking it has unlocked it; shift-click it to put the window back. The grid is the capacity: slot
- * and total-weight limits don't apply to it, only the biggest thing it takes. MS13's own storage (/datum/storage/ms13)
- * is a grid; SS13's, full of things never sized for one, keeps its slots.
+ * and total-weight limits don't apply to it, only the biggest thing it takes. The grid's flat, so tiny single-cell
+ * things pile up to MS13_GRID_PILE deep in one cell: put away, they pile with their own kind; clicked onto a cell, onto
+ * any other tiny thing. MS13's own storage (/datum/storage/ms13) is a grid; SS13's, full of things never sized for
+ * one, keeps its slots.
  */
+#define MS13_GRID_PILE 3
+
 /obj/item
 	/// Size on a storage grid, in pixels. Unset, it's sized by w_class.
 	var/grid_width = 0
@@ -66,7 +70,8 @@
 	var/grid_pixel_y = 0
 	/// Its window can't be dragged about until the close button's ctrl-clicked.
 	var/grid_locked = TRUE
-	/// Cell "x,y" -> the item covering it, and item -> the cell under its bottom-left corner, list(x, y).
+	/// Cell "x,y" -> the items covering it (more than one where tiny things pile), and item -> the cell under its
+	/// bottom-left corner, list(x, y).
 	var/list/grid_cells
 	var/list/grid_origins
 	/// Where a click on the grid asked the next item to go, list(x, y).
@@ -138,26 +143,44 @@
 	var/height = item.grid_height > 0 ? item.grid_height : item.w_class * world.icon_size
 	return list(max(1, round(width / world.icon_size)), max(1, round(height / world.icon_size)))
 
-/// Whether a wide x high item fits with its bottom-left corner on cell x,y, ignoring any of it that's already there.
-/datum/storage/proc/grid_fits(x, y, wide, high, obj/item/ignore)
+/// Whether it's a tiny single-cell thing, which can pile.
+/proc/grid_piles(obj/item/item)
+	var/list/size = grid_cells_of(item)
+	return size[1] == 1 && size[2] == 1 && item.w_class <= WEIGHT_CLASS_TINY
+
+/// Whether a wide x high item fits with its bottom-left corner on cell x,y, ignoring any of it already there. A tiny
+/// thing can go on a pile of other tiny things not yet MS13_GRID_PILE deep; only of its own kind, if same_kind.
+/datum/storage/proc/grid_fits(x, y, wide, high, obj/item/item, same_kind = FALSE)
 	if(x < 0 || y < 0 || x + wide > grid_columns || y + high > grid_rows)
 		return FALSE
 	for(var/cell_x in x to x + wide - 1)
 		for(var/cell_y in y to y + high - 1)
-			var/obj/item/there = LAZYACCESS(grid_cells, "[cell_x],[cell_y]")
-			if(there && there != ignore)
+			var/list/there = LAZYACCESS(grid_cells, "[cell_x],[cell_y]")
+			there = there ? there - item : null
+			if(!length(there))
+				continue
+			if(length(there) >= MS13_GRID_PILE || !grid_piles(item))
 				return FALSE
+			for(var/obj/item/other as anything in there)
+				if(!grid_piles(other) || (same_kind && other.type != item.type))
+					return FALSE
 	return TRUE
 
-/// The cell for item's bottom-left corner, list(x, y): where the grid was clicked, else the first free spot, working
-/// down each column from the top left. Null if there's none.
+/// The cell for item's bottom-left corner, list(x, y): where the grid was clicked, else a pile of its own kind with
+/// room, else the first free spot, working down each column from the top left. Null if there's none.
 /datum/storage/proc/grid_spot(obj/item/item)
 	var/list/size = grid_cells_of(item)
 	if(grid_target)
 		return grid_fits(grid_target[1], grid_target[2], size[1], size[2], item) ? grid_target : null
+	if(grid_piles(item))
+		for(var/cell in grid_cells)
+			var/list/at = splittext(cell, ",")
+			var/list/pile = grid_cells[cell] - item
+			if(length(pile) && grid_fits(text2num(at[1]), text2num(at[2]), 1, 1, item, TRUE))
+				return list(text2num(at[1]), text2num(at[2]))
 	for(var/x in 0 to grid_columns - size[1])
 		for(var/y in grid_rows - size[2] to 0 step -1)
-			if(grid_fits(x, y, size[1], size[2], item))
+			if(!length(LAZYACCESS(grid_cells, "[x],[y]")) && grid_fits(x, y, size[1], size[2], item, TRUE))
 				return list(x, y)
 	return null
 
@@ -174,19 +197,23 @@
 /datum/storage/proc/grid_place(obj/item/item, list/spot)
 	var/list/size = grid_cells_of(item)
 	LAZYSET(grid_origins, item, spot.Copy())
+	LAZYINITLIST(grid_cells)
 	for(var/cell_x in spot[1] to spot[1] + size[1] - 1)
 		for(var/cell_y in spot[2] to spot[2] + size[2] - 1)
-			LAZYSET(grid_cells, "[cell_x],[cell_y]", item)
+			LAZYADD(grid_cells["[cell_x],[cell_y]"], item)
 
 /datum/storage/proc/grid_remove(obj/item/item)
 	if(!LAZYACCESS(grid_origins, item))
 		return
 	LAZYREMOVE(grid_origins, item)
 	for(var/cell in grid_cells?.Copy())
-		if(grid_cells[cell] == item)
+		var/list/pile = grid_cells[cell]
+		pile -= item
+		if(!length(pile))
 			LAZYREMOVE(grid_cells, cell)
 	var/list/size = grid_cells_of(item)
 	item.underlays -= grid_outline(size[1], size[2])
+	item.maptext = ""
 
 /// Screen location of cell x,y, plus a pixel offset.
 /datum/storage/proc/grid_screen_loc(x, y, offset_x = 0, offset_y = 0)
@@ -230,8 +257,14 @@
 		item.mouse_opacity = MOUSE_OPACITY_OPAQUE
 		item.plane = ABOVE_HUD_PLANE
 		item.maptext = ""
+		// A pile's fanned out a little, so each thing in it can be grabbed, and the top one says how many there are.
+		var/list/pile = grid_cells["[spot[1]],[spot[2]]"]
+		var/depth = pile.Find(item) - 1
+		item.layer = initial(item.layer) + depth
+		if(length(pile) > 1 && item == pile[length(pile)])
+			item.maptext = MAPTEXT("<font color='white'>[length(pile)]</font>")
 		// Centred over the cells it covers.
-		item.screen_loc = grid_screen_loc(spot[1], spot[2], world.icon_size / 2 * (size[1] - 1), world.icon_size / 2 * (size[2] - 1))
+		item.screen_loc = grid_screen_loc(spot[1], spot[2], world.icon_size / 2 * (size[1] - 1) + depth * 3, world.icon_size / 2 * (size[2] - 1) - depth * 3)
 	grid_update_closer()
 
 /// The close button: over the top of the window, as wide as it is.
@@ -539,6 +572,36 @@
 	if(other.atom_storage.can_insert(allocate(/obj/item/ms13_grid_test), messages = FALSE))
 		return Fail("A 2x2 thing fitted hanging off the grid's corner.")
 	other.atom_storage.grid_target = null
+
+	// Tiny things pile with their own kind, MS13_GRID_PILE deep, and not onto other kinds unless put there.
+	var/obj/item/storage/ms13/pouch = allocate(/obj/item/storage/ms13)
+	var/list/pile = list()
+	for(var/i in 1 to MS13_GRID_PILE + 1)
+		var/obj/item/ms13_grid_test/tiny/bit = allocate(/obj/item/ms13_grid_test/tiny)
+		bit.forceMove(pouch)
+		pile += bit
+	var/list/bottom = LAZYACCESS(pouch.atom_storage.grid_origins, pile[1])
+	var/list/top = LAZYACCESS(pouch.atom_storage.grid_origins, pile[MS13_GRID_PILE])
+	var/list/over = LAZYACCESS(pouch.atom_storage.grid_origins, pile[MS13_GRID_PILE + 1])
+	if(!bottom || !top || bottom[1] != top[1] || bottom[2] != top[2])
+		return Fail("[MS13_GRID_PILE] tiny things didn't pile in one cell.")
+	if(!over || (over[1] == bottom[1] && over[2] == bottom[2]))
+		return Fail("A pile went past [MS13_GRID_PILE] deep.")
+	var/obj/item/ms13_grid_test/tiny/other_kind/stranger = allocate(/obj/item/ms13_grid_test/tiny/other_kind)
+	stranger.forceMove(pouch)
+	var/list/stranger_at = LAZYACCESS(pouch.atom_storage.grid_origins, stranger)
+	if(stranger_at[1] == over[1] && stranger_at[2] == over[2])
+		return Fail("A tiny thing was put away onto a pile of something else.")
+	pouch.atom_storage.grid_target = over.Copy()
+	if(!pouch.atom_storage.can_insert(allocate(/obj/item/ms13_grid_test/tiny/other_kind), messages = FALSE))
+		return Fail("A tiny thing couldn't be put on a pile of something else by hand.")
+	pouch.atom_storage.grid_target = null
+
+/obj/item/ms13_grid_test/tiny
+	grid_width = 32
+	grid_height = 32
+
+/obj/item/ms13_grid_test/tiny/other_kind
 
 /obj/item/ms13_grid_test
 	w_class = WEIGHT_CLASS_TINY
