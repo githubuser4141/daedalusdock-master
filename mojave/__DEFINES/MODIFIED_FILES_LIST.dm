@@ -189,6 +189,9 @@ code/modules/client/verbs/ooc.dm,
 interface/skin.dmf,
 code/_onclick/hud/alert.dm,
 code/modules/mob/living/carbon/human/examine.dm,
+tgui/packages/tgui/index.jsx,
+tgui/packages/tgui/interfaces/CrewManifest.tsx,
+tgui/packages/tgui/interfaces/PreferencesMenu/CharacterPreferenceWindow.tsx,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.
