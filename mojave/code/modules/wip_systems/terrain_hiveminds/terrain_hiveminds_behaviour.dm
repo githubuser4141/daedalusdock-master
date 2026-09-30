@@ -70,7 +70,8 @@
 	var/mob/living/living_victim = victim
 	var/health_before = living_victim.health
 	. = ..()
-	if(QDELETED(living_victim) || living_victim.health < health_before)
+	if(. || QDELETED(living_victim) || living_victim.health < health_before)
+		// Human health tracks brain function, so a damaging limb hit need not reduce it.
 		hive_route_progress_at = world.time
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/MoveToTarget(list/possible_targets)
@@ -479,6 +480,29 @@
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind
 	var/force_opens_doors = TRUE
+	COOLDOWN_DECLARE(hive_construction_cooldown)
+
+/// Brutes, tripods and regenerators seed small outposts while roaming, using the hive's normal budget and caps.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/handle_hive_construction()
+	if(!istype(src, /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy) || !istype(network, /datum/ms13_terrain_hivemind/necromorph))
+		return FALSE
+	if(!network.active || incapacitated() || target || corpse_target_ref || !isturf(loc) || !COOLDOWN_FINISHED(src, hive_construction_cooldown))
+		return FALSE
+	COOLDOWN_START(src, hive_construction_cooldown, 45 SECONDS)
+	var/turf/origin = get_turf(src)
+	var/list/sites = list(origin)
+	for(var/direction in GLOB.cardinals)
+		var/turf/site = get_step(origin, direction)
+		if(Adjacent(site) && network.can_spawn_unit_at(site))
+			sites += site
+	var/claimed = 0
+	var/built = FALSE
+	for(var/turf/site as anything in sites)
+		if(claimed < 3 && network.claim_turf(site))
+			claimed++
+		if(!built && network.is_territory(site))
+			built = network.try_build_special(site)
+	return claimed || built
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/scout
 	force_opens_doors = FALSE
@@ -493,6 +517,8 @@
 	if(AIStatus == AI_OFF)
 		return FALSE
 	if(!network?.active)
+		return ..()
+	if(!incapacitated() && acquire_nearby_hive_target())
 		return ..()
 	// Once committed, keep still long enough to make progress unless survival is genuinely urgent.
 	if(!incapacitated() && !terrain_recovering && health > maxHealth * 0.25 && has_adjacent_conversion_target())
@@ -542,14 +568,22 @@
 	roam_range = 18
 	roam_min_distance = 8
 	var/fires_shaped_charge_jet = TRUE
+	var/blast_devastation_range = -1
 	var/blast_heavy_range = -1
 	var/blast_light_range = 1
 	var/detonating = FALSE
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph
 	fires_shaped_charge_jet = FALSE
-	blast_heavy_range = 1
-	blast_light_range = 3
+	blast_devastation_range = 1
+	blast_heavy_range = 3
+	blast_light_range = 5
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph/AttackingTarget(atom/attacked_target)
+	var/atom/victim = attacked_target || target
+	if(!isliving(victim))
+		return hive_breach_obstacle(victim)
+	return ..()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/AttackingTarget(atom/attacked_target)
 	if(detonating)
@@ -559,6 +593,11 @@
 		victim = target
 	if(!victim || !CanAttack(victim) || ms13_hive_distance(src, victim) > 1)
 		return ..()
+	return detonate_hive(victim)
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/proc/detonate_hive(atom/victim)
+	if(detonating || incapacitated() || !Adjacent(victim))
+		return FALSE
 	detonating = TRUE
 	var/turf/origin = get_turf(src)
 	var/attack_direction = get_dir(src, victim)
@@ -569,11 +608,44 @@
 	visible_message(span_danger("[src] ruptures in a [blast_shape] blast!"))
 	if(!fires_shaped_charge_jet)
 		playsound(src, 'mojave/sound/wip/necromorphs/exploder_blast_1.ogg', 85, TRUE)
-	explosion(origin, devastation_range = -1, heavy_impact_range = blast_heavy_range, light_impact_range = blast_light_range, adminlog = FALSE, explosion_cause = src)
+	explosion(origin, devastation_range = blast_devastation_range, heavy_impact_range = blast_heavy_range, light_impact_range = blast_light_range, adminlog = FALSE, explosion_cause = src)
 	if(fires_shaped_charge_jet)
 		ms13_fire_shaped_charge_jet(origin, jet_angle, 48, 150, 5, 4, src)
 	qdel(src)
 	return TRUE
+
+/// Sacrifice only for a useful blocked route, never furniture, friendly growth or a wall into solid rock.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph/proc/can_blast_breach(atom/obstacle)
+	if(!network?.active || detonating || incapacitated() || !obstacle?.density || !Adjacent(obstacle) || (obstacle.resistance_flags & INDESTRUCTIBLE) || istype(obstacle, /turf/closed/indestructible) || hive_goal_blocked(obstacle))
+		return FALSE
+	if(!iswallturf(obstacle) && !ismineralturf(obstacle) && !istype(obstacle, /obj/machinery/door))
+		return FALSE
+	if(istype(obstacle, /obj/machinery/door) && can_hive_pry_door(obstacle))
+		return FALSE
+	if(network.core && ms13_hive_distance(src, network.core) <= blast_heavy_range)
+		return FALSE
+	var/atom/goal = target || roam_target
+	if(!goal || hive_goal_blocked(goal) || (target && (!isliving(target) || !CanAttack(target))))
+		return FALSE
+	var/turf/barrier = get_turf(obstacle)
+	var/direction = get_dir(src, barrier)
+	if(!direction || ISDIAGONALDIR(direction) || !(get_dir(src, goal) & direction))
+		return FALSE
+	var/turf/beyond = get_step(barrier, direction)
+	if(!isopenturf(beyond) || beyond.density || istype(beyond, /turf/open/space) || istype(beyond, /turf/open/openspace) || istype(beyond, /turf/open/chasm) || istype(beyond, /turf/open/lava))
+		return FALSE
+	if(!target && network.is_territory(beyond))
+		return FALSE
+	var/hit_damage = ismineralturf(obstacle) ? (obj_damage >= obstacle.damage_deflection ? obj_damage : 0) : obstacle.run_atom_armor(obj_damage, melee_damage_type, BLUNT, get_dir(obstacle, src), armor_penetration)
+	if(hit_damage > 0 && obstacle.get_integrity() <= hit_damage * 6)
+		return FALSE // A few ordinary blows are cheaper than sacrificing the bomber.
+	// Same bounded path search used by normal movement: an existing entrance takes priority.
+	return !length(SSpathfinder.jps_pathfind_now(src, goal, max_steps = 60, mintargetdist = 1, simulated_only = FALSE))
+
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph/hive_breach_obstacle(atom/obstacle)
+	if(can_blast_breach(obstacle))
+		return detonate_hive(obstacle)
+	return ..()
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/siege
 	unit_role = "siege"

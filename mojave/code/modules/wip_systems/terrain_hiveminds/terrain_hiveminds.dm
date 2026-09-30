@@ -289,11 +289,16 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return claim_turf(pick(candidates))
 	return FALSE
 
-/datum/ms13_terrain_hivemind/proc/try_build_special()
+/datum/ms13_terrain_hivemind/proc/try_build_special(turf/build_at)
 	if(resources < special_cost || !length(territory) || length(specials) >= max(1, round(length(territory) / territory_per_special)))
 		return FALSE
-	var/special_type = pick(special_types)
-	var/list/candidates = territory.Copy()
+	if(build_at && !is_territory(build_at))
+		return FALSE
+	var/list/build_types = build_at ? special_types & list(/obj/structure/ms13_hivemind/special/wall, /obj/structure/ms13_hivemind/special/trap, /obj/structure/ms13_hivemind/special/turret) : special_types
+	if(!length(build_types))
+		return FALSE
+	var/special_type = pick(build_types)
+	var/list/candidates = build_at ? list(locate(/obj/structure/ms13_hivemind/terrain) in build_at) : territory.Copy()
 	shuffle_inplace(candidates)
 	if(ispath(special_type, /obj/structure/ms13_hivemind/special/wall) && core)
 		var/list/core_neighbors = list()
@@ -1476,6 +1481,12 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return ..()
 	if(length(hive_charge?.charging))
 		return TRUE
+	acquire_nearby_hive_target()
+	if(isliving(target) && CanAttack(target) && Adjacent(target))
+		clear_corpse_task()
+		clear_roam_target()
+		prying_door_ref = null
+		return ..()
 	if(handle_hive_vertical_action())
 		return TRUE
 	release_finished_target()
@@ -1504,6 +1515,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(handle_corpse_work())
 		roam_target = null
 		return TRUE
+	handle_hive_construction()
 	var/roaming = handle_roaming()
 	if(roam_target || handle_hive_idle_destruction() || roaming)
 		return TRUE
@@ -1537,7 +1549,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	COOLDOWN_START(src, target_scan_cooldown, 1 SECONDS)
 
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/CanAttack(atom/the_target)
-	if(!the_target || QDELETED(the_target) || hive_goal_blocked(the_target))
+	if(!the_target || QDELETED(the_target) || (hive_goal_blocked(the_target) && !(isliving(the_target) && Adjacent(the_target))))
 		return FALSE
 	if(istype(the_target, /obj/structure/window/ms13_vehicle_wall))
 		return is_vehicle_hull_target(the_target) && (can_hive_damage_obstacle(the_target) || (hive_charge?.obstacle_damage && can_hive_damage_obstacle(the_target, hive_charge.obstacle_damage, TRUE)))

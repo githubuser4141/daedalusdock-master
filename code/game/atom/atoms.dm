@@ -977,6 +977,7 @@ TYPEINFO_DEF(/atom)
  */
 /atom/proc/ex_act(severity, target)
 	set waitfor = FALSE
+	return TRUE
 
 /**
  * React to a hit by a blob objecd

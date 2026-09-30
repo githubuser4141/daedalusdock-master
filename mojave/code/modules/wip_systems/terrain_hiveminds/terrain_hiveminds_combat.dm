@@ -39,12 +39,36 @@
 			hive_charge.obstacle_damage = stats["ram_damage"]
 		hive_charge.Grant(src)
 
+/// Nearby threats interrupt work immediately, even while the wider target scan is cached.
+/mob/living/simple_animal/hostile/ms13/terrain_hivemind/proc/acquire_nearby_hive_target()
+	var/mob/living/nearest
+	var/nearest_distance = 3
+	if(isliving(target) && target.z == z && CanAttack(target))
+		nearest_distance = min(nearest_distance, get_dist(src, target))
+		if(Adjacent(target))
+			return TRUE
+	for(var/mob/living/prey in oview(2, src))
+		var/distance = get_dist(src, prey)
+		if(distance >= nearest_distance || !CanAttack(prey))
+			continue
+		nearest = prey
+		nearest_distance = distance
+	if(nearest)
+		GiveTarget(nearest)
+	return isliving(target) && target.z == z && CanAttack(target) && get_dist(src, target) <= 2
+
 /mob/living/simple_animal/hostile/ms13/terrain_hivemind/GiveTarget(atom/new_target)
 	var/had_target = target
 	. = ..()
 	if(target != had_target)
 		hive_last_seen_turf = get_turf(target)
 		hive_last_seen_at = world.time
+		COOLDOWN_RESET(src, target_scan_cooldown)
+		if(isliving(target))
+			clear_corpse_task()
+			clear_roam_target()
+			prying_door_ref = null
+			terrain_recovering = FALSE
 	if(target && !had_target && hive_challenge_sound && COOLDOWN_FINISHED(src, hive_challenge_cooldown))
 		playsound(src, hive_challenge_sound, 60, TRUE)
 		COOLDOWN_START(src, hive_challenge_cooldown, 12 SECONDS)

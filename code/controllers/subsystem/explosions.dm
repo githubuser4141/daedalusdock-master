@@ -420,8 +420,7 @@ SUBSYSTEM_DEF(explosions)
 		return COMSIG_CANCEL_EXPLOSION
 
 /datum/controller/subsystem/explosions/proc/discover_turfs(turf/epicenter, power, list/act_turfs)
-	power -= GET_EXPLOSION_BLOCK(epicenter)
-
+	// The queue applies each turf's resistance, including the epicenter, once.
 	if (power >= iterative_explosions_z_threshold)
 		var/turf/above = GetAbove(epicenter)
 		if(!isnull(above))

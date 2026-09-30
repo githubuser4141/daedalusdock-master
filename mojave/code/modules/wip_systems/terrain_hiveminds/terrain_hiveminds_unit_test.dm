@@ -424,7 +424,7 @@
 
 /datum/unit_test/ms13_hive_combat/Run()
 	var/turf/origin = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
-	for(var/turf/tile in RANGE_TURFS(4, origin))
+	for(var/turf/tile in RANGE_TURFS(6, origin))
 		original_tiles += list(list(tile.x, tile.y, tile.z, tile.type, islist(tile.baseturfs) ? tile.baseturfs.Copy() : tile.baseturfs))
 	var/datum/ms13_terrain_hivemind/necromorph/network = new
 	network.active = TRUE
@@ -1080,3 +1080,135 @@
 	QDEL_LIST(marker_units)
 	QDEL_LIST(marker_growths)
 	qdel(projector)
+
+/datum/unit_test/ms13_hive_threat_priority
+	name = "MOJAVE SUN: Nearby Threats Interrupt Hive Work"
+
+/datum/unit_test/ms13_hive_threat_priority/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/chicken/corpse = allocate(/mob/living/simple_animal/chicken, get_step(origin, NORTH))
+	corpse.death()
+	var/mob/living/carbon/human/prey = allocate(/mob/living/carbon/human, get_step(origin, EAST))
+	var/obj/machinery/door/unpowered/ms13/metal/door = allocate(/obj/machinery/door/unpowered/ms13/metal, get_step(origin, WEST))
+	for(var/unit_type in list(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier, /mob/living/simple_animal/hostile/ms13/terrain_hivemind/converter))
+		var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/unit = allocate(unit_type, origin, network)
+		unit.toggle_ai(AI_OFF)
+		unit.AIStatus = AI_ON // Run a single real decision without scheduling autonomous turns.
+		unit.rapid_melee = 1
+		unit.cached_hive_targets = list()
+		unit.target_scan_turf = origin
+		COOLDOWN_START(unit, target_scan_cooldown, 1 MINUTES)
+		TEST_ASSERT(network.claim_corpse(corpse, unit), "Could not reserve a corpse for the interruption test.")
+		unit.corpse_target_ref = WEAKREF(corpse)
+		if(!unit.corpse_converter)
+			TEST_ASSERT(unit.try_make_grab(corpse), "The hauler could not pick up its test corpse.")
+		unit.roam_target = get_step(origin, SOUTH)
+		unit.prying_door_ref = WEAKREF(door)
+		unit.hive_avoid_goal(prey) // A formerly unreachable person has walked right up to it.
+		var/old_damage = prey.getBruteLoss()
+		unit.hive_route_progress_at = world.time - 5 SECONDS
+		unit.handle_automated_action()
+		sleep(1)
+		TEST_ASSERT_EQUAL(unit.target, prey, "An adjacent person was ignored in favour of work or a cached empty scan.")
+		TEST_ASSERT(!unit.corpse_target_ref && !network.get_corpse_claim(corpse) && !unit.is_grabbing(corpse), "Threat acquisition leaves a corpse assigned or grabbed.")
+		TEST_ASSERT(!unit.roam_target && !unit.prying_door_ref, "Threat acquisition leaves patrol/prying active.")
+		TEST_ASSERT(unit.in_melee, "The unit acquires a nearby person but never attempts melee.")
+		TEST_ASSERT(prey.getBruteLoss() > old_damage, "The unit attempts melee without hurting an unprotected human.")
+		TEST_ASSERT(world.time - unit.hive_route_progress_at < 1 SECONDS, "A damaging human hit is mistaken for a stalled pursuit because health tracks brain function.")
+		qdel(unit)
+	var/mob/living/simple_animal/distant = allocate(/mob/living/simple_animal, locate(origin.x, origin.y, origin.z - 1))
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/hunter = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind, origin, network)
+	hunter.GiveTarget(distant)
+	TEST_ASSERT(hunter.acquire_nearby_hive_target() && hunter.target == prey, "A target on another z-level masks nearby prey because get_dist returns -1.")
+
+/datum/unit_test/ms13_hive_outposts
+	name = "MOJAVE SUN: Heavy Necromorph Outpost Budget"
+
+/datum/unit_test/ms13_hive_outposts/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 3, run_loc_floor_bottom_left.y + 3, run_loc_floor_bottom_left.z)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	network.resources = 500
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy/builder = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/heavy, origin, network)
+	builder.toggle_ai(AI_OFF)
+	TEST_ASSERT(builder.handle_hive_construction(), "A roaming brute cannot seed an outpost.")
+	TEST_ASSERT_EQUAL(length(network.territory), 3, "A building burst should lay three patches at most.")
+	TEST_ASSERT_EQUAL(length(network.specials), 1, "A building burst should place one defensive structure.")
+	TEST_ASSERT_EQUAL(network.resources, 500 - 3 * network.expansion_cost - network.special_cost, "Mobile construction bypasses the hive's costs.")
+	for(var/obj/structure/ms13_hivemind/special/building as anything in network.specials)
+		TEST_ASSERT(istype(building, /obj/structure/ms13_hivemind/special/wall) || istype(building, /obj/structure/ms13_hivemind/special/trap) || istype(building, /obj/structure/ms13_hivemind/special/turret), "A mobile unit created a spawner or converter.")
+		TEST_ASSERT(get_turf(building) != origin, "A structure was placed underneath its builder.")
+	TEST_ASSERT(!builder.handle_hive_construction(), "Building has no cooldown.")
+	builder.forceMove(locate(run_loc_floor_bottom_left.x + 1, run_loc_floor_bottom_left.y + 1, origin.z))
+	COOLDOWN_RESET(builder, hive_construction_cooldown)
+	network.resources = 0
+	TEST_ASSERT(!builder.handle_hive_construction(), "An empty resource pool still builds an outpost.")
+	network.resources = 500
+	network.territory_limit = length(network.territory)
+	COOLDOWN_RESET(builder, hive_construction_cooldown)
+	TEST_ASSERT(!builder.handle_hive_construction(), "Mobile construction exceeds territory/structure limits.")
+	network.territory_limit = 0
+	var/mob/living/simple_animal/prey = allocate(/mob/living/simple_animal, get_step(builder, EAST))
+	builder.GiveTarget(prey)
+	COOLDOWN_RESET(builder, hive_construction_cooldown)
+	TEST_ASSERT(!builder.handle_hive_construction(), "Building takes priority over combat.")
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier/soldier = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/footsoldier, get_turf(builder), network)
+	TEST_ASSERT(!soldier.handle_hive_construction(), "Small combat strains can build outposts.")
+
+/datum/unit_test/ms13_hive_combat/bomber_breach
+	name = "MOJAVE SUN: Purposeful Bomber Breach And Lethal Blast"
+
+/datum/unit_test/ms13_hive_combat/bomber_breach/Run()
+	var/turf/origin = locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 4, run_loc_floor_bottom_left.z)
+	for(var/turf/tile in RANGE_TURFS(6, origin))
+		original_tiles += list(list(tile.x, tile.y, tile.z, tile.type, islist(tile.baseturfs) ? tile.baseturfs.Copy() : tile.baseturfs))
+		tile.ChangeTurf(/turf/open/floor/iron)
+	for(var/turf/tile in RANGE_TURFS(1, origin))
+		if(tile != origin)
+			tile.ChangeTurf(/turf/closed/indestructible)
+	var/turf/wall = get_step(origin, EAST)
+	wall = wall.ChangeTurf(/turf/closed/wall/ms13/dungeon)
+	var/datum/ms13_terrain_hivemind/necromorph/network = new
+	allocated += network
+	network.active = TRUE
+	var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph/bomber = allocate(/mob/living/simple_animal/hostile/ms13/terrain_hivemind/suicide/necromorph, origin, network)
+	bomber.toggle_ai(AI_OFF)
+	TEST_ASSERT(!bomber.can_blast_breach(wall), "An idle bomber detonates without a destination.")
+	bomber.roam_target = locate(origin.x + 4, origin.y, origin.z)
+	TEST_ASSERT(!bomber.can_blast_breach(get_step(origin, WEST)), "An indestructible wall is considered a useful sacrifice.")
+	var/turf/beyond = get_step(wall, EAST)
+	var/old_beyond_type = beyond.type
+	beyond = beyond.ChangeTurf(/turf/closed/indestructible)
+	TEST_ASSERT(!bomber.can_blast_breach(wall), "A bomber sacrifices itself to dig a dead-end pocket.")
+	beyond.ChangeTurf(old_beyond_type)
+	var/turf/north = get_step(origin, NORTH)
+	var/old_origin_type = origin.type
+	north = north.ChangeTurf(old_origin_type)
+	TEST_ASSERT(!bomber.can_blast_breach(wall), "A bomber ignores an available route around a wall.")
+	north.ChangeTurf(/turf/closed/indestructible)
+	wall = wall.ChangeTurf(/turf/closed/mineral/random/ms13)
+	var/turf/closed/mineral/random/ms13/rock = wall
+	rock.mining_health = 1000
+	TEST_ASSERT(bomber.can_blast_breach(rock), "A bomber cannot evaluate mineral walls using mining health.")
+	wall = wall.ChangeTurf(/turf/closed/wall/ms13/dungeon)
+	var/old_deflection = wall.damage_deflection
+	wall.damage_deflection = 0
+	wall.update_integrity(1)
+	TEST_ASSERT(!bomber.can_blast_breach(wall), "A bomber wastes itself on a nearly destroyed wall.")
+	wall.update_integrity(wall.max_integrity)
+	wall.damage_deflection = old_deflection
+	TEST_ASSERT(bomber.can_blast_breach(wall), "The only useful breach is not recognised as a bombing opportunity.")
+	var/list/blast_tiles = list()
+	SSexplosions.discover_turfs(origin, 6, blast_tiles)
+	TEST_ASSERT_EQUAL(blast_tiles[origin], 6, "The explosion loses power before reaching its own epicenter.")
+	TEST_ASSERT_EQUAL(blast_tiles[wall], 5, "The starting floor absorbs the blast twice, shortening every explosion's range.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, origin)
+	TEST_ASSERT(bomber.DestroyObjectsInDirection(EAST), "Normal obstruction handling never uses the bomber's explosive ability.")
+	TEST_ASSERT(QDELETED(bomber), "A decided bomber waits instead of detonating immediately.")
+	sleep(1 SECONDS)
+	TEST_ASSERT(isopenturf(get_step(origin, EAST)), "The live bomber explosion did not breach a Mojave dungeon wall.")
+	TEST_ASSERT(QDELETED(victim) || victim.stat == DEAD, "A point-blank bomber cannot kill an unprotected human.")
