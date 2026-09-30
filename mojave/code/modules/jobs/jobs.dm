@@ -178,7 +178,8 @@ GLOBAL_PROTECT(ms13_quality_roster)
 /proc/ms13_quality_allows(score, title)
 	if(score <= MS13_QUALITY_OUTCAST)
 		return title == MS13_QUALITY_OUTCAST_JOB
-	return score >= (GLOB.ms13_quality_job_minimums[title] || 0)
+	var/minimum = GLOB.ms13_quality_job_minimums[title]
+	return isnull(minimum) || score >= minimum
 
 /// How a round's votes on one player move their score: -1, 0 or 1.
 /proc/ms13_quality_change(list/votes)
@@ -292,6 +293,11 @@ GLOBAL_PROTECT(ms13_quality_roster)
 	name = "JOBS: Player Quality Gates Jobs And Moves On Agreement"
 
 /datum/unit_test/ms13_player_quality/Run()
+	for(var/score in MS13_QUALITY_MIN to MS13_QUALITY_MAX)
+		if(!ms13_quality_allows(score, MS13_QUALITY_OUTCAST_JOB))
+			return Fail("Score [score] blocks the fallback job.")
+		if(ms13_quality_allows(score, "NCR Trooper") != (score > MS13_QUALITY_OUTCAST))
+			return Fail("Score [score] applies the wrong restriction to an ordinary job.")
 	if(ms13_quality_change(list("a" = 1)) != 0)
 		return Fail("One vote moved a score.")
 	if(ms13_quality_change(list("a" = 1, "b" = 1)) != 1 || ms13_quality_change(list("a" = -1, "b" = -1, "c" = 1)) != -1)
