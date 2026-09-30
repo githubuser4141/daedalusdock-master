@@ -188,6 +188,7 @@ code/_onclick/hud/human.dm,
 code/modules/client/verbs/ooc.dm,
 interface/skin.dmf,
 code/_onclick/hud/alert.dm,
+code/modules/mob/living/carbon/human/examine.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.
