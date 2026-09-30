@@ -191,11 +191,12 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 
 /obj/Initialize(mapload)
 	. = ..()
-	if(GLOB.ms13_wall_frames[type])
+	// Global initializers create UI objects before the wall-frame cache exists.
+	if(GLOB.ms13_wall_frames?[type])
 		ms13_rewall(loc)
 
 /obj/Destroy(force)
-	if(!GLOB.ms13_wall_frames[type])
+	if(!GLOB.ms13_wall_frames?[type])
 		return ..()
 	var/turf/site = get_turf(src)
 	. = ..()
