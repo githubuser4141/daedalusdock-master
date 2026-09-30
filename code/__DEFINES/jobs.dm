@@ -6,6 +6,8 @@
 #define JOB_UNAVAILABLE_SLOTFULL 5
 /// Job unavailable due to incompatibility with an antag role.
 #define JOB_UNAVAILABLE_ANTAG_INCOMPAT 6
+/// MOJAVE EDIT - job unavailable at the player's quality score (mojave/code/modules/jobs/jobs.dm).
+#define JOB_UNAVAILABLE_QUALITY 7
 
 #define DEFAULT_RELIGION "Christianity"
 #define DEFAULT_DEITY "Space Jesus"

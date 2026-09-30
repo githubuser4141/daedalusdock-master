@@ -182,6 +182,7 @@ code/modules/grab/grab_living.dm,
 code/modules/grab/grab_object.dm,
 code/game/machinery/cell_charger.dm,
 code/game/machinery/recharger.dm,
+code/modules/mob/dead/new_player/new_player.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.
