@@ -13,8 +13,8 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/ms13)
 	flags_inv = HIDEHAIR
 	flags_cover = 0
 	max_integrity = 150
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 2 SECONDS
 	var/has_fov = FALSE //Whether this has a grim dark FOV or not
@@ -45,8 +45,8 @@ TYPEINFO_DEF(/obj/item/clothing/head/ms13/hood)
 	//dynamic_hair_suffix = ""
 	//dynamic_fhair_suffix = ""
 	max_integrity = 150
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 2 SECONDS
 	var/has_fov = FALSE //Whether this has a grim dark FOV or not
@@ -87,8 +87,8 @@ TYPEINFO_DEF(/obj/item/clothing/head/soft/ms13)
 	worn_icon = 'mojave/icons/mob/clothing/head.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/clothing/head/soft/ms13/Initialize()
 	. = ..()
@@ -397,8 +397,8 @@ TYPEINFO_DEF(/obj/item/clothing/head/welding/ms13)
                 FIRE = CLASS4_FIRE)
 	max_integrity = 325
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	equip_delay_self = 2 SECONDS
 	equip_delay_other = 4 SECONDS
 

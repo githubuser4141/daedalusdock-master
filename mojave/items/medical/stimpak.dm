@@ -8,8 +8,8 @@
 	worn_icon_state = "empty_placeholder"
 	slot_flags = ITEM_SLOT_BELT
 	reagent_flags = null
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	var/use_sound
 
 /obj/item/reagent_containers/hypospray/medipen/ms13/Initialize()
@@ -30,8 +30,8 @@
 	amount_per_transfer_from_this = 10
 	list_reagents = list(/datum/reagent/ms13/medicine/stimpak_fluid = 10)
 	ignore_flags = 0
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 	use_sound = 'mojave/sound/ms13items/stimpak_inject.ogg'
 
 /obj/item/reagent_containers/hypospray/medipen/ms13/attack(mob/living/M, mob/user)

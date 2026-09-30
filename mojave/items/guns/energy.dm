@@ -135,8 +135,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	worn_icon = 'mojave/icons/mob/worn_misc.dmi'
 	worn_icon_state = "empty_placeholder"
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	var/base_icon = ""
 	var/multiple_states = FALSE
 	emp_charge_loss = 50 // 95% less than a standard cell: 50 charge for a heavy EMP, 25 for a light one.

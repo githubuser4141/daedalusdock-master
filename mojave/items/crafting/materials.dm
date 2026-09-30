@@ -10,23 +10,23 @@
 	throwforce = 0
 	merge_type = /obj/item/stack/sheet/ms13
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 	novariants = TRUE
 /*
 /obj/item/stack/sheet/ms13/update_icon_state()
 	if(novariants)
 		return ..()
 	if(amount <= (max_amount * (1/3)))
-		//grid_width = 64
-		//grid_height = 32
+		grid_width = 64
+		grid_height = 32
 		return ..()
 	if (amount <= (max_amount * (2/3)))
-		//grid_width = 96
-		//grid_height = 64
+		grid_width = 96
+		grid_height = 64
 		return ..()
-	//grid_width = 126
-	//grid_height = 96
+	grid_width = 126
+	grid_height = 96
 	return ..()
 */
 /obj/item/stack/sheet/ms13/Initialize()
@@ -97,8 +97,8 @@
 	merge_type = /obj/item/stack/sheet/ms13/scrap_parts
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 	novariants = FALSE
 
@@ -127,8 +127,8 @@
 	merge_type = /obj/item/stack/sheet/ms13/rubber
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/rubber/two
@@ -150,8 +150,8 @@
 	merge_type = /obj/item/stack/sheet/ms13/plastic
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/plastic/two
@@ -173,8 +173,8 @@
 	merge_type = /obj/item/stack/sheet/ms13/ceramic
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 	novariants = FALSE
 
@@ -206,8 +206,8 @@ GLOBAL_LIST_INIT(ceramic_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/glass
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 	novariants = FALSE
 	grind_results = list(
@@ -251,8 +251,8 @@ GLOBAL_LIST_INIT(ceramic_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/scrap_electronics
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 	novariants = FALSE
 
@@ -274,8 +274,8 @@ GLOBAL_LIST_INIT(ceramic_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/circuits
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 	novariants = FALSE
 	ms13_breakdown_result = list(
@@ -304,8 +304,8 @@ GLOBAL_LIST_INIT(ceramic_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/wood/log
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 
 /obj/item/stack/sheet/ms13/wood/log/attackby(obj/item/W, mob/user, params)
 	if(W.sharpness & SHARP_AXE)
@@ -357,8 +357,8 @@ GLOBAL_LIST_INIT(scrap_wood_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/wood/plank
 	amount = 1
 	max_amount = 8
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 	novariants = FALSE
 
 /obj/item/stack/sheet/ms13/wood/plank/two
@@ -394,8 +394,8 @@ GLOBAL_LIST_INIT(plank_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/cloth
 	max_amount = 10
 	amount = 1
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/cloth/two
@@ -420,8 +420,8 @@ GLOBAL_LIST_INIT(ms13cloth_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/leather
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/leather/two
@@ -438,8 +438,8 @@ GLOBAL_LIST_INIT(ms13cloth_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/mil_fiber
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/mil_fiber/two
@@ -453,8 +453,8 @@ GLOBAL_LIST_INIT(ms13cloth_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/thread
 	amount = 1
 	max_amount = 12
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/thread/two

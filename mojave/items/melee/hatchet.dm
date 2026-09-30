@@ -22,8 +22,8 @@
 	sharpness = SHARP_EDGED | SHARP_AXE
 	toolspeed = 1.25
 	log_pickup_and_drop = TRUE
-	//grid_width = 64
-	//grid_height = 96
+	grid_width = 64
+	grid_height = 96
 	mining_mult = -0.25
 
 /obj/item/hatchet/ms13/Initialize()

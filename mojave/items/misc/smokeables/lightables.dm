@@ -16,8 +16,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	slot_flags = null
 	foldable = null
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	var/max_amount = 20
 	var/is_open = FALSE //whether the box is open or not
 	var/is_randomised = FALSE
@@ -168,8 +168,8 @@
 	inhand_icon_state = "match"
 	smoketime = 45 SECONDS
 	grind_results = null
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	light_system = OVERLAY_LIGHT
 	light_outer_range = 1
 	light_power = 0.6
@@ -428,8 +428,8 @@
 	inhand_icon_state = "butane"
 	volume = 100 // 2 and half welder refills
 	list_reagents = list(/datum/reagent/fuel = 100)
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/reagent_containers/ms13/lighterfluid/Initialize(mapload) // AI EDIT: ComponentInitialize() isn't a real DD hook - this is just Initialize()
 	. = ..()

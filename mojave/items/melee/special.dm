@@ -25,8 +25,8 @@ TYPEINFO_DEF(/obj/item/ms13/knuckles)
 	force = 15
 	subtractible_armour_penetration = 10
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ms13/knuckles/Initialize()
 	. = ..()
@@ -66,8 +66,8 @@ TYPEINFO_DEF(/obj/item/ms13/knuckles)
 	throwforce = 10
 	subtractible_armour_penetration = 35
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 	mining_mult = 0.5
 
 

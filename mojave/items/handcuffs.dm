@@ -9,8 +9,8 @@
 	// handcuffed_icon/handcuffed_icon_state and cuff_verb aren't supported by DD's restraint system - dropped
 	lefthand_file = 'mojave/icons/mob/inhands/items_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	w_class = WEIGHT_CLASS_NORMAL
 	cuffsound = 'mojave/sound/ms13effects/hogtie.ogg'
 	handcuff_time = 3 SECONDS
@@ -34,8 +34,8 @@
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/restraints/handcuffs/ms13
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	icon_state = "handcuffs"
 	icon = 'mojave/icons/objects/tools/tools_inventory.dmi'
 	inhand_icon_state = "handcuffs"

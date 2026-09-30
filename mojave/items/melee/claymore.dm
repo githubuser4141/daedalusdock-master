@@ -34,8 +34,8 @@
 	hitsound = list('mojave/sound/ms13weapons/meleesounds/blade_hit1.ogg', 'mojave/sound/ms13weapons/meleesounds/blade_hit2.ogg')
 	pickup_sound = 'mojave/sound/ms13weapons/meleesounds/blade_pickup2.ogg'
 	toolspeed = 2
-	//grid_width = 64
-	//grid_height = 96
+	grid_width = 64
+	grid_height = 96
 	mining_mult = -0.65
 
 /obj/item/claymore/ms13/machete/gladius
@@ -82,8 +82,8 @@
 	w_class= WEIGHT_CLASS_NORMAL
 	sharpness = NONE
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 128
+	grid_width = 32
+	grid_height = 128
 
 /obj/item/claymore/ms13/pipe/tireiron
 	name = "tire iron"
@@ -113,8 +113,8 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	sharpness = NONE
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 128
+	grid_width = 32
+	grid_height = 128
 
 /obj/item/claymore/ms13/machete/shishkebab
 	name = "shishkebab"
@@ -129,8 +129,8 @@
 	subtractible_armour_penetration = 25
 	edge_protection_penetration = 5
 	throwforce = 10
-	//grid_width = 64
-	//grid_height = 128
+	grid_width = 64
+	grid_height = 128
 	mining_mult = -0.65
 	var/on = FALSE
 
@@ -164,8 +164,8 @@
 	throwforce = 10
 	sharpness = NONE
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 	var/on = FALSE
 	var/icon_prefix = "ripper"
 

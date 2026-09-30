@@ -49,8 +49,8 @@
 	icon = 'mojave/icons/effects/gurps.dmi'
 	icon_state = "rot_1"
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/food/badrecipe/moldy/ms13/Initialize()
 	. = ..()

@@ -2,8 +2,8 @@
 	icon = 'mojave/icons/objects/clothing/clothing_world/shoes_world.dmi'
 	worn_icon = 'mojave/icons/mob/clothing/feet.dmi'
 	strip_delay = 20
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	equip_delay_self = 1 SECONDS
 	equip_delay_other = 4 SECONDS // have you ever put shoes on a full grown adult before
 	// shoes aren't /obj/item/storage, so this doesn't create storage on its own - see Initialize() below

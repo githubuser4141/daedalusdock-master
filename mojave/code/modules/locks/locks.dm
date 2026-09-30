@@ -10,8 +10,8 @@
 	worn_icon_state = "empty_placeholder"
 	w_class = WEIGHT_CLASS_SMALL
 	item_flags = LOCKING_ITEM
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	//(1 Master, 5 Expert, 10 Standard, 17 Novice, 20+ Beginner)
 	lock_difficulty = 10
 	//if the lock is open and free to use

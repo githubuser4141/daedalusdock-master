@@ -6,23 +6,23 @@
 	icon = 'mojave/icons/objects/medical/medical_inventory.dmi'
 
 /obj/item/stack/medical
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /*
 /obj/item/stack/medical/update_icon_state()
 	if(novariants)
 		return ..()
 	if(amount <= (max_amount * (1/3)))
-		//grid_width = 32
-		//grid_height = 32
+		grid_width = 32
+		grid_height = 32
 		return ..()
 	if (amount <= (max_amount * (2/3)))
-		//grid_width = 64
-		//grid_height = 32
+		grid_width = 64
+		grid_height = 32
 		return ..()
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	return ..()
 */
 /obj/item/stack/medical/suture/ms13
@@ -156,8 +156,8 @@
 	// It never had one, so heal_carbon() never splinted anything with it: without a slowdown there's no splint.
 	splint_slowdown = 1
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/stack/medical/splint/ms13/attackby(obj/item/I, mob/user, params)
 	return

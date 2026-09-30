@@ -24,8 +24,8 @@
 	recoil = 1.5
 	spread = 3
 	slowdown = 1
-	//grid_height = 256
-	//grid_width = 64
+	grid_height = 256
+	grid_width = 64
 
 /obj/item/gun/energy/ms13/gauss/sniper
 	name = "gauss sniper"
@@ -40,8 +40,8 @@
 	slowdown = 1
 	has_scope = TRUE
 	scope_range = 3
-	//grid_height = 256
-	//grid_width = 64
+	grid_height = 256
+	grid_width = 64
 
 /obj/item/gun/energy/ms13/gauss/pistol
 	name = "gauss pistol"
@@ -59,8 +59,8 @@
 	spread = 6
 	slowdown = 0.5
 	fire_delay = 0.6 SECONDS
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 	wield_info = /datum/wield_info/default
 
 /* Someone else has to figure out this thing's gimmick. Won't be me.

@@ -175,8 +175,8 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 /obj/item/ms13/power_armor/leg
 	name = "Leg power armor"
 	w_class = WEIGHT_CLASS_BULKY
-	//grid_height = 128
-	//grid_width = 96
+	grid_height = 128
+	grid_width = 96
 
 /obj/item/ms13/power_armor/leg/left
 	name = "power armor"
@@ -189,8 +189,8 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 /obj/item/ms13/power_armor/arm
 	name = "Arm power armor"
 	w_class = WEIGHT_CLASS_BULKY
-	//grid_height = 128
-	//grid_width = 96
+	grid_height = 128
+	grid_width = 96
 
 /obj/item/ms13/power_armor/arm/left
 	name = "Left arm power armor"
@@ -204,16 +204,16 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 	name = "Chest power armor"
 	zone = BODY_ZONE_CHEST
 	w_class = WEIGHT_CLASS_HUGE
-	//grid_height = 256
-	//grid_width = 256
+	grid_height = 256
+	grid_width = 256
 
 /obj/item/ms13/power_armor/head
 	name = "Helmet power armor"
 	zone = BODY_ZONE_HEAD
 	var/type_helmet = null
 	w_class = WEIGHT_CLASS_BULKY
-	//grid_height = 96
-	//grid_width = 96
+	grid_height = 96
+	grid_width = 96
 
 //T-51 SET
 /obj/item/ms13/power_armor/leg/left/t51

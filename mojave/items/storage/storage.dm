@@ -14,8 +14,8 @@
 	worn_icon_state = "empty_placeholder"
 	icon_state = "medicalkit"
 	storage_type = /datum/storage/ms13/firstaid
-	//grid_height = 64
-	//grid_width = 64
+	grid_height = 64
+	grid_width = 64
 	ms13_flags_1 = LOCKABLE_1
 
 /obj/item/storage/firstaid/ms13/Initialize()
@@ -61,8 +61,8 @@
 	icon_state = "doctorsbag"
 	slot_flags = 0
 	storage_type = /datum/storage/ms13/doctors_bag
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 	ms13_flags_1 = LOCKABLE_1
 
 /datum/storage/ms13/doctors_bag
@@ -115,8 +115,8 @@
 	//bare_wound_bonus 0
 	sharpness = NONE
 	hitsound = 'mojave/sound/ms13weapons/meleesounds/genericblunt_hit.ogg'
-	//grid_height = 64
-	//grid_width = 160
+	grid_height = 64
+	grid_width = 160
 	ms13_flags_1 = LOCKABLE_1
 
 /datum/storage/ms13/toolbox

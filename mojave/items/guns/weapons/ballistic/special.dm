@@ -19,8 +19,8 @@
 	rack_delay = 1 SECONDS
 	spread = 0
 	recoil = 2.65
-	//grid_height = 32
-	//grid_width = 224
+	grid_height = 32
+	grid_width = 224
 
 /obj/item/ammo_box/magazine/internal/ms13/m79
 	name = "m79 internal magazine (40mm)"

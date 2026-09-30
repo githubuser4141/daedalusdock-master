@@ -8,8 +8,8 @@
 	food_reagents = list(/datum/reagent/consumable/nutriment/protein = 6)
 	foodtypes = MEAT | RAW
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 	//Tells the initialize function which icon to pick
 	var/fish_type = "fish"
 	//Determines what kind of fillet you get when cut
@@ -98,8 +98,8 @@
 	icon = 'mojave/icons/objects/food/fish/fish_world.dmi'
 	icon_state = "sockeye_cutlet"
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	var/fish_cooked_type = /obj/item/food/meat/cutlet/ms13/fish
 	bite_consumption = 3
 	food_reagents = list(/datum/reagent/consumable/nutriment/protein = 3)
@@ -181,8 +181,8 @@
 	food_reagents = list(/datum/reagent/consumable/nutriment/protein = 4, /datum/reagent/consumable/nutriment/vitamin = 1)
 	tastes = list("fish" = 5)
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	foodtypes = MEAT
 	decomp_type = /obj/item/food/badrecipe/moldy/ms13
 

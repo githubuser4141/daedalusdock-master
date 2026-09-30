@@ -21,8 +21,8 @@
 	spread = 2
 	recoil = 1.75
 	slowdown = 0.75
-	//grid_height = 32
-	//grid_width = 224
+	grid_height = 32
+	grid_width = 224
 
 /obj/item/gun/ballistic/rifle/ms13/hunting/scoped
 	name = "scoped hunting rifle"
@@ -56,8 +56,8 @@
 	recoil = 0.75
 	slowdown = 0.75
 	mag_type = /obj/item/ammo_box/magazine/ms13/r10
-	//grid_height = 32
-	//grid_width = 192
+	grid_height = 32
+	grid_width = 192
 
 /obj/item/gun/ballistic/rifle/ms13/varmint/update_icon_state()
 	. = ..()
@@ -100,8 +100,8 @@
 	w_class = WEIGHT_CLASS_HUGE
 	has_scope = TRUE
 	scope_range = 2
-	//grid_height = 32
-	//grid_width = 224
+	grid_height = 32
+	grid_width = 224
 
 /obj/item/gun/ballistic/rifle/ms13/hunting/scoped/amr
 	name = "anti-material rifle"
@@ -123,8 +123,8 @@
 	recoil = 4
 	slowdown = 1.5
 	scope_range = 4
-	//grid_height = 256
-	//grid_width = 64
+	grid_height = 256
+	grid_width = 64
 
 /*
 
@@ -192,8 +192,8 @@
 	rack_delay = 1 SECONDS
 	spread = 0
 	recoil = 1.65
-	//grid_height = 32
-	//grid_width = 224
+	grid_height = 32
+	grid_width = 224
 
 /obj/item/gun/ballistic/rifle/ms13/antique_sniper
 	name = "antique sniper"
@@ -218,8 +218,8 @@
 	recoil = 2
 	has_scope = TRUE
 	scope_range = 4
-	//grid_height = 64
-	//grid_width = 224
+	grid_height = 64
+	grid_width = 224
 
 /* Weeb shit and an unbalanced M1 Garand for now
 /obj/item/gun/ballistic/rifle/ms13/hunting/japanese
@@ -270,8 +270,8 @@
 	caliber = "a556"
 	w_class = WEIGHT_CLASS_TINY
 	max_ammo = 10
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/ammo_box/magazine/ms13/r308
 	name = "5 round magazine (.308)"
@@ -281,8 +281,8 @@
 	caliber = "a308"
 	w_class = WEIGHT_CLASS_TINY
 	max_ammo = 5
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/ammo_box/magazine/ms13/amr
 	name = "6 round magazine (.50)"
@@ -292,8 +292,8 @@
 	caliber = "a50MG"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 6
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/ammo_box/magazine/ms13/r308/battlerifle
 	name = "8 round enbloc magazine (.308)"
@@ -339,8 +339,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	multiple_sprites = AMMO_BOX_PER_BULLET
 	multiload = TRUE
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/ammo_box/ms13/stripper/r762
 	name = "rifle stripper clip (7.62)"

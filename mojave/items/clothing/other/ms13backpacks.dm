@@ -19,8 +19,8 @@
 	max_integrity = 300
 	drag_slowdown = 2
 	storage_type = /datum/storage/ms13/backpack
-	//grid_height = 288 //NO BACKPACK STACKING
-	//grid_width = 288 //NO BACKPACK STACKING
+	grid_height = 288 //NO BACKPACK STACKING
+	grid_width = 288 //NO BACKPACK STACKING
 	equip_delay_self = 0.75 SECONDS
 	equip_delay_other = 2 SECONDS
 	ms13_flags_1 = LOCKABLE_1

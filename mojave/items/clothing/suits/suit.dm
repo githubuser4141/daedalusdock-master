@@ -15,8 +15,8 @@ TYPEINFO_DEF(/obj/item/clothing/suit/ms13)
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
-	//grid_width = 64
-	//grid_height = 96
+	grid_width = 64
+	grid_height = 96
 
 /obj/item/clothing/suit/ms13/Initialize()
 	. = ..()
@@ -40,8 +40,8 @@ TYPEINFO_DEF(/obj/item/clothing/suit/toggle/ms13)
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
 	equip_delay_self = 1.5 SECONDS
 	equip_delay_other = 3 SECONDS
-	//grid_width = 64
-	//grid_height = 96
+	grid_width = 64
+	grid_height = 96
 
 /obj/item/clothing/suit/toggle/ms13/Initialize()
 	. = ..()

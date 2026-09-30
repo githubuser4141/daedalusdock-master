@@ -72,8 +72,8 @@
 	throw_speed = 1.5
 	w_class = WEIGHT_CLASS_NORMAL //Kind of weird but I don't want people running around with pocket molotovs - Hekzder
 	var/extra_POWER // Used for scaling flame power based on alcoholpwr. This number, usually 0-100, will be divided by 75 to get the flame radius.
-	//grid_width = 32
-	//grid_height = 96
+	grid_width = 32
+	grid_height = 96
 	var/arm_sound = 'sound/items/welder.ogg'
 
 /obj/item/grenade/ms13/molotov/Initialize()

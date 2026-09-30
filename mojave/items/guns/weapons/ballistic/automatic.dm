@@ -19,8 +19,8 @@
 	slowdown = 0.75
 //	zoomable = FALSE
 	mag_type = /obj/item/ammo_box/magazine/ms13/r20
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/semi/service/maquis
 	name = "\improper Maquis"
@@ -51,8 +51,8 @@
 	mag_type = /obj/item/ammo_box/magazine/ms13/r308
 	has_scope = TRUE
 	scope_range = 3.5
-	//grid_width = 224
-	//grid_height = 64
+	grid_width = 224
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/semi/sniper/silencer
 	name = "\improper Silencer"
@@ -85,8 +85,8 @@
 	slowdown = 0.75
 	has_scope = TRUE
 	scope_range = 2.5
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/semi/marksman/american
 	name = "\improper All-American"
@@ -114,8 +114,8 @@
 	recoil = 1.75
 	slowdown = 0.75
 	mag_type = /obj/item/ammo_box/magazine/ms13/r308_10
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/semi/battle/update_icon_state()
 	worn_icon_state = "[initial(icon_state)]"
@@ -166,8 +166,8 @@
 	spread = 12
 	recoil = 0.75
 	slowdown = 0.75
-	//grid_width = 128
-	//grid_height = 64
+	grid_width = 128
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/smg22
 	name = ".22 submachine gun"
@@ -189,8 +189,8 @@
 	spread = 12
 	recoil = 0.2
 	slowdown = 0.75
-	//grid_width = 128
-	//grid_height = 64
+	grid_width = 128
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/smg10mm
 	name = "10mm submachine gun"
@@ -212,8 +212,8 @@
 	recoil = 0.75
 	force = 10
 	slowdown = 0.5
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/smg9mm
 	name = "9mm submachine gun"
@@ -236,8 +236,8 @@
 	recoil = 0.35
 	force = 10
 	slowdown = 0.5
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/smg12mm
 	name = "12.7mm submachine gun"
@@ -260,8 +260,8 @@
 	spread = 10
 	recoil = 1.25
 	slowdown = 0.5
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/assaultrifle
 	name = "assault rifle"
@@ -283,8 +283,8 @@
 	spread = 8
 	recoil = 0.6
 	slowdown = 0.75
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/proto_service
 	name = "prototype service rifle"
@@ -313,8 +313,8 @@
 	spread = 4
 	recoil = 0.35
 	slowdown = 1
-	//grid_width = 160
-	//grid_height = 64
+	grid_width = 160
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/dakka
 	desc = "A stripped and heavily modified assault rifle. Faster rate of fire, but with substantially less accuracy and much more recoil. An unstable and dangerous weapon made for an unstable and dangerous individual."
@@ -330,8 +330,8 @@
 	w_class = WEIGHT_CLASS_BULKY
 	spread = 15
 	recoil = 1.15
-	//grid_width = 160
-	//grid_height = 64
+	grid_width = 160
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/dakka/Initialize()
 	. = ..()
@@ -357,8 +357,8 @@
 	spread = 8
 	recoil = 1
 	slowdown = 0.75
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 
 /obj/item/gun/ballistic/automatic/ms13/full/assaultrifle/chinese/handmade
 	name = "handmade assault rifle"
@@ -388,8 +388,8 @@
 	caliber = "a556"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 20
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/smgm10mm
 	name = "24 round magazine (10mm)"
@@ -399,8 +399,8 @@
 	caliber = "10mm"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 24
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/smgm9mm
 	name = "30 round magazine (9mm)"
@@ -410,8 +410,8 @@
 	caliber = "9mm"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 30
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/smgm45
 	name = "50 round drum magazine (.45)"
@@ -420,8 +420,8 @@
 	caliber = ".45"
 	w_class = WEIGHT_CLASS_NORMAL
 	max_ammo = 50
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/ar762
 	name = "24 round magazine (7.62mm)"
@@ -431,8 +431,8 @@
 	caliber = "a762"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 24
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/smgm22
 	name = "60 round magazine (.22)"
@@ -441,8 +441,8 @@
 	caliber = ".22"
 	w_class = WEIGHT_CLASS_NORMAL
 	max_ammo = 60
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/smg12mm
 	name = "21 round magazine (12.7mm)"
@@ -451,8 +451,8 @@
 	caliber = "12.7mm"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 21
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/ammo_box/magazine/ms13/r308_10
 	name = "10 round magazine (.308)"
@@ -461,5 +461,5 @@
 	caliber = "a308"
 	w_class = WEIGHT_CLASS_SMALL
 	max_ammo = 10
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64

@@ -228,8 +228,8 @@ TYPEINFO_DEF(/obj/structure/ms13/ore_deposit)
 	desc = "Full of BUGS! You shouldn't be seeing this."
 	icon = 'mojave/icons/objects/crafting/materials_inventory.dmi'
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	amount = 1
 	max_amount = 8
 

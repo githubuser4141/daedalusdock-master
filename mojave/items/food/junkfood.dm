@@ -35,8 +35,8 @@
 /obj/item/food/ms13/prewar/canned
 	name = "generic can"
 	desc = "This shouldn't be here."
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 	var/canned_open = FALSE
 
@@ -64,8 +64,8 @@
 	name = "generic box"
 	desc = "LOOK AWAY! This doesn't exist!"
 	var/boxed_open = FALSE
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 
 /obj/item/food/ms13/prewar/boxed/proc/open_box(mob/user)
 	to_chat(user, span_notice("You open the cardboard box of [src]."))
@@ -129,8 +129,8 @@
 	max_volume = 20
 	bite_consumption = 10
 	trash_type = /obj/item/trash/ms13/cans/seafood
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 
 /obj/item/food/ms13/prewar/boxed/salisburysteak
 	name = "salisbury steak"
@@ -153,8 +153,8 @@
 	max_volume = 12
 	bite_consumption = 4
 	trash_type = /obj/item/trash/ms13/packaging/crisps
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/food/ms13/prewar/boxed/macncheese
 	name = "macaroni and cheese"
@@ -166,8 +166,8 @@
 	max_volume = 20
 	bite_consumption = 5
 	trash_type = /obj/item/trash/ms13/packaging/macncheese
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/food/ms13/prewar/boxed/cheesypoof
 	name = "cheesy poofs"
@@ -179,8 +179,8 @@
 	max_volume = 12
 	bite_consumption = 3
 	trash_type = /obj/item/trash/ms13/packaging/poofs
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/food/ms13/prewar/boxed/sugarbombs
 	name = "sugar bombs cereal"
@@ -192,8 +192,8 @@
 	max_volume = 24
 	bite_consumption = 6
 	trash_type = /obj/item/trash/ms13/packaging/sugarbombs
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/food/ms13/prewar/boxed/deviledeggs
 	name = "yum yum deviled eggs"
@@ -205,8 +205,8 @@
 	max_volume = 16
 	bite_consumption = 4
 	trash_type = /obj/item/trash/ms13/packaging/yumegg
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/food/ms13/prewar/boxed/dandyapples
 	name = "dandy boy apple"

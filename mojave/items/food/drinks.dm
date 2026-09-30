@@ -14,8 +14,8 @@
 	spillable = TRUE
 	resistance_flags = ACID_PROOF
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/mug/ms13
 	name = "mug"
@@ -25,8 +25,8 @@
 	throwforce = 5
 	volume = 20
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	isGlass = FALSE
 
 /obj/item/reagent_containers/cup/mug/ms13/Initialize()
@@ -44,8 +44,8 @@
 	list_reagents = null // IMMERSION ANNOUNCEMENT: Drinks usually aren't filled to the literal top. Leave a bit less in there.
 	isGlass = TRUE
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 	var/captype = null
 
 /obj/item/reagent_containers/cup/soda_cans/ms13/Initialize()
@@ -185,8 +185,8 @@
 	icon_state = "bottle"
 	volume = 60
 	list_reagents = null
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/moonshine
 	name = "moonshine bottle"
@@ -194,8 +194,8 @@
 	icon_state = "moonshine"
 	volume = 100
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/moonshine = 90)
-	//grid_height = 64
-	//grid_width = 64
+	grid_height = 64
+	grid_width = 64
 
 /obj/item/reagent_containers/cup/bottle/ms13/whiskey
 	name = "whiskey bottle"
@@ -203,8 +203,8 @@
 	icon_state = "whiskey"
 	volume = 80
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/whiskey = 75)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/vodka
 	name = "vodka bottle"
@@ -212,8 +212,8 @@
 	icon_state = "vodka"
 	volume = 70
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/vodka = 65)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/tequila
 	name = "tequila bottle"
@@ -221,8 +221,8 @@
 	icon_state = "tequila"
 	volume = 70
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/tequila = 65)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/kaluha
 	name = "kaluha bottle"
@@ -230,8 +230,8 @@
 	icon_state = "kaluha"
 	volume = 70
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/kaluha = 65)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/wine
 	name = "wine bottle"
@@ -239,8 +239,8 @@
 	icon_state = "wine"
 	volume = 70
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/wine = 65)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/champagne
 	name = "champagne bottle"
@@ -248,8 +248,8 @@
 	icon_state = "champagne"
 	volume = 70
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/champagne = 65)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/cognac
 	name = "cognac bottle"
@@ -257,8 +257,8 @@
 	icon_state = "cognac"
 	volume = 55
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/cognac = 50)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/nukashine
 	name = "nukashine bottle"
@@ -266,8 +266,8 @@
 	icon_state = "nuka_shine"
 	volume = 80
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/nukashine = 75)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/gin
 	name = "gin bottle"
@@ -275,8 +275,8 @@
 	icon_state = "gin"
 	volume = 80
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/gin = 75)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/sake
 	name = "sake bottle"
@@ -284,8 +284,8 @@
 	icon_state = "sake"
 	volume = 80
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/sake = 75)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/vermouth
 	name = "vermouth bottle"
@@ -293,8 +293,8 @@
 	icon_state = "vermouth"
 	volume = 70
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/vermouth = 65)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/triple_sec
 	name = "triple sec bottle"
@@ -302,8 +302,8 @@
 	icon_state = "triple_sec"
 	volume = 65
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/triple_sec = 60)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/absinthe
 	name = "absinthe bottle"
@@ -311,8 +311,8 @@
 	icon_state = "absinthe"
 	volume = 80
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/absinthe = 75)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/rum
 	name = "rum bottle"
@@ -320,8 +320,8 @@
 	icon_state = "rum"
 	volume = 80
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/rum = 75)
-	//grid_height = 96
-	//grid_width = 32
+	grid_height = 96
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/trooper_beer
 	name = "trooper's pale ale bottle"
@@ -330,8 +330,8 @@
 	volume = 45
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/beer = 40)
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/reagent_containers/cup/bottle/ms13/caligary_beer
 	name = "New Caligary lager"
@@ -340,8 +340,8 @@
 	volume = 45
 	list_reagents = list(/datum/reagent/consumable/ethanol/ms13/beer = 40)
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 // Compatibility paths for maps made before reagent containers moved from /food/drinks to /cup.
 /obj/item/reagent_containers/food/drinks/bottle/beer

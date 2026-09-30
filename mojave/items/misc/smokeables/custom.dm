@@ -13,8 +13,8 @@
 	lefthand_file = 'mojave/icons/mob/inhands/items_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	//The type of thing the rollie is filled with first
 	var/obj/doobie_filling_1
 	//The type of thing the rollie is filled with second, final filling

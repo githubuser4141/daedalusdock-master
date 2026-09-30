@@ -790,8 +790,8 @@
 	max_amount = 4
 	singular_name = "use" //so it says X uses left in the fertilizer bag instead of X fertilizer bags left
 	gender = NEUTER //So examine text says "This is a fertilizer" instead of "These are some fertilizer bags"
-	//grid_width = 96
-	//grid_height = 128
+	grid_width = 96
+	grid_height = 128
 	w_class = WEIGHT_CLASS_BULKY
 	full_w_class = WEIGHT_CLASS_BULKY
 
@@ -818,8 +818,8 @@
 	desc = "An empty fertilizer bag. You could probably use this to make some more fertilizer."
 	icon = 'mojave/icons/hydroponics/equipment.dmi'
 	icon_state = "daesack3"
-	//grid_width = 96
-	//grid_height = 128
+	grid_width = 96
+	grid_height = 128
 	w_class = WEIGHT_CLASS_BULKY
 
 /obj/item/ms13/fertilizer/Initialize(mapload)

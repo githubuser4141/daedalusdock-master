@@ -19,8 +19,8 @@
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/caravan/caravan.ogg'
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
-	//grid_width = 160
-	//grid_height = 64
+	grid_width = 160
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands
 
 /obj/item/gun/ballistic/revolver/ms13/caravan/sawed
@@ -36,8 +36,8 @@
 	slowdown = 0.5
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 
 /obj/item/gun/ballistic/revolver/ms13/single
 	name = "single shotgun"
@@ -59,8 +59,8 @@
 	fire_sound = 'mojave/sound/ms13weapons/gunsounds/caravan/caravan2.ogg'
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_HEAVY
-	//grid_width = 192
-	//grid_height = 32
+	grid_width = 192
+	grid_height = 32
 	wield_info = /datum/wield_info/default/inhands
 
 /obj/item/gun/ballistic/revolver/ms13/mts
@@ -82,8 +82,8 @@
 	fire_delay = 0.55 SECONDS
 	recoil = 1.5
 	slowdown = 0.75
-	//grid_width = 160
-	//grid_height = 64
+	grid_width = 160
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands
 
 /obj/item/gun/ballistic/revolver/ms13/mts/shorty
@@ -101,8 +101,8 @@
 	recoil = 1.8
 	spread_reduction = CHOKE_LOOSE
 	slowdown = 0.6
-	//grid_width = 128
-	//grid_height = 64
+	grid_width = 128
+	grid_height = 64
 
 ////////////////////////// revolvers////////////////
 /obj/item/gun/ballistic/revolver/ms13/derringer
@@ -122,8 +122,8 @@
 	fire_delay = 0.4 SECONDS
 	recoil = 0.5
 	spread = 6
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/gun/ballistic/revolver/ms13/derringer/trimmed
 	name = "gold trimmed derringer"
@@ -147,8 +147,8 @@
 	spread = 6
 	recoil = 1.5
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/gun/ballistic/revolver/ms13/rev44/mysterious
 	name = "\improper Mysterious Magnum"
@@ -173,8 +173,8 @@
 	spread = 6
 	recoil = 1
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/gun/ballistic/revolver/ms13/rev357/lucky
 	name = "\improper Lucky"
@@ -194,8 +194,8 @@
 	spread = 10
 	recoil = 1.25
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/gun/ballistic/revolver/ms13/rev10mm
 	name = "10mm revolver"
@@ -213,8 +213,8 @@
 	spread = 6
 	recoil = 0.75
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/gun/ballistic/revolver/ms13/huntingrev
 	name = "hunting revolver"
@@ -232,8 +232,8 @@
 	spread = 6
 	recoil = 1.75
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/gun/ballistic/revolver/ms13/huntingrev/sequoia
 	name = "\improper Sequoia"
@@ -259,8 +259,8 @@
 	spread = 6
 	recoil = 0.75
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 //Magazines
 /obj/item/ammo_box/magazine/internal/shot/ms13/caravan

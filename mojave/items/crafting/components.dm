@@ -8,8 +8,8 @@
 	force = 0
 	throwforce = 0
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ms13/component/Initialize()
 	. = ..()
@@ -25,8 +25,8 @@
 		/obj/item/stack/sheet/ms13/scrap_lead = 2,
 		/obj/item/stack/sheet/ms13/scrap_copper = 2,
 	)
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ms13/component/fusion
 	name = "fusion core"
@@ -43,8 +43,8 @@
 	desc = "A vacuum tube. An important component in many electrical gadgets."
 	icon_state = "vacuumtube"
 	ms13_breakdown_result = list(/obj/item/stack/sheet/ms13/scrap_electronics = 1)
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/ms13/component/plasma_battery
 	name = "plasma battery"
@@ -55,15 +55,15 @@
 	/obj/item/stack/sheet/ms13/scrap_silver = 2,
 	/obj/item/stack/sheet/ms13/scrap_alu = 2,
 	)
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/ms13/component/gunpowder
 	name = "low quality gunpowder"
 	desc = "Low quality, impure, and probably dangerous gunpowder. Can be used to make junk ammunition."
 	icon_state = "gunpowder"
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ms13/component/gunpowder/hq
 	name = "high quality gunpowder"
@@ -73,8 +73,8 @@
 	name = "sulfur pearl"
 	desc = "A pearl... made of sulfur? Potentially a potent ingredient in certain recipes."
 	icon_state = "sulfur_pearl"
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 // Light items (bulbs and stuff) //
 
@@ -94,8 +94,8 @@
 	base_state = "ltube"
 	inhand_icon_state = "c_tube"
 	bulb_outer_range = 7
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 
 /obj/item/light/ms13/tube/broken
@@ -113,8 +113,8 @@
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	bulb_outer_range = 4.5
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 
 /obj/item/light/ms13/bulb/broken

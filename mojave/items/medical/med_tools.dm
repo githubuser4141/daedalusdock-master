@@ -9,8 +9,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "hemostat"
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/hemostat/ms13/Initialize()
 	. = ..()
@@ -25,8 +25,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "retractor"
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/retractor/ms13/Initialize()
 	. = ..()
@@ -41,8 +41,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "bonesaw"
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 	force = 15
 	//wound_bonus = 0
 	//bare_wound_bonus 5
@@ -62,8 +62,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "cautery"
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/cautery/ms13/Initialize()
 	. = ..()
@@ -78,8 +78,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "scalpel"
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 	//wound_bonus = 5
 	//bare_wound_bonus 5
 
@@ -96,8 +96,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "bonesetter"
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/bonesetter/ms13/Initialize()
 	. = ..()
@@ -111,8 +111,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	inhand_icon_state = "surgical_drapes"
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/surgical_drapes/ms13/Initialize()
 	. = ..()

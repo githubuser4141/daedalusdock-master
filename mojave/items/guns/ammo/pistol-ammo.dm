@@ -37,8 +37,8 @@
 	max_ammo = 21
 	multiple_sprites = AMMO_BOX_FULL_EMPTY
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ammo_box/ms13/c45/junk
 	name = "junk .45 ammo box"
@@ -84,8 +84,8 @@
 	max_ammo = 32
 	multiple_sprites = AMMO_BOX_FULL_EMPTY
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ammo_box/ms13/c22box/junk
 	name = "junk .22 ammo box"
@@ -131,8 +131,8 @@
 	max_ammo = 30
 	multiple_sprites = AMMO_BOX_FULL_EMPTY
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ammo_box/ms13/c9mm/junk
 	name = "junk 9mm ammo box"
@@ -178,8 +178,8 @@
 	max_ammo = 24
 	multiple_sprites = AMMO_BOX_FULL_EMPTY
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/ammo_box/ms13/c10mm/junk
 	name = "junk 10mm ammo box"

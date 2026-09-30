@@ -9,8 +9,8 @@
 	worn_icon = 'mojave/icons/mob/worn_melee.dmi'
 	worn_icon_state = "empty_placeholder"
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	// lock_group is inherited from the base /obj var (obj_defines.dm): non-null here means this key
 	// opens any /obj sharing the same lock_group. Used by grouped container locks (container_locks.dm)
 	// so one key can cover several crates/lockers. Doors don't use this - see matching_door below.

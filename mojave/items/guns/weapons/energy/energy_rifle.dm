@@ -15,8 +15,8 @@
 	force = 15
 	fire_delay = 0.65 SECONDS
 	slowdown = 0.75
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands
 
 /obj/item/gun/energy/ms13/laser/rifle/advanced
@@ -48,8 +48,8 @@
 	slowdown = 1
 	has_scope = TRUE
 	scope_range = 4
-	//grid_width = 224
-	//grid_height = 64
+	grid_width = 224
+	grid_height = 64
 
 /obj/item/gun/energy/ms13/laser/rcw
 	name = "laser RCW"
@@ -65,8 +65,8 @@
 	fire_delay = 0.25 SECONDS
 	spread = 4
 	slowdown = 0.75
-	//grid_width = 160
-	//grid_height = 64
+	grid_width = 160
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands
 
 /obj/item/gun/energy/ms13/laser/rcw/Initialize()
@@ -87,8 +87,8 @@
 	cell_type = /obj/item/stock_parts/cell/ms13/mfc
 	fire_delay = 0.7 SECONDS
 	slowdown = 0.75
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands
 
 // Plasma Rifles //
@@ -109,8 +109,8 @@
 	slowdown = 0.75
 	spread = 2
 	recoil = 0.75
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands
 
 /obj/item/gun/energy/ms13/plasma/rifle/carbine
@@ -124,8 +124,8 @@
 	fire_delay = 0.6 SECONDS
 	spread = 5
 	recoil = 0.65
-	//grid_width = 160
-	//grid_height = 64
+	grid_width = 160
+	grid_height = 64
 
 /obj/item/gun/energy/ms13/plasma/multi
 	name = "multiplas rifle"
@@ -141,6 +141,6 @@
 	fire_delay = 0.7 SECONDS
 	slowdown = 0.75
 	recoil = 0.75
-	//grid_width = 192
-	//grid_height = 64
+	grid_width = 192
+	grid_height = 64
 	wield_info = /datum/wield_info/default/inhands

@@ -11,8 +11,8 @@
 	icon_state = "ceramic_flask"
 	volume = 15
 	throwforce = 10
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/reagent_containers/ms13/flask/Initialize()
 	. = ..()

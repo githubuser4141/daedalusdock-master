@@ -5,8 +5,8 @@
 	icon_state = "iv_empty"
 	desc = "A bag for injecting fluids intravenously, it can be hooked to an IV drip or used in the field."
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 	fill_icon_thresholds = list(25, 50, 75, 100)
 
 	var/mob/living/carbon/human/attached

@@ -4,8 +4,8 @@
 	name = "fluff"
 	desc = "you're not supposed to be seeing this"
 	icon = 'mojave/icons/objects/clutter/clutter_world.dmi'
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/ms13/fluff/ruined_book
 	name = "ruined book"
@@ -34,8 +34,8 @@
 	name = "typewriter"
 	desc = "An old typewriter. It seems to be broken."
 	icon_state = "typewriter"
-	//grid_height = 64
-	//grid_width = 64
+	grid_height = 64
+	grid_width = 64
 
 /obj/item/ms13/fluff/typewriter/Initialize()
 	. = ..()
@@ -69,8 +69,8 @@
 	name = "microscope"
 	desc = "A microscope, used for looking at things really, really closely."
 	icon_state = "microscope"
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/ms13/fluff/microscope/Initialize()
 	. = ..()

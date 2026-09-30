@@ -22,8 +22,8 @@
 	w_class = WEIGHT_CLASS_SMALL
 	slot_flags = ITEM_SLOT_BELT
 	log_pickup_and_drop = TRUE
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 	mining_mult = -0.75
 
 /obj/item/knife/ms13/Initialize()
@@ -120,8 +120,8 @@
 		sharpness = SHARP_EDGED
 		w_class = WEIGHT_CLASS_SMALL
 		tool_behaviour = TOOL_KNIFE
-		//grid_width = 64
-		//grid_height = 32
+		grid_width = 64
+		grid_height = 32
 
 	else
 		attack_verb_continuous = list("stubs", "pokes")
@@ -133,8 +133,8 @@
 		sharpness = NONE
 		w_class = WEIGHT_CLASS_TINY
 		tool_behaviour = null
-		//grid_width = 32
-		//grid_height = 32
+		grid_width = 32
+		grid_height = 32
 
 /obj/item/knife/ms13/switchblade/razor
 	name = "straight razor"
@@ -160,8 +160,8 @@
 		sharpness = SHARP_EDGED
 		w_class = WEIGHT_CLASS_SMALL
 		tool_behaviour = TOOL_KNIFE
-		//grid_width = 64
-		//grid_height = 32
+		grid_width = 64
+		grid_height = 32
 
 	else
 		attack_verb_continuous = list("stubs", "pokes")
@@ -173,8 +173,8 @@
 		sharpness = NONE
 		w_class = WEIGHT_CLASS_TINY
 		tool_behaviour = null
-		//grid_width = 32
-		//grid_height = 32
+		grid_width = 32
+		grid_height = 32
 
 /obj/item/knife/butcher/ms13
 	name = "cleaver"
@@ -197,8 +197,8 @@
 	slot_flags = ITEM_SLOT_BELT
 	sharpness = SHARP_EDGED
 	log_pickup_and_drop = TRUE
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/knife/butcher/ms13/Initialize()
 	. = ..()

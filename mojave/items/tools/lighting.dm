@@ -15,8 +15,8 @@
 	light_outer_range = 3.75
 	light_power = 0.75
 	light_color = "#dbb070"
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/flashlight/ms13/Initialize()
 	. = ..()
@@ -57,8 +57,8 @@
 	inhand_icon_state = "flare"
 	light_outer_range = 3.5
 	light_power = 0.75
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 
 /obj/item/flashlight/flare/ms13/Initialize()
 	. = ..()

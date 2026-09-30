@@ -16,8 +16,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/misc/butchering_righthand.dmi'
 	throw_range = 3
 	w_class = WEIGHT_CLASS_BULKY
-	//grid_height = 96
-	//grid_width = 96
+	grid_height = 96
+	grid_width = 96
 	drop_sound = 'sound/items/handling/cloth_drop.ogg'
 	pickup_sound =  'sound/items/handling/cloth_pickup.ogg'
 	var/leather_amount = 2 //How much leather you get from skinning the hide
@@ -61,8 +61,8 @@
 	inhand_icon_state = "brahmin_hide"
 	throw_range = 2
 	leather_amount = 10
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/ms13/hide/radstag
 	name = "radstag hide"
@@ -71,8 +71,8 @@
 	inhand_icon_state = "radstag_hide"
 	throw_range = 2
 	leather_amount = 8
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/ms13/hide/boar
 	name = "boar hide"
@@ -81,8 +81,8 @@
 	inhand_icon_state = "brahmiluff_hide" //placeholder
 	throw_range = 2
 	leather_amount = 7
-	//grid_height = 96
-	//grid_width = 96
+	grid_height = 96
+	grid_width = 96
 
 /obj/item/ms13/hide/brahmiluff
 	name = "brahmiluff hide"
@@ -91,8 +91,8 @@
 	inhand_icon_state = "brahmiluff_hide"
 	throw_range = 2
 	leather_amount = 12
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/ms13/hide/slepnir
 	name = "slepnir hide"
@@ -101,8 +101,8 @@
 	inhand_icon_state = "slepnir_hide"
 	throw_range = 2
 	leather_amount = 10
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/ms13/hide/large/yaoguai
 	name = "yaoguai hide"
@@ -112,8 +112,8 @@
 	throw_range = 2
 	w_class = WEIGHT_CLASS_HUGE
 	leather_amount = 15
-	//grid_height = 128
-	//grid_width = 128
+	grid_height = 128
+	grid_width = 128
 
 /obj/item/ms13/hide/large/hellpig
 	name = "hellpig hide"
@@ -123,8 +123,8 @@
 	throw_range = 2
 	w_class = WEIGHT_CLASS_HUGE
 	leather_amount = 20
-	//grid_height = 128
-	//grid_width = 128
+	grid_height = 128
+	grid_width = 128
 
 // AI EDIT: ComponentInitialize()/AddComponent(two_handed, require_twohands=TRUE) doesn't exist in DD - the native
 // equivalent is this trait, auto-enforced by /obj/item/equipped() (code/game/objects/items.dm)
@@ -185,8 +185,8 @@
 	throw_range = 4
 	w_class = WEIGHT_CLASS_NORMAL
 	meat_amount = 2
-	//grid_height = 64
-	//grid_width = 64
+	grid_height = 64
+	grid_width = 64
 
 /obj/item/food/meat/slab/ms13/carcass/gecko
 	name = "gecko carcass"
@@ -194,8 +194,8 @@
 	icon_state = "gecko_carcass"
 	inhand_icon_state = "gecko_carcass"
 	meat_amount = 3
-	//grid_height = 96
-	//grid_width = 64
+	grid_height = 96
+	grid_width = 64
 	meat_type = /obj/item/food/meat/slab/ms13/animal/gecko
 
 /obj/item/food/meat/slab/ms13/carcass/gecko/desert
@@ -212,8 +212,8 @@
 	icon_state = "dog_carcass"
 	inhand_icon_state = "dog_carcass"
 	meat_amount = 3
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 
 /obj/item/food/meat/slab/ms13/carcass/mongrel
 	name = "mongrel carcass"
@@ -221,8 +221,8 @@
 	icon_state = "dog_carcass"
 	inhand_icon_state = "dog_carcass"
 	meat_amount = 3
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 
 /obj/item/food/meat/slab/ms13/carcass/molerat
 	name = "molerat carcass"
@@ -230,15 +230,15 @@
 	icon_state = "rat_carcass"
 	inhand_icon_state = "rat_carcass"
 	meat_amount = 3
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 
 /obj/item/food/meat/slab/ms13/carcass/molerat/pig
 	name = "pigrat carcass"
 	desc = "A skinned body of a pigrat."
 	meat_amount = 2
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 
 //large
 
@@ -260,8 +260,8 @@
 	inhand_icon_state = "brahmiluff_carcass" //placeholder
 	meat_amount = 4
 	meat_type = /obj/item/food/meat/slab/ms13/animal/pork
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/food/meat/slab/ms13/carcass/large/radstag
 	name = "radstag carcass"
@@ -269,8 +269,8 @@
 	icon_state = "radstag_carcass"
 	inhand_icon_state = "radstag_carcass"
 	meat_amount = 5
-	//grid_height = 64
-	//grid_width = 160
+	grid_height = 64
+	grid_width = 160
 
 /obj/item/food/meat/slab/ms13/carcass/large/brahmiluff
 	name = "brahmiluff carcass"
@@ -278,8 +278,8 @@
 	icon_state = "brahmiluff_carcass"
 	inhand_icon_state = "brahmiluff_carcass"
 	meat_amount = 5
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/food/meat/slab/ms13/carcass/large/brahmiluff/front
 	icon_state = "cowbeastfront_carcass"
@@ -295,8 +295,8 @@
 	icon_state = "brahmin_carcass"
 	inhand_icon_state = "brahmin_carcass"
 	meat_amount = 4
-	//grid_height = 96
-	//grid_width = 128
+	grid_height = 96
+	grid_width = 128
 
 /obj/item/food/meat/slab/ms13/carcass/large/brahmin/front
 	icon_state = "cowbeastfront_carcass"
@@ -310,8 +310,8 @@
 	name = "yaoguai carcass"
 	desc = "A skinned body section of a yaoguai."
 	meat_amount = 8
-	//grid_height = 128
-	//grid_width = 128
+	grid_height = 128
+	grid_width = 128
 
 /obj/item/food/meat/slab/ms13/carcass/large/yaoguai/front
 	icon_state = "yaoguaifront_carcass"
@@ -329,21 +329,21 @@
 /obj/item/food/meat/slab/ms13/carcass/large/slepnir/front
 	icon_state = "slepnirfront_carcass"
 	inhand_icon_state = "slepnirfront_carcass"
-	//grid_height = 64
-	//grid_width = 160
+	grid_height = 64
+	grid_width = 160
 
 /obj/item/food/meat/slab/ms13/carcass/large/slepnir/back
 	icon_state = "slepnirback_carcass"
 	inhand_icon_state = "slepnirback_carcass"
-	//grid_height = 96
-	//grid_width = 96
+	grid_height = 96
+	grid_width = 96
 
 /obj/item/food/meat/slab/ms13/carcass/large/hellpig
 	name = "hellpig carcass"
 	desc = "A skinned body section of a hellpig."
 	meat_amount = 5
-	//grid_height = 128
-	//grid_width = 128
+	grid_height = 128
+	grid_width = 128
 
 /obj/item/food/meat/slab/ms13/carcass/large/hellpig/front
 	icon_state = "hellpigfront_carcass"
@@ -359,8 +359,8 @@
 	inhand_icon_state = "hellpigleg_carcass"
 	w_class = WEIGHT_CLASS_BULKY
 	meat_amount = 3
-	//grid_height = 128
-	//grid_width = 96
+	grid_height = 128
+	grid_width = 96
 
 /////////////////////////////////////////////////////////////
 ////////////////////////// ITEMS ////////////////////////////
@@ -376,8 +376,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/misc/butchering_righthand.dmi'
 	throw_range = 5
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_height = 64
-	//grid_width = 64
+	grid_height = 64
+	grid_width = 64
 
 /obj/item/ms13/animalitem/Initialize(mapload)
 	. = ..()
@@ -388,8 +388,8 @@
 	desc = "The tongue of a brahmin, a tasty morsel and provider of hyper-condensed coagulant"
 	icon_state = "brahmin_tongue"
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	grind_results = null
 
 /obj/item/ms13/animalitem/brahmin/horns
@@ -402,8 +402,8 @@
 	name = "brahmiluff horn"
 	desc = "A valued brahmiluff horn."
 	icon_state = "brahmiluff_horn"
-	//grid_height = 128
-	//grid_width = 32
+	grid_height = 128
+	grid_width = 32
 
 /obj/item/ms13/animalitem/clucker/feather
 	name = "clucker feather"
@@ -411,8 +411,8 @@
 	icon_state = "clucker_feather"
 	throw_range = 2
 	w_class = WEIGHT_CLASS_TINY
-	//grid_height = 32
-	//grid_width = 32
+	grid_height = 32
+	grid_width = 32
 
 /obj/item/ms13/animalitem/slepnir/hooves
 	name = "slepnir hoof"
@@ -430,16 +430,16 @@
 	desc = "A grimy, disease laden molerat tooth."
 	icon_state = "molerat_tooth"
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 /obj/item/ms13/animalitem/scorpion
 	name = "radscorpion poison gland"
 	desc = "A poison gland carefully extracted from a presumably dead radscorpion."
 	icon_state = "radscorp_poison"
 	w_class = WEIGHT_CLASS_SMALL
-	//grid_height = 64
-	//grid_width = 32
+	grid_height = 64
+	grid_width = 32
 
 
 /*
@@ -467,8 +467,8 @@
 	name = "radstag antler"
 	desc = "A valuable and sturdy radstag antler."
 	icon_state = "radstag_antler"
-	//grid_height = 64
-	//grid_width = 96
+	grid_height = 64
+	grid_width = 96
 
 /obj/item/ms13/animalitem/wolf/teeth
 	name = "wolf tooth"
@@ -482,8 +482,8 @@
 /obj/item/food/meat/slab/ms13/animal
 	name = "raw meat"
 	desc = "Raw, uncooked meat. You should probably try cooking this, but if you're really desperate...."
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	w_class = WEIGHT_CLASS_SMALL
 	var/steak_type = /obj/item/food/meat/steak/ms13/animal
 	decomp_type = /obj/item/food/badrecipe/moldy/ms13
@@ -499,8 +499,8 @@
 	desc = "Deliciously juicy grilled meat. Yum!"
 	icon = 'mojave/icons/objects/food/meat.dmi'
 	icon_state = "meat_roasted"
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	w_class = WEIGHT_CLASS_SMALL
 
 /obj/item/food/meat/steak/ms13/Initialize(mapload)

@@ -60,8 +60,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	throw_range = 3
 	sharpness = SHARP_EDGED | SHARP_AXE
 	toolspeed = 0.75
-	//grid_height = 192
-	//grid_width = 64
+	grid_height = 192
+	grid_width = 64
 	wield_info = /datum/wield_info/twohanded/fireaxe
 	mining_mult = -0.5
 
@@ -93,8 +93,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	edge_protection_penetration = 15
 	throw_range = 3
 	sharpness = SHARP_EDGED
-	//grid_height = 192
-	//grid_width = 64
+	grid_height = 192
+	grid_width = 64
 	wield_info = /datum/wield_info/twohanded/bump_sword
 	mining_mult = -0.5
 
@@ -113,8 +113,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	subtractible_armour_penetration = 30
 	throw_range = 3
 	sharpness = NONE
-	//grid_height = 192
-	//grid_width = 64
+	grid_height = 192
+	grid_width = 64
 	wield_info = /datum/wield_info/twohanded/sledge
 	mining_mult = 1
 
@@ -135,8 +135,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	inhand_icon_state = "hammer_power"
 	worn_icon_state = "hammer_power"
 	subtractible_armour_penetration = 35
-	//grid_height = 256
-	//grid_width = 96
+	grid_height = 256
+	grid_width = 96
 	wield_info = /datum/wield_info/twohanded/super_sledge
 	mining_mult = 2
 
@@ -166,8 +166,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	edge_protection_penetration = 10
 	w_class = WEIGHT_CLASS_HUGE
 	sharpness = SHARP_IMPALING
-	//grid_height = 32
-	//grid_width = 224
+	grid_height = 32
+	grid_width = 224
 	wield_info = /datum/wield_info/twohanded/metal_spear
 	mining_mult = -0.65
 
@@ -232,8 +232,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	throw_speed = 2
 	throw_range = 4
 	toolspeed = 0.35
-	//grid_height = 256
-	//grid_width = 256
+	grid_height = 256
+	grid_width = 256
 	mining_mult = 0.5
 	var/on = FALSE
 	var/datum/looping_sound/saw/soundloop
@@ -285,8 +285,8 @@ TYPEINFO_DEF(/obj/item/ms13/twohanded)
 	edge_protection_penetration = 20
 	throw_speed = 2
 	throw_range = 4
-	//grid_height = 256
-	//grid_width = 256
+	grid_height = 256
+	grid_width = 256
 	hitsound = "swing_hit"
 	mining_mult = 0.65
 	var/on = FALSE

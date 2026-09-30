@@ -10,7 +10,7 @@
 	throw_speed = 3
 	throw_range = 7
 	w_class = WEIGHT_CLASS_HUGE
-	//grid_width = 224
+	grid_width = 224
 	///Maximum volume of reagents it can hold.
 	max_reagent_volume = 15
 	mopspeed = 3.5 SECONDS
@@ -29,8 +29,8 @@
 	righthand_file = 'mojave/icons/mob/inhands/items_righthand.dmi'
 	custom_materials = list(/datum/material/iron=200)
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 96
-	//grid_height = 64
+	grid_width = 96
+	grid_height = 64
 	amount_per_transfer_from_this = 20
 	volume = 150
 	slot_flags = null

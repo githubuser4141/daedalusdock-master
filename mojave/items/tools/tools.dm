@@ -28,8 +28,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	tool_behaviour = TOOL_CROWBAR
 	toolspeed = 2
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 	mining_mult = 0.75
 
 /obj/item/ms13/hammer/Initialize()
@@ -61,8 +61,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	w_class = WEIGHT_CLASS_NORMAL
 	toolspeed = 2 // axe tomfoolery
 	log_pickup_and_drop = TRUE
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 	mining_mult = -0.5
 
 /obj/item/ms13/handsaw/Initialize()
@@ -93,8 +93,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	resistance_flags = FIRE_PROOF
 	w_class = WEIGHT_CLASS_NORMAL
 	log_pickup_and_drop = TRUE
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	mining_mult = 1.2
 
 /obj/item/ms13/handdrill/Initialize()
@@ -123,8 +123,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	w_class = WEIGHT_CLASS_NORMAL
 	toolspeed = 1
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 96
+	grid_width = 32
+	grid_height = 96
 
 /obj/item/crowbar/ms13/Initialize()
 	. = ..()
@@ -150,8 +150,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	w_class = WEIGHT_CLASS_NORMAL
 	log_pickup_and_drop = TRUE
 	change_icons = FALSE
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/weldingtool/ms13/Initialize()
 	. = ..()
@@ -213,8 +213,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	//bare_wound_bonus 0
 	w_class = WEIGHT_CLASS_SMALL
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 64
+	grid_width = 32
+	grid_height = 64
 
 /obj/item/wrench/ms13/Initialize()
 	. = ..()
@@ -236,8 +236,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	w_class = WEIGHT_CLASS_TINY
 	random_color = FALSE
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/wirecutters/ms13/Initialize()
 	. = ..()
@@ -261,8 +261,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	throwforce = 10
 	random_color = FALSE
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/screwdriver/ms13/Initialize()
 	. = ..()
@@ -287,8 +287,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	throwforce = 10
 	random_color = FALSE
 	log_pickup_and_drop = TRUE
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 
 /obj/item/screwdriver/ms13/scrap/use_tool(atom/target, mob/living/user, delay, amount, volume, datum/callback/extra_checks)
 	. = ..()
@@ -317,8 +317,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
 	log_pickup_and_drop = TRUE
-	//grid_width = 64
-	//grid_height = 128
+	grid_width = 64
+	grid_height = 128
 
 /obj/item/shovel/ms13/Initialize()
 	. = ..()
@@ -338,8 +338,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	sharpness = NONE
 	w_class = WEIGHT_CLASS_NORMAL
 	slot_flags = ITEM_SLOT_BELT
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 	mining_mult = -0.5
 
 /obj/item/shovel/ms13/snow
@@ -388,8 +388,8 @@ TYPEINFO_DEF(/obj/item/ms13/hammer)
 	//wound_bonus = 5
 	//bare_wound_bonus 5
 	w_class = WEIGHT_CLASS_BULKY
-	//grid_width = 64
-	//grid_height = 128
+	grid_width = 64
+	grid_height = 128
 	custom_materials = null
 	toolspeed = 1.5 //grim
 	mining_mult = 5
@@ -438,8 +438,8 @@ TYPEINFO_DEF(/obj/item/ms13/brick)
 	resistance_flags = FIRE_PROOF
 	slot_flags = ITEM_SLOT_BELT
 	log_pickup_and_drop = TRUE
-	//grid_width = 64
-	//grid_height = 32
+	grid_width = 64
+	grid_height = 32
 	mining_mult = 0.75 //funny brick utility
 
 /obj/item/ms13/brick/Initialize()

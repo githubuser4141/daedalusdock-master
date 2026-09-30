@@ -75,8 +75,8 @@
 	desc = "A small pile of ash."
 	icon = 'mojave/icons/objects/smokeables/smokeables_world.dmi'
 	icon_state = "ash"
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/ms13/cigarette/proc/light() //removes lit and unlit states

@@ -12,8 +12,8 @@ TYPEINFO_DEF(/obj/item/clothing/suit/armor/ms13)
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	///Icon file for right inhand overlays
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	//grid_width = 96
-	//grid_height = 96
+	grid_width = 96
+	grid_height = 96
 	equip_delay_self = 2.5 SECONDS
 	equip_delay_other = 4 SECONDS
 
@@ -34,8 +34,8 @@ TYPEINFO_DEF(/obj/item/clothing/suit/hooded/ms13)
 	hoodtype = /obj/item/clothing/head/hooded/ms13
 	// As /obj/item/clothing/suit/armor/ms13's: loadouts sling guns over these too.
 	allowed = list(/obj/item/pen,/obj/item/paper,/obj/item/stamp,/obj/item/reagent_containers/cup/glass/flask,/obj/item/storage/box/matches,/obj/item/lighter,/obj/item/clothing/mask/cigarette,/obj/item/storage/fancy/cigarettes,/obj/item/flashlight,/obj/item/gun,/obj/item/ammo_box,/obj/item/ammo_casing)
-	//grid_width = 64
-	//grid_height = 96
+	grid_width = 64
+	grid_height = 96
 
 /obj/item/clothing/suit/hooded/ms13/Initialize()
 	. = ..()

@@ -3,8 +3,8 @@
 	desc = "this doesn't even exist"
 	icon = 'mojave/icons/objects/clothing/clothing_world/gloves_world.dmi'
 	worn_icon = 'mojave/icons/mob/clothing/hands.dmi'
-	//grid_height = 32
-	//grid_width = 64
+	grid_height = 32
+	grid_width = 64
 	w_class = WEIGHT_CLASS_SMALL
 	equip_delay_self = 0.5 SECONDS
 	equip_delay_other = 1 SECONDS

@@ -15,8 +15,8 @@
 	force = 10
 	fire_delay = 0.55 SECONDS
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/gun/energy/ms13/laser/pistol/advanced
 	name = "advanced laser pistol"
@@ -93,8 +93,8 @@
 	spread = 6
 	recoil = 0.5
 	slowdown = 0.5
-	//grid_width = 64
-	//grid_height = 64
+	grid_width = 64
+	grid_height = 64
 
 /obj/item/gun/energy/ms13/plasma/pistol/advanced
 	name = "advanced plasma pistol"

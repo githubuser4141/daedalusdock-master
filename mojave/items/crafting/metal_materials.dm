@@ -95,8 +95,8 @@ GLOBAL_LIST_INIT(scrap_steel_recipes, list ( \
 	amount = 1
 	max_amount = 6
 	w_class = WEIGHT_CLASS_NORMAL
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_steel/two
 	amount = 2
@@ -160,8 +160,8 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/refined_lead
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_lead/two
 	amount = 2
@@ -182,8 +182,8 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/junk_bullets
 	amount = 1
 	max_amount = 20
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/junk_bullets/ten
@@ -203,8 +203,8 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/hq_bullets
 	amount = 1
 	max_amount = 20
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/hq_bullets/ten
@@ -250,8 +250,8 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/refined_brass
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_brass/two
 	amount = 2
@@ -272,8 +272,8 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/junk_casings
 	amount = 1
 	max_amount = 20
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/junk_casings/ten
@@ -293,8 +293,8 @@ GLOBAL_LIST_INIT(refined_steel_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/hq_casings
 	amount = 1
 	max_amount = 20
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/hq_casings/ten
@@ -351,8 +351,8 @@ GLOBAL_LIST_INIT(scrap_alu_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/refined_alu
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_alu/two
 	amount = 2
@@ -413,8 +413,8 @@ GLOBAL_LIST_INIT(refined_alu_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/refined_silver
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_silver/two
 	amount = 2
@@ -464,8 +464,8 @@ GLOBAL_LIST_INIT(refined_alu_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/refined_gold
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_gold/two
 	amount = 2
@@ -489,8 +489,8 @@ GLOBAL_LIST_INIT(refined_alu_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/scrap_copper
 	amount = 1
 	max_amount = 10
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	w_class = WEIGHT_CLASS_TINY
 
 /obj/item/stack/sheet/ms13/scrap_copper/two
@@ -519,8 +519,8 @@ GLOBAL_LIST_INIT(refined_alu_recipes, list ( \
 	merge_type = /obj/item/stack/sheet/ms13/refined_copper
 	amount = 1
 	max_amount = 6
-	//grid_width = 96
-	//grid_height = 32
+	grid_width = 96
+	grid_height = 32
 
 /obj/item/stack/sheet/ms13/refined_copper/two
 	amount = 2

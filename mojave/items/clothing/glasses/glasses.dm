@@ -9,8 +9,8 @@
 	worn_icon = 'mojave/icons/mob/clothing/eyes.dmi'
 	lefthand_file = 'mojave/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'mojave/icons/mob/inhands/clothing_righthand.dmi'
-	//grid_width = 32
-	//grid_height = 32
+	grid_width = 32
+	grid_height = 32
 	equip_delay_self = 0.25 SECONDS
 	equip_delay_other = 0.35 SECONDS
 
