@@ -164,6 +164,7 @@
 		CRASH("Failed to create a character for latejoin.")
 	transfer_character()
 
+	var/joining_ckey = character.ckey
 	SSjob.EquipRank(character, job, character.client)
 	job.after_latejoin_spawn(character)
 
@@ -188,7 +189,7 @@
 	#undef IS_FULL_CAPTAIN
 
 	SSticker.minds += character.mind
-	character.client.init_verbs() // init verbs for the late join
+	character.client?.init_verbs() // EquipRank can yield while opening the role window.
 	var/mob/living/carbon/human/humanc
 	if(ishuman(character))
 		humanc = character //Let's retypecast the var to be human,
@@ -212,7 +213,7 @@
 		if(GLOB.curse_of_madness_triggered)
 			give_madness(humanc, GLOB.curse_of_madness_triggered)
 
-	GLOB.joined_player_list += character.ckey
+	GLOB.joined_player_list += joining_ckey
 
 	if(CONFIG_GET(flag/allow_latejoin_antagonists) && humanc) //Borgs aren't allowed to be antags. Will need to be tweaked if we get true latejoin ais.
 		if(SSshuttle.emergency)
@@ -223,7 +224,7 @@
 					if(SSshuttle.emergency.timeLeft(1) > initial(SSshuttle.emergency_call_time)*0.5)
 						SSticker.mode.make_antag_chance(humanc)
 
-	if((job.job_flags & JOB_ASSIGN_QUIRKS) && humanc && CONFIG_GET(flag/roundstart_traits))
+	if((job.job_flags & JOB_ASSIGN_QUIRKS) && humanc?.client && CONFIG_GET(flag/roundstart_traits))
 		SSquirks.AssignQuirks(humanc, humanc.client)
 
 	log_manifest(character.mind.key,character.mind,character,latejoin = TRUE)

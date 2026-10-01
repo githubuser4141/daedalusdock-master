@@ -195,6 +195,7 @@ code/modules/mob/living/carbon/human/examine.dm,
 tgui/packages/tgui/index.jsx,
 tgui/packages/tgui/interfaces/CrewManifest.tsx,
 tgui/packages/tgui/interfaces/PreferencesMenu/CharacterPreferenceWindow.tsx,
+code/modules/tgui/tgui.dm,
 code/game/objects/structures/ladders.dm,
 */
 

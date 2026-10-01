@@ -80,7 +80,7 @@
  * return bool - TRUE if a new pooled window is opened, FALSE in all other situations including if a new pooled window didn't open because one already exists.
  */
 /datum/tgui/proc/open()
-	if(!user.client)
+	if(!user?.client)
 		return FALSE
 	if(window)
 		return FALSE
@@ -113,7 +113,14 @@
 		flush_queue |= window.send_asset(asset)
 
 	if (flush_queue)
-		user.client.browse_queue_flush()
+		user?.client?.browse_queue_flush()
+
+	// Asset delivery yields; the player may disconnect or change mobs meanwhile.
+	if(QDELETED(src) || closing)
+		return FALSE
+	if(!user?.client || user.client != window?.client)
+		close(can_be_suspended = FALSE)
+		return FALSE
 
 	window.send_message("update", get_payload(
 		with_data = TRUE,
