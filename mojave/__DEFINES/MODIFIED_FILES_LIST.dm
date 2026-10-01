@@ -195,6 +195,7 @@ code/modules/mob/living/carbon/human/examine.dm,
 tgui/packages/tgui/index.jsx,
 tgui/packages/tgui/interfaces/CrewManifest.tsx,
 tgui/packages/tgui/interfaces/PreferencesMenu/CharacterPreferenceWindow.tsx,
+code/game/objects/structures/ladders.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.

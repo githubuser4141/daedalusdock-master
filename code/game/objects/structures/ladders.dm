@@ -11,7 +11,7 @@
 	var/crafted = FALSE
 	/// Optional travel time for ladder in deciseconds
 	var/travel_time = 3 SECONDS
-	var/static/list/climbsounds = list('sound/effects/ladder.ogg','sound/effects/ladder2.ogg','sound/effects/ladder3.ogg','sound/effects/ladder4.ogg')
+	var/list/climbsounds = list('sound/effects/ladder.ogg','sound/effects/ladder2.ogg','sound/effects/ladder3.ogg','sound/effects/ladder4.ogg') // MOJAVE EDIT: per-type sounds.
 
 /obj/structure/ladder/Initialize(mapload, obj/structure/ladder/up, obj/structure/ladder/down)
 	..()
@@ -86,10 +86,13 @@
 				return
 
 		user.Move(loc)
+		if(user.loc != loc)
+			return
 		if(!do_after(user, src, travel_time, DO_PUBLIC))
 			return
 
-	if(!zstep(user, going_up ? UP : DOWN, ZMOVE_INCAPACITATED_CHECKS))
+	// MOJAVE EDIT: ladders provide a passage through floors; Move still checks collisions.
+	if(!zstep(user, going_up ? UP : DOWN, ZMOVE_INCAPACITATED_CHECKS | ZMOVE_IGNORE_OBSTACLES))
 		return
 
 	if(!is_ghost)

@@ -5,6 +5,7 @@
 	icon_state = "ladder01"
 	resistance_flags = INDESTRUCTIBLE
 	travel_time = 2 SECONDS
+	climbsounds = list('mojave/sound/ms13effects/ladder1.ogg', 'mojave/sound/ms13effects/ladder2.ogg', 'mojave/sound/ms13effects/ladder3.ogg', 'mojave/sound/ms13effects/ladder4.ogg')
 
 /obj/structure/ladder
 	var/obstructed = FALSE // MOJAVE SUN BASE EDIT
@@ -12,25 +13,6 @@
 
 /obj/structure/ladder/ms13/upwards
 	icon_state = "ladder10"
-
-// TG code edited for SFX //
-
-/obj/structure/ladder/ms13/travel(going_up, mob/user, is_ghost, obj/structure/ladder/ladder)
-	if(!is_ghost)
-		ladder.add_fingerprint(user)
-		if(!do_after(user, src, travel_time))
-			return
-		playsound(user, pick('mojave/sound/ms13effects/ladder1.ogg',
-							'mojave/sound/ms13effects/ladder2.ogg',
-							'mojave/sound/ms13effects/ladder3.ogg',
-							'mojave/sound/ms13effects/ladder4.ogg'), 60)
-		show_fluff_message(going_up, user)
-
-	// AI EDIT: user.zMove(target=, z_move_flags=) isn't a real proc signature (zMove takes dir, not a target turf) -
-	// replaced with zstep(), the same global helper DD's own ladder travel() uses (code/game/objects/structures/ladders.dm)
-	if(!zstep(user, going_up ? UP : DOWN, ZMOVE_INCAPACITATED_CHECKS))
-		return
-	ladder.use(user) //reopening ladder radial menu ahead
 
 // TG code edit to add a check for blocked ladders //
 
@@ -378,3 +360,50 @@
 	if (isnull(held_item))
 		context[SCREENTIP_CONTEXT_RMB] = "Open/Close"
 		return CONTEXTUAL_SCREENTIP_SET
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_ladder_travel
+	name = "MS13 ladders: adjacent climbing, blocked landing and recovery"
+
+/datum/unit_test/ms13_ladder_travel/Run()
+	var/datum/space_level/lower_level = SSmapping.add_new_zlevel("Ladder lower", list(ZTRAIT_UP = 1))
+	var/datum/space_level/upper_level = SSmapping.add_new_zlevel("Ladder upper", list(ZTRAIT_DOWN = -1))
+	SSzcopy.calculate_zstack_limits()
+	var/turf/lower = locate(20, 20, lower_level.z_value)
+	var/turf/upper = locate(20, 20, upper_level.z_value)
+	lower = lower.ChangeTurf(/turf/open/floor/plating)
+	upper = upper.ChangeTurf(/turf/open/floor/ms13/concrete)
+	var/turf/adjacent = get_step(lower, EAST)
+	adjacent = adjacent.ChangeTurf(/turf/open/floor/plating)
+	var/obj/structure/ladder/ms13/bottom_ladder = allocate(/obj/structure/ladder/ms13, lower)
+	var/obj/structure/ladder/ms13/top_ladder = allocate(/obj/structure/ladder/ms13, upper)
+	bottom_ladder.resistance_flags = NONE
+	top_ladder.resistance_flags = NONE
+	bottom_ladder.up = top_ladder
+	top_ladder.down = bottom_ladder
+	bottom_ladder.travel_time = 0
+	top_ladder.travel_time = 0
+	var/mob/living/carbon/human/consistent/climber = allocate(/mob/living/carbon/human/consistent, adjacent)
+	var/obj/structure/blocker = allocate(/obj/structure, upper)
+	blocker.density = TRUE
+	bottom_ladder.travel(TRUE, climber, FALSE, top_ladder)
+	if(get_turf(climber) != adjacent)
+		Fail("Climbed despite a blocked landing.")
+	qdel(blocker)
+	bottom_ladder.travel(TRUE, climber, FALSE, top_ladder)
+	if(get_turf(climber) != upper)
+		Fail("Could not climb from beside the ladder after clearing the landing.")
+	top_ladder.travel(FALSE, climber, FALSE, bottom_ladder)
+	if(get_turf(climber) != lower)
+		Fail("Could not climb back down.")
+	upper = upper.ChangeTurf(/turf/closed/wall)
+	bottom_ladder.travel(TRUE, climber, FALSE, top_ladder)
+	if(get_turf(climber) != lower)
+		Fail("The floor passage also allowed climbing into a solid wall.")
+	upper = upper.ChangeTurf(/turf/open/floor/ms13/concrete)
+	bottom_ladder.travel(TRUE, climber, FALSE, top_ladder)
+	if(get_turf(climber) != upper)
+		Fail("Could not climb after removing the wall.")
+	if(bottom_ladder.climbsounds[1] != 'mojave/sound/ms13effects/ladder1.ogg')
+		Fail("MS13 ladders lost their climbing sounds.")
+#endif
