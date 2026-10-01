@@ -82,7 +82,7 @@
 		var/obj/item/bodypart/spray_part = pick(spray_candidates)
 		// MOJAVE EDIT: an open artery spurts in bursts, more and further the harder it's bleeding.
 		for(var/i in 1 to clamp(round(temp_bleed / 3), 1, 3))
-			spray_blood(pick(GLOB.alldirs), clamp(round(temp_bleed * 0.6), 3, 6))
+			spray_blood(pick(GLOB.alldirs), clamp(round(temp_bleed * 0.6), 1, 3))
 		if(prob(50))
 			visible_message(
 				span_danger("Blood sprays out from \the [src]'s [spray_part.plaintext_zone]!"),
