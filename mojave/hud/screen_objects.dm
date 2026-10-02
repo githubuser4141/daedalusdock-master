@@ -8,6 +8,21 @@
 	screen_loc = "hud:EAST,SOUTH"
 	mouse_opacity = 0
 
+// Cover the decorative lettering beneath the utility controls; retain the case rim.
+/atom/movable/screen/ms13/header_background
+	icon = 'mojave/icons/hud/storage.dmi'
+	icon_state = "white"
+	color = "#272c32"
+	layer = HUD_BACKGROUND_LAYER + 0.01
+	screen_loc = "hud:EAST:4,SOUTH:394"
+	transform = matrix(2.75, 0, 28, 0, 2.5625, 25)
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+
+/atom/movable/screen/craft/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	if(hud?.contains_off_screen_hud)
+		screen_loc = "hud:EAST:2,SOUTH:444"
+
 /atom/movable/screen/ms13/slot_background
 	name = "base"
 	icon = 'mojave/icons/hud/ms_ui_inventory.dmi'

@@ -31,8 +31,8 @@
 		icon_state = base_icon_state
 
 /// Grain strength: what's always there, and what someone as badly off as it gets sees.
-#define MS13_GRAIN_BASE 0.5
-#define MS13_GRAIN_MAX 2
+#define MS13_GRAIN_BASE 0.25
+#define MS13_GRAIN_MAX 1
 
 /**
  * Film grain over the world, for the grimdark look: always a little, heavier the worse off you are. It's the camera

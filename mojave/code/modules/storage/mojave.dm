@@ -238,6 +238,25 @@
 		return null
 	return list(x, y)
 
+// Off-map screen objects enlarge BYOND's render bounds, changing zoom and fullscreen planes.
+/datum/storage/show_contents(mob/toshow)
+	if(grid && toshow.client)
+		grid_fit_view(toshow.client.view)
+		for(var/mob/viewer as anything in is_using)
+			if(viewer.client)
+				grid_fit_view(viewer.client.view)
+	return ..()
+
+/datum/storage/proc/grid_fit_view(view_size)
+	var/list/dimensions = getviewsize(view_size)
+	grid_start_x = clamp(grid_start_x, 1, max(1, dimensions[1] - grid_columns))
+	grid_start_y = clamp(grid_start_y, grid_rows, max(grid_rows, dimensions[2] - 1))
+
+/client/change_view(new_size)
+	. = ..()
+	if(mob?.active_storage?.grid)
+		mob.active_storage.refresh_views()
+
 /datum/storage/orient_to_hud()
 	if(!grid)
 		return ..()
@@ -438,9 +457,9 @@
 		return
 	var/list/along = splittext(axes[1], ":")
 	var/list/up = splittext(axes[2], ":")
-	var/list/view = getviewsize(usr.client.view)
-	storage.grid_start_x = clamp(text2num(along[length(along) - 1]) - round((storage.grid_columns - 1) / 2), 1, view[1] - storage.grid_columns + 1)
-	storage.grid_start_y = clamp(text2num(up[length(up) - 1]) - 1, storage.grid_rows, view[2] - 1)
+	storage.grid_start_x = text2num(along[1]) - round((storage.grid_columns - 1) / 2)
+	storage.grid_start_y = text2num(up[1]) - 1
+	storage.grid_fit_view(usr.client.view)
 	storage.refresh_views()
 
 // Grid layouts, as MS13 had them.
@@ -521,6 +540,20 @@
 	var/datum/storage/storage = backpack.atom_storage
 	if(!storage.grid || storage.grid_columns != 6 || storage.grid_rows != 6)
 		return Fail("An MS13 backpack isn't a 6x6 grid.")
+	// The grid and its close bar must fit without adding a border to the world map.
+	for(var/view_size in list("9x9", "15x15", "23x15"))
+		storage.grid_start_x = 17
+		storage.grid_start_y = 30
+		storage.grid_fit_view(view_size)
+		var/list/dimensions = getviewsize(view_size)
+		if(storage.grid_start_x + storage.grid_columns > dimensions[1] || storage.grid_start_y + 1 > dimensions[2])
+			return Fail("Storage extends the [view_size] viewport.")
+		for(var/cell_x in 0 to storage.grid_columns - 1)
+			for(var/cell_y in 0 to storage.grid_rows - 1)
+				// Mouse screen-loc pixels are one-based; the drawn screen-loc offsets are zero-based.
+				var/list/hit = storage.grid_cell_at(storage.grid_screen_loc(cell_x, cell_y, 1, 1))
+				if(!hit || hit[1] != cell_x || hit[2] != cell_y)
+					return Fail("Repositioned grid cell [cell_x],[cell_y] is not clickable.")
 	// Nine 2x2 things fill a 6x6 grid exactly, the first in the top-left corner.
 	var/list/things = list()
 	for(var/i in 1 to 9)

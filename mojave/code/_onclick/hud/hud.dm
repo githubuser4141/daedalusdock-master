@@ -22,6 +22,8 @@
 		return
 	for(var/index in hand_slots)
 		var/atom/movable/screen/inventory/hand/hand_box = hand_slots[index]
+		hand_box.cut_overlays() // Clear old icon-state overlays before changing their icon file.
+		hand_box.managed_overlays = null
 		hand_box.icon = 'mojave/icons/hud/ms_ui_slots_hands.dmi'
 		var/hand_index = text2num(index)
 		hand_box.icon_state = "[mymob.held_index_to_dir(hand_index)]hand"
@@ -188,6 +190,12 @@
 	var/datum/hud/hud = allocate(/datum/hud/ms13_viewport_test, dummy)
 	dummy.hud_used = hud
 	hud.contains_off_screen_hud = TRUE
+	var/atom/movable/screen/craft/craft = allocate(/atom/movable/screen/craft, null, hud)
+	if(craft.screen_loc != "hud:EAST:2,SOUTH:444")
+		return Fail("Crafting was not attached to the MS13 header.")
+	var/atom/movable/screen/ms13/header_background/header = allocate(/atom/movable/screen/ms13/header_background, null, hud)
+	if(!icon_exists(header.icon, header.icon_state) || header.mouse_opacity != MOUSE_OPACITY_TRANSPARENT)
+		return Fail("The header background is missing or blocks its controls.")
 	hud.build_hand_slots()
 	for(var/index in hud.hand_slots)
 		var/atom/movable/screen/inventory/hand/hand = hud.hand_slots[index]

@@ -106,9 +106,9 @@
 	inv_box.name = "id"
 	inv_box.icon = 'mojave/icons/hud/ms_ui_slots_34.dmi' // MOJAVE EDIT
 	inv_box.icon_state = "id"
-	inv_box.screen_loc = ui_id
+	inv_box.screen_loc = ui_ms13_id // MOJAVE EDIT
 	inv_box.slot_id = ITEM_SLOT_ID
-	toggleable_inventory += inv_box // MOJAVE EDIT - static_inventory
+	static_inventory += inv_box
 
 	inv_box = new /atom/movable/screen/inventory(null, src)
 	inv_box.name = "mask"
@@ -252,22 +252,28 @@
 
 	gun_setting_icon = new /atom/movable/screen/gun_mode(null, src)
 	gun_setting_icon.icon = ui_style
+	gun_setting_icon.screen_loc = "hud:EAST:32,SOUTH:444" // MOJAVE EDIT - header controls
 
 	var/atom/movable/screen/gun_option = new /atom/movable/screen/gun_radio(null, src)
 	gun_option.icon = ui_style
+	gun_option.screen_loc = "hud:EAST:2,SOUTH:408" // MOJAVE EDIT
 	gunpoint_options += gun_option
 
 	gun_option = new /atom/movable/screen/gun_item(null, src)
 	gun_option.icon = ui_style
+	gun_option.screen_loc = "hud:EAST:32,SOUTH:408" // MOJAVE EDIT
 	gunpoint_options += gun_option
 
 	gun_option = new /atom/movable/screen/gun_move(null, src)
 	gun_option.icon = ui_style
+	gun_option.screen_loc = "hud:EAST:62,SOUTH:408" // MOJAVE EDIT
 	gunpoint_options += gun_option
 
 	pain = new(null, src)
 
 	use_timer = new(null, src)
+	use_timer.screen_loc = "hud:EAST:32,SOUTH:394" // MOJAVE EDIT
+	use_timer.progbar.bar.pixel_y = 0 // MOJAVE EDIT - no world-space overhead offset
 	use_timer.RegisterSignal(mymob, COMSIG_LIVING_CHANGENEXT_MOVE, TYPE_PROC_REF(/atom/movable/screen/progbar_container, on_changenext))
 	static_inventory += use_timer
 
@@ -278,6 +284,7 @@
 
 	// MOJAVE EDIT - the side panel's, pop-up slots' and hands' backgrounds
 	infodisplay += new /atom/movable/screen/ms13/button_background(null, src)
+	infodisplay += new /atom/movable/screen/ms13/header_background(null, src)
 	toggleable_inventory += new /atom/movable/screen/ms13/slot_background(null, src)
 	static_inventory += new /atom/movable/screen/ms13/hand_background(null, src)
 
@@ -389,7 +396,7 @@
 				H.s_store.screen_loc = ui_sstore1
 				screenmob.client.screen += H.s_store
 			if(H.wear_id)
-				H.wear_id.screen_loc = ui_id
+				H.wear_id.screen_loc = ui_ms13_id // MOJAVE EDIT
 				screenmob.client.screen += H.wear_id
 			if(H.belt)
 				H.belt.screen_loc = ui_belt
