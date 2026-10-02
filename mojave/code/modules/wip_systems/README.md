@@ -9,3 +9,5 @@ their permanent Mojave modules.
 - `mappable_bombs.dm` provides unarmed, ready-to-use timed bombs; see `BOMBS.md` for mapper variables.
 - `terrain_hiveminds/` provides a generic resource-funded spreading-terrain enemy framework with
   blob, flock, necromorph, machine-hive, and xenomorph configurations.
+- `squad_npcs.dm` provides opt-in human squads with player/terminal orders and real equipment;
+  see `SQUAD_NPCS.md` for placement, controls and current limits.

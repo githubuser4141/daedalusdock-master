@@ -5,6 +5,8 @@
  * unless a low-voltage cut-out is fitted.
  */
 
+#include "vehicle_terminal.dm"
+
 /// A welding set bolted into the vehicle, its torch on a hose. The arc runs off the vehicle's battery.
 /obj/structure/ms13_vehicle_part/welding_rig
 	name = "vehicle welding set"

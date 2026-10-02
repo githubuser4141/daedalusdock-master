@@ -222,6 +222,8 @@
 			dat += "= [loaded_title] =</center>"
 		if (3) // If we're in the utility page
 			dat += "= RobCo Utili-Dock V.5 =</center>"
+		if (4)
+			dat += "= RobCo Workshop =</center>"
 	dat += "<br>"
 
 // The next line is the death of hope. Gaze not longer upon it than you need to.
@@ -232,6 +234,11 @@
 				dat += "<br><a href='byond://?src=[REF(src)];choice=1'>\>  Word Processor</a>"
 			if(remote_capability)
 				dat += "<br><a href='byond://?src=[REF(src)];choice=3'>\>  Utili-Dock</a>"
+			dat += "<br><a href='byond://?src=[REF(src)];choice=workshop'>\> Workshop</a>"
+			dat += "<br><a href='byond://?src=[REF(src)];choice=squad'>\> Squad command</a>"
+			dat += "<br><a href='byond://?src=[REF(src)];choice=cryopods'>\> Cryopod control</a>"
+			if(length(paired_bodycams))
+				dat += "<br><a href='byond://?src=[REF(src)];choice=bodycams'>\> Body cameras</a>"
 			dat += "<br><br>"
 			dat += "FILE SYSTEM"
 			if(doc_title_1)
@@ -255,6 +262,8 @@
 			dat += "Network online. Select a linked circuit."
 			if(camera_network)
 				dat += "<br><a href='byond://?src=[REF(src)];choice=cameras'>\> Security cameras</a>"
+		if (4)
+			dat += workshop_html(user)
 
 	if (mode)
 		dat += "<br><br><center>=============================================================================</center>"
@@ -291,6 +300,27 @@
 		return
 	var/mob/living/U = usr
 	if(!terminal_available(U))
+		return
+	if(findtext(href_list["choice"], "workshop") == 1)
+		mode = 4
+		var/obj/structure/bench = locate(href_list["bench"]) in workshop_benches()
+		switch(href_list["choice"])
+			if("workshop_queue")
+				var/datum/crafting_recipe/recipe = locate(href_list["recipe"]) in GLOB.crafting_recipes
+				queue_recipe(bench, recipe, U)
+			if("workshop_start")
+				start_workshop(U)
+			if("workshop_stop")
+				stop_workshop(U)
+			if("workshop_hoist")
+				if(istype(bench, /obj/structure/ms13/pa_jack))
+					var/obj/structure/ms13/pa_jack/hoist = bench
+					hoist.toggle_mount(U, src)
+		ui_interact(U)
+		return
+	if(href_list["choice"] == "workbench")
+		var/obj/structure/bench = locate(href_list["bench"]) in workshop_benches()
+		open_workbench(bench, U)
 		return
 	if(href_list["choice"] == "cameras")
 		open_cameras(U)

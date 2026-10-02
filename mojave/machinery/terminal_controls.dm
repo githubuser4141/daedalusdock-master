@@ -3,8 +3,140 @@
 	remote_capability = TRUE
 	active = TRUE
 
+/obj/machinery/ms13/terminal
+	var/list/workshop_queue = list()
+	var/workshop_running = FALSE
+	var/workshop_cancelled = FALSE
+	var/datum/weakref/workshop_operator
+	var/workshop_status = "Ready. Queue recipes, then start work."
+
 /obj/machinery/ms13/terminal/proc/terminal_available(mob/user)
 	return !QDELETED(user) && !broken && active && is_operational && (!password_needed || unlocked) && user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY)
+
+/// Adjacent workbenches are local peripherals; no mapper IDs or permanent references are needed.
+/obj/machinery/ms13/terminal/proc/workshop_benches()
+	. = list()
+	var/turf/ground = get_turf(src)
+	if(!ground)
+		return
+	for(var/obj/structure/bench in range(1, ground))
+		if(Adjacent(bench) && (istype(bench, /obj/structure/ms13/pa_jack) || bench.GetComponent(/datum/component/personal_crafting)))
+			. += bench
+
+/obj/machinery/ms13/terminal/proc/open_workbench(obj/structure/bench, mob/user)
+	if(!terminal_available(user) || !(bench in workshop_benches()))
+		return FALSE
+	var/datum/component/personal_crafting/crafting = bench.GetComponent(/datum/component/personal_crafting)
+	if(!crafting || crafting.work_terminal)
+		return FALSE
+	crafting.ui_interact(user)
+	return TRUE
+
+/// A shared terminal can be browsed by everyone, but only its operator can change an active queue.
+/obj/machinery/ms13/terminal/proc/can_manage_workshop(mob/user)
+	return terminal_available(user) && (!workshop_running || workshop_operator?.resolve() == user)
+
+/obj/machinery/ms13/terminal/proc/queue_recipe(obj/structure/bench, datum/crafting_recipe/recipe, mob/user)
+	if(!can_manage_workshop(user) || length(workshop_queue) >= 20 || !(bench in workshop_benches()) || !(recipe in GLOB.crafting_recipes))
+		return FALSE
+	var/datum/component/personal_crafting/crafting = bench.GetComponent(/datum/component/personal_crafting)
+	if(!crafting?.knows_recipe(user, recipe))
+		return FALSE
+	workshop_queue += list(list("bench" = WEAKREF(bench), "recipe" = recipe))
+	return TRUE
+
+/obj/machinery/ms13/terminal/proc/start_workshop(mob/user)
+	if(workshop_running || !length(workshop_queue) || !can_manage_workshop(user))
+		return FALSE
+	workshop_cancelled = FALSE
+	workshop_running = TRUE
+	workshop_operator = WEAKREF(user)
+	INVOKE_ASYNC(src, PROC_REF(run_workshop), user)
+	return TRUE
+
+/obj/machinery/ms13/terminal/proc/stop_workshop(mob/user)
+	if(!can_manage_workshop(user))
+		return FALSE
+	workshop_queue.Cut()
+	workshop_cancelled = TRUE
+	workshop_status = workshop_running ? "Stopping current work..." : "Queue cleared."
+	return TRUE
+
+/obj/machinery/ms13/terminal/proc/run_workshop(mob/user)
+	while(length(workshop_queue) && !QDELETED(src) && !workshop_cancelled)
+		var/list/job = workshop_queue[1]
+		var/datum/weakref/bench_ref = job["bench"]
+		var/obj/structure/bench = bench_ref.resolve()
+		var/datum/crafting_recipe/recipe = job["recipe"]
+		var/datum/component/personal_crafting/crafting = bench?.GetComponent(/datum/component/personal_crafting)
+		if(!terminal_available(user) || !(bench in workshop_benches()) || !crafting || crafting.busy)
+			workshop_status = "Paused: check terminal power, access, and the selected bench."
+			break
+		crafting.busy = TRUE
+		crafting.work_terminal = WEAKREF(src)
+		workshop_status = "Working: [recipe.name]. Remain at the terminal."
+		if(user.client)
+			ui_interact(user)
+		var/result = crafting.construct_item(user, recipe)
+		crafting.work_terminal = null
+		crafting.busy = FALSE
+		if(QDELETED(src))
+			return
+		if(istext(result))
+			workshop_status = workshop_cancelled ? "Work stopped." : "Paused: [recipe.name][result] Check ingredients, tools and access, then start again."
+			break
+		var/atom/movable/product = result
+		user.investigate_log("[key_name(user)] crafted [recipe] at [src]", INVESTIGATE_CRAFTING)
+		recipe.on_craft_completion(user, product)
+		workshop_queue.Cut(1, 2)
+		workshop_status = "Completed: [recipe.name]."
+	workshop_running = FALSE
+	workshop_operator = null
+	if(!QDELETED(user) && user.client && terminal_available(user))
+		ui_interact(user)
+
+/// Keep the workshop in the terminal's existing RobCo screen.
+/obj/machinery/ms13/terminal/proc/workshop_html(mob/user)
+	. = "[html_encode(workshop_status)]<br>Queue: [length(workshop_queue)]/20"
+	. += "<br><a href='byond://?src=[REF(src)];choice=workshop_start'>\> Start / Resume</a>"
+	. += " <a href='byond://?src=[REF(src)];choice=workshop_stop'>\> Stop / Clear</a><br>"
+	for(var/index in 1 to length(workshop_queue))
+		var/list/job = workshop_queue[index]
+		var/datum/crafting_recipe/recipe = job["recipe"]
+		. += "<br>[index]. [html_encode(recipe.name)]"
+	. += "<hr><input type='text' placeholder='Search all connected recipes...' style='width:95%' oninput=\"var rows=document.querySelectorAll('.workshop-recipe');for(var i=0;i&lt;rows.length;i++){rows.item(i).style.display=rows.item(i).innerText.toLowerCase().indexOf(this.value.toLowerCase())&gt;=0?'':'none';}\"><br>"
+	var/list/benches = workshop_benches()
+	if(!length(benches))
+		. += "No equipment connected. Place a workbench, chemistry set or power armor hoist beside this terminal."
+	for(var/obj/structure/bench as anything in benches)
+		if(istype(bench, /obj/structure/ms13/pa_jack))
+			var/obj/structure/ms13/pa_jack/hoist = bench
+			var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/armor = hoist.obj_connected
+			. += "<hr><b>[html_encode(hoist.name)]</b><br>"
+			if(armor)
+				. += "[html_encode(armor.name)]: frame [armor.get_integrity_percentage()]%"
+				. += "<br>Cell: [armor.cell ? "[round(armor.cell.percent())]%" : "Not installed"]"
+				for(var/zone in armor.module_armor)
+					var/obj/item/ms13/power_armor/part = armor.module_armor[zone]
+					if(part)
+						. += "<br>[html_encode(part.name)]: [part.get_integrity_percentage()]%"
+			else
+				. += "No armor mounted. Place an unoccupied frame on the hoist."
+			. += "<br><a href='byond://?src=[REF(src)];choice=workshop_hoist;bench=[REF(bench)]'>\> [armor ? "Release armor" : "Mount armor"]</a>"
+			continue
+		var/datum/component/personal_crafting/crafting = bench.GetComponent(/datum/component/personal_crafting)
+		. += "<hr><b>[html_encode(bench.name)]</b> <a href='byond://?src=[REF(src)];choice=workbench;bench=[REF(bench)]'>\> Open bench controls</a>"
+		for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
+			if(!recipe.name || !crafting.knows_recipe(user, recipe))
+				continue
+			var/list/details = crafting.build_recipe_data(recipe)
+			. += "<div class='workshop-recipe'><hr><b>[html_encode(recipe.name)]</b> ([html_encode(bench.name)])"
+			. += "<br>Requires: [html_encode(details["req_text"])]"
+			if(details["tool_text"])
+				. += "<br>Tools: [html_encode(details["tool_text"])]"
+			if(details["catalyst_text"])
+				. += "<br>Catalyst: [html_encode(details["catalyst_text"])]"
+			. += "<br><a href='byond://?src=[REF(src)];choice=workshop_queue;bench=[REF(bench)];recipe=[REF(recipe)]'>\> Queue recipe</a></div>"
 
 /obj/machinery/ms13/terminal/power_change()
 	. = ..()

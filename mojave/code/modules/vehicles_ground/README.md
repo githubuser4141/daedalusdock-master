@@ -1,5 +1,26 @@
 # Ground vehicle controls and power
 
+## Mounted terminal
+
+`/obj/structure/ms13_vehicle_part/terminal` fits itself when placed on a vehicle floor.
+Alternatively craft `/obj/item/ms13_vehicle_part_kit/terminal` at an electrical bench,
+then use the kit on a frame. It uses the regular RobCo terminal software: documents,
+workshop access, squad commands, cryopods, security cameras and paired body cameras.
+Set `squad_id`, `cryo_network` and `camera_network` on a mapped part before initialization;
+the contained `terminal` holds the regular terminal's remaining settings.
+
+The ignition and electrical bus must be live. Each working terminal draws one extra
+battery charge per second. Tap a bodycam on the assembly to pair it. A wrench removes
+the assembly as a kit, preserving its documents and pairings; broken or detached
+assemblies cannot operate. Frame destruction also destroys its terminal.
+
+Squad NPCs can board through unlocked vehicle doors. Select an individual and use
+**Sit** on a vehicle seat to board and buckle in. **Hold** keeps them aboard; a movement
+order unbuckles them so they can leave. Occupied seats and locked doors are respected.
+Sitting at the driver's station does not grant autonomous driving or turret AI.
+
+## Driving
+
 Click the driver's seat or its full-size dashboard monitor from inside in non-combat mode.
 Buckling into the driver's seat also opens the controls automatically (without duplicating an
 already open menu for that user). Nearby passengers can also reach the controls while the driver

@@ -148,6 +148,10 @@
 				var/obj/structure/ms13_vehicle_part/exterior_equipment/equipment = part
 				if(equipment.is_enabled())
 					load += equipment.power_draw
+			else if(istype(part, /obj/structure/ms13_vehicle_part/terminal))
+				var/obj/structure/ms13_vehicle_part/terminal/console = part
+				if(console.is_operational() && console.terminal?.active)
+					load += console.power_draw
 		var/obj/structure/ms13_vehicle_part/battery_cutout/cutout = locate() in parts
 		if(!engine_running && cutout?.is_operational() && stored_charge() - load * seconds_per_tick < starter_cost)
 			set_ignition(FALSE)
@@ -171,6 +175,8 @@
 	if(driver?.ms13_vehicle_camera && !driver.ms13_vehicle_camera.is_enabled())
 		driver.set_ms13_vehicle_camera(null)
 	for(var/obj/structure/ms13_vehicle_part/camera_console/console in parts)
+		console.power_changed()
+	for(var/obj/structure/ms13_vehicle_part/terminal/console in parts)
 		console.power_changed()
 	update_interior_masks()
 

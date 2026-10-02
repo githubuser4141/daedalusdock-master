@@ -161,11 +161,10 @@
 
 
 /// Returns a boolean on whether the tool requirements of the input recipe are satisfied by the input source and surroundings.
-/datum/component/personal_crafting/proc/check_tools(atom/source, datum/crafting_recipe/recipe, list/surroundings)
+/datum/component/personal_crafting/proc/check_tools(atom/source, datum/crafting_recipe/recipe, list/surroundings, consume = FALSE) // MOJAVE EDIT - usable tools and their fuel
 	if(!length(recipe.tool_behaviors) && !length(recipe.tool_paths))
 		return TRUE
 	var/list/available_tools = list()
-	var/list/present_qualities = list()
 
 	for(var/obj/item/contained_item in source.contents)
 		if(istype(contained_item, /obj/item/bodypart))
@@ -178,34 +177,37 @@
 				continue
 		if(contained_item.atom_storage)
 			for(var/obj/item/subcontained_item in contained_item.contents)
-				available_tools[subcontained_item.type] = TRUE
-				if(subcontained_item.tool_behaviour)
-					present_qualities[subcontained_item.tool_behaviour] = TRUE
-		available_tools[contained_item.type] = TRUE
-		if(contained_item.tool_behaviour)
-			present_qualities[contained_item.tool_behaviour] = TRUE
+				available_tools |= subcontained_item
+		available_tools |= contained_item
 
-	for(var/quality in surroundings["tool_behaviour"])
-		present_qualities[quality] = TRUE
+	var/list/instances = surroundings["instances"]
+	for(var/path in instances)
+		available_tools |= instances[path]
 
-	for(var/path in surroundings["other"])
-		available_tools[path] = TRUE
-
-	for(var/required_quality in recipe.tool_behaviors)
-		if(present_qualities[required_quality])
-			continue
-		return FALSE
-
-	for(var/required_path in recipe.tool_paths)
-		var/found_this_tool = FALSE
-		for(var/tool_path in available_tools)
-			if(!ispath(required_path, tool_path))
+	var/list/requirements = list()
+	if(length(recipe.tool_behaviors))
+		requirements |= recipe.tool_behaviors
+	if(length(recipe.tool_paths))
+		requirements |= recipe.tool_paths
+	var/list/selected_tools = list()
+	for(var/requirement in requirements)
+		var/obj/item/selected
+		for(var/obj/item/tool as anything in available_tools)
+			if(QDELETED(tool) || (ispath(requirement) ? !istype(tool, requirement) : tool.tool_behaviour != requirement))
 				continue
-			found_this_tool = TRUE
+			// Null user keeps availability checks from spamming failure messages in the UI.
+			if(!tool.tool_use_check(null, 1))
+				continue
+			selected = tool
 			break
-		if(found_this_tool)
-			continue
-		return FALSE
+		if(!selected)
+			return FALSE
+		selected_tools |= selected
+	// Check every requirement before spending fuel; one tool satisfying two requirements pays once.
+	if(consume)
+		for(var/obj/item/tool as anything in selected_tools)
+			if(!tool.use(1))
+				return FALSE
 
 	return TRUE
 
@@ -227,12 +229,12 @@
 					return ", missing trait"
 			// MOJAVE EDIT - CRAFTING BENCHES END
 			//If we're a mob we'll try a do_after; non mobs will instead instantly construct the item
-			if(ismob(a) && !do_after(a, time = R.time * special_crafting_mult(a), timed_action_flags = DO_PUBLIC)) //MOJAVE EDIT: Intelligence, mojave/code/modules/stats/stats.dm
+			if(ismob(a) && !do_after(a, time = R.time * special_crafting_mult(a), timed_action_flags = DO_PUBLIC, extra_checks = work_terminal ? CALLBACK(src, PROC_REF(workshop_tick), a, R) : null)) // MOJAVE EDIT - stats and active workstation
 				return "."
 			contents = get_surroundings(a,R.blacklist)
 			if(!check_contents(a, R, contents))
 				return ", missing component."
-			if(!check_tools(a, R, contents))
+			if(!check_tools(a, R, contents, consume = TRUE)) // MOJAVE EDIT - charge tools only after successful work
 				return ", missing tool."
 			var/list/parts = del_reqs(R, a)
 			var/atom/movable/I = new R.result (get_turf(a.loc))

@@ -242,11 +242,14 @@
 	anchored = TRUE
 	max_integrity = 500
 	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/obj_connected = null
+	var/mount_busy = FALSE
+
+/obj/structure/ms13/pa_jack/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_MOVABLE_MOVED, PROC_REF(release_mount))
 
 /obj/structure/ms13/pa_jack/Destroy()
-	if(obj_connected)
-		obj_connected.link_to = null
-	obj_connected = null
+	release_mount()
 	return ..()
 
 /obj/structure/ms13/pa_jack/deconstruct(disassembled = TRUE)
@@ -269,25 +272,94 @@
 	. += "Alt+left click this to connect to power armor."
 
 /obj/structure/ms13/pa_jack/AltClick(mob/user)
-	if(user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
-		return
-	if(!obj_connected)
-		playsound(src, 'mojave/sound/ms13effects/chain_jostle.ogg', 25, TRUE)
-		if(do_after(user, time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST))
-			obj_connected = locate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor) in loc
-			if(istype(obj_connected))
-				var/icon/chains = new(icon, "chains")
-				add_overlay(chains)
-				obj_connected.link_to = src
-				to_chat(user, span_notice("You connect the power armor to the [src]!"))
-				return TRUE
-			obj_connected = null
+	return toggle_mount(user)
+
+/obj/structure/ms13/pa_jack/proc/can_operate(mob/user, obj/machinery/ms13/terminal/terminal)
+	if(QDELETED(src) || QDELETED(user) || !isturf(loc))
+		return FALSE
+	if(terminal)
+		return !QDELETED(terminal) && terminal.terminal_available(user) && (src in terminal.workshop_benches())
+	return user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY)
+
+/obj/structure/ms13/pa_jack/proc/toggle_mount(mob/user, obj/machinery/ms13/terminal/terminal)
+	if(mount_busy || !can_operate(user, terminal))
+		return FALSE
+	var/releasing = !!obj_connected
+	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/frame = obj_connected || (locate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor) in loc)
+	if(!frame || frame.loc != loc || (frame.link_to && frame.link_to != src))
+		to_chat(user, span_warning("Place an unoccupied power armor frame on [src] first."))
+		return FALSE
+	mount_busy = TRUE
+	playsound(src, 'mojave/sound/ms13effects/chain_jostle.ogg', 25, TRUE)
+	var/finished = do_after(user, target = terminal || src, time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST, extra_checks = CALLBACK(src, PROC_REF(can_operate), user, terminal))
+	mount_busy = FALSE
+	if(!finished || !can_operate(user, terminal) || QDELETED(frame) || frame.loc != loc || (releasing ? obj_connected != frame : obj_connected || frame.link_to))
+		return FALSE
+	if(releasing)
+		release_mount()
+		to_chat(user, span_notice("You release [frame] from [src]."))
 	else
-		playsound(src, 'mojave/sound/ms13effects/chain_jostle.ogg', 25, TRUE)
-		if(do_after(user, time = 4 SECONDS, interaction_key = DOAFTER_SOURCE_PAHOIST))
-			cut_overlays()
-			obj_connected.link_to = null
-			obj_connected = null
-			to_chat(user, span_notice("You disconnect the power armor to the [src]!"))
-			return TRUE
-	return FALSE
+		obj_connected = frame
+		frame.link_to = src
+		RegisterSignal(frame, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING), PROC_REF(release_mount))
+		add_overlay(icon(icon, "chains"))
+		to_chat(user, span_notice("You secure [frame] to [src]."))
+	return TRUE
+
+/obj/structure/ms13/pa_jack/proc/release_mount(datum/source)
+	SIGNAL_HANDLER
+	if(obj_connected)
+		UnregisterSignal(obj_connected, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING))
+		obj_connected.link_to = null
+	obj_connected = null
+	cut_overlays()
+
+#ifdef UNIT_TESTS
+/datum/unit_test/ms13_terminal_hoist
+	name = "PA: Local And Terminal Hoist Controls"
+	var/area/test_area
+	var/old_requires_power
+	var/mount_result
+
+/datum/unit_test/ms13_terminal_hoist/Destroy()
+	if(test_area)
+		test_area.requires_power = old_requires_power
+	return ..()
+
+/datum/unit_test/ms13_terminal_hoist/proc/mount(obj/structure/ms13/pa_jack/hoist, mob/user, obj/machinery/ms13/terminal/terminal)
+	mount_result = hoist.toggle_mount(user, terminal)
+
+/datum/unit_test/ms13_terminal_hoist/Run()
+	var/turf/site = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	test_area = get_area(site)
+	old_requires_power = test_area.requires_power
+	test_area.requires_power = FALSE
+	var/obj/structure/ms13/pa_jack/hoist = allocate(/obj/structure/ms13/pa_jack, site)
+	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/frame = allocate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor, site)
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, get_step(site, SOUTH))
+	if(!hoist.AltClick(user) || hoist.obj_connected != frame || frame.link_to != hoist)
+		return Fail("A valid nearby user could not mount power armor with Alt-click.")
+	frame.forceMove(get_step(site, EAST))
+	if(hoist.obj_connected || frame.link_to)
+		Fail("Moving mounted armor left a stale hoist link.")
+	frame.forceMove(site)
+	var/obj/machinery/ms13/terminal/wasteland/terminal = allocate(/obj/machinery/ms13/terminal/wasteland, get_step(site, WEST))
+	user.forceMove(get_step(terminal, WEST))
+	if(hoist.IsReachableBy(user) || !(hoist in terminal.workshop_benches()) || !hoist.toggle_mount(user, terminal))
+		return Fail("The terminal could not operate its adjacent PA hoist.")
+	if(!findtext(terminal.workshop_html(user), "Release armor") || !hoist.toggle_mount(user, terminal) || frame.link_to)
+		Fail("The terminal did not show mounted armor or release it.")
+	mount_result = null
+	INVOKE_ASYNC(src, PROC_REF(mount), hoist, user, terminal)
+	sleep(1)
+	terminal.set_machine_stat(NOPOWER)
+	sleep(5 SECONDS)
+	if(mount_result || hoist.obj_connected || hoist.mount_busy)
+		Fail("Power loss did not interrupt and release the hoist operation.")
+	terminal.set_machine_stat(NONE)
+	if(!hoist.toggle_mount(user, terminal))
+		Fail("Restoring terminal power did not let the hoist work again.")
+	qdel(frame)
+	if(hoist.obj_connected)
+		Fail("Deleting mounted armor left the hoist holding a deleted frame.")
+#endif

@@ -5,7 +5,7 @@
 	name = "raider"
 	desc = "Another murderer churned out by the wastes."
 	icon = 'mojave/icons/mob/raiders.dmi'
-	icon_state = "raider_melee"
+	icon_state = "raider_ranged"
 	icon_dead = "raider_dead"
 	mob_biotypes = MOB_ORGANIC | MOB_HUMANOID
 	health = 100
@@ -21,6 +21,13 @@
 	faction = list("raider")
 	sharpness = SHARP_EDGED
 	ai_controller = /datum/ai_controller/basic_controller/ms13/raider
+	/// Whether this raider carries a firearm.
+	var/ranged = TRUE
+
+/mob/living/basic/ms13/raider/Initialize(mapload)
+	. = ..()
+	if(ranged)
+		AddElement(/datum/element/ranged_attacks, /obj/item/ammo_casing/ms13/c10mm, 'mojave/sound/ms13weapons/10mm_fire_03.ogg')
 
 /mob/living/basic/ms13/raider/metal
 	name = "armored raider"
@@ -40,7 +47,7 @@
 
 /mob/living/basic/ms13/raider/tribal
 	name = "tribal raider"
-	desc = "A lightly equipped raider armed for close combat."
+	desc = "A lightly equipped raider carrying a scavenged pistol."
 	icon_state = "tribal_raider"
 	icon_dead = "tribal_raider_dead"
 	health = 110
@@ -77,6 +84,8 @@
 	maxHealth = 160
 	melee_damage_lower = 16
 	melee_damage_upper = 26
+	ranged = FALSE
+	ai_controller = /datum/ai_controller/basic_controller/ms13/raider/melee
 
 /mob/living/basic/ms13/raider/boss
 	name = "raider boss"
@@ -93,8 +102,18 @@
 		BB_TARGETING_STRATEGY = /datum/targeting_strategy/generic,
 		BB_TARGET_MINIMUM_STAT = DEAD,
 	)
-	ai_movement = /datum/ai_movement/basic_avoidance/bypass_tables
+	ai_movement = /datum/ai_movement/jps
 	default_behavior = /datum/ai_behavior/idle_random_walk
+	planning_subtrees = list(
+		/datum/ai_planning_subtree/simple_find_target,
+		/datum/ai_planning_subtree/ms13_combat_awareness,
+		/datum/ai_planning_subtree/ms13_take_cover,
+		/datum/ai_planning_subtree/basic_ranged_attack_subtree/ms13_gunner,
+		/datum/ai_planning_subtree/ms13_suppressing_fire,
+	)
+
+/datum/ai_controller/basic_controller/ms13/raider/melee
+	ai_movement = /datum/ai_movement/basic_avoidance/bypass_tables
 	planning_subtrees = list(
 		/datum/ai_planning_subtree/simple_find_target,
 		/datum/ai_planning_subtree/basic_melee_attack_subtree/ms13/raider,
@@ -105,3 +124,10 @@
 
 /datum/ai_behavior/basic_melee_attack/ms13/raider
 	action_cooldown = 1.5 SECONDS
+
+#ifdef UNIT_TESTS
+#include "raiders_tests.dm"
+#endif
+
+// Human squad experiments share the mob entry point without adding DME entries.
+#include "../../../wip_systems/squad_npcs.dm"
