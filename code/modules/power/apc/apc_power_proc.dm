@@ -15,16 +15,20 @@
 	terminal.master = src
 
 /obj/machinery/power/apc/proc/update()
-	if(operating && !shorted && !failure_timer)
+	var/enabled = operating && !shorted && !failure_timer
+	if(enabled)
 		area.power_light = (lighting > APC_CHANNEL_AUTO_OFF)
 		area.power_equip = (equipment > APC_CHANNEL_AUTO_OFF)
 		area.power_environ = (environ > APC_CHANNEL_AUTO_OFF)
-		playsound(src.loc, 'sound/machines/terminal_on.ogg', 50, FALSE)
 	else
 		area.power_light = FALSE
 		area.power_equip = FALSE
 		area.power_environ = FALSE
-		playsound(src.loc, 'sound/machines/terminal_off.ogg', 50, FALSE)
+	// MOJAVE EDIT - refreshes and other APCs changing the area are not relay transitions.
+	var/switch_state = "[enabled]:[area.power_light]:[area.power_equip]:[area.power_environ]"
+	if(!isnull(ms13_last_switch_state) && ms13_last_switch_state != switch_state)
+		playsound(src.loc, enabled ? 'sound/machines/terminal_on.ogg' : 'sound/machines/terminal_off.ogg', 50, FALSE)
+	ms13_last_switch_state = switch_state
 	area.power_change()
 
 /obj/machinery/power/apc/proc/toggle_breaker(mob/user)

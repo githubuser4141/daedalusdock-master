@@ -2,6 +2,10 @@
 //No electronics lock, no backup cell - just a breaker and a cover, wired to real cables/generators
 //like any other power machine (mojave/machinery/generators.dm's fusion_generator).
 
+/obj/machinery/power/apc
+	/// This box's last relay state, independent of other boxes sharing its area.
+	var/tmp/ms13_last_switch_state
+
 /// Broken APCs remain repairable at low integrity, but zero integrity destroys the casing.
 /obj/machinery/power/apc/deconstruct(disassembled = TRUE)
 	. = ..()
@@ -150,6 +154,9 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
  * out; a rippling supply flickers them, and a bad ripple pops bulbs. TRUE if it burnt the box out.
  */
 /obj/machinery/power/apc/ms13/proc/suffer_grid(datum/powernet/line)
+	if(line?.avail <= 0)
+		surged = FALSE
+		return FALSE
 	if(line.ms13_voltage >= MS13_VOLTAGE_HIGH)
 		if(!surged)
 			surged = TRUE
@@ -161,16 +168,28 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 			return TRUE
 		return FALSE
 	surged = FALSE
-	if(!line.ms13_ripple || !prob(line.ms13_ripple * 40))
+	if(!operating || !line.ms13_ripple || !prob(line.ms13_ripple * 40))
 		return FALSE
 	for(var/obj/machinery/light/lamp as anything in INSTANCES_OF(/obj/machinery/light))
-		if(get_area(lamp) != area)
+		if(ms13_wired() ? ms13_supply_at(get_turf(lamp)) != line : get_area(lamp) != area)
 			continue
 		if(line.ms13_ripple > 0.3 && prob((line.ms13_ripple - 0.3) * 50))
 			lamp.break_light_tube()
 		else
 			lamp.flicker()
 	return FALSE
+
+// Wall wiring can cross areas; an area can also contain several isolated circuits.
+/obj/machinery/power/apc/ms13/break_lights()
+	if(!ms13_wired())
+		return ..()
+	var/datum/powernet/line = terminal?.powernet
+	if(!operating || !line || line.avail <= 0)
+		return
+	for(var/obj/machinery/light/lamp as anything in INSTANCES_OF(/obj/machinery/light))
+		if(ms13_supply_at(get_turf(lamp)) == line)
+			lamp.break_light_tube()
+		CHECK_TICK
 
 /obj/machinery/power/apc/ms13/Initialize(mapload)
 	. = ..()
@@ -242,8 +261,96 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 	box.update()
 
 #ifdef UNIT_TESTS
+/mob/living/carbon/human/consistent/ms13_multiz_listener/apc/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/sound_to_use, max_distance, falloff_distance, distance_multiplier, use_reverb, wait)
+	if(soundin == 'sound/machines/terminal_on.ogg' || soundin == 'sound/machines/terminal_off.ogg')
+		local_sounds++
+	return TRUE
+
+/datum/unit_test/ms13_apc_switch_sound
+	name = "POWER: APC Refreshes Do Not Replay Switch Sounds"
+
+/datum/unit_test/ms13_apc_switch_sound/Run()
+	var/mob/living/carbon/human/consistent/ms13_multiz_listener/apc/listener = allocate(/mob/living/carbon/human/consistent/ms13_multiz_listener/apc, run_loc_floor_bottom_left)
+	SSmobs.clients_by_zlevel[listener.z] |= listener
+	var/area/room = allocate(/area)
+	room.requires_power = TRUE
+	for(var/path in list(/obj/machinery/power/apc, /obj/machinery/power/apc/ms13/always_on))
+		var/obj/machinery/power/apc/box = allocate(path, run_loc_floor_bottom_left, NORTH, TRUE)
+		var/obj/machinery/power/apc/other = allocate(path, run_loc_floor_top_right, NORTH, TRUE)
+		STOP_PROCESSING(SSmachines, box)
+		STOP_PROCESSING(SSmachines, other)
+		box.area = room
+		other.area = room
+		box.set_machine_stat(NONE)
+		box.operating = TRUE
+		other.operating = FALSE
+		box.update()
+		other.update()
+		var/before = listener.local_sounds
+		for(var/iteration in 1 to 10)
+			box.update()
+			other.update()
+			if(istype(box, /obj/machinery/power/apc/ms13))
+				box.force_update = TRUE
+				box.process(2)
+		if(listener.local_sounds != before)
+			Fail("Unchanged [path] replayed its sound while refreshing a shared area.")
+		box.toggle_breaker(listener)
+		box.update()
+		if(listener.local_sounds != before + 1 || room.power_light)
+			Fail("Opening [path]'s breaker did not switch power off with exactly one click.")
+		box.toggle_breaker(listener)
+		box.update()
+		if(listener.local_sounds != before + 2 || !room.power_light)
+			Fail("Closing [path]'s breaker did not restore power with exactly one click.")
+		box.lighting = APC_CHANNEL_ON
+		box.update()
+		if(listener.local_sounds != before + 2)
+			Fail("Changing Auto-On to On clicked without a relay transition.")
+		box.lighting = APC_CHANNEL_OFF
+		box.update()
+		box.update()
+		if(listener.local_sounds != before + 3 || room.power_light)
+			Fail("A lighting-channel change did not play exactly one click.")
+		box.failure_timer = 2
+		box.update()
+		box.update()
+		box.failure_timer = 0
+		box.update()
+		if(listener.local_sounds != before + 5)
+			Fail("An APC failure and recovery did not each click once.")
+
 /datum/unit_test/ms13_utility_box_locks
 	name = "POWER: Utility Box EMP And Cover Never Relock"
+
+/datum/unit_test/ms13_breaker_switch
+	name = "POWER: Mapped Breakers Switch Without A UI"
+
+/datum/unit_test/ms13_breaker_switch/Run()
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
+	for(var/path in list(/obj/machinery/power/apc/unlocked/ms13, /obj/machinery/power/apc/unlocked/ms13/north, /obj/machinery/power/apc/unlocked/ms13/south, /obj/machinery/power/apc/unlocked/ms13/east, /obj/machinery/power/apc/unlocked/ms13/west))
+		var/obj/machinery/power/apc/unlocked/ms13/box = allocate(path, get_step(run_loc_floor_bottom_left, EAST), NORTH, TRUE)
+		STOP_PROCESSING(SSmachines, box)
+		box.opened = APC_COVER_CLOSED
+		box.set_machine_stat(NONE)
+		box.operating = FALSE
+		if(!box.interact(user) || !box.operating)
+			Fail("Clicking [path] failed to turn it on.")
+		box.ui_interact(user)
+		if(box.ui_status(user) != UI_CLOSE || !box.operating)
+			Fail("[path] exposed an APC UI or switched when asked to display one.")
+		if(!box.interact(user) || box.operating)
+			Fail("Clicking [path] failed to turn it off.")
+		box.set_machine_stat(BROKEN)
+		box.interact(user)
+		if(box.operating)
+			Fail("A broken breaker could be switched on.")
+		box.set_machine_stat(NONE)
+		user.forceMove(run_loc_floor_top_right)
+		box.interact(user)
+		if(box.operating)
+			Fail("A distant user could switch the breaker.")
+		user.forceMove(run_loc_floor_bottom_left)
 
 /datum/unit_test/ms13_utility_box_locks/Run()
 	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, run_loc_floor_bottom_left, NORTH, TRUE)

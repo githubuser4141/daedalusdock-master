@@ -2,6 +2,105 @@
 #define GENERATOR_OFF "off"
 #define GENERATOR_BROKEN "broken"
 
+/// Low-voltage crank generator; kinesis can turn its rotor without moving the housing.
+/obj/machinery/power/ms13/manual_generator
+	name = "manual generator"
+	desc = "A geared hand-crank generator. Connect a cable node underneath it, then use an empty hand to crank. A kinesis field can drive its rotor much faster."
+	icon = 'mojave/icons/structure/manual_generator_ai.dmi'
+	icon_state = "idle"
+	density = TRUE
+	var/watts_per_strength = 40
+	var/kinetic_output = 2000
+	var/last_output = 0
+	var/mob/living/operator
+	var/obj/item/mod/module/anomaly_locked/kinesis/kinetic_driver
+	COOLDOWN_DECLARE(tk_spark_cooldown)
+
+/obj/machinery/power/ms13/manual_generator/Destroy()
+	kinetic_driver?.clear_grab(FALSE)
+	operator = null
+	return ..()
+
+/obj/machinery/power/ms13/manual_generator/examine(mob/user)
+	. = ..()
+	. += span_notice("Output: [display_power(last_output)]. [powernet ? "Connected to a cable network." : "No cable connection."]")
+
+/obj/machinery/power/ms13/manual_generator/proc/can_crank(mob/living/user)
+	if(QDELETED(src) || !anchored || (machine_stat & BROKEN) || kinetic_driver || QDELETED(user))
+		return FALSE
+	return isturf(user.loc) && user.Adjacent(src) && !user.incapacitated() && user.has_active_hand() && !user.get_active_held_item() && user.stamina?.current > 0
+
+/obj/machinery/power/ms13/manual_generator/attack_hand(mob/living/user, list/modifiers)
+	. = ..()
+	if(. || operator || DOING_INTERACTION(user, "MS13_CRANK") || !can_crank(user))
+		return
+	operator = user
+	var/datum/stamina_container/working_stamina = user.stamina
+	working_stamina.add_regen_modifier("ms13_crank", -1000)
+	to_chat(user, span_notice("You start cranking [src]. Moving or taking an item in your active hand stops the work."))
+	while(can_crank(user))
+		if(!do_after(user, src, 2 SECONDS, extra_checks = CALLBACK(src, PROC_REF(can_crank), user), interaction_key = "MS13_CRANK"))
+			break
+	operator = null
+	last_output = 0
+	update_appearance(UPDATE_ICON_STATE)
+	if(!QDELETED(working_stamina))
+		working_stamina.remove_regen_modifier("ms13_crank")
+
+/obj/machinery/power/ms13/manual_generator/process(seconds_per_tick)
+	last_output = 0
+	if(!anchored || (machine_stat & BROKEN))
+		kinetic_driver?.clear_grab()
+		update_appearance(UPDATE_ICON_STATE)
+		return
+	if(!powernet)
+		connect_to_network()
+	if(kinetic_driver?.grabbed_atom == src && !kinetic_driver.kinesis_user.incapacitated(IGNORE_GRAB) && kinetic_driver.range_check(src) && kinetic_driver.check_power(kinetic_driver.use_power_cost / 10))
+		last_output = kinetic_output
+		if(COOLDOWN_FINISHED(src, tk_spark_cooldown))
+			do_sparks(2, FALSE, src)
+			COOLDOWN_START(src, tk_spark_cooldown, 3 SECONDS)
+	else if(operator && can_crank(operator))
+		last_output = max(0, operator.get_special(SPECIAL_STRENGTH)) * watts_per_strength
+		operator.stamina.adjust(-8 * seconds_per_tick)
+	if(last_output > 0 && add_avail(last_output))
+		powernet.ms13_new_voltage = max(powernet.ms13_new_voltage, MS13_VOLTAGE_LOW)
+	update_appearance(UPDATE_ICON_STATE)
+
+/obj/machinery/power/ms13/manual_generator/update_icon_state()
+	. = ..()
+	icon_state = last_output > 0 ? (kinetic_driver ? "tk" : "manual") : "idle"
+
+/obj/item/mod/module/anomaly_locked/kinesis/can_grab(atom/target)
+	if(istype(target, /obj/machinery/power/ms13/manual_generator))
+		var/obj/machinery/power/ms13/manual_generator/generator = target
+		return generator.anchored && !(generator.machine_stat & BROKEN) && !generator.operator && !generator.kinetic_driver
+	return ..()
+
+/obj/item/mod/module/anomaly_locked/kinesis/grab_atom(atom/movable/target)
+	. = ..()
+	if(istype(target, /obj/machinery/power/ms13/manual_generator))
+		var/obj/machinery/power/ms13/manual_generator/generator = target
+		generator.kinetic_driver = src
+
+/obj/item/mod/module/anomaly_locked/kinesis/clear_grab(playsound = TRUE)
+	if(istype(grabbed_atom, /obj/machinery/power/ms13/manual_generator))
+		var/obj/machinery/power/ms13/manual_generator/generator = grabbed_atom
+		generator.kinetic_driver = null
+		generator.last_output = 0
+		generator.update_appearance(UPDATE_ICON_STATE)
+	return ..()
+
+/obj/item/mod/module/anomaly_locked/kinesis/move_grabbed()
+	if(istype(grabbed_atom, /obj/machinery/power/ms13/manual_generator))
+		return
+	return ..()
+
+/obj/item/mod/module/anomaly_locked/kinesis/launch(atom/movable/launched_object)
+	if(istype(launched_object, /obj/machinery/power/ms13/manual_generator))
+		return
+	return ..()
+
 /**
  * A house-scale power source that feeds real cables. Wire it to an /obj/machinery/power/apc/ms13's terminal
  * (mojave/code/modules/power/apc_ms13.dm) and that box draws power from it like any grid. Houses get one at

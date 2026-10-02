@@ -30,11 +30,11 @@
 
 /datum/powernet/reset()
 	ms13_last_load = load
-	ms13_voltage = ms13_new_voltage
-	ms13_new_voltage = MS13_VOLTAGE_NONE
-	ms13_ripple = ms13_new_ripple
-	ms13_new_ripple = 0
 	. = ..()
+	ms13_voltage = avail > 0 ? ms13_new_voltage : MS13_VOLTAGE_NONE
+	ms13_new_voltage = MS13_VOLTAGE_NONE
+	ms13_ripple = avail > 0 ? ms13_new_ripple : 0
+	ms13_new_ripple = 0
 	// Rail feeders hear when their line goes live or dead, and only then, so a steady line costs nothing.
 	var/live = avail > 0
 	if(live != ms13_was_live)
@@ -705,10 +705,13 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	output.newavail += delivered
 	last_delivered = delivered
 	last_shortfall = demand - delivered
+	if(delivered <= 0)
+		return
 	// A worn transformer arcs over, putting plant voltage straight onto the house side.
-	var/arcing = condition < 50 && prob(((50 - condition) / 50) ** 2 * 100)
+	var/arcing = from_plant > 0 && condition < 50 && prob(((50 - condition) / 50) ** 2 * 100)
 	output.ms13_new_voltage = max(output.ms13_new_voltage, arcing ? input.ms13_voltage : MS13_VOLTAGE_LOW)
-	output.ms13_new_ripple = max(output.ms13_new_ripple, input.ms13_ripple * (smoothed ? 0.1 : 1))
+	if(from_plant > 0)
+		output.ms13_new_ripple = max(output.ms13_new_ripple, input.ms13_ripple * (smoothed ? 0.1 : 1))
 	if(arcing)
 		do_sparks(2, FALSE, src)
 	var/strain = delivered / rating * (output.ms13_last_load >= rating ? 4 : 1)
@@ -750,8 +753,19 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 
 /obj/machinery/ms13/substation/proc/wiring_text()
 	. = list()
-	if(!input || !output || input == output)
-		. += span_warning("It isn't wired: plant cable knotted under it, house cable knotted on the tile it faces.")
+	var/turf/plant_tile = get_turf(src)
+	var/turf/house_tile = get_step(src, dir)
+	var/datum/powernet/plant_net = ms13_cable_net_at(plant_tile)
+	var/datum/powernet/house_net = ms13_cable_net_at(house_tile)
+	. += span_notice("Plant input: cable node under it ([plant_tile.x],[plant_tile.y],[plant_tile.z]). House output: cable node to the [dir2text(dir)] ([house_tile?.x],[house_tile?.y],[house_tile?.z]).")
+	if(!plant_net)
+		. += span_warning("The plant input has no cable node. A plain through-cable or curve is not a node; use a knot or connector.")
+	if(!house_net)
+		. += span_warning("The house output has no cable node on the tile it faces.")
+	if(!plant_net || !house_net)
+		return
+	if(plant_net == house_net)
+		. += span_warning("The input and output are shorted together on the same network. Separate the lines, including any connection through walls.")
 		return
 	. += span_notice("It's sending [display_power(last_delivered)] of its [display_power(rating)] rating to the houses.")
 	if(last_shortfall > 1)
@@ -851,7 +865,7 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	lamp_draw = 300
 
 /obj/machinery/power/ms13/streetlamp/process(seconds_per_tick)
-	if(!bulb_broken && powernet?.ms13_voltage >= MS13_VOLTAGE_HIGH)
+	if(!bulb_broken && powernet?.avail > 0 && powernet.ms13_voltage >= MS13_VOLTAGE_HIGH)
 		// Plant voltage straight on the pole: the bulb goes with a bang.
 		bulb_broken = TRUE
 		visible_message(span_warning("[src]'s lamp flashes blinding white and bursts!"))

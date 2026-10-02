@@ -1,4 +1,203 @@
 #ifdef UNIT_TESTS
+/// Dead lines cannot surge; the same hardware must work again when power returns.
+/datum/unit_test/ms13_dead_grid/Run()
+	var/turf/site = run_loc_floor_bottom_left
+	var/obj/machinery/light/ms13/fixture = allocate(/obj/machinery/light/ms13, site)
+	var/obj/machinery/light/ms13/broken/mapped_broken = allocate(/obj/machinery/light/ms13/broken, site)
+	if(fixture.status != LIGHT_OK || mapped_broken.status != LIGHT_BROKEN)
+		return Fail("Light initialization changed the mapped bulb condition.")
+	var/obj/structure/cable/cable = allocate(/obj/structure/cable, site)
+	cable.set_directions(CABLE_EAST)
+	var/datum/powernet/line = cable.powernet
+	var/obj/machinery/power/ms13/streetlamp/lamp = allocate(/obj/machinery/power/ms13/streetlamp, site)
+	lamp.connect_to_network()
+	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, get_step(site, NORTH))
+	STOP_PROCESSING(SSmachines, lamp)
+	STOP_PROCESSING(SSmachines, box)
+	line.avail = 0
+	line.ms13_voltage = MS13_VOLTAGE_HIGH
+	line.ms13_ripple = 100
+	for(var/attempt in 1 to 40)
+		box.suffer_grid(line)
+		lamp.process(2)
+	if(!(!box.surged && !(box.machine_stat & BROKEN) && !lamp.bulb_broken))
+		return Fail("An unpowered line damaged its equipment.")
+	line.ms13_new_voltage = MS13_VOLTAGE_HIGH
+	line.ms13_new_ripple = 100
+	line.newavail = 0
+	line.reset()
+	if(!(line.ms13_voltage == MS13_VOLTAGE_NONE && line.ms13_ripple == 0))
+		return Fail("A dead network retained voltage/ripple.")
+	line.newavail = 2000
+	line.ms13_new_voltage = MS13_VOLTAGE_LOW
+	line.reset()
+	lamp.process(2)
+	if(!(lamp.lit && !lamp.bulb_broken))
+		return Fail("A lamp failed to recover after power returned.")
+	line.ms13_voltage = MS13_VOLTAGE_HIGH
+	lamp.process(2)
+	if(!(lamp.bulb_broken))
+		return Fail("Real live high voltage no longer damages a lamp.")
+
+/// Electrical faults follow cables, not the shared map area.
+/datum/unit_test/ms13_grid_surge/Run()
+	var/turf/site = run_loc_floor_bottom_left
+	var/area/place = get_area(site)
+	var/was_wired = place.ms13_wired
+	place.ms13_wired = TRUE
+	var/obj/structure/cable/cable = allocate(/obj/structure/cable, site)
+	cable.set_directions(CABLE_NORTH)
+	var/datum/powernet/line = cable.powernet
+	var/obj/machinery/power/apc/ms13/box = allocate(/obj/machinery/power/apc/ms13, site)
+	box.terminal = allocate(/obj/machinery/power/terminal, site)
+	box.terminal.connect_to_network()
+	var/obj/machinery/light/ms13/connected = allocate(/obj/machinery/light/ms13, site)
+	var/obj/machinery/light/ms13/isolated = allocate(/obj/machinery/light/ms13, get_step(site, EAST))
+	// The surge sweep yields on large maps; keep the test supply steady across those yields.
+	STOP_PROCESSING(SSmachines, box)
+	SSmachines.powernets -= line
+	line.avail = 1000
+	box.break_lights()
+	if(connected.status != LIGHT_BROKEN || isolated.status != LIGHT_OK)
+		Fail("Surge: connected=[connected.status], isolated=[isolated.status], supply=[ms13_supply_at(site) == line], terminal=[box.terminal.powernet == line].")
+	connected.status = LIGHT_OK
+	line.ms13_voltage = MS13_VOLTAGE_LOW
+	line.ms13_ripple = 100
+	box.suffer_grid(line)
+	if(connected.status != LIGHT_BROKEN || isolated.status != LIGHT_OK)
+		Fail("Ripple damaged an electrically isolated light in the same area.")
+	SSmachines.powernets |= line
+	place.ms13_wired = was_wired
+
+/// The cursor needs a client view; substitute only that UI dependency in server tests.
+/atom/movable/screen/fullscreen/cursor_catcher/kinesis/ms13_test/assign_to_mob(mob/owner)
+	src.owner = owner
+	view_list = getviewsize(world.view)
+
+/mob/living/carbon/human/ms13_kinesis_test/overlay_fullscreen(category, type, severity)
+	if(category == "kinesis")
+		type = /atom/movable/screen/fullscreen/cursor_catcher/kinesis/ms13_test
+	return ..()
+
+/mob/living/carbon/human/ms13_kinesis_test
+	parent_type = /mob/living/carbon/human/consistent
+
+/datum/unit_test/ms13_manual_power/Run()
+	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
+	var/obj/structure/cable/cable = allocate(/obj/structure/cable, site)
+	cable.set_directions(CABLE_EAST)
+	var/obj/machinery/power/ms13/manual_generator/generator = allocate(/obj/machinery/power/ms13/manual_generator, site)
+	for(var/state in list("idle", "manual", "tk"))
+		if(!(state in icon_states(generator.icon)))
+			return Fail("Missing manual generator sprite state: [state].")
+		var/icon/sprite = icon(generator.icon, state)
+		if(sprite.Width() != 32 || sprite.Height() != 32)
+			return Fail("Generator state [state] is not a native 32x32 sprite.")
+	STOP_PROCESSING(SSmachines, generator)
+	var/mob/living/carbon/human/ms13_kinesis_test/user = allocate(/mob/living/carbon/human/ms13_kinesis_test, get_step(site, WEST))
+	user.set_special_base(SPECIAL_STRENGTH, 5)
+	generator.operator = user
+	var/old_stamina = user.stamina.current
+	generator.process(2)
+	if(!(generator.last_output == 200 && user.stamina.current < old_stamina))
+		return Fail("Hand cranking: output [generator.last_output], STR [user.get_special(SPECIAL_STRENGTH)], stamina [old_stamina] -> [user.stamina.current], can crank [generator.can_crank(user)], hand [user.has_active_hand()], incapacitated [user.incapacitated()].")
+	if(generator.icon_state != "manual")
+		return Fail("Hand cranking did not select the manual sprite.")
+	user.set_special_base(SPECIAL_STRENGTH, 10)
+	generator.process(2)
+	if(!(generator.last_output == 400 && generator.powernet?.ms13_new_voltage == MS13_VOLTAGE_LOW))
+		return Fail("More STR did not produce more low-voltage power.")
+	user.forceMove(get_step(get_step(site, EAST), EAST))
+	generator.process(2)
+	if(!(generator.last_output == 0))
+		return Fail("Walking away left manual generation running.")
+	generator.operator = null
+	user.forceMove(get_step(site, WEST))
+	INVOKE_ASYNC(generator, TYPE_PROC_REF(/atom, attack_hand), user)
+	sleep(1)
+	if(generator.operator != user || !DOING_INTERACTION(user, "MS13_CRANK"))
+		return Fail("Clicking the generator did not start continuous cranking.")
+	user.forceMove(get_step(site, SOUTHWEST))
+	sleep(3 SECONDS)
+	if(generator.operator || DOING_INTERACTION(user, "MS13_CRANK"))
+		return Fail("Moving failed to stop the crank action.")
+	user.forceMove(get_step(site, WEST))
+
+	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/frame = allocate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor, user)
+	var/obj/item/ms13/power_armor/arm/right/arm = allocate(/obj/item/ms13/power_armor/arm/right, null)
+	frame.module_armor[BODY_ZONE_R_ARM] = arm
+	arm.frame = frame
+	var/obj/item/ms13/pa_module/kinesis/module = allocate(/obj/item/ms13/pa_module/kinesis, arm)
+	arm.modules[MAIN_MODULE_PA] = module
+	arm.actions_modules = module.actions_modules.Copy()
+	module.part_pa = arm
+	user.equip_to_slot_if_possible(frame, ITEM_SLOT_OCLOTHING, disable_warning = TRUE)
+	module.added_to_pa()
+	var/datum/action/action = module.actions_modules[1]
+	if(!(action.owner == user && (action in frame.actions)))
+		return Fail("Installing a PA module did not grant its action.")
+	module.ui_action_click(user)
+	var/obj/item/mod/module/anomaly_locked/kinesis/power_armor/controller = module.controller
+	if(!(controller.kinesis_user == user && controller.check_power(1)))
+		return Fail("Installed powered kinesis did not activate.")
+	if(!(!controller.can_grab(user) && controller.can_grab(generator)))
+		return Fail("Kinesis accepted self-grab or rejected the generator rotor.")
+	var/old_charge = frame.cell.charge
+	if(!(controller.drain_power(1) && frame.cell.charge == old_charge - 1))
+		return Fail("Kinesis did not draw from the PA cell.")
+	controller.grab_atom(generator)
+	if(!(generator.kinetic_driver == controller && !controller.can_grab(generator)))
+		return Fail("The rotor was not claimed exclusively.")
+	var/list/old_sparks = list()
+	for(var/obj/effect/particle_effect/sparks/spark in site)
+		old_sparks += spark
+	generator.process(2)
+	if(!(generator.last_output == 2000))
+		return Fail("Kinesis did not generate its higher output.")
+	var/real_sparks = FALSE
+	for(var/obj/effect/particle_effect/sparks/spark in site)
+		if(!(spark in old_sparks))
+			real_sparks = TRUE
+	if(!real_sparks || generator.icon_state != "tk")
+		return Fail("Kinesis did not emit real sparks and select its TK sprite.")
+	if(COOLDOWN_FINISHED(generator, tk_spark_cooldown))
+		return Fail("Kinesis sparks have no cooldown.")
+	controller.move_grabbed()
+	if(!(generator.loc == site))
+		return Fail("Kinesis moved the anchored generator.")
+	controller.clear_grab(FALSE)
+	if(generator.icon_state != "idle")
+		return Fail("Releasing kinesis did not restore the idle sprite.")
+	controller.launch(generator)
+	if(!(!generator.kinetic_driver && !generator.throwing && !user.screens["kinesis"]))
+		return Fail("Releasing the rotor left a claim/cursor or threw the generator.")
+	controller.grab_atom(generator)
+	frame.cell.charge = 0
+	generator.process(2)
+	if(!(generator.last_output == 0 && !controller.drain_power(1)))
+		return Fail("An empty PA cell kept producing power.")
+	frame.cell.charge = old_charge
+	module.removed_from_pa()
+	if(!(!controller.grabbed_atom && !controller.kinesis_user && !generator.kinetic_driver && !action.owner))
+		return Fail("Removing the module left its action, beam or rotor claim active.")
+	module.added_to_pa()
+	module.ui_action_click(user)
+	controller.grab_atom(generator)
+	qdel(generator)
+	if(!(!controller.grabbed_atom && !controller.kinesis_catcher && !controller.kinesis_beam))
+		return Fail("Deleting the target leaked the kinesis grab.")
+	var/obj/item/target = allocate(/obj/item, site)
+	controller.grab_atom(target)
+	user.dropItemToGround(frame, force = TRUE)
+	if(!(!controller.kinesis_user && !controller.grabbed_atom && !HAS_TRAIT(target, TRAIT_NO_FLOATING_ANIM)))
+		return Fail("Unequipping the armor left kinesis active.")
+	user.equip_to_slot_if_possible(frame, ITEM_SLOT_OCLOTHING, disable_warning = TRUE)
+	module.ui_action_click(user)
+	controller.grab_atom(target)
+	qdel(module)
+	if(arm.modules[MAIN_MODULE_PA] || (action in frame.actions_modules) || (action in frame.actions) || HAS_TRAIT(target, TRAIT_NO_FLOATING_ANIM))
+		return Fail("Deleting an installed module left armor references or a kinesis grab behind.")
+
 /// A plant generator feeds a substation, the substation feeds a house line, and a capacitor on that line steadies it.
 /datum/unit_test/ms13_power_grid/Run()
 	var/x0 = run_loc_floor_bottom_left.x + 1
@@ -40,6 +239,26 @@
 		Fail("The capacitor did not join the house line and charge.")
 	if(!(plant_side.ms13_ripple > 0 && house_side.ms13_ripple < plant_side.ms13_ripple / 2))
 		Fail("The capacitor did not steady the plant's ripple.")
+
+	// A dead plant cannot arc or pass ripple through a transformer running on stored energy.
+	plant_side.avail = 0
+	plant_side.ms13_ripple = 1
+	substation.condition = 1
+	house_side.newavail = 0
+	house_side.ms13_new_voltage = MS13_VOLTAGE_NONE
+	house_side.ms13_new_ripple = 0
+	substation.process(2)
+	if(substation.last_delivered <= 0 || house_side.ms13_new_voltage != MS13_VOLTAGE_LOW || house_side.ms13_new_ripple)
+		Fail("Capacitor-only backup inherited the dead plant's hazards or supplied no power.")
+	capacitor.charge = 0
+	house_side.newavail = 0
+	house_side.ms13_new_voltage = MS13_VOLTAGE_NONE
+	substation.process(2)
+	if(house_side.newavail || house_side.ms13_new_voltage != MS13_VOLTAGE_NONE)
+		Fail("An empty transformer announced power/voltage with no source.")
+	substation.condition = 100
+	for(var/tick in 1 to 3)
+		run_grid(plant, substation, capacitor)
 
 	// A lamp on the house side lights and draws; one on the plant side blows its bulb.
 	var/obj/machinery/power/ms13/streetlamp/house_lamp = allocate(/obj/machinery/power/ms13/streetlamp, locate(x0 + 3, y0, z0))

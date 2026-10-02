@@ -94,13 +94,14 @@ DEFINE_INTERACTABLE(/obj/machinery/light)
 		LAZYADD(my_area.lights, src)
 
 	#ifdef LIGHTS_RANDOMLY_BROKEN
-	switch(fitting)
-		if("tube")
-			if(prob(0.5))
-				break_light_tube(TRUE)
-		if("bulb")
-			if(prob(1))
-				break_light_tube(TRUE)
+	if(!ms13_wired() && !istype(src, /obj/machinery/light/ms13)) // MOJAVE EDIT - no random startup damage in MS13.
+		switch(fitting)
+			if("tube")
+				if(prob(0.5))
+					break_light_tube(TRUE)
+			if("bulb")
+				if(prob(1))
+					break_light_tube(TRUE)
 	#endif
 	update(FALSE, TRUE, FALSE)
 

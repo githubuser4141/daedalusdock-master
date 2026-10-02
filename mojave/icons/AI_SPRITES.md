@@ -1,9 +1,10 @@
 # AI-generated sprites
 
-Sprites drawn or redrawn by AI (Claude), so they can be told apart from artists' work and replaced later.
+Sprites drawn or redrawn by AI, so they can be told apart from artists' work and replaced later.
 
 | File | States | What was done |
 |---|---|---|
+| `mojave/icons/structure/manual_generator_ai.dmi` | `idle`, `manual`, `tk` | Generated with Codex's image-generation tool; three static 32x32 states, PACMAN-scale with a taller, slimmer body. Sparks are runtime effects, not artwork. |
 | `mojave/icons/objects/pa_items.dmi` | `utility_*` | Utility power armor inventory icons, generated on T-51's part shapes. |
 | `mojave/icons/mob/large-worn-icons/32x48/armor.dmi` | `utility_*` | Utility power armor worn parts, generated on T-51's frame-fitted shapes. |
 | `mojave/icons/mob/large-worn-icons/32x48/head.dmi` | `helmet0-utility`, `helmet1-utility` | Utility power armor helmet, worn. |

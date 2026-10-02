@@ -65,7 +65,7 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 
 	else if(istype(I, /obj/item/ms13/pa_module))
 		var/obj/item/ms13/pa_module/module = I
-		if(!module.zone == zone)
+		if(module.zone != zone)
 			to_chat(user, span_warning("You can't install this module to [src]."))
 			return
 		if(modules[module.class_type])

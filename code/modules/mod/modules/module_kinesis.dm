@@ -16,6 +16,8 @@
 	overlay_state_active = "module_kinesis_on"
 	accepted_anomalies = list(/obj/item/assembly/signaler/anomaly/grav)
 	required_slots = list(ITEM_SLOT_GLOVES)
+	/// MOJAVE EDIT: the same controller also serves power armor.
+	var/mob/living/kinesis_user
 	/// Range of the knesis grab.
 	var/grab_range = 5
 	/// Time between us hitting objects with kinesis.
@@ -40,6 +42,8 @@
 	soundloop = new(src)
 
 /obj/item/mod/module/anomaly_locked/kinesis/Destroy()
+	clear_grab(FALSE)
+	kinesis_user = null
 	QDEL_NULL(soundloop)
 	return ..()
 
@@ -47,39 +51,51 @@
 	. = ..()
 	if(!.)
 		return
-	if(!mod.wearer.client)
+	kinesis_user = mod.wearer
+	use_kinesis(target)
+
+/obj/item/mod/module/anomaly_locked/kinesis/proc/use_kinesis(atom/target)
+	if(!kinesis_user?.client || kinesis_user.incapacitated(IGNORE_GRAB))
 		return
 	if(grabbed_atom)
 		var/launched_object = grabbed_atom
 		clear_grab(playsound = FALSE)
 		launch(launched_object)
 		return
+	if(kinesis_user.screens["kinesis"])
+		return
 	if(!range_check(target))
-		balloon_alert(mod.wearer, "too far!")
+		balloon_alert(kinesis_user, "too far!")
 		return
 	if(!can_grab(target))
-		balloon_alert(mod.wearer, "can't grab!")
+		balloon_alert(kinesis_user, "can't grab!")
 		return
-	drain_power(use_power_cost)
-	grab_atom(target)
+	if(drain_power(use_power_cost))
+		grab_atom(target)
 
 /obj/item/mod/module/anomaly_locked/kinesis/on_deactivation(display_message = TRUE, deleting = FALSE)
 	clear_grab(playsound = !deleting)
+	kinesis_user = null
 
 /obj/item/mod/module/anomaly_locked/kinesis/process(delta_time)
-	if(!mod.wearer.client || mod.wearer.incapacitated(IGNORE_GRAB))
+	if(!kinesis_user?.client || kinesis_user.incapacitated(IGNORE_GRAB))
 		clear_grab()
 		return
 	if(!range_check(grabbed_atom))
-		balloon_alert(mod.wearer, "out of range!")
+		balloon_alert(kinesis_user, "out of range!")
 		clear_grab()
 		return
-	drain_power(use_power_cost/10)
+	if(!drain_power(use_power_cost/10))
+		clear_grab()
+		return
+	move_grabbed()
+
+/obj/item/mod/module/anomaly_locked/kinesis/proc/move_grabbed()
 	if(kinesis_catcher.mouse_params)
 		kinesis_catcher.calculate_params()
 	if(!kinesis_catcher.given_turf)
 		return
-	mod.wearer.setDir(get_dir(mod.wearer, grabbed_atom))
+	kinesis_user.setDir(get_dir(kinesis_user, grabbed_atom))
 	if(grabbed_atom.loc == kinesis_catcher.given_turf)
 		if(grabbed_atom.pixel_x == kinesis_catcher.given_x - world.icon_size/2 && grabbed_atom.pixel_y == kinesis_catcher.given_y - world.icon_size/2)
 			return //spare us redrawing if we are standing still
@@ -90,10 +106,10 @@
 	kinesis_beam.redrawing()
 	var/turf/next_turf = get_step_towards(grabbed_atom, kinesis_catcher.given_turf)
 	if(grabbed_atom.Move(next_turf, get_dir(grabbed_atom, next_turf), 8))
-		if(isitem(grabbed_atom) && (mod.wearer in next_turf))
+		if(isitem(grabbed_atom) && (kinesis_user in next_turf))
 			var/obj/item/grabbed_item = grabbed_atom
 			clear_grab()
-			mod.wearer.pickup_item(grabbed_item)
+			kinesis_user.pickup_item(grabbed_item)
 		return
 
 	var/pixel_x_change = 0
@@ -121,10 +137,12 @@
 			hitting_atom = movable_content
 			break
 	var/obj/item/grabbed_item = grabbed_atom
-	grabbed_item.melee_attack_chain(mod.wearer, hitting_atom)
+	grabbed_item.melee_attack_chain(kinesis_user, hitting_atom)
 	COOLDOWN_START(src, hit_cooldown, hit_cooldown_time)
 
 /obj/item/mod/module/anomaly_locked/kinesis/proc/can_grab(atom/target)
+	if(target == kinesis_user)
+		return FALSE
 	if(!ismovable(target))
 		return FALSE
 	if(iseffect(target))
@@ -154,6 +172,7 @@
 
 /obj/item/mod/module/anomaly_locked/kinesis/proc/grab_atom(atom/movable/target)
 	grabbed_atom = target
+	RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_grab_deleted))
 	if(isliving(grabbed_atom))
 		ADD_TRAIT(grabbed_atom, TRAIT_IMMOBILIZED, REF(src))
 		ADD_TRAIT(grabbed_atom, TRAIT_HANDS_BLOCKED, REF(src))
@@ -162,12 +181,12 @@
 	RegisterSignal(grabbed_atom, COMSIG_MOVABLE_SET_ANCHORED, PROC_REF(on_setanchored))
 	playsound(grabbed_atom, 'sound/effects/contractorbatonhit.ogg', 75, TRUE)
 	kinesis_icon = mutable_appearance(icon = 'icons/effects/effects.dmi', icon_state = "kinesis", layer = grabbed_atom.layer - 0.1)
-	kinesis_icon.appearance_flags = RESET_ALPHA|RESET_COLOR|RESET_TRANSFORM
+	kinesis_icon.appearance_flags = RESET_ALPHA|RESET_COLOR|RESET_TRANSFORM|KEEP_APART
 	kinesis_icon.overlays += emissive_appearance(icon = 'icons/effects/effects.dmi', icon_state = "kinesis")
 	grabbed_atom.add_overlay(kinesis_icon)
-	kinesis_beam = mod.wearer.Beam(grabbed_atom, "kinesis")
-	kinesis_catcher = mod.wearer.overlay_fullscreen("kinesis", /atom/movable/screen/fullscreen/cursor_catcher/kinesis, 0)
-	kinesis_catcher.assign_to_mob(mod.wearer)
+	kinesis_beam = kinesis_user.Beam(grabbed_atom, "kinesis")
+	kinesis_catcher = kinesis_user.overlay_fullscreen("kinesis", /atom/movable/screen/fullscreen/cursor_catcher/kinesis, 0)
+	kinesis_catcher.assign_to_mob(kinesis_user)
 	RegisterSignal(kinesis_catcher, COMSIG_CLICK, PROC_REF(on_catcher_click))
 	soundloop.start()
 	START_PROCESSING(SSkinesis, src)
@@ -179,27 +198,28 @@
 	if(playsound)
 		playsound(grabbed_atom, 'sound/effects/empulse.ogg', 75, TRUE)
 	STOP_PROCESSING(SSkinesis, src)
+	if(kinesis_catcher)
+		UnregisterSignal(kinesis_catcher, COMSIG_CLICK)
 	kinesis_catcher = null
-	mod.wearer.clear_fullscreen("kinesis")
+	kinesis_user?.clear_fullscreen("kinesis", FALSE)
 	grabbed_atom.cut_overlay(kinesis_icon)
 	QDEL_NULL(kinesis_beam)
+	UnregisterSignal(grabbed_atom, list(COMSIG_MOB_STATCHANGE, COMSIG_MOVABLE_SET_ANCHORED, COMSIG_PARENT_QDELETING))
 	if(isliving(grabbed_atom))
 		REMOVE_TRAIT(grabbed_atom, TRAIT_IMMOBILIZED, REF(src))
 		REMOVE_TRAIT(grabbed_atom, TRAIT_HANDS_BLOCKED, REF(src))
-		UnregisterSignal(grabbed_atom, COMSIG_MOB_STATCHANGE)
 	REMOVE_TRAIT(grabbed_atom, TRAIT_NO_FLOATING_ANIM, REF(src))
-	UnregisterSignal(grabbed_atom, COMSIG_MOVABLE_SET_ANCHORED)
 	if(!isitem(grabbed_atom))
 		animate(grabbed_atom, 0.2 SECONDS, pixel_x = grabbed_atom.base_pixel_x, pixel_y = grabbed_atom.base_pixel_y)
 	grabbed_atom = null
 	soundloop.stop()
 
 /obj/item/mod/module/anomaly_locked/kinesis/proc/range_check(atom/target)
-	if(!isturf(mod.wearer.loc))
+	if(QDELETED(target) || QDELETED(kinesis_user) || !isturf(kinesis_user.loc))
 		return FALSE
 	if(ismovable(target) && !isturf(target.loc))
 		return FALSE
-	if(!can_see(mod.wearer, target, grab_range))
+	if(!can_see(kinesis_user, target, grab_range))
 		return FALSE
 	return TRUE
 
@@ -210,6 +230,10 @@
 	var/list/modifiers = params2list(params)
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		clear_grab()
+
+/obj/item/mod/module/anomaly_locked/kinesis/proc/on_grab_deleted()
+	SIGNAL_HANDLER
+	clear_grab(FALSE)
 
 /obj/item/mod/module/anomaly_locked/kinesis/proc/on_statchange(mob/grabbed_mob, new_stat)
 	SIGNAL_HANDLER
@@ -226,8 +250,8 @@
 /obj/item/mod/module/anomaly_locked/kinesis/proc/launch(atom/movable/launched_object)
 	playsound(launched_object, 'sound/magic/repulse.ogg', 100, TRUE)
 	RegisterSignal(launched_object, COMSIG_MOVABLE_IMPACT, PROC_REF(launch_impact))
-	var/turf/target_turf = get_turf_in_angle(get_angle(mod.wearer, launched_object), get_turf(src), 10)
-	launched_object.throw_at(target_turf, range = grab_range, speed = launched_object.density ? 3 : 4, thrower = mod.wearer, spin = isitem(launched_object))
+	var/turf/target_turf = get_turf_in_angle(get_angle(kinesis_user, launched_object), get_turf(src), 10)
+	launched_object.throw_at(target_turf, range = grab_range, speed = launched_object.density ? 3 : 4, thrower = kinesis_user, spin = isitem(launched_object))
 
 /obj/item/mod/module/anomaly_locked/kinesis/proc/launch_impact(atom/movable/source, atom/hit_atom, datum/thrownthing/thrownthing)
 	UnregisterSignal(source, COMSIG_MOVABLE_IMPACT)
@@ -296,7 +320,7 @@
 		REMOVE_TRAIT(previous_grab, TRAIT_MOVE_PHASING, REF(src))
 
 /obj/item/mod/module/anomaly_locked/kinesis/admin/can_grab(atom/target)
-	if(mod.wearer == target)
+	if(kinesis_user == target)
 		return FALSE
 	if(!ismovable(target))
 		return FALSE
@@ -306,11 +330,11 @@
 	return TRUE
 
 /obj/item/mod/module/anomaly_locked/kinesis/admin/range_check(atom/target)
-	if(!isturf(mod.wearer.loc))
+	if(QDELETED(target) || QDELETED(kinesis_user) || !isturf(kinesis_user.loc))
 		return FALSE
 	if(ismovable(target) && !isturf(target.loc))
 		return FALSE
-	if(target.z != mod.wearer.z)
+	if(target.z != kinesis_user.z)
 		return FALSE
 	return TRUE
 
