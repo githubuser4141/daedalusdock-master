@@ -21,7 +21,7 @@
 	ingest_met = metabolization_rate
 
 /datum/reagent/consumable/affect_ingest(mob/living/carbon/C, removed)
-	C.adjust_nutrition(nutriment_factor * removed)
+	C.adjust_nutrition(nutriment_factor * removed / metabolization_rate) // MOJAVE EDIT: match calories per unit used by get_fullness().
 	return ..()
 
 /datum/reagent/consumable/nutriment
