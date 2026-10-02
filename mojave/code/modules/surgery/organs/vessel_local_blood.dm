@@ -159,4 +159,6 @@
 	. = ..()
 	for(var/obj/item/bodypart/BP as anything in bodyparts)
 		BP.local_blood_volume = BP.local_blood_volume_max
+		BP.setBleedStacks(0)
+		BP.refresh_bleed_rate()
 		BP.refresh_muscle_effects()
