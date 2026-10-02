@@ -237,7 +237,7 @@
 		if(!reviving && !network.get_unit_spawn_turf(get_turf(corpse)))
 			continue
 		var/mob/living/simple_animal/hostile/ms13/terrain_hivemind/worker = network.get_corpse_claim(corpse)
-		if(network.advance_corpse_conversion(corpse, src, 1, 1, claim = !reviving))
+		if(network.advance_corpse_conversion(corpse, src, 10, 20, claim = FALSE))
 			if(reviving && istype(worker))
 				worker.clear_corpse_task()
 			if(++remade >= corpses_per_pulse)
@@ -615,6 +615,10 @@
 	// A dense object sharing the body must not be treated as a failed newborn spawn.
 	allocate(/obj/structure/closet/crate, site)
 	network.resources = network.get_unit_revival_cost(corpse.type)
+	COOLDOWN_RESET(marker, influence_cooldown)
+	marker.process(1)
+	if(corpse.stat != DEAD)
+		Fail("Marker skipped the visible transformation stage.")
 	COOLDOWN_RESET(marker, influence_cooldown)
 	marker.process(1)
 	if(corpse.stat != CONSCIOUS || network.resources != 0 || worker.corpse_target_ref || length(corpse.grabbed_by) || network.get_corpse_claim(corpse))

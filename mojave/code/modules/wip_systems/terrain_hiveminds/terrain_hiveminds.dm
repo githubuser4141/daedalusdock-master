@@ -289,6 +289,14 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		return claim_turf(pick(candidates))
 	return FALSE
 
+/turf/AfterChange(flags, oldType)
+	. = ..()
+	// Mining or rebuilding a wall changes adjacent growth's available exits.
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(src, direction)
+		for(var/obj/structure/ms13_hivemind/terrain/growth in neighbor)
+			growth.network?.update_frontier(growth)
+
 /datum/ms13_terrain_hivemind/proc/try_build_special(turf/build_at)
 	if(resources < special_cost || !length(territory) || length(specials) >= max(1, round(length(territory) / territory_per_special)))
 		return FALSE
@@ -517,6 +525,13 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 	if(!old_progress)
 		var/start_message = living_host ? living_conversion_start_message : corpse_conversion_start_message
 		corpse.visible_message(span_warning("[corpse] [start_message]."))
+	if(istype(src, /datum/ms13_terrain_hivemind/necromorph))
+		if(!old_progress)
+			playsound(corpse, 'sound/effects/bonebreak1.ogg', 65, TRUE)
+		if(old_progress < 0.5 && corpse_conversion_progress[corpse_ref] >= 0.5)
+			corpse.visible_message(span_danger("[corpse]'s limbs wrench out of shape as something tears beneath the skin!"))
+			playsound(corpse, 'mojave/sound/ms13gore/flesh2.ogg', 75, TRUE)
+			corpse.add_splatter_floor(get_turf(corpse))
 	corpse.shake_animation(2 + round(corpse_conversion_progress[corpse_ref] * 6))
 	if(corpse_conversion_progress[corpse_ref] < 1)
 		return FALSE
@@ -529,6 +544,8 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 		corpse_reports -= corpse_ref
 		corpse_claims -= corpse_ref
 		corpse_conversion_progress -= corpse_ref
+		if(istype(src, /datum/ms13_terrain_hivemind/necromorph))
+			play_corpse_conversion_effect(remains, get_turf(remains))
 		remains.visible_message(span_danger("[remains] twists upright as the hive reanimates its body!"))
 		return TRUE
 	var/list/available_types = get_available_unit_types()
@@ -573,6 +590,7 @@ GLOBAL_LIST_EMPTY(ms13_terrain_hiveminds)
 /datum/ms13_terrain_hivemind/proc/play_corpse_conversion_effect(mob/living/corpse, turf/where)
 	switch(corpse_conversion_effect)
 		if(MS13_HIVE_CORPSE_EFFECT_BLOOD)
+			playsound(where, 'sound/effects/splat.ogg', 75, TRUE)
 			corpse.add_splatter_floor(where)
 			new /obj/effect/decal/cleanable/blood/gibs(where, corpse.get_static_viruses())
 		if(MS13_HIVE_CORPSE_EFFECT_GOO)
