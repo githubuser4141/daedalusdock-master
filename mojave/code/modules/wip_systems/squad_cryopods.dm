@@ -101,20 +101,8 @@
 /obj/machinery/ms13/terminal/proc/open_cryopods(mob/living/user)
 	if(!terminal_available(user))
 		return
-	var/html = "<h2>Cryopod control</h2>Unassigned pods within seven tiles and pods on network [cryo_network ? html_encode(cryo_network) : "(none)"].<br>"
-	html += "<a href='byond://?src=[REF(src)];choice=cryo_wake;pod=all'>Wake all ready pods</a><hr>"
-	for(var/obj/machinery/ms13/npc_cryopod/pod as anything in linked_cryopods())
-		html += "<b>[html_encode(pod.pod_id)]</b> ([pod.x],[pod.y],[pod.z]): [pod.released ? "Empty" : (pod.is_operational ? html_encode(pod.status) : "Offline")]"
-		if(ispath(pod.mob_type, /mob/living))
-			var/mob/living/occupant_type = pod.mob_type
-			html += " / [html_encode(initial(occupant_type.name))]"
-		if(!pod.released)
-			html += " <a href='byond://?src=[REF(src)];choice=cryo_wake;pod=[REF(pod)]'>Wake</a>"
-		html += "<br>"
-	html += "<hr><a href='byond://?src=[REF(src)];choice=cryopods'>Refresh</a>"
-	var/datum/browser/popup = new(user, "npc_cryopods", "Cryopod control", 600, 400)
-	popup.set_content(html)
-	popup.open()
+	mode = 6
+	ui_interact(user)
 
 /obj/machinery/ms13/terminal/Topic(href, list/href_list)
 	if(!(href_list["choice"] in list("cryopods", "cryo_wake")))

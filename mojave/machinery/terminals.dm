@@ -179,7 +179,7 @@
 	if(rigged)
 		icon_state = "[initial(icon_state)]_rigged"
 
-/obj/machinery/ms13/terminal/ui_interact(mob/user)
+/obj/machinery/ms13/terminal/ui_interact(mob/user, datum/tgui/ui)
 	. = ..()
 	if(broken || !active || !is_operational)
 		return
@@ -194,106 +194,13 @@
 		unlocked = TRUE
 		to_chat(user, span_notice("You unlock the computer."))
 
-	var/clicksound = pick('mojave/sound/ms13machines/terminals/ui_hacking_charenter_01.ogg','mojave/sound/ms13machines/terminals/ui_hacking_charenter_02.ogg', 'mojave/sound/ms13machines/terminals/ui_hacking_charenter_03.ogg',)
-	playsound(src, clicksound, 50, FALSE)
-	var/dat = ""
-	dat += "<head><style>body {padding: 0; margin: 15px; background-color: [main_color]; color: [secondary_color]; line-height: 170%;} a, button, a:link, a:visited, a:active, .linkOn, .linkOff {color: [secondary_color]; text-decoration: none; background: [main_color]; border: none; padding: 1px 4px 1px 4px; margin: 0 2px 0 0; cursor: url('default_mousepointer.ico'), default;} a:hover {color: [main_color]; background: [secondary_color]; border: 1px solid [secondary_color]} a.white, a.white:link, a.white:visited, a.white:active {color: [secondary_color]; text-decoration: none; background: [secondary_color]; border: 1px solid #161616; padding: 1px 4px 1px 4px; margin: 0 2px 0 0; cursor: url('default_mousepointer.ico'), default;} a.white:hover {color: [main_color]; background: [secondary_color];} .linkOn, a.linkOn:link, a.linkOn:visited, a.linkOn:active, a.linkOn:hover {color: [secondary_color]; background: [main_color]; border-color: [main_color];} .linkOff, a.linkOff:link, a.linkOff:visited, a.linkOff:active, a.linkOff:hover{color: [secondary_color]; background: [main_color]; border-color: [main_color];}</style></head><font face='courier'>"
-	switch (system)
-		if ("ROBCO50")
-			dat += "<center><b>ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM V.5.0</b><br>"
-			dat += "<b>COPYRIGHT 2075-2077 ROBCO INDUSTRIES</b><br>"
-		if ("ROBCO38")
-			dat += "<center><b>ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM V.3.8</b><br>"
-			dat += "<b>COPYRIGHT 2072-2075 ROBCO INDUSTRIES</b><br>"
-		if ("APRICOT")
-			dat += "<center><b>APRICOT COMPUTING SYSTEM VERSION 4B</b><br>"
-			dat += "<b>COPYRIGHT 2069-2070 APRICOT COMPUTING INC.</b><br>"
-		if ("BOOTLEG")
-			dat += "<center><b>DLLLX00992 SYSTEM VERSION FFFFF23</b><br>"
-			dat += "<b>COPYRIGHT 223333-21065 DLLLX00992 C0MTTTT LLLL.</b><br>"
-
-	switch (mode) // Text at the top of the page
-		if (0) // If we're on the home page
-			dat += "= [termtag] Terminal [termnumber] =</center>"
-		if (1) // If we're in the word processor
-			dat += "= RobCo Word Processor V.22 =</center>"
-			dat += "= [title] =</center>"
-		if (2) // If we're viewing a document
-			dat += "= [loaded_title] =</center>"
-		if (3) // If we're in the utility page
-			dat += "= RobCo Utili-Dock V.5 =</center>"
-		if (4)
-			dat += "= RobCo Workshop =</center>"
-	dat += "<br>"
-
-// The next line is the death of hope. Gaze not longer upon it than you need to.
-	switch (mode)
-		if (0)
-			dat += "TERMINAL FUNCTIONS"
-			if(prog_notekeeper)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=1'>\>  Word Processor</a>"
-			if(remote_capability)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=3'>\>  Utili-Dock</a>"
-			dat += "<br><a href='byond://?src=[REF(src)];choice=workshop'>\> Workshop</a>"
-			dat += "<br><a href='byond://?src=[REF(src)];choice=squad'>\> Squad command</a>"
-			dat += "<br><a href='byond://?src=[REF(src)];choice=cryopods'>\> Cryopod control</a>"
-			if(length(paired_bodycams))
-				dat += "<br><a href='byond://?src=[REF(src)];choice=bodycams'>\> Body cameras</a>"
-			dat += "<br><br>"
-			dat += "FILE SYSTEM"
-			if(doc_title_1)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=doc_1'>\>  [doc_title_1]</a>"
-			if(doc_title_2)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=doc_2'>\>  [doc_title_2]</a>"
-			if(doc_title_3)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=doc_3'>\>  [doc_title_3]</a>"
-			if(doc_title_4)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=doc_4'>\>  [doc_title_4]</a>"
-			if(doc_title_5)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=doc_5'>\>  [doc_title_5]</a>"
-			if(rigged)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=joker'>\>  [chosen_joker]</a><br>"
-
-		if (1)
-			dat += "</center><font face=\"Courier\">[(!notehtml ? note : notehtml)]</font>"
-		if (2)
-			dat += "[loaded_content]"
-		if (3)
-			dat += "Network online. Select a linked circuit."
-			if(camera_network)
-				dat += "<br><a href='byond://?src=[REF(src)];choice=cameras'>\> Security cameras</a>"
-		if (4)
-			dat += workshop_html(user)
-
-	if (mode)
-		dat += "<br><br><center>=============================================================================</center>"
-		if(mode == 1) // Notepad page
-			dat += "<a href='byond://?src=[REF(src)];choice=Title'>\>  Title</a><br>"
-			dat += "<a href='byond://?src=[REF(src)];choice=Contents'>\>  Edit</a><br>"
-			dat += "<a href='byond://?src=[REF(src)];choice=Save'>\>  Save</a><br>"
-
-		if(mode == 3) // Signaller page
-			if(signal_title_1)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_one'>\>  [signal_title_1]</a><br>"
-			if(signal_title_2)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_two'>\>  [signal_title_2]</a><br>"
-			if(signal_title_3)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_three'>\>  [signal_title_3]</a><br>"
-			if(signal_title_4)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_four'>\>  [signal_title_4]</a><br>"
-			if(signal_title_5)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_five'>\>  [signal_title_5]</a><br>"
-			if(signal_title_6)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_six'>\>  [signal_title_6]</a><br>"
-			if(signal_title_single && !used)
-				dat += "<a href='byond://?src=[REF(src)];choice=signal_single'>\>  [signal_title_single]</a><br>"
-		dat += "<a href='byond://?src=[REF(src)];choice=Return'>\>  Return</a>"
-
-	dat += "</font></div>"
-	var/datum/browser/popup = new(user, "terminal", null, 600, 400)
-	popup.set_content(dat)
-	// set_title_image doesn't exist on DD's /datum/browser - purely cosmetic titlebar icon, dropped
-	popup.open()
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "MS13Terminal", name)
+		ui.open()
+		ensure_camera_views()
+		bodycam_viewer.cam_screen.render_to_tgui(user.client, ui.window)
+		camera_viewer.cam_screen.render_to_tgui(user.client, ui.window)
 
 /obj/machinery/ms13/terminal/Topic(href, href_list)
 	if(..())
@@ -443,6 +350,7 @@
 		qdel(document)
 
 #include "terminal_controls.dm"
+#include "terminal_ui.dm"
 
 //// Extra variants ////
 /obj/machinery/ms13/terminal/pristine

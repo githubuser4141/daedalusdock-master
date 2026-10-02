@@ -78,6 +78,10 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 	var/datum/weakref/aim_target
 	var/datum/weakref/aim_weapon
 	var/aim_ready_at = 0
+	var/datum/weakref/service_weapon
+	var/next_enemy_scan = 0
+	var/weapon_recovery_deadline = 0
+	var/next_weapon_recovery = 0
 
 /mob/living/carbon/human/ms13_squad/sidearm
 	name = "squad pistol guard"
@@ -109,6 +113,9 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 	guard_position = get_turf(src)
 	if(squad_outfit)
 		equipOutfit(squad_outfit)
+	for(var/obj/item/gun/gun in contents)
+		service_weapon = WEAKREF(gun)
+		break
 	RegisterSignal(src, COMSIG_PARENT_ATTACKBY, PROC_REF(attacked_with_item))
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(attacked_unarmed))
 	RegisterSignal(src, COMSIG_ATOM_ATTACK_PAW, PROC_REF(attacked_unarmed))
@@ -196,6 +203,8 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 /mob/living/carbon/human/ms13_squad/proc/set_order(new_order, atom/target, direction = NONE)
 	var/datum/ai_controller/ms13_squad/brain = ai_controller
 	brain.stop_travel()
+	brain.route_stairs = null
+	brain.next_stair_search = 0
 	reset_aim()
 	if(istype(buckled, /obj/structure/chair/ms13_vehicle_seat) && (new_order in list("Move", "Guard", "Follow", "Patrol", "Attack", "Use", "Break", "Pick up", "Deliver", "Sit")) && !(new_order == "Sit" && target == buckled))
 		buckled.user_unbuckle_mob(src, src)
@@ -231,6 +240,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 /mob/living/carbon/human/ms13_squad/proc/ready_weapon(ranged_only = FALSE)
 	for(var/obj/item/gun/gun in contents)
 		if(gun.can_fire() && ready_item(gun))
+			service_weapon = WEAKREF(gun)
 			return gun
 	if(ranged_only)
 		return null
@@ -254,14 +264,19 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 	var/obj/item/weapon = ready_weapon(suppress)
 	if(istype(weapon, /obj/item/gun))
 		if(safe_shot(target))
-			brain.stop_travel()
 			var/obj/item/gun/gun = weapon
 			if(!gun.wielded && length(get_empty_held_indexes()))
 				gun.wield(src)
-			if(fire_mode != "Rapid" && ms13_shot_quality(src, target, ignore_braced = TRUE) < (fire_mode == "Precise" ? 0.8 : 0.6))
+			if(ms13_shot_quality(src, target, ignore_braced = TRUE) < (fire_mode == "Rapid" ? 0.01 : fire_mode == "Precise" ? 0.8 : 0.6))
 				reset_aim()
-				order_status = "Waiting for a clear shot"
+				if(suppress)
+					brain.stop_travel()
+					order_status = "Waiting for a clear shot"
+				else
+					brain.approach(target, 0)
+					order_status = "Repositioning for a clear shot"
 				return
+			brain.stop_travel()
 			if(fire_mode == "Precise")
 				if(aim_target?.resolve() != target || aim_weapon?.resolve() != gun)
 					aim_target = WEAKREF(target)
@@ -279,7 +294,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 			order_status = "Firing"
 		else if(!suppress && !(get_turf(target) in view(7, src)))
 			reset_aim()
-			brain.approach(target, get_dist(src, target) > 7 ? 5 : 1)
+			brain.approach(target, 0)
 		else
 			reset_aim()
 			brain.stop_travel()
@@ -310,6 +325,46 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 
 /mob/living/carbon/human/ms13_squad/proc/perform_order()
 	var/datum/ai_controller/ms13_squad/brain = ai_controller
+	var/turf/ground = get_turf(src)
+	if(ground?.get_lumcount() < 0.3)
+		for(var/obj/item/flashlight/light in contents)
+			if(!light.on)
+				light.attack_self(src)
+	// Recover only our own weapon, never take a weapon from another holder.
+	var/obj/item/gun/dropped = service_weapon?.resolve()
+	if(dropped && isturf(dropped.loc) && dropped.z == z && get_dist(src, dropped) <= 7 && !dropped.anchored && squad_order != "Hold" && world.time >= next_weapon_recovery)
+		if(!weapon_recovery_deadline)
+			weapon_recovery_deadline = world.time + 10 SECONDS
+		if(world.time >= weapon_recovery_deadline)
+			weapon_recovery_deadline = 0
+			next_weapon_recovery = world.time + 30 SECONDS
+			brain.stop_travel()
+		else if(brain.approach(dropped, dropped.IsReachableBy(src) ? 1 : 0) && dropped.IsReachableBy(src))
+			var/obj/item/held = get_active_held_item()
+			if(held?.wielded)
+				held.unwield(src)
+			if(!length(get_empty_held_indexes()) && istype(held, /obj/item/knife))
+				dropItemToGround(held)
+			var/list/empty_hands = get_empty_held_indexes()
+			if(length(empty_hands))
+				try_swap_hand(empty_hands[1])
+			if(pickup_item(dropped))
+				weapon_recovery_deadline = 0
+			else
+				next_weapon_recovery = world.time + 30 SECONDS
+				weapon_recovery_deadline = 0
+		if(weapon_recovery_deadline)
+			order_status = "Recovering weapon"
+			return
+	if(world.time >= next_enemy_scan && squad_order != "Hold" && !threat?.resolve())
+		next_enemy_scan = world.time + 2 SECONDS
+		for(var/mob/living/candidate in view(7, src))
+			if(candidate.stat == DEAD || squad_friendly(candidate) || faction_check_atom(candidate))
+				continue
+			var/mob/living/simple_animal/hostile/hostile = candidate
+			if((istype(hostile) && hostile.CanAttack(src) && !istype(hostile, /mob/living/simple_animal/hostile/retaliate)) || istype(candidate, /mob/living/basic/ms13/raider))
+				retaliate(candidate)
+				break
 	var/mob/living/enemy = threat?.resolve()
 	if(enemy && enemy.stat != DEAD && !squad_friendly(enemy) && enemy.z == z && world.time < threat_until && get_dist(src, enemy) <= 7)
 		fight(enemy)
@@ -321,7 +376,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 		return
 	if(squad_order == "Guard" && !target)
 		target = guard_position
-	if(!target || target.z != z || get_dist(src, target) > 30)
+	if(!target || (target.z == z && get_dist(src, target) > 30))
 		set_order("Guard", get_turf(src))
 		order_status = "Target lost; guarding here"
 		return
@@ -334,6 +389,9 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 			set_order("Guard", get_turf(src))
 			order_status = "Order timed out; ready for new orders"
 			return
+	if(target.z != z)
+		brain.approach(target, 0)
+		return
 	switch(squad_order)
 		if("Sit")
 			var/obj/structure/chair/ms13_vehicle_seat/seat = target
@@ -373,16 +431,16 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				return
 			brain.approach(target, 2)
 		if("Patrol")
-			if(brain.approach(target, 1))
+			if(brain.approach(target, 0))
 				order_target = WEAKREF(patrol_origin)
 				patrol_origin = get_turf(target)
 		if("Move", "Guard")
-			if(brain.approach(target, 1))
+			if(brain.approach(target, 0))
 				guard_position = get_turf(target)
 				squad_order = "Guard"
 				order_status = "Guarding"
 		if("Use", "Pick up")
-			if(!brain.approach(target, 1) || !target.IsReachableBy(src))
+			if(!brain.approach(target, (squad_order == "Use" || target.IsReachableBy(src)) ? 1 : 0) || !target.IsReachableBy(src))
 				return
 			var/obj/item/held = get_active_held_item()
 			if(held?.wielded)
@@ -402,6 +460,8 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				return
 			if(!QDELETED(target) && (target in held_items))
 				cargo = WEAKREF(target)
+				if(istype(target, /obj/item/gun))
+					service_weapon = WEAKREF(target)
 			set_order("Guard", get_turf(src))
 			order_status = "Interaction attempted"
 		if("Break")
@@ -418,9 +478,11 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 
 /datum/ai_controller/ms13_squad
 	default_behavior = /datum/ai_behavior/ms13_squad
-	ai_movement = /datum/ai_movement/jps
+	ai_movement = /datum/ai_movement/astar/ms13_squad
 	max_target_distance = 30
 	var/travel_distance = 1
+	var/obj/structure/stairs/route_stairs
+	var/next_stair_search = 0
 
 /datum/ai_controller/ms13_squad/get_minimum_distance()
 	return travel_distance
@@ -436,6 +498,8 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 		PauseAi(2 SECONDS)
 
 /datum/ai_controller/ms13_squad/proc/approach(atom/target, distance)
+	if(pawn.z != target.z)
+		return approach_stairs(target)
 	var/datum/ms13_ground_vehicle/destination_vehicle = get_ms13_ground_vehicle_at(target)
 	if(destination_vehicle && get_ms13_ground_vehicle_at(pawn) != destination_vehicle)
 		distance = 0
@@ -447,7 +511,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 		stop_travel()
 		return FALSE
 	travel_distance = distance
-	if(current_movement_target != target)
+	if(current_movement_target != target || blackboard[BB_CURRENT_MIN_MOVE_DISTANCE] != distance)
 		stop_travel()
 		set_move_target(target)
 	if(ai_movement.moving_controllers[src] != target)
@@ -467,6 +531,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 	return BEHAVIOR_PERFORM_COOLDOWN
 
 #include "squad_commands.dm"
+#include "squad_navigation.dm"
 #include "squad_cryopods.dm"
 #include "bodycams.dm"
 

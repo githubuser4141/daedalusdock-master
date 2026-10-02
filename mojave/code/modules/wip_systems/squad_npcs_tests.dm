@@ -150,6 +150,8 @@
 	unit.act_on_order()
 	SQUAD_ASSERT(gun.get_ammo() < before_ammo, "Area fire consumed no ammo: [unit.order_status]; gun ready [gun.can_fire(TRUE)]")
 	unit.dropItemToGround(gun)
+	gun.forceMove(run_loc_floor_top_right)
+	unit.service_weapon = null // The no-weapon case; recovery is checked separately.
 	unit.threat = null
 	unit.next_move = 0
 	unit.set_order("Fire direction", get_turf(enemy), EAST)
@@ -167,10 +169,10 @@
 	var/datum/ai_controller/ms13_squad/brain = unit.ai_controller
 	unit.set_order("Move", destination)
 	var/deadline = world.time + 15 SECONDS
-	while(world.time < deadline && get_dist(unit, destination) > 1)
+	while(world.time < deadline && get_turf(unit) != destination)
 		brain.process(1)
 		sleep(0.2 SECONDS)
-	SQUAD_ASSERT(get_dist(unit, destination) <= 1, "Actual JPS movement did not reach its destination")
+	SQUAD_ASSERT(get_turf(unit) == destination, "Actual A* movement did not reach the exact destination")
 	unit.set_order("Patrol", ground)
 	var/turf/return_point = unit.patrol_origin
 	deadline = world.time + 15 SECONDS
@@ -440,6 +442,8 @@
 	occupant = locate() in get_step(remote, NORTH)
 	SQUAD_ASSERT(remote.released && occupant, "Terminal hyperlink failed to release a nearby unconfigured pod")
 	allocated += occupant
+
+#include "squad_polish_tests.dm"
 
 #undef SQUAD_ASSERT
 #undef SQUAD_ASSERT_EQUAL

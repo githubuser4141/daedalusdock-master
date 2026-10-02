@@ -7,7 +7,7 @@ GLOBAL_VAR_INIT(ms13_bodycam_serial, 0)
 	name = "body camera"
 	desc = "A clip-on camera. Tap it on a terminal to pair it, then on a uniform, suit or helmet to attach it. Alt-right-click the clothing to remove it. Use in hand to toggle transmission."
 	icon = 'icons/obj/machines/camera.dmi'
-	icon_state = "camera"
+	icon_state = "cameracase"
 	w_class = WEIGHT_CLASS_SMALL
 	var/enabled = TRUE
 	var/obj/item/clothing/mounted_on
@@ -115,9 +115,8 @@ GLOBAL_VAR_INIT(ms13_bodycam_serial, 0)
 		return ..()
 	if(!terminal_available(usr))
 		return TRUE
-	if(!bodycam_viewer)
-		bodycam_viewer = new(src)
-	bodycam_viewer.ui_interact(usr)
+	mode = 7
+	ui_interact(usr)
 	return TRUE
 
 /// The existing CameraConsole embeds a ByondUi map; it never replaces client.eye.

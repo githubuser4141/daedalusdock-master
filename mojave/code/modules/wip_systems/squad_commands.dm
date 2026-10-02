@@ -102,7 +102,7 @@
 	var/datum/action/cooldown/ms13_squad_command/action = command_action?.resolve()
 	if(!action || action.owner != user)
 		QDEL_NULL(action)
-		action = new
+		action = new(src)
 		action.leader_ref = WEAKREF(src)
 		action.Grant(user)
 		command_action = WEAKREF(action)
@@ -122,7 +122,7 @@
 	if(new_order != "Hold")
 		if(QDELETED(target) || istype(target, /atom/movable/screen) || !get_turf(target) || target.z != z || get_dist(src, target) > 30)
 			return FALSE
-		if(!terminal && !(target in view(user)))
+		if(!terminal && !(get_turf(target) in view(user.client?.view || world.view, user)))
 			return FALSE
 		switch(new_order)
 			if("Attack")
@@ -207,6 +207,8 @@
 /datum/action/cooldown/ms13_squad_command/Trigger(trigger_flags, atom/target)
 	if(owner?.click_intercept == src)
 		unset_click_ability(owner)
+	// The HUD always opens field command, even after leaving a linked terminal.
+	terminal_ref = null
 	if(IsAvailable())
 		show_panel()
 	return TRUE
@@ -214,32 +216,76 @@
 /datum/action/cooldown/ms13_squad_command/proc/show_panel()
 	if(!IsAvailable())
 		return
+	var/obj/machinery/ms13/terminal/terminal = terminal_ref?.resolve()
+	if(terminal)
+		terminal.mode = 5
+		terminal.ui_interact(owner)
+		return
+	ui_interact(owner)
+
+/datum/action/cooldown/ms13_squad_command/ui_interact(mob/user, datum/tgui/ui)
+	if(user != owner || !IsAvailable())
+		return
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "MS13Squad", name)
+		ui.open()
+
+/datum/action/cooldown/ms13_squad_command/ui_status(mob/user)
+	return user == owner && IsAvailable() ? UI_INTERACTIVE : UI_CLOSE
+
+/datum/action/cooldown/ms13_squad_command/ui_data(mob/user)
 	var/mob/living/carbon/human/ms13_squad/leader = leader_ref.resolve()
 	var/mob/living/carbon/human/ms13_squad/selected = selected_ref?.resolve()
-	var/html = "<h2>Squad [html_encode(leader.squad_id)]</h2>"
-	html += "Commanding: [selected ? html_encode(selected.name) : "whole squad"]<br>"
-	html += "<a href='byond://?src=[REF(src)];unit=all'>Whole squad</a><br>"
+	var/list/roster = list()
 	for(var/mob/living/carbon/human/ms13_squad/unit as anything in leader.members())
-		html += "<a href='byond://?src=[REF(src)];unit=[REF(unit)]'>[html_encode(unit.name)] ([unit.x],[unit.y])</a>: [unit.squad_order] / [unit.fire_mode] / [unit.order_status]<br>"
-	html += "<hr>Fire mode: "
-	for(var/mode in GLOB.ms13_squad_fire_modes)
-		html += "<a href='byond://?src=[REF(src)];fire_mode=[mode]'>[mode]</a> &nbsp; "
-	html += "<br>Careful: spaced shots with a clear lane. Precise: stop and aim, let recoil settle. Rapid: fire as quickly as the gun permits. All modes avoid squadmates."
-	html += "<hr>"
-	for(var/order in GLOB.ms13_squad_orders)
-		html += "<a href='byond://?src=[REF(src)];order=[url_encode(order)]'>[order]</a> &nbsp; "
-	html += "<hr>Choose an order, then click its target. Patrol runs between the unit's current position and that target. Pick up and Deliver move items; Use operates buttons and doors."
-	if(terminal_ref)
-		html += "<br><a href='byond://?src=[REF(src)];coordinates=1'>Order by coordinates</a> (movement / patrol / fire only; uses the last selected order)."
-	html += "<br><a href='byond://?src=[REF(src)];refresh=1'>Refresh</a> | <a href='byond://?src=[REF(src)];release=1'>Release command</a>"
-	var/datum/browser/popup = new(owner, "squad_command", "Squad command", 620, 420)
-	popup.set_content(html)
-	popup.open()
+		roster += list(list("ref" = REF(unit), "name" = unit.name, "position" = "[unit.x], [unit.y], [unit.z]", "order" = unit.squad_order, "status" = unit.order_status, "fireMode" = unit.fire_mode, "ready" = unit.stat == CONSCIOUS && !unit.client))
+	return list("squad" = leader.squad_id, "units" = roster, "selected" = selected ? REF(selected) : "all", "orders" = GLOB.ms13_squad_orders, "fireModes" = list("Careful", "Precise", "Rapid"), "pending" = pending_order, "designating" = owner.click_intercept == src, "terminal" = !!terminal_ref)
+
+/datum/action/cooldown/ms13_squad_command/ui_act(action, list/params)
+	if(..() || usr != owner || !IsAvailable())
+		return
+	if(action in list("unit", "order", "fire_mode", "release", "cancel", "coordinates"))
+		var/list/command = list()
+		command[action] = params["value"] || "1"
+		Topic(null, command)
+		return TRUE
+
+/datum/action/cooldown/ms13_squad_command/ui_close(mob/user)
+	if(user == owner && owner.click_intercept == src)
+		unset_click_ability(owner)
+	return ..()
+
+/datum/action/cooldown/ms13_squad_command/InterceptClickOn(mob/living/invoker, params, atom/target)
+	if(istype(target, /atom/movable/screen/movable/action_button))
+		unset_click_ability(invoker)
+		return FALSE
+	var/list/modifiers = islist(params) ? params : params2list(params)
+	var/available = IsAvailable()
+	unset_click_ability(invoker)
+	if(modifiers?[RIGHT_CLICK] || !available)
+		return TRUE
+	Activate(target)
+	return TRUE
+
+/datum/action/cooldown/ms13_squad_command/set_click_ability(mob/on_who)
+	ranged_mousepointer = (pending_order in list("Attack", "Break", "Fire at area", "Fire direction")) ? 'icons/effects/mouse_pointers/weapon_pointer.dmi' : 'icons/effects/mouse_pointers/interact.dmi'
+	. = ..()
+	START_PROCESSING(SSfastprocess, src)
+
+/datum/action/cooldown/ms13_squad_command/process()
+	if(!owner || owner.click_intercept != src)
+		STOP_PROCESSING(SSfastprocess, src)
+		return
+	if(!IsAvailable())
+		unset_click_ability(owner)
 
 /datum/action/cooldown/ms13_squad_command/Topic(href, list/href_list)
 	if(usr != owner || !IsAvailable())
 		return
 	var/mob/living/carbon/human/ms13_squad/leader = leader_ref.resolve()
+	if(href_list["cancel"] && owner.click_intercept == src)
+		unset_click_ability(owner)
 	if(href_list["unit"])
 		var/mob/living/carbon/human/ms13_squad/unit = locate(href_list["unit"]) in leader.members()
 		selected_ref = unit ? WEAKREF(unit) : null
@@ -256,7 +302,11 @@
 		to_chat(owner, success ? span_notice("Fire mode updated.") : span_warning("Fire mode rejected."))
 	if(href_list["order"] in GLOB.ms13_squad_orders)
 		pending_order = href_list["order"]
+		if((pending_order in list("Use", "Break", "Pick up", "Deliver", "Sit")) && !selected_ref?.resolve())
+			to_chat(owner, span_warning("Select one recruit before choosing this order."))
+			return
 		if(pending_order == "Hold")
+			unset_click_ability(owner)
 			Activate(null)
 		else
 			var/datum/action/cooldown/previous = owner.click_intercept
@@ -311,14 +361,8 @@
 		var/mob/living/carbon/human/ms13_squad/leader = unit?.recruit(usr, src)
 		leader?.open_commands(usr, src)
 		return TRUE
-	var/html = "<h2>Squad control</h2>[squad_id ? "Linked squad: [html_encode(squad_id)]" : "NPCs within seven tiles"]. Select an NPC to recruit or open its squad.<br>"
-	for(var/mob/living/carbon/human/ms13_squad/unit as anything in units)
-		html += "<br><a href='byond://?src=[REF(src)];choice=squad;recruit=[REF(unit)]'>[html_encode(unit.name)]</a>: [unit.squad_id ? html_encode(unit.squad_id) : "Unassigned"]"
-	if(!length(units))
-		html += "<br>No available NPCs found."
-	var/datum/browser/popup = new(usr, "squad_selection", "Squad control", 600, 400)
-	popup.set_content(html)
-	popup.open()
+	mode = 5
+	ui_interact(usr)
 	return TRUE
 
 #endif

@@ -223,7 +223,7 @@
 			#endif
 
 			// Check to see if we're close enough to the end destination.
-			if(ASTAR_CLOSE_ENOUGH_TO_END(end, new_node))
+			if(ASTAR_CLOSE_ENOUGH_TO_END(end, searching_turf))
 				unwind_path(new_node)
 				return TRUE
 
@@ -255,7 +255,7 @@
 
 /// The generic heuristic, euclidean distance.
 /datum/pathfind/astar/proc/generic_heuristic(turf/searching_turf, turf/end)
-	return get_dist_euclidean(searching_turf, end)
+	return max(1, get_dist_euclidean(searching_turf, end)) // MOJAVE EDIT - zero means impassable, including the goal.
 
 /// Called when we've hit the goal with the node that represents the last tile, then sets the path var to that path so it can be returned by [datum/pathfind/proc/search]
 /datum/pathfind/astar/proc/unwind_path(datum/astar_node/unwind_node)

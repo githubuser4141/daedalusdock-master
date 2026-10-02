@@ -29,7 +29,8 @@
 	var/datum/component/personal_crafting/crafting = bench.GetComponent(/datum/component/personal_crafting)
 	if(!crafting || crafting.work_terminal)
 		return FALSE
-	crafting.ui_interact(user)
+	mode = 4
+	ui_interact(user)
 	return TRUE
 
 /// A shared terminal can be browsed by everyone, but only its operator can change an active queue.
@@ -348,10 +349,8 @@ MAPPING_DIRECTIONAL_HELPERS_ROBUST_INVERSE_DIR(/obj/machinery/button/ms13_power,
 /obj/machinery/ms13/terminal/proc/open_cameras(mob/user)
 	if(!remote_capability || !camera_network || !terminal_available(user))
 		return FALSE
-	if(!camera_viewer)
-		camera_viewer = new(src)
-	camera_viewer.network = list(lowertext(camera_network))
-	camera_viewer.ui_interact(user)
+	mode = 8
+	ui_interact(user)
 	return TRUE
 
 /obj/machinery/computer/security/ms13_terminal_viewer

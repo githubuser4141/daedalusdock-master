@@ -178,6 +178,7 @@ code/datums/wires/apc.dm,
 code/game/machinery/computer/apc_control.dm,
 code/modules/power/apc/apc_main.dm,
 code/modules/power/apc/apc_power_proc.dm,
+code/__HELPERS/paths/astar_path.dm,
 code/modules/power/apc/apc_tool_act.dm,
 code/modules/grab/grab_living.dm,
 code/modules/grab/grab_object.dm,
@@ -204,3 +205,7 @@ code/game/objects/structures/ladders.dm,
 */
 
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.
+
+// tgui/packages/tgui/interfaces/MS13Terminal.jsx
+// tgui/packages/tgui/interfaces/MS13Squad.jsx
+// code/modules/unit_tests/vehicles_ms13.dm
