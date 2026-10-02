@@ -139,6 +139,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	worn_icon_state = "frame"
 	density = TRUE //It's a suit of armor man
 	anchored = TRUE
+	allowed = list(/obj/item)
 	strip_delay = 15 SECONDS
 	integrity_failure = 0.5
 	max_integrity = 450
@@ -177,6 +178,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	var/mob/listeningTo
 	var/obj/structure/ms13/pa_jack/link_to
 	var/list/actions_modules = list()
+	COOLDOWN_DECLARE(jostle_cooldown)
 
 /obj/item/clothing/suit/space/hardsuit/ms13/power_armor/Initialize()
 	. = ..()
@@ -514,7 +516,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 		return
 	if(!QDELETED(user))
 		user.RemoveElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6, TRUE)
-		user.AddElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
+		user.AddElement(/datum/element/footstep, FOOTSTEP_MOB_HEAVY, 1, -6, TRUE)
 	listeningTo = user
 	// How do you buckle a suit of power armor to something?
 	user.can_buckle_to = FALSE
@@ -532,6 +534,8 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	ADD_TRAIT(user, TRAIT_NON_FLAMMABLE, "power_armor")
 	ADD_TRAIT(user, TRAIT_IN_POWERARMOUR, "power_armor")
 	ADD_TRAIT(user, TRAIT_SHOVEIMMUNE, "power_armor")
+	user.add_movespeed_mod_immunities(src, /datum/movespeed_modifier/pain)
+	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(jostle_wounds))
 	RegisterSignal(user, COMSIG_ATOM_CAN_BE_GRABBED, PROC_REF(reject_pulls))
 	user.special_changed()
 
@@ -542,7 +546,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	user.base_pixel_y = user.base_pixel_y - 6
 	user.pixel_y = user.base_pixel_y
 	if(!QDELETED(user)) // unequipped by the wearer's own Destroy
-		user.RemoveElement(/datum/element/footstep, FOOTSTEP_GENERIC_HEAVY, 1, -6, sound_vary = TRUE)
+		user.RemoveElement(/datum/element/footstep, FOOTSTEP_MOB_HEAVY, 1, -6, TRUE)
 		user.AddElement(/datum/element/footstep, FOOTSTEP_MOB_HUMAN, 1, -6, TRUE)
 	listeningTo.remove_movespeed_modifier(/datum/movespeed_modifier/ms13/pa_broken)
 	listeningTo = null
@@ -556,8 +560,34 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	REMOVE_TRAIT(user, TRAIT_NON_FLAMMABLE, "power_armor")
 	REMOVE_TRAIT(user, TRAIT_IN_POWERARMOUR, "power_armor")
 	REMOVE_TRAIT(user, TRAIT_SHOVEIMMUNE, "power_armor")
+	user.remove_movespeed_mod_immunities(src, /datum/movespeed_modifier/pain)
+	UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
 	UnregisterSignal(user, COMSIG_ATOM_CAN_BE_GRABBED)
 	user.special_changed()
+
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/proc/jostle_wounds(mob/living/carbon/human/user, atom/old_loc, direction, forced, list/old_locs, momentum_change)
+	SIGNAL_HANDLER
+	if(forced || !momentum_change || user.moving_diagonally == SECOND_DIAG_STEP || user.m_intent == MOVE_INTENT_WALK || user.stat != CONSCIOUS || user.buckled || user.throwing || !user.has_gravity() || (user.movement_type & (FLYING | FLOATING)))
+		return
+	if(!COOLDOWN_FINISHED(src, jostle_cooldown))
+		return
+	COOLDOWN_START(src, jostle_cooldown, 5 SECONDS)
+	if(!prob(user.m_intent == MOVE_INTENT_SPRINT ? 15 : 5))
+		return
+	var/list/wounds = user.get_wounds()
+	shuffle_inplace(wounds)
+	for(var/datum/wound/wound as anything in wounds)
+		if(wound.damage <= 0 || wound.wound_type == WOUND_BURN || wound.is_surgical() || wound.is_treated() || wound.clamped || !IS_ORGANIC_LIMB(wound.parent))
+			continue
+		wound.open_wound(min(2, wound.damage * 0.05))
+		user.updatehealth()
+		to_chat(user, span_warning("The armor's stride jostles your injured [wound.parent.plaintext_zone]!"))
+		break
+
+/datum/status_effect/limp/check_step(mob/whocares, OldLoc, Dir, forced)
+	if(HAS_TRAIT(owner, TRAIT_IN_POWERARMOUR))
+		return
+	return ..()
 
 // AI EDIT: COMSIG_ATOM_CAN_BE_PULLED/COMSIG_ATOM_CANT_PULL are the original Mojave Sun signal names (confirmed
 // against github.com/Mojave-Sun/mojave-sun-13) - DD's grab system renamed them to
@@ -869,3 +899,100 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 
 /datum/movespeed_modifier/ms13/pa_broken
 	slowdown = 3
+
+#ifdef UNIT_TESTS
+/mob/living/carbon/human/consistent/ms13_multiz_listener/pa/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/sound_to_use, max_distance, falloff_distance, distance_multiplier, use_reverb, wait)
+	if(soundin in GLOB.heavyfootstep[FOOTSTEP_GENERIC_HEAVY][1])
+		local_sounds++
+	else if(findtext("[soundin]", "footstep/"))
+		distant_sounds++
+	return TRUE
+
+/datum/unit_test/ms13_pa_movement
+	name = "POWER ARMOR: Storage, Footsteps, Pain And Jostling"
+
+/datum/unit_test/ms13_pa_movement/Run()
+	var/mob/living/carbon/human/consistent/ms13_multiz_listener/pa/user = allocate(/mob/living/carbon/human/consistent/ms13_multiz_listener/pa, run_loc_floor_bottom_left)
+	SSmobs.clients_by_zlevel[user.z] |= user
+	var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/frame = allocate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
+	user.equip_to_slot(frame, ITEM_SLOT_OCLOTHING)
+	if((user.wear_suit) != (frame))
+		Fail("Could not wear the frame.")
+	for(var/path in list(/obj/item/storage/ms13, /obj/item/wrench, /obj/item/gun/ballistic))
+		var/obj/item/cargo = allocate(path)
+		if(!(cargo.mob_can_equip(user, user, ITEM_SLOT_SUITSTORE, TRUE, TRUE)))
+			Fail("PA rejected [path] in suit storage.")
+		user.equip_to_slot(cargo, ITEM_SLOT_SUITSTORE)
+		if((user.s_store) != (cargo))
+			Fail("Allowed cargo was not equipped.")
+		user.dropItemToGround(cargo, TRUE)
+	var/obj/item/oversized = allocate(/obj/item)
+	oversized.w_class = WEIGHT_CLASS_HUGE
+	if(!(!oversized.mob_can_equip(user, user, ITEM_SLOT_SUITSTORE, TRUE)))
+		Fail("PA bypassed the size limit.")
+	oversized.w_class = WEIGHT_CLASS_SMALL
+	ADD_TRAIT(oversized, TRAIT_NODROP, INNATE_TRAIT)
+	if(!(!oversized.mob_can_equip(user, user, ITEM_SLOT_SUITSTORE, TRUE)))
+		Fail("PA stored an undroppable item.")
+	user.add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pain, slowdown = 2)
+	if(!(!user.get_movespeed_modifiers()?["/datum/movespeed_modifier/pain"]))
+		Fail("Pain still slows a PA wearer.")
+	user.set_move_intent(MOVE_INTENT_RUN)
+	for(var/step in 1 to 8)
+		user.Move(get_step(user, step % 2 ? EAST : WEST))
+	if(!(user.local_sounds > 0))
+		Fail("Moving in PA produced no heavy footsteps.")
+	if((user.distant_sounds) != (0))
+		Fail("PA also played normal human footsteps.")
+	if((user.getBruteLoss()) != (0))
+		Fail("Healthy movement caused an injury.")
+	var/obj/item/bodypart/leg = user.get_bodypart(BODY_ZONE_L_LEG)
+	leg.receive_damage(20)
+	var/datum/wound/wound = leg.wounds[1]
+	var/before = wound.damage
+	user.set_move_intent(MOVE_INTENT_WALK)
+	for(var/step in 1 to 100)
+		frame.jostle_cooldown = 0
+		SEND_SIGNAL(user, COMSIG_MOVABLE_MOVED, user.loc, EAST, FALSE, null, TRUE)
+	if((wound.damage) != (before))
+		Fail("Walking aggravated an injury.")
+	user.set_move_intent(MOVE_INTENT_SPRINT)
+	for(var/step in 1 to 100)
+		frame.jostle_cooldown = 0
+		SEND_SIGNAL(user, COMSIG_MOVABLE_MOVED, user.loc, EAST, TRUE, null, TRUE)
+	if((wound.damage) != (before))
+		Fail("Forced movement aggravated an injury.")
+	for(var/step in 1 to 1000)
+		frame.jostle_cooldown = 0
+		SEND_SIGNAL(user, COMSIG_MOVABLE_MOVED, user.loc, EAST, FALSE, null, TRUE)
+		if(wound.damage > before)
+			break
+	if(!(wound.damage > before && wound.damage <= before + 2))
+		Fail("Sprinting never aggravated an untreated wound, or did excessive damage.")
+	before = wound.damage
+	for(var/step in 1 to 100)
+		SEND_SIGNAL(user, COMSIG_MOVABLE_MOVED, user.loc, EAST, FALSE, null, TRUE)
+	if((wound.damage) != (before))
+		Fail("Jostling ignored its cooldown.")
+	wound.clamp_wound()
+	for(var/step in 1 to 100)
+		frame.jostle_cooldown = 0
+		SEND_SIGNAL(user, COMSIG_MOVABLE_MOVED, user.loc, EAST, FALSE, null, TRUE)
+	if((wound.damage) != (before))
+		Fail("Jostling reopened a clamped wound.")
+	user.dropItemToGround(frame, TRUE)
+	if(!(user.get_movespeed_modifiers()?["/datum/movespeed_modifier/pain"]))
+		Fail("Pain slowdown did not return after removing PA.")
+	user.local_sounds = 0
+	user.distant_sounds = 0
+	wound.clamped = FALSE
+	for(var/step in 1 to 100)
+		frame.jostle_cooldown = 0
+		SEND_SIGNAL(user, COMSIG_MOVABLE_MOVED, user.loc, EAST, FALSE, null, TRUE)
+	if((wound.damage) != (before))
+		Fail("Removed PA still jostled its former wearer.")
+	if((user.local_sounds) != (0))
+		Fail("Heavy footsteps remained after removing PA.")
+	if(!(user.distant_sounds > 0))
+		Fail("Normal footsteps were not restored.")
+#endif
