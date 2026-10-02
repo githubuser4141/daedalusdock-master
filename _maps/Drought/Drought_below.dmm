@@ -9,6 +9,10 @@
 	dir = 4
 	},
 /obj/item/stack/sheet/ms13/wood/plank,
+/obj/structure/ms13/cable/red/curve{
+	pixel_x = -3;
+	dir = 8
+	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -262,8 +266,7 @@
 /turf/closed/mineral/random/ms13/drought,
 /area/ms13/underground/mountain)
 "bt" = (
-/obj/structure/ms13_hivemind/core/marker,
-/obj/structure/ms13/cable/red/intersection,
+/obj/structure/ms13/cable/red/splice,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -328,6 +331,12 @@
 /obj/machinery/light/ms13/bulb{
 	dir = 1
 	},
+/obj/machinery/ms13/substation,
+/obj/structure/ms13/bars/rusty{
+	dir = 4
+	},
+/obj/structure/ms13/barricade,
+/obj/structure/ms13/cable/red/curve,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -348,14 +357,11 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "bX" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/obj/structure/ms13/cable/red/splice{
+/turf/open/floor/ms13/concrete/cable/curved{
 	dir = 4
 	},
-/obj/structure/ms13/bars/rusty,
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain_bunker{
-	name = "BoS Mines"
+/area/ms13/goldman{
+	name = "marker_storage"
 	})
 "bZ" = (
 /obj/machinery/door/unpowered/ms13/seethrough/fence/wire/barb{
@@ -529,9 +535,6 @@
 	dir = 1;
 	pixel_y = 0;
 	pixel_x = -3
-	},
-/obj/structure/ms13/cable/black{
-	dir = 1
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
@@ -751,16 +754,13 @@
 /turf/closed/wall/ms13/concrete,
 /area/ms13/town)
 "dS" = (
-/obj/structure/ms13/cable/red/curve{
-	pixel_x = -3;
-	dir = 1
+/obj/structure/stairs/south,
+/obj/structure/ms13/cable/red{
+	dir = 1;
+	pixel_y = 0
 	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0;
-	dir = 8
-	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
+/turf/open/floor/ms13/concrete,
+/area/ms13/town)
 "dT" = (
 /obj/effect/spawner/random/ms13/clothing/backpack/high,
 /obj/structure/ms13/bonepile,
@@ -944,6 +944,13 @@
 /obj/effect/spawner/random/ms13/tools/radio,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"eQ" = (
+/obj/structure/ms13/cable/red/curve{
+	pixel_x = -3;
+	dir = 8
+	},
+/turf/closed/mineral/random/ms13/drought,
+/area/ms13/underground/mountain)
 "eR" = (
 /obj/structure/table/ms13/metal/alt,
 /obj/effect/spawner/random/ms13/medical/highrandom,
@@ -1275,10 +1282,6 @@
 	dir = 8;
 	pixel_y = 0
 	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0;
-	dir = 8
-	},
 /turf/closed/wall/ms13/craftable/scrap,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -1425,6 +1428,10 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/ms13/graffiti/reaper,
+/obj/structure/ms13/cable/red{
+	dir = 1;
+	pixel_x = -2
+	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -1487,7 +1494,6 @@
 /obj/structure/ms13/cable/red/curve{
 	pixel_x = -3
 	},
-/obj/structure/ms13/cable/black,
 /turf/open/floor/ms13/concrete/industrial/walkway,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -2188,7 +2194,6 @@
 "kK" = (
 /obj/machinery/door/poddoor/shutters/ms13/vertical/red/mid,
 /obj/structure/ms13/cable/red,
-/obj/structure/ms13/cable/black,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -2198,8 +2203,8 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "kM" = (
-/turf/open/floor/ms13/concrete/cable{
-	dir = 1
+/turf/open/floor/ms13/concrete/cable/merge{
+	dir = 8
 	},
 /area/ms13/underground/mountain_bunker)
 "kO" = (
@@ -2265,7 +2270,6 @@
 /turf/closed/wall/ms13/bunker,
 /area/ms13/town)
 "li" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/structure/ms13/barricade{
 	dir = 4
 	},
@@ -2346,9 +2350,6 @@
 	pixel_y = 0;
 	pixel_x = -5
 	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0
-	},
 /turf/closed/wall/ms13/craftable/scrap,
 /area/ms13/underground/mountain)
 "lC" = (
@@ -2373,10 +2374,6 @@
 	pixel_x = -3;
 	dir = 8;
 	pixel_y = 0
-	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0;
-	dir = 8
 	},
 /turf/closed/mineral/random/ms13/drought,
 /area/ms13/underground/mountain)
@@ -2421,6 +2418,10 @@
 /obj/effect/spawner/random/ms13/gun/lowrandom,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
+"lR" = (
+/obj/structure/ms13/cable/red,
+/turf/closed/mineral/random/ms13/drought,
+/area/ms13/underground/mountain)
 "lS" = (
 /obj/structure/ms13/cave_decor/sign_left,
 /obj/structure/ms13/cable/red,
@@ -2445,10 +2446,13 @@
 /turf/closed/wall/ms13/adobe,
 /area/ms13/underground/mountain)
 "mb" = (
-/obj/structure/ms13/cable/black,
-/turf/open/floor/ms13/metal/grate,
-/area/ms13/goldman{
-	name = "marker_storage"
+/obj/structure/ms13/cable/red/curve{
+	pixel_x = -3;
+	dir = 8
+	},
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain_bunker{
+	name = "BoS Mines"
 	})
 "mc" = (
 /obj/structure/closet/crate/ms13/woodcrate/compact/army,
@@ -2534,6 +2538,8 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
 	},
+/obj/effect/mob_spawn/corpse/human/ms13/nomad,
+/obj/effect/spawner/random/ms13/guaranteed/melee/tier1,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -2806,9 +2812,6 @@
 	},
 /obj/structure/ms13/cable/red/curve{
 	pixel_x = -3
-	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/goldman{
@@ -3100,11 +3103,9 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "pb" = (
-/obj/structure/ms13/cable/red{
-	dir = 1;
-	pixel_y = 0
-	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
+/obj/structure/ms13/cave_decor/support/wall/broken,
+/obj/machinery/ms13/substation/discharge/rusty,
+/turf/open/floor/ms13/concrete/cable/curved,
 /area/ms13/underground/mountain)
 "pc" = (
 /obj/structure/ms13/toilet{
@@ -3195,6 +3196,11 @@
 "pv" = (
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 6
+	},
+/obj/structure/ms13/cable/red{
+	dir = 1;
+	pixel_y = 0;
+	pixel_x = -3
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
@@ -3308,7 +3314,6 @@
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
 "qc" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/effect/turf_decal/ms13/graffiti/no_way,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
@@ -3643,14 +3648,15 @@
 	name = "marker_storage"
 	})
 "rH" = (
-/obj/structure/ms13/cave_decor/support/wall/broken,
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 9
 	},
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
 	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
+/turf/open/floor/ms13/concrete/cable{
+	dir = 1
+	},
 /area/ms13/goldman{
 	name = "marker_storage"
 	})
@@ -3931,14 +3937,7 @@
 /turf/open/floor/ms13/concrete/industrial,
 /area/ms13/town)
 "ti" = (
-/obj/effect/decal/cleanable/blood/footprints{
-	dir = 8
-	},
-/obj/structure/ms13/cable/red/curve{
-	pixel_x = -3;
-	dir = 8
-	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
+/turf/open/floor/ms13/concrete/cable/box,
 /area/ms13/underground/mountain)
 "tj" = (
 /obj/structure/ms13/cave_decor/support/wall,
@@ -4035,6 +4034,10 @@
 /obj/structure/ms13/bars/rusty{
 	dir = 1
 	},
+/obj/structure/ms13/cable/red/curve{
+	pixel_x = -3;
+	dir = 8
+	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -4105,7 +4108,6 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain_bunker)
 "tW" = (
-/obj/structure/ms13/cave_decor/stalagmite,
 /turf/open/floor/ms13/concrete/industrial/walkway,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -4549,9 +4551,6 @@
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
 "vW" = (
-/obj/structure/ms13/cable/red/curve{
-	pixel_x = -3
-	},
 /obj/machinery/power/apc/unlocked/ms13/south,
 /turf/open/floor/ms13/concrete,
 /area/ms13/underground/mountain)
@@ -4684,11 +4683,6 @@
 /turf/open/floor/ms13/tile,
 /area/ms13/underground/mountain_bunker)
 "wD" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/obj/structure/ms13/cable/red/curve{
-	pixel_x = -3;
-	dir = 4
-	},
 /obj/structure/ms13/bars/rusty,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
@@ -4751,7 +4745,7 @@
 /area/ms13/underground/mountain)
 "wU" = (
 /obj/structure/ms13_rail/blast_door,
-/obj/structure/ms13/cable/red,
+/obj/structure/ms13/cable/red/intersection,
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -4790,7 +4784,6 @@
 	pixel_y = 0;
 	pixel_x = -3
 	},
-/obj/structure/ms13/cable/black,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -4856,6 +4849,14 @@
 	pixel_y = 30
 	},
 /turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
+"xu" = (
+/obj/structure/ms13/cable/red{
+	dir = 1;
+	pixel_y = 0;
+	pixel_x = -3
+	},
+/turf/closed/wall/ms13/bunker,
 /area/ms13/underground/mountain)
 "xw" = (
 /obj/structure/chair/ms13/overlaypickup/plastic,
@@ -5121,7 +5122,6 @@
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker)
 "yR" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/structure/ms13/barricade{
 	dir = 1
 	},
@@ -5214,7 +5214,6 @@
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
 "zo" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/structure/ms13/barricade{
 	dir = 1
 	},
@@ -5256,7 +5255,6 @@
 /turf/open/floor/ms13/metal,
 /area/ms13/town)
 "zw" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/structure/ms13/barricade{
 	dir = 4
 	},
@@ -5566,6 +5564,7 @@
 	id_tag = "bos_blast_mines";
 	id = "bos_blast_mines"
 	},
+/obj/structure/ms13/cable/red/splice,
 /turf/open/floor/ms13/tile/full/white,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -5786,6 +5785,15 @@
 /obj/structure/stairs/east,
 /turf/open/floor/ms13/concrete,
 /area/ms13/town)
+"Cs" = (
+/obj/structure/ms13/ore_deposit/random/low/drought,
+/obj/structure/ms13/cable/red/curve{
+	pixel_y = 0;
+	pixel_x = -3
+	},
+/obj/structure/ms13/cave_decor/support/wall,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
 "Cu" = (
 /obj/structure/ms13/cave_decor/support/wall,
 /obj/structure/table/ms13/no_smooth/cable_reel,
@@ -5913,11 +5921,6 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "Da" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/obj/structure/ms13/cable/red/curve{
-	pixel_x = -3;
-	dir = 1
-	},
 /obj/structure/railing/ms13/solo/industrial{
 	dir = 4
 	},
@@ -5993,11 +5996,6 @@
 /obj/effect/spawner/random/ms13/food/trash,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
-"Dw" = (
-/turf/open/floor/plating/ms13/ground/cdda/t_pit_corpsed,
-/area/ms13/goldman{
-	name = "marker_storage"
-	})
 "Dz" = (
 /obj/machinery/door/unpowered/ms13/metal/alt,
 /turf/open/floor/ms13/concrete,
@@ -6213,6 +6211,12 @@
 	},
 /turf/open/floor/ms13/concrete/industrial/walkway,
 /area/ms13/underground/mountain)
+"EA" = (
+/obj/structure/ms13/cave_decor/support/wall,
+/turf/open/floor/ms13/concrete/cable/curved{
+	dir = 8
+	},
+/area/ms13/underground/mountain)
 "EB" = (
 /obj/structure/ms13/lamp/medical_lamp{
 	dir = 1
@@ -6345,9 +6349,8 @@
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
 "Fm" = (
-/obj/effect/spawner/random/ms13/food/trash,
-/obj/structure/ms13/cable/red,
-/turf/open/floor/plating/ms13/ground/mountain/drought,
+/obj/machinery/ms13/substation/rusty,
+/turf/open/floor/ms13/concrete/cable/box,
 /area/ms13/underground/mountain)
 "Fo" = (
 /obj/structure/closet/crate/ms13/woodcrate/compact/sarsaparilla,
@@ -6593,7 +6596,6 @@
 /turf/open/floor/plating/ms13/ground/desert,
 /area/ms13/desert)
 "Gz" = (
-/obj/structure/ms13/cave_decor/support/wall,
 /obj/structure/ms13/lamp/mining_lamp{
 	pixel_y = 30
 	},
@@ -6601,9 +6603,6 @@
 	dir = 1;
 	pixel_y = 0;
 	pixel_x = -3
-	},
-/obj/structure/ms13/cable/black{
-	dir = 1
 	},
 /turf/closed/mineral/random/ms13/drought,
 /area/ms13/goldman{
@@ -6745,15 +6744,10 @@
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
 "Hs" = (
-/obj/effect/mob_spawn/corpse/human/ms13/nomad,
-/obj/effect/decal/cleanable/blood/tracks{
-	dir = 4
-	},
-/obj/effect/spawner/random/ms13/guaranteed/melee/tier1,
-/turf/open/floor/ms13/metal/grate,
-/area/ms13/goldman{
-	name = "marker_storage"
-	})
+/obj/structure/ms13/cave_decor/support/beams,
+/obj/structure/ms13_hivemind/core/marker,
+/turf/open/floor/plating/ms13/ground/mountain/drought,
+/area/ms13/underground/mountain)
 "Ht" = (
 /obj/structure/table/ms13/metal/heavy,
 /obj/machinery/light/ms13,
@@ -6833,9 +6827,7 @@
 	pixel_y = 0;
 	pixel_x = -3
 	},
-/obj/structure/ms13/cable/black{
-	dir = 1
-	},
+/obj/structure/ms13/cave_decor/support/wall,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -7493,6 +7485,11 @@
 "Lf" = (
 /obj/effect/mob_spawn/corpse/human/ms13/nomad,
 /obj/effect/decal/cleanable/blood/tracks,
+/obj/structure/ms13/cable/red{
+	dir = 1;
+	pixel_y = 0;
+	pixel_x = -3
+	},
 /turf/open/floor/ms13/concrete/industrial/walkway{
 	dir = 1
 	},
@@ -7786,7 +7783,7 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 4
 	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
+/turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
 	})
@@ -7911,11 +7908,12 @@
 /turf/open/floor/wood/ms13/wide,
 /area/ms13/town)
 "Ne" = (
-/obj/structure/ms13/cable/black{
+/turf/open/floor/ms13/concrete/cable/curved{
 	dir = 1
 	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
+/area/ms13/goldman{
+	name = "marker_storage"
+	})
 "Nf" = (
 /obj/structure/closet/ms13/wall/firstaid,
 /obj/effect/spawner/random/ms13/medical/lowrandom,
@@ -8535,9 +8533,6 @@
 	pixel_y = 0;
 	pixel_x = -3
 	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0
-	},
 /turf/closed/wall/ms13/craftable/scrap,
 /area/ms13/underground/mountain)
 "Qx" = (
@@ -8631,19 +8626,6 @@
 /obj/effect/spawner/random/ms13/ammo/lowrandom,
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
-"QN" = (
-/obj/structure/cable/smart_cable/color/yellow,
-/obj/structure/ms13/barricade{
-	dir = 4
-	},
-/obj/structure/ms13/bars/rusty{
-	dir = 4
-	},
-/obj/structure/closet/crate/ms13/woodcrate/uncrowbarrable,
-/turf/open/floor/ms13/tile/full/navy,
-/area/ms13/underground/mountain_bunker{
-	name = "BoS Mines"
-	})
 "QO" = (
 /obj/structure/ms13/lamp/mining_lamp,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
@@ -8978,7 +8960,12 @@
 /obj/effect/mob_spawn/corpse/human/ms13/nomad,
 /obj/effect/spawner/random/ms13/guaranteed/melee/tier1,
 /obj/effect/spawner/random/ms13/guaranteed/currency/drought/tier1,
-/turf/open/floor/ms13/metal/grate,
+/obj/structure/ms13/cable/red{
+	dir = 1;
+	pixel_y = 0;
+	pixel_x = -3
+	},
+/turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/goldman{
 	name = "marker_storage"
 	})
@@ -9534,11 +9521,6 @@
 	dir = 1
 	},
 /area/ms13/town)
-"Vv" = (
-/obj/structure/ms13/cave_decor/sign_left/sign_right,
-/obj/structure/ms13/cable/red,
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
 "Vw" = (
 /obj/machinery/door/unpowered/ms13/metal/mirrored/alt{
 	dir = 4
@@ -9663,7 +9645,6 @@
 /turf/open/floor/ms13/metal/grate/border/warning,
 /area/ms13/town)
 "Wi" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/structure/ms13/barricade{
 	dir = 4
 	},
@@ -9780,10 +9761,6 @@
 	pixel_x = -3;
 	dir = 8;
 	pixel_y = 0
-	},
-/obj/structure/ms13/cable/black/curve{
-	pixel_y = 0;
-	dir = 8
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
@@ -9902,9 +9879,6 @@
 	dir = 1;
 	pixel_y = 0;
 	pixel_x = -3
-	},
-/obj/structure/ms13/cable/black{
-	dir = 1
 	},
 /turf/closed/wall/ms13/craftable/scrap,
 /area/ms13/goldman{
@@ -10068,11 +10042,15 @@
 /obj/effect/decal/cleanable/blood/tracks{
 	dir = 5
 	},
-/obj/structure/ms13/cable/red/intersection,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
 	})
+"Yd" = (
+/obj/structure/ms13/ore_deposit/random/low/drought,
+/obj/structure/ms13/cable/red,
+/turf/closed/mineral/random/ms13/drought,
+/area/ms13/underground/mountain)
 "Yf" = (
 /obj/structure/ms13/storage/shelf,
 /obj/effect/spawner/random/ms13/crafting/electrical,
@@ -10104,6 +10082,13 @@
 	},
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/underground/mountain_bunker)
+"Yn" = (
+/obj/structure/ms13/cable/red/curve{
+	pixel_y = 0;
+	pixel_x = -3
+	},
+/turf/closed/mineral/random/ms13/drought,
+/area/ms13/underground/mountain)
 "Yo" = (
 /obj/structure/ms13/pallet/stack{
 	dir = 1
@@ -10243,7 +10228,9 @@
 	power_gen = 60000;
 	desc = "A heftly upgraded fusion generator, it seems to have scratch marks all over the fusion slot."
 	},
-/obj/structure/cable/smart_cable/color/yellow,
+/obj/structure/ms13/cable/red/splice{
+	dir = 1
+	},
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
 	name = "BoS Mines"
@@ -10352,7 +10339,6 @@
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
 "ZE" = (
-/obj/structure/cable/smart_cable/color/yellow,
 /obj/item/stack/sheet/ms13/wood/plank,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain_bunker{
@@ -10412,10 +10398,11 @@
 /turf/open/floor/plating/ms13/ground/desertalt,
 /area/ms13/town)
 "ZX" = (
-/obj/structure/ms13/cave_decor/stalagmite,
-/obj/structure/ms13/cable/red,
+/obj/structure/ms13/cable/red/curve,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
+/area/ms13/underground/mountain_bunker{
+	name = "BoS Mines"
+	})
 "ZY" = (
 /obj/structure/ms13/pipes/horizontal/down/single,
 /turf/open/floor/wood/ms13/wide,
@@ -18529,13 +18516,13 @@ uz
 qn
 uz
 yK
+WB
+WB
 yK
 yK
-yK
-yK
-yK
-yK
-yK
+WB
+WB
+WB
 yK
 yK
 yK
@@ -18725,19 +18712,19 @@ yK
 yK
 qm
 qm
-WB
-WB
 yK
 yK
+WB
+WB
+HN
 KR
+HN
+Tx
+Tx
+TR
+Tx
+Tx
 KR
-KR
-KR
-KR
-KR
-KR
-KR
-PT
 yK
 WB
 yK
@@ -18929,16 +18916,16 @@ qm
 qm
 WB
 yK
+WB
 yK
-yK
-KR
-KR
-KR
+HN
+HN
+HN
 cC
 ig
 Rc
-KR
-KR
+Tx
+TR
 KR
 yK
 WB
@@ -19130,18 +19117,18 @@ yK
 qm
 qm
 qm
-yK
+WB
 WB
 yK
 KR
 Tn
-TR
+Tx
 hN
 KI
 tW
 Lg
-KR
-KR
+Tx
+HN
 yK
 WB
 yK
@@ -19334,8 +19321,8 @@ qm
 qm
 WB
 yK
-yK
-KR
+pb
+bX
 Mt
 te
 mA
@@ -19343,7 +19330,7 @@ Yc
 rG
 HN
 On
-KR
+HN
 yK
 yK
 yK
@@ -19536,8 +19523,8 @@ qm
 qm
 WB
 WB
-yK
-KR
+ti
+Ne
 rH
 Lf
 pv
@@ -19545,7 +19532,7 @@ bt
 Qz
 Cg
 yb
-KR
+HN
 yK
 WB
 yK
@@ -19738,16 +19725,16 @@ qm
 qm
 qm
 WB
-yK
-KR
-Hs
+Fm
+PT
+PT
 HN
 Tx
-mb
+Tx
 tY
 ve
 AY
-KR
+HN
 yK
 yK
 yK
@@ -19939,17 +19926,17 @@ qm
 qm
 qm
 WB
-yK
-yK
-KR
-Dw
+Yn
+EA
+PT
+PT
 SO
 HN
 hn
 mV
 XD
 HN
-KR
+HN
 WB
 yK
 yK
@@ -20139,9 +20126,9 @@ yK
 qm
 qm
 qm
-qm
-yK
-yK
+Cs
+xu
+eQ
 yK
 nI
 KR
@@ -20151,7 +20138,7 @@ kK
 HN
 HN
 HN
-KR
+HN
 WB
 yK
 yK
@@ -20341,7 +20328,7 @@ yK
 qm
 qm
 qm
-qm
+Yd
 WB
 yK
 yK
@@ -20353,7 +20340,7 @@ WM
 em
 KR
 KR
-KR
+HN
 yK
 yK
 qm
@@ -20543,7 +20530,7 @@ uz
 yK
 qm
 qm
-yK
+lR
 WB
 yK
 yK
@@ -20745,7 +20732,7 @@ uz
 uz
 yK
 yK
-yK
+pN
 yK
 lB
 HJ
@@ -20947,7 +20934,7 @@ uz
 uz
 uz
 yK
-yK
+lR
 Qv
 lI
 yK
@@ -21149,8 +21136,8 @@ uz
 uz
 FJ
 xN
-Ne
-dS
+cw
+qR
 nM
 sq
 yK
@@ -21762,7 +21749,7 @@ qm
 qm
 yK
 yK
-Wf
+Hs
 uz
 BQ
 yK
@@ -24782,8 +24769,8 @@ WB
 UH
 lC
 Yh
-Zg
-Zg
+dS
+dS
 lh
 al
 Zr
@@ -25994,9 +25981,9 @@ yK
 yK
 yK
 pt
-FJ
-pb
-ti
+uz
+uz
+va
 pt
 yK
 yK
@@ -26196,7 +26183,7 @@ yK
 yK
 yK
 pt
-Vv
+jy
 uz
 va
 pt
@@ -26398,7 +26385,7 @@ yK
 yK
 yK
 pt
-pN
+uz
 uz
 va
 uz
@@ -26600,7 +26587,7 @@ yK
 yK
 yK
 uz
-pN
+uz
 uz
 cq
 uz
@@ -26802,7 +26789,7 @@ yK
 yK
 yK
 uz
-Fm
+it
 uz
 cq
 ZM
@@ -27004,7 +26991,7 @@ yK
 yK
 yK
 yK
-pN
+uz
 uz
 uz
 uz
@@ -27206,7 +27193,7 @@ yK
 yK
 yK
 yK
-ZX
+JF
 uz
 uz
 uz
@@ -27408,7 +27395,7 @@ yK
 yK
 yK
 yK
-pN
+uz
 uz
 bG
 bO
@@ -27610,7 +27597,7 @@ yK
 yK
 yK
 it
-mB
+FJ
 FC
 FC
 cw
@@ -28215,8 +28202,8 @@ uD
 Tl
 Tl
 we
-we
-Di
+ZX
+mb
 Tl
 Tl
 Tl
@@ -28621,7 +28608,7 @@ tD
 SI
 nz
 lx
-bX
+wD
 zo
 Tl
 yK
@@ -29022,7 +29009,7 @@ uD
 eC
 yY
 bD
-QN
+bD
 Tl
 GM
 vA
