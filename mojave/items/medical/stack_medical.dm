@@ -270,4 +270,29 @@
 	gauze.try_heal(patient, patient, TRUE)
 	if(!patient.get_bodypart(BODY_ZONE_L_ARM).bandage || gauze.amount != gauze_before - 1)
 		Fail("Bandaging an arm didn't use exactly one gauze.")
+
+/datum/unit_test/ms13_corpse_treatment/Run()
+	var/turf/ground = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/consistent/patient = allocate(/mob/living/carbon/human/consistent, ground)
+	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, ground)
+	patient.death()
+	user.zone_selected = BODY_ZONE_L_ARM
+	var/obj/item/bodypart/arm = patient.get_bodypart(BODY_ZONE_L_ARM)
+	var/obj/item/stack/medical/gauze/ms13/gauze = allocate(/obj/item/stack/medical/gauze/ms13, ground)
+	user.put_in_hands(gauze)
+	gauze.other_delay = 0
+	var/before = gauze.amount
+	gauze.melee_attack_chain(user, patient, "")
+	if(!arm.bandage || gauze.amount != before - 1 || patient.stat != DEAD)
+		return Fail("Applying gauze to a corpse failed, consumed the wrong amount, or revived it.")
+	user.dropItemToGround(gauze)
+	var/obj/item/stack/medical/suture/ms13/suture = allocate(/obj/item/stack/medical/suture/ms13, ground)
+	user.put_in_hands(suture)
+	suture.other_delay = 0
+	suture.repeating = FALSE
+	var/datum/wound/wound = arm.create_wound(WOUND_CUT, 40)
+	before = suture.amount
+	suture.melee_attack_chain(user, patient, "")
+	if(wound.damage != 25 || suture.amount != before - 1 || patient.stat != DEAD)
+		return Fail("Suturing a corpse failed, consumed the wrong amount, or revived it.")
 #endif
