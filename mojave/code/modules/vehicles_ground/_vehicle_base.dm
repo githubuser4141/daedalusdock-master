@@ -883,6 +883,7 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	. = ..()
 	roof_undamaged_icon = icon
 	roof = image(icon = icon, loc = src, icon_state = "roof_steel", layer = ABOVE_ALL_MOB_LAYER, dir = dir)
+	roof.plane = GAME_PLANE
 	roof.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	roof.color = hull_color
 	color = hull_color

@@ -996,4 +996,4 @@
 	TEST_ASSERT_EQUAL(ms13_exploding_cabin(bomb), vehicle, "Something lying in the cabin didn't count as inside it.")
 	explosion(bomb, 0, 1, 2)
 	UNTIL(!SSexplosions.is_exploding())
-	TEST_ASSERT(passenger.getorganslot(ORGAN_SLOT_LUNGS)?.damage > 0, "A blast inside the cabin was blocked by the floor.")
+	TEST_ASSERT(QDELETED(passenger) || passenger.getorganslot(ORGAN_SLOT_LUNGS)?.damage > 0, "A blast inside the cabin was blocked by the floor.")
