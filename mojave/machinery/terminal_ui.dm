@@ -24,6 +24,10 @@
 
 /obj/machinery/ms13/terminal/ui_data(mob/user)
 	var/list/data = list("mode" = mode, "system" = system, "workshopStatus" = workshop_status, "running" = workshop_running, "canManage" = can_manage_workshop(user))
+	data["mainColor"] = main_color
+	data["secondaryColor"] = secondary_color
+	data["terminalTag"] = termtag
+	data["terminalNumber"] = termnumber
 	data["documents"] = list()
 	for(var/slot in 1 to 5)
 		if(vars["doc_title_[slot]"])
@@ -83,11 +87,14 @@
 		var/obj/machinery/computer/security/viewer = mode == 7 ? bodycam_viewer : camera_viewer
 		viewer.update_active_camera_screen()
 		data["camera"] = viewer.ui_static_data() + viewer.ui_data()
+		data["camera"]["online"] = !!viewer.active_camera?.can_use()
 	return data
 
 /obj/machinery/ms13/terminal/ui_act(action, list/params)
 	if(..() || !terminal_available(usr))
 		return
+	if(action in list("command", "switch_camera", "page", "legacy"))
+		playsound(src, pick('mojave/sound/ms13machines/terminals/ui_hacking_charenter_01.ogg', 'mojave/sound/ms13machines/terminals/ui_hacking_charenter_02.ogg', 'mojave/sound/ms13machines/terminals/ui_hacking_charenter_03.ogg'), 50, FALSE)
 	if(action == "command")
 		var/datum/action/cooldown/ms13_squad_command/command = user_squad_action(usr)
 		if(!command)

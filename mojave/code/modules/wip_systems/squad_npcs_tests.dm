@@ -334,12 +334,20 @@
 	SQUAD_ASSERT(terminal.pair_bodycam(camera, user) && length(terminal.paired_bodycams) == 1, "Re-pairing duplicated the camera")
 	var/obj/machinery/computer/security/ms13_bodycam_viewer/viewer = allocate(/obj/machinery/computer/security/ms13_bodycam_viewer, terminal)
 	terminal.bodycam_viewer = viewer
-	viewer.active_camera = camera.feed
+	var/datum/tgui/ui = new(user, terminal, "MS13Terminal", terminal.name)
+	allocated += ui
+	world.push_usr(user, CALLBACK(terminal, TYPE_PROC_REF(/datum, ui_act), "page", list("mode" = "7"), ui, ui.state))
+	SQUAD_ASSERT_EQUAL(terminal.mode, 7, "Terminal camera page button was rejected")
+	world.push_usr(user, CALLBACK(terminal, TYPE_PROC_REF(/datum, ui_act), "switch_camera", list("name" = camera.feed.c_tag), ui, ui.state))
+	SQUAD_ASSERT_EQUAL(viewer.active_camera, camera.feed, "Terminal camera selection button did not select the paired feed")
 	SQUAD_ASSERT(!camera.feed.can_use(), "Unmounted camera transmitted")
 	for(var/obj/item/clothing/clothing as anything in list(user.w_uniform, user.wear_suit, user.head))
 		camera.melee_attack_chain(user, clothing, "")
 		SQUAD_ASSERT(camera.mounted_on == clothing, "Tapping clothing did not attach the bodycam to [clothing.type]")
 		SQUAD_ASSERT(camera.feed.can_use(), "Worn bodycam was unavailable")
+		viewer.active_camera = null
+		var/list/data = terminal.ui_data(user)
+		SQUAD_ASSERT(data["camera"]["activeCamera"]["name"] == camera.feed.c_tag && data["camera"]["online"], "Camera page did not select and report a live wearable feed")
 		viewer.update_active_camera_screen()
 		SQUAD_ASSERT(length(viewer.cam_screen.vis_contents), "Embedded bodycam map did not render any turfs")
 		camera.enabled = FALSE

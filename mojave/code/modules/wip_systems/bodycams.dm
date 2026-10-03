@@ -145,6 +145,12 @@ GLOBAL_VAR_INIT(ms13_bodycam_serial, 0)
 	var/list/cameras = get_available_cameras()
 	if(QDELETED(active_camera) || cameras[active_camera.c_tag] != active_camera)
 		active_camera = null
+		for(var/tag in cameras)
+			var/obj/machinery/camera/candidate = cameras[tag]
+			if(candidate.can_use())
+				active_camera = candidate
+				break
+	if(!active_camera)
 		cam_screen.show_camera_static()
 		return
 	if(!active_camera.can_use())

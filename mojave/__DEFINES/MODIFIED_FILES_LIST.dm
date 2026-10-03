@@ -207,6 +207,7 @@ code/game/objects/structures/ladders.dm,
 #warn adjustStaminaLoss was turned into stamina.adjust, which doesn't REDUCE stamina, make sure to fix this after.
 
 // tgui/packages/tgui/interfaces/MS13Terminal.jsx
+// tgui/packages/tgui/styles/interfaces/MS13Terminal.scss
 // tgui/packages/tgui/interfaces/MS13Squad.jsx
 // code/modules/unit_tests/vehicles_ms13.dm
 // code/controllers/subsystem/shuttle.dm

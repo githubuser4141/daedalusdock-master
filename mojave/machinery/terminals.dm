@@ -196,6 +196,7 @@
 
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
+		playsound(src, 'mojave/sound/ms13machines/terminals/ui_hacking_charenter_01.ogg', 50, FALSE)
 		ui = new(user, src, "MS13Terminal", name)
 		ui.open()
 		ensure_camera_views()
