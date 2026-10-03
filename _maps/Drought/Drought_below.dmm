@@ -267,6 +267,7 @@
 /area/ms13/underground/mountain)
 "bt" = (
 /obj/structure/ms13/cable/red/splice,
+/obj/structure/ms13_hivemind/core/marker,
 /turf/open/floor/ms13/metal/grate,
 /area/ms13/goldman{
 	name = "marker_storage"
@@ -6741,11 +6742,6 @@
 	pixel_x = -5;
 	pixel_y = 13
 	},
-/turf/open/floor/plating/ms13/ground/mountain/drought,
-/area/ms13/underground/mountain)
-"Hs" = (
-/obj/structure/ms13/cave_decor/support/beams,
-/obj/structure/ms13_hivemind/core/marker,
 /turf/open/floor/plating/ms13/ground/mountain/drought,
 /area/ms13/underground/mountain)
 "Ht" = (
@@ -21749,7 +21745,7 @@ qm
 qm
 yK
 yK
-Hs
+Wf
 uz
 BQ
 yK
