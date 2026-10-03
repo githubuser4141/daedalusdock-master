@@ -344,6 +344,7 @@
 /obj/structure/ms13_vehicle_part/exterior_equipment/Initialize(mapload)
 	. = ..()
 	exterior_image = image(equipment_icon, src, off_state, ABOVE_ALL_MOB_LAYER + 0.04, dir)
+	exterior_image.plane = GAME_PLANE
 	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
 	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
 	for(var/client/viewer as anything in GLOB.clients)

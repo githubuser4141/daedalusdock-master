@@ -187,3 +187,14 @@
 	SQUAD_ASSERT(!(corpse in vehicle.underneath), "Cabin corpse fell through the vehicle floor")
 	SQUAD_ASSERT_EQUAL(front.roof.plane, GAME_PLANE, "Roof inherited the floor plane")
 	SQUAD_ASSERT(front.roof.layer > corpse.layer, "Roof does not cover the passenger's layer")
+	for(var/obj/structure/ms13_vehicle_part/part as anything in vehicle.parts)
+		if(part.exterior_image)
+			SQUAD_ASSERT(part.exterior_image.plane == front.roof.plane && part.exterior_image.layer > front.roof.layer, "Exterior hardware is hidden behind the roof")
+	front.update_roof_damage()
+	var/mutable_appearance/mask = front.roof.overlays[1]
+	SQUAD_ASSERT_EQUAL(mask.plane, EMISSIVE_PLANE, "Roof lacks a cabin-glow mask")
+	SQUAD_ASSERT(mask.icon == front.roof.icon && mask.icon_state == front.roof.icon_state, "Roof glow mask does not match the visible roof")
+	front.roof_hull_breached = TRUE
+	front.update_roof_damage()
+	mask = front.roof.overlays[1]
+	SQUAD_ASSERT(mask.icon == front.roof.icon && mask.icon_state == front.roof.icon_state, "Damaged roof retained its intact glow mask")

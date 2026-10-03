@@ -231,6 +231,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	exterior_pixel_x = pixel_x
 	exterior_pixel_y = pixel_y
 	exterior_image = image(icon = exterior_icon, loc = src, icon_state = exterior_icon_state, layer = layer, dir = dir)
+	exterior_image.plane = GAME_PLANE
 	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
 	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
 	for(var/client/viewer as anything in GLOB.clients)

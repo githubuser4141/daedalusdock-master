@@ -275,6 +275,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall/solid/door/udp_car)
 		return
 	var/shut = replacetext(roof.icon_state, "_open", "")
 	roof.icon_state = (opened && ms13_icon_has_state(roof.icon, "[shut]_open")) ? "[shut]_open" : shut
+	parent_frame.update_roof_damage()
 
 /obj/structure/window/ms13_vehicle_wall/solid/door/udp_car/hood
 	name = "hood"

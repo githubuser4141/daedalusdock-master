@@ -201,6 +201,7 @@ TYPEINFO_DEF(/obj/structure/ms13_vehicle_part)
 /obj/structure/ms13_vehicle_part/running_gear/Initialize(mapload)
 	. = ..()
 	exterior_image = image(icon = icon, loc = src, icon_state = stationary_icon_state, layer = ABOVE_ALL_MOB_LAYER + 0.02, dir = dir)
+	exterior_image.plane = GAME_PLANE
 	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
 	GLOB.ms13_vehicle_exterior_part_images |= exterior_image
 	for(var/client/viewer as anything in GLOB.clients)
@@ -1035,6 +1036,7 @@ TYPEINFO_DEF(/obj/projectile/bullet/cannonball/ms13_vehicle/heavy)
 	shift_forward = forward
 	paint = new_paint
 	exterior_image = image(turret_icon, src, "[art]_turret0", ABOVE_ALL_MOB_LAYER + 0.02, dir)
+	exterior_image.plane = GAME_PLANE
 	exterior_image.color = paint
 	exterior_image.mouse_opacity = MOUSE_OPACITY_ICON
 	GLOB.ms13_vehicle_exterior_part_images |= exterior_image

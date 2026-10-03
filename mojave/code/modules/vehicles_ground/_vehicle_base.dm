@@ -886,6 +886,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	roof.plane = GAME_PLANE
 	roof.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	roof.color = hull_color
+	// Subtypes finish choosing their roof art during Initialize.
+	addtimer(CALLBACK(src, PROC_REF(update_roof_damage)), 0)
 	color = hull_color
 	GLOB.ms13_vehicle_roofs |= roof
 	for(var/client/viewer as anything in GLOB.clients)
@@ -930,6 +932,8 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 			break
 	roof.icon = is_damaged && roof_damaged_icon ? roof_damaged_icon : roof_undamaged_icon
 	roof.color = is_damaged && !roof_damaged_icon ? roof_damage_color : hull_color
+	// The cover must also occlude cabin lamps on the separate emissive plane.
+	roof.overlays = list(emissive_blocker(roof.icon, roof.icon_state, roof.layer))
 
 /obj/structure/ms13_vehicle_frame/Destroy()
 	// Tear down supported hardware while the frame and its lighting images are still valid.
