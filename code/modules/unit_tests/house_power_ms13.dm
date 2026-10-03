@@ -120,6 +120,43 @@
 	generator.powernet.reset()
 	return box.has_incoming_power()
 
+/// Generated MS13 houses must feed their wall circuits, not only the legacy area channels.
+/datum/unit_test/ms13_house_power/wired/Run()
+	var/list/room = block(run_loc_floor_bottom_left, run_loc_floor_top_right)
+	var/area/old_area = get_area(run_loc_floor_bottom_left)
+	var/area/ms13/wired_area = allocate(/area/ms13)
+	for(var/turf/tile as anything in room)
+		tile.ChangeTurf(/turf/open/floor/ms13/tile)
+		tile.change_area(old_area, wired_area)
+	var/obj/machinery/light/ms13/lamp = allocate(/obj/machinery/light/ms13, run_loc_floor_bottom_left)
+	var/area/house = SSms13_house_power.power_building(room, "working")
+	var/list/gear = find_gear(room)
+	var/obj/machinery/ms13/fusion_generator/generator = gear[1]
+	var/obj/machinery/power/apc/ms13/box = gear[2]
+	TEST_ASSERT(generator && box, "Wired house did not create its generator and breaker.")
+	box.update()
+	ms13_rebuild_rewalled()
+	TEST_ASSERT(house_is_live(generator, box), "Intact generated wiring did not carry generator power to the breaker.")
+	box.process(2)
+	lamp.check_wiring()
+	TEST_ASSERT(lamp.powered() && lamp.on, "Generated breaker failed to feed the house wall wiring.")
+	box.operating = FALSE
+	box.update()
+	ms13_rebuild_rewalled()
+	house_is_live(generator, box)
+	lamp.check_wiring()
+	TEST_ASSERT(!lamp.powered() && !lamp.on, "Opening the breaker left the house walls live.")
+	box.operating = TRUE
+	box.update()
+	ms13_rebuild_rewalled()
+	house_is_live(generator, box)
+	lamp.check_wiring()
+	TEST_ASSERT(lamp.powered() && lamp.on, "Closing the breaker did not restore wall power.")
+	QDEL_LIST(gear)
+	clear_cables(room)
+	for(var/turf/tile as anything in room)
+		tile.change_area(house, old_area)
+
 /// A generator runs dry, takes a fusion core, and gives out when worn through.
 /datum/unit_test/ms13_fusion_generator/Run()
 	var/obj/machinery/ms13/fusion_generator/generator = allocate(/obj/machinery/ms13/fusion_generator)

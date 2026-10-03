@@ -328,8 +328,8 @@ MAPPING_DIRECTIONAL_HELPERS(/obj/machinery/power/apc/ms13, APC_PIXEL_OFFSET)
 
 /datum/unit_test/ms13_breaker_switch/Run()
 	var/mob/living/carbon/human/consistent/user = allocate(/mob/living/carbon/human/consistent, run_loc_floor_bottom_left)
-	for(var/path in list(/obj/machinery/power/apc/unlocked/ms13, /obj/machinery/power/apc/unlocked/ms13/north, /obj/machinery/power/apc/unlocked/ms13/south, /obj/machinery/power/apc/unlocked/ms13/east, /obj/machinery/power/apc/unlocked/ms13/west))
-		var/obj/machinery/power/apc/unlocked/ms13/box = allocate(path, get_step(run_loc_floor_bottom_left, EAST), NORTH, TRUE)
+	for(var/path in list(/obj/machinery/power/apc/ms13, /obj/machinery/power/apc/ms13/always_on, /obj/machinery/power/apc/ms13/directional/north, /obj/machinery/power/apc/ms13/directional/south, /obj/machinery/power/apc/ms13/directional/east, /obj/machinery/power/apc/ms13/directional/west, /obj/machinery/power/apc/unlocked/ms13, /obj/machinery/power/apc/unlocked/ms13/north, /obj/machinery/power/apc/unlocked/ms13/south, /obj/machinery/power/apc/unlocked/ms13/east, /obj/machinery/power/apc/unlocked/ms13/west))
+		var/obj/machinery/power/apc/ms13/box = allocate(path, get_step(run_loc_floor_bottom_left, EAST), NORTH, TRUE)
 		STOP_PROCESSING(SSmachines, box)
 		box.opened = APC_COVER_CLOSED
 		box.set_machine_stat(NONE)

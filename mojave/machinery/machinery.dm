@@ -21,17 +21,17 @@
 	name = "breaker"
 	desc = "A simple wall breaker. Click to switch its cable feed on or off."
 
-/obj/machinery/power/apc/unlocked/ms13/interact(mob/user)
+/obj/machinery/power/apc/ms13/interact(mob/user)
 	if(!is_operational || failure_timer || !can_interact(user) || !user.canUseTopic(src, USE_CLOSE|USE_DEXTERITY))
 		return
 	toggle_breaker(user)
 	to_chat(user, span_notice("You switch [src] [operating ? "on" : "off"]."))
 	return TRUE
 
-/obj/machinery/power/apc/unlocked/ms13/ui_interact(mob/user, datum/tgui/ui)
+/obj/machinery/power/apc/ms13/ui_interact(mob/user, datum/tgui/ui)
 	return
 
-/obj/machinery/power/apc/unlocked/ms13/ui_status(mob/user)
+/obj/machinery/power/apc/ms13/ui_status(mob/user)
 	return UI_CLOSE
 
 /obj/machinery/power/apc/unlocked/ms13/north
