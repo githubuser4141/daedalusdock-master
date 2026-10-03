@@ -320,3 +320,5 @@
 		grill_loop.start()
 	else
 		grill_loop.stop()
+
+#include "shuttle_compat.dm"

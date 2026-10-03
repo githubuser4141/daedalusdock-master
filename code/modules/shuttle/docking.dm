@@ -1,4 +1,7 @@
 /obj/docking_port/mobile/proc/Dock(obj/docking_port/stationary/new_dock, movement_direction, force=FALSE)
+	if(QDELETED(new_dock))
+		remove_ripples()
+		return DOCKING_BLOCKED
 	pre_dock(new_dock, movement_direction, force)
 	. = perform_dock(new_dock, movement_direction, force)
 	post_dock(new_dock, .)

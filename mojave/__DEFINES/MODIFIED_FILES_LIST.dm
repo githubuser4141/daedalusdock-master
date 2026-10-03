@@ -209,3 +209,7 @@ code/game/objects/structures/ladders.dm,
 // tgui/packages/tgui/interfaces/MS13Terminal.jsx
 // tgui/packages/tgui/interfaces/MS13Squad.jsx
 // code/modules/unit_tests/vehicles_ms13.dm
+// code/controllers/subsystem/shuttle.dm
+// code/modules/shuttle/docking.dm
+// code/modules/shuttle/shuttle.dm
+// code/modules/events/stray_cargo.dm

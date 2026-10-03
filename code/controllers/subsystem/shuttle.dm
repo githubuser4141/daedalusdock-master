@@ -278,11 +278,12 @@ SUBSYSTEM_DEF(shuttle)
 			return M
 	WARNING("couldn't find shuttle with id: [id]")
 
-/datum/controller/subsystem/shuttle/proc/getDock(id)
+/datum/controller/subsystem/shuttle/proc/getDock(id, silent = FALSE)
 	for(var/obj/docking_port/stationary/S in stationary_docking_ports)
 		if(S.id == id)
 			return S
-	WARNING("couldn't find dock with id: [id]")
+	if(!silent)
+		WARNING("couldn't find dock with id: [id]")
 
 /// Check if we can call the evac shuttle.
 /// Returns TRUE if we can. Otherwise, returns a string detailing the problem.
