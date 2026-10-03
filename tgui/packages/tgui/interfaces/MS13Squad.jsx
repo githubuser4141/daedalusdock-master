@@ -12,12 +12,29 @@ const icons = {
   'Fire direction': 'arrows-alt',
   Use: 'hand-pointer',
   Sit: 'chair',
-  Break: 'hammer',
+  Destroy: 'hammer',
+  Breach: 'bomb',
   'Pick up': 'hand-paper',
   Deliver: 'box',
   Hold: 'stop',
 };
-const individual = ['Use', 'Sit', 'Break', 'Pick up', 'Deliver'];
+const individual = ['Use', 'Sit', 'Pick up', 'Deliver'];
+const instructions = {
+  Move: 'Move onto the selected tile, then guard there.',
+  Guard: 'Take up a position and engage nearby hostiles.',
+  Follow: 'Follow the commander or a squadmate, including stairs.',
+  Patrol: 'Travel between the current position and the selected tile.',
+  Attack: 'Engage a living enemy using available weapons and ammunition.',
+  'Fire at area': 'Suppress a visible area from the current position. Live fire can hit bystanders.',
+  'Fire direction': 'Fire toward the selected direction from the current position.',
+  Use: 'Operate one button or door. Normal locks, access and power apply.',
+  Sit: 'Board a vehicle and buckle into the selected empty seat.',
+  Destroy: 'Break a structure or machine with carried melee tools. Does not use explosives.',
+  Breach: 'Assign one equipped recruit to plant a carried C4, X4 or shaped charge. Squadmates clear the blast; planting waits for friendlies and an escape route.',
+  'Pick up': 'Collect a loose item. Requires a free hand and sufficient carrying ability.',
+  Deliver: 'Carry the last collected item onto the selected tile and drop it.',
+  Hold: 'Cancel the current order and stop. Still defends against attacks and escapes live charges.',
+};
 
 export const SquadPanel = ({ data, act }) => (
   <>
@@ -95,6 +112,8 @@ export const SquadPanel = ({ data, act }) => (
             <Button
               fluid
               icon={icons[order]}
+              tooltip={instructions[order]}
+              color={order === 'Breach' || order === 'Destroy' ? 'average' : undefined}
               selected={data.designating && data.pending === order}
               disabled={data.selected === 'all' && individual.includes(order)}
               onClick={() => act('order', { value: order })}
@@ -104,6 +123,11 @@ export const SquadPanel = ({ data, act }) => (
           </Flex.Item>
         ))}
       </Flex>
+      <Box mt={1} color="label">
+        Destroy uses tools. Breach assigns one charge carrier, clears squadmates,
+        and waits for a safe retreat. You must also stay outside the announced
+        blast radius. A live charge keeps its fuse if orders change.
+      </Box>
       {data.terminal &&
         [
           'Move',

@@ -3,7 +3,7 @@
 
 // Experimental, opt-in human squads. Nothing is spawned on existing maps.
 GLOBAL_LIST_EMPTY(ms13_squad_units)
-GLOBAL_LIST_INIT(ms13_squad_orders, list("Move", "Guard", "Follow", "Patrol", "Attack", "Fire at area", "Fire direction", "Use", "Sit", "Break", "Pick up", "Deliver", "Hold"))
+GLOBAL_LIST_INIT(ms13_squad_orders, list("Move", "Guard", "Follow", "Patrol", "Attack", "Fire at area", "Fire direction", "Use", "Sit", "Destroy", "Breach", "Pick up", "Deliver", "Hold"))
 GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 2 SECONDS, "Rapid" = 0.25 SECONDS))
 
 // Living's basic-mob attack implementation skips atom's attack notification.
@@ -55,6 +55,59 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 	suit = /obj/item/clothing/suit/armor/ms13/combat
 	head = /obj/item/clothing/head/helmet/ms13/army
 
+/datum/outfit/ms13_squad/sidearm/bos
+	name = "Squad NPC: Brotherhood initiate"
+	uniform = /obj/item/clothing/under/ms13/bos
+	suit = /obj/item/clothing/suit/armor/ms13/vest/bos
+	head = /obj/item/clothing/head/helmet/ms13/initiate
+	gloves = /obj/item/clothing/gloves/ms13/bos
+	shoes = /obj/item/clothing/shoes/ms13/military/bos
+	id = /obj/item/card/id/ms13/bos/initiate
+
+/datum/outfit/ms13_squad/sidearm/bos/post_equip(mob/living/carbon/human/wearer, visualsOnly = FALSE)
+	. = ..()
+	if(visualsOnly)
+		return
+	var/obj/item/clothing/clothing = wearer.head || wearer.wear_suit || wearer.w_uniform
+	if(clothing && !(locate(/obj/item/ms13/bodycam) in clothing))
+		var/obj/item/ms13/bodycam/camera = new(clothing)
+		camera.mount_to(clothing)
+
+/datum/outfit/ms13_squad/sidearm/bos/rifleman
+	name = "Squad NPC: Brotherhood rifleman"
+	r_hand = /obj/item/gun/ballistic/automatic/ms13/semi/service
+	back = /obj/item/storage/ms13/military
+	backpack_contents = list(/obj/item/ammo_box/magazine/ms13/r20 = 2)
+	suit = /obj/item/clothing/suit/armor/ms13/combat/bos
+	head = /obj/item/clothing/head/helmet/ms13/combat/bos
+	id = /obj/item/card/id/ms13/bos/knight
+
+/datum/outfit/ms13_squad/sidearm/vault
+	name = "Squad NPC: Vault security"
+	uniform = /obj/item/clothing/under/ms13/vaultsuit
+	suit = /obj/item/clothing/suit/armor/ms13/vest/vault
+	head = /obj/item/clothing/head/helmet/ms13/vaulthelmet
+	gloves = /obj/item/clothing/gloves/ms13/vault
+	shoes = /obj/item/clothing/shoes/ms13/military/vault
+
+/datum/outfit/ms13_squad/rifleman/ncr
+	name = "Squad NPC: NCR trooper"
+	uniform = /obj/item/clothing/under/ms13/ncr/fatigues
+	suit = /obj/item/clothing/suit/armor/ms13/ncr
+	head = /obj/item/clothing/head/helmet/ms13/ncr
+	gloves = /obj/item/clothing/gloves/ms13/ncr
+	shoes = /obj/item/clothing/shoes/ms13/military/ncr
+	id = /obj/item/card/id/ms13/ncr
+
+/datum/outfit/ms13_squad/guard/legion
+	name = "Squad NPC: Legion veteran"
+	uniform = /obj/item/clothing/under/ms13/legion/fatigues
+	suit = /obj/item/clothing/suit/armor/ms13/legion/veteran
+	head = /obj/item/clothing/head/helmet/ms13/legion/veteran
+	gloves = /obj/item/clothing/gloves/ms13/legion/dark
+	shoes = /obj/item/clothing/shoes/ms13/military/legion/darkboots
+	id = /obj/item/card/id/ms13/legveteran
+
 /mob/living/carbon/human/ms13_squad
 	name = "squad recruit"
 	ai_controller = /datum/ai_controller/ms13_squad
@@ -104,6 +157,26 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 /mob/living/carbon/human/ms13_squad/guard
 	name = "squad armored guard"
 	squad_outfit = /datum/outfit/ms13_squad/guard
+
+/mob/living/carbon/human/ms13_squad/bos
+	name = "Brotherhood initiate"
+	squad_outfit = /datum/outfit/ms13_squad/sidearm/bos
+
+/mob/living/carbon/human/ms13_squad/bos/rifleman
+	name = "Brotherhood rifleman"
+	squad_outfit = /datum/outfit/ms13_squad/sidearm/bos/rifleman
+
+/mob/living/carbon/human/ms13_squad/vault
+	name = "Vault security officer"
+	squad_outfit = /datum/outfit/ms13_squad/sidearm/vault
+
+/mob/living/carbon/human/ms13_squad/ncr
+	name = "NCR trooper"
+	squad_outfit = /datum/outfit/ms13_squad/rifleman/ncr
+
+/mob/living/carbon/human/ms13_squad/legion
+	name = "Legion veteran"
+	squad_outfit = /datum/outfit/ms13_squad/guard/legion
 
 /mob/living/carbon/human/ms13_squad/Initialize(mapload)
 	. = ..()
@@ -201,12 +274,18 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				retaliate(thrower)
 
 /mob/living/carbon/human/ms13_squad/proc/set_order(new_order, atom/target, direction = NONE)
+	// Preserve old mapper/admin orders without exposing two names for the same action.
+	if(new_order == "Break")
+		new_order = "Destroy"
+	var/obj/item/grenade/c4/charge = breach_charge?.resolve()
+	if(!charge?.active)
+		clear_breach()
 	var/datum/ai_controller/ms13_squad/brain = ai_controller
 	brain.stop_travel()
 	brain.route_stairs = null
 	brain.next_stair_search = 0
 	reset_aim()
-	if(istype(buckled, /obj/structure/chair/ms13_vehicle_seat) && (new_order in list("Move", "Guard", "Follow", "Patrol", "Attack", "Use", "Break", "Pick up", "Deliver", "Sit")) && !(new_order == "Sit" && target == buckled))
+	if(istype(buckled, /obj/structure/chair/ms13_vehicle_seat) && (new_order in list("Move", "Guard", "Follow", "Patrol", "Attack", "Use", "Destroy", "Breach", "Pick up", "Deliver", "Sit")) && !(new_order == "Sit" && target == buckled))
 		buckled.user_unbuckle_mob(src, src)
 	order_serial++
 	squad_order = new_order
@@ -220,8 +299,16 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 
 /// Use inventory APIs, including no-drop and hand availability checks.
 /mob/living/carbon/human/ms13_squad/proc/ready_item(obj/item/item)
-	if(QDELETED(item) || item.loc != src)
+	if(QDELETED(item))
 		return FALSE
+	if(item.loc != src)
+		if(item.loc?.loc != src || !item.loc.atom_storage)
+			return FALSE
+		var/obj/item/held = get_active_held_item()
+		held?.unwield(src)
+		var/hand = get_empty_held_index()
+		if(!hand || !pickup_item(item, hand))
+			return FALSE
 	if(!(item in held_items))
 		var/obj/item/held = get_active_held_item()
 		if(held?.wielded)
@@ -361,6 +448,8 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 
 /mob/living/carbon/human/ms13_squad/proc/perform_order()
 	var/datum/ai_controller/ms13_squad/brain = ai_controller
+	if(avoid_breaches())
+		return
 	var/turf/ground = get_turf(src)
 	if(ground?.get_lumcount() < 0.3)
 		for(var/obj/item/flashlight/light in contents)
@@ -414,13 +503,13 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 		target = guard_position
 	if(!target || (target.z == z && get_dist(src, target) > 30))
 		set_order("Guard", get_turf(src))
-		order_status = "Target lost; guarding here"
+		order_status = "Target gone; guarding here"
 		return
 	if(squad_order == "Sit" && buckled == target)
 		brain.stop_travel()
 		order_status = "Seated"
 		return
-	if(squad_order in list("Use", "Break", "Pick up", "Deliver", "Move", "Sit"))
+	if(squad_order in list("Use", "Destroy", "Breach", "Pick up", "Deliver", "Move", "Sit"))
 		if(world.time > order_deadline)
 			set_order("Guard", get_turf(src))
 			order_status = "Order timed out; ready for new orders"
@@ -476,6 +565,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				squad_order = "Guard"
 				order_status = "Guarding"
 		if("Use", "Pick up")
+			var/picking_up = squad_order == "Pick up"
 			if(!brain.approach(target, (squad_order == "Use" || target.IsReachableBy(src)) ? 1 : 0) || !target.IsReachableBy(src))
 				return
 			var/obj/item/held = get_active_held_item()
@@ -489,6 +579,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				try_swap_hand(empty_hands[1])
 			if(squad_order == "Pick up" && (!isitem(target) || !isturf(target.loc)))
 				set_order("Guard", get_turf(src))
+				order_status = "Item is no longer on the ground"
 				return
 			var/started_order = order_serial
 			brain.PawnClick(target, FALSE)
@@ -498,12 +589,21 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				cargo = WEAKREF(target)
 				if(istype(target, /obj/item/gun))
 					service_weapon = WEAKREF(target)
+			else if(picking_up)
+				order_status = "Cannot pick up item; check hands and weight"
+				return
 			set_order("Guard", get_turf(src))
-			order_status = "Interaction attempted"
-		if("Break")
-			if(brain.approach(target, 1) && target.IsReachableBy(src))
-				ready_weapon()
-				brain.PawnClick(target, TRUE)
+			order_status = picking_up ? "Item collected; ready to deliver" : "Controls operated"
+			if(istype(target, /obj/machinery))
+				var/obj/machinery/machine = target
+				if(!machine.is_operational)
+					order_status = "Machine is offline"
+			if((istype(target, /obj/machinery/door) || istype(target, /obj/structure/mineral_door) || istype(target, /obj/structure/window/ms13_vehicle_wall/solid/door)) && target.density)
+				order_status = "Door remains closed; check lock, access or obstructions"
+		if("Destroy")
+			destroy_object(target)
+		if("Breach")
+			breach_target(target)
 		if("Deliver")
 			var/obj/item/item = cargo?.resolve()
 			if(!item || !(item in held_items))
@@ -577,6 +677,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 
 #include "squad_commands.dm"
 #include "squad_navigation.dm"
+#include "squad_demolition.dm"
 #include "squad_cryopods.dm"
 #include "bodycams.dm"
 

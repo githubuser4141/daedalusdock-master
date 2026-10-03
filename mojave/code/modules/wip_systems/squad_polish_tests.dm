@@ -1,4 +1,7 @@
-// Included only by squad_npcs_tests.dm in UNIT_TESTS builds.
+#if defined(UNIT_TESTS) && !defined(MS13_SQUAD_POLISH_TESTS_INCLUDED)
+#define MS13_SQUAD_POLISH_TESTS_INCLUDED
+
+// Included by squad_npcs_tests.dm while its assertion macros are available.
 /datum/unit_test/ms13_squad_movement_cleanup/Run()
 	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
 	for(var/path_type in list(/datum/move_loop/has_target/jps, /datum/move_loop/has_target/astar))
@@ -396,3 +399,5 @@
 	front.update_roof_damage()
 	mask = front.roof.overlays[1]
 	SQUAD_ASSERT(mask.icon == front.roof.icon && mask.icon_state == front.roof.icon_state, "Damaged roof retained its intact glow mask")
+
+#endif

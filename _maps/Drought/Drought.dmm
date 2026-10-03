@@ -5454,6 +5454,12 @@
 	},
 /turf/open/floor/wood/ms13/carpet,
 /area/ms13/town)
+"eOd" = (
+/obj/structure/table/ms13/metal/grate,
+/obj/effect/spawner/random/ms13/food/packaged,
+/obj/machinery/light/ms13/bulb,
+/turf/open/floor/ms13/tile/full/navy,
+/area/ms13/underground/mountain)
 "eOs" = (
 /obj/structure/ms13/fence,
 /obj/structure/table/ms13/metal/grate,
@@ -24573,6 +24579,7 @@
 /obj/effect/spawner/random/ms13/food/junkfood_boxed,
 /obj/effect/spawner/random/ms13/food/junkfood_boxed,
 /obj/structure/ms13/trash/glass/basic,
+/obj/machinery/light/ms13/bulb,
 /turf/open/floor/ms13/tile/full/navy,
 /area/ms13/underground/mountain)
 "wfn" = (
@@ -46578,7 +46585,7 @@ kaR
 pci
 iBw
 xeQ
-kmH
+eOd
 oGF
 qBF
 qBF

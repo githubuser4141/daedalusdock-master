@@ -1,3 +1,6 @@
+#ifndef MS13_SQUAD_NAVIGATION_INCLUDED
+#define MS13_SQUAD_NAVIGATION_INCLUDED
+
 // A* handles directional barriers that JPS can miss. Stairs connect ordinary 2D routes.
 /datum/ai_movement/astar/ms13_squad
 	use_diagonals = FALSE
@@ -74,3 +77,5 @@
 			zstep(unit, DOWN, ZMOVE_STAIRS_FLAGS)
 	route_stairs = null
 	return FALSE
+
+#endif

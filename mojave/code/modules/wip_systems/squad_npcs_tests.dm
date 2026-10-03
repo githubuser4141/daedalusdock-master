@@ -265,6 +265,47 @@
 		SQUAD_ASSERT_EQUAL(spares, 2, "[unit_type] failed to store both spare magazines")
 		qdel(unit)
 
+/datum/unit_test/ms13_squad_faction_presets/Run()
+	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, get_step(site, SOUTH))
+	for(var/unit_type in list(/mob/living/carbon/human/ms13_squad/bos, /mob/living/carbon/human/ms13_squad/vault, /mob/living/carbon/human/ms13_squad/ncr, /mob/living/carbon/human/ms13_squad/legion))
+		var/mob/living/carbon/human/ms13_squad/unit = allocate(unit_type, site)
+		unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+		unit.see_in_dark = 8
+		SQUAD_ASSERT(unit.w_uniform && unit.wear_suit && unit.head && unit.gloves && unit.shoes && unit.back, "[unit_type] failed to equip its faction clothing")
+		SQUAD_ASSERT(locate(/obj/item/flashlight/ms13) in unit.contents, "[unit_type] lost its flashlight")
+		SQUAD_ASSERT(locate(/obj/item/knife/ms13/combat) in unit.contents, "[unit_type] lost its backup knife")
+		var/obj/item/gun/ballistic/gun = unit.ready_weapon(TRUE)
+		SQUAD_ASSERT(gun?.can_fire() && gun.get_ammo(), "[unit_type] spawned without a usable loaded firearm")
+		var/spares = 0
+		for(var/obj/item/ammo_box/magazine/mag in unit.back.contents)
+			SQUAD_ASSERT(istype(mag, gun.mag_type) && mag.ammo_count(), "[unit_type] has unusable spare ammunition")
+			spares++
+		SQUAD_ASSERT_EQUAL(spares, 2, "[unit_type] failed to store both spare magazines")
+		SQUAD_ASSERT(unit.recruit(user) == unit, "[unit_type] could not be recruited")
+		SQUAD_ASSERT(unit.issue_order(user, "Fire at area", get_ranged_target_turf(site, EAST, 4)), "[unit_type] rejected its commander's fire order")
+		var/rounds = gun.get_ammo()
+		var/deadline = world.time + 5 SECONDS
+		while(gun.get_ammo() == rounds && world.time < deadline)
+			unit.act_on_order()
+			sleep(0.25 SECONDS)
+		SQUAD_ASSERT(gun.get_ammo() < rounds, "[unit_type] did not fire its supplied weapon ([unit.order_status], next move: [unit.next_move - world.time], jammed: [gun.is_jammed])")
+		QDEL_NULL(gun.chambered)
+		while(gun.magazine.ammo_count())
+			qdel(gun.magazine.get_round())
+		var/obj/item/ammo_box/magazine/spare = locate() in unit.back.contents
+		rounds = spare.ammo_count()
+		unit.next_move = 0
+		unit.act_on_order()
+		SQUAD_ASSERT(gun.magazine == spare && gun.can_fire(), "[unit_type] did not reload from its backpack")
+		SQUAD_ASSERT_EQUAL(gun.get_ammo(), rounds, "[unit_type] created or lost ammunition while reloading")
+		deadline = world.time + 5 SECONDS
+		while(gun.get_ammo() == rounds && world.time < deadline)
+			sleep(0.25 SECONDS)
+			unit.act_on_order()
+		SQUAD_ASSERT(gun.get_ammo() < rounds, "[unit_type] did not resume firing after reloading")
+		qdel(unit)
+
 /datum/unit_test/ms13_squad_cryopods/Run()
 	var/turf/ground = run_loc_floor_bottom_left
 	var/obj/machinery/ms13/terminal/terminal = allocate(/obj/machinery/ms13/terminal, ground)
@@ -369,6 +410,55 @@
 	SQUAD_ASSERT(!length(viewer.cam_screen.vis_contents) && !length(terminal.paired_bodycams), "Deleted camera left a stale view or pairing")
 	terminal.set_machine_stat(NOPOWER)
 	SQUAD_ASSERT_EQUAL(viewer.ui_status(user), UI_CLOSE, "Bodycam UI stayed open without terminal power")
+
+/datum/unit_test/ms13_bodycam_npc_attachment/Run()
+	var/turf/site = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, site)
+	var/mob/living/carbon/human/ms13_squad/bos/unit = allocate(/mob/living/carbon/human/ms13_squad/bos, get_step(site, NORTH))
+	unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+	var/obj/item/ms13/bodycam/camera = allocate(/obj/item/ms13/bodycam, site)
+	user.put_in_hands(camera)
+	var/list/mounts = list(
+		BODY_ZONE_HEAD = unit.head,
+		BODY_ZONE_PRECISE_EYES = unit.head,
+		BODY_ZONE_PRECISE_MOUTH = unit.head,
+		BODY_ZONE_CHEST = unit.wear_suit,
+		BODY_ZONE_L_ARM = unit.w_uniform,
+		BODY_ZONE_PRECISE_R_HAND = unit.w_uniform,
+		BODY_ZONE_L_LEG = unit.w_uniform,
+	)
+	for(var/zone in mounts)
+		user.zone_selected = zone
+		user.combat_mode = !user.combat_mode
+		SQUAD_ASSERT(camera.melee_attack_chain(user, unit, ""), "NPC bodycam click was rejected for [zone]")
+		SQUAD_ASSERT_EQUAL(camera.mounted_on, mounts[zone], "Bodycam used the wrong garment for [zone]")
+		SQUAD_ASSERT(camera.feed.can_use(), "Bodycam on an NPC did not transmit")
+		SQUAD_ASSERT(!unit.threat, "Attaching a bodycam made the NPC retaliate")
+		camera.remove_from_clothing(camera.mounted_on, user)
+		SQUAD_ASSERT(!camera.mounted_on && (camera in user.held_items), "NPC bodycam could not be removed")
+	user.zone_selected = BODY_ZONE_CHEST
+	user.forceMove(get_ranged_target_turf(site, EAST, 4))
+	SQUAD_ASSERT(!camera.melee_attack_chain(user, unit, "") && !camera.mounted_on, "Bodycam attached from outside arm's reach")
+	user.forceMove(site)
+	ADD_TRAIT(camera, TRAIT_NODROP, INNATE_TRAIT)
+	SQUAD_ASSERT(!camera.melee_attack_chain(user, unit, "") && (camera in user.held_items), "Bodycam bypassed its no-drop restriction")
+	REMOVE_TRAIT(camera, TRAIT_NODROP, INNATE_TRAIT)
+	SQUAD_ASSERT(camera.melee_attack_chain(user, unit, ""), "Bodycam did not recover after the blocked attachment")
+	var/obj/item/ms13/bodycam/duplicate = allocate(/obj/item/ms13/bodycam, site)
+	user.put_in_hands(duplicate)
+	SQUAD_ASSERT(!duplicate.melee_attack_chain(user, unit, "") && (duplicate in user.held_items), "A second bodycam attached to the same garment")
+	SQUAD_ASSERT_EQUAL(camera.mounted_on, unit.wear_suit, "Duplicate attachment displaced the first camera")
+	qdel(duplicate)
+	camera.remove_from_clothing(camera.mounted_on, user)
+	unit.dropItemToGround(unit.wear_suit)
+	SQUAD_ASSERT(camera.melee_attack_chain(user, unit, "") && camera.mounted_on == unit.w_uniform, "Chest attachment did not fall back to the uniform")
+	camera.remove_from_clothing(camera.mounted_on, user)
+	unit.dropItemToGround(unit.head)
+	user.zone_selected = BODY_ZONE_HEAD
+	SQUAD_ASSERT(!camera.melee_attack_chain(user, unit, "") && (camera in user.held_items), "Bodycam attached to an uncovered head")
+	unit.dropItemToGround(unit.w_uniform)
+	user.zone_selected = BODY_ZONE_CHEST
+	SQUAD_ASSERT(!camera.melee_attack_chain(user, unit, "") && (camera in user.held_items), "Bodycam attached without clothing")
 
 /datum/unit_test/ms13_squad_spawn_interactions/Run()
 	var/turf/ground = get_step(run_loc_floor_bottom_left, NORTHEAST)

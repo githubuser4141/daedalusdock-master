@@ -86,14 +86,14 @@
 	aim_dir = get_dir(user, interacting_with)
 	return plant_c4(interacting_with, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING
 
-/obj/item/grenade/c4/proc/plant_c4(atom/bomb_target, mob/living/user)
+/obj/item/grenade/c4/proc/plant_c4(atom/bomb_target, mob/living/user, datum/callback/extra_checks) // MOJAVE EDIT - interruptible squad orders
 	if(bomb_target != user && HAS_TRAIT(user, TRAIT_PACIFISM) && isliving(bomb_target))
 		to_chat(user, span_warning("You don't want to harm other living beings!"))
 		return FALSE
 
 	to_chat(user, span_notice("You start planting [src]. The timer is set to [det_time]..."))
 
-	if(!do_after(user, bomb_target, 3 SECONDS))
+	if(!do_after(user, bomb_target, 3 SECONDS, extra_checks = extra_checks)) // MOJAVE EDIT
 		return FALSE
 
 	if(!user.temporarilyRemoveItemFromInventory(src))

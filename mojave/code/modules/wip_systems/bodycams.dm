@@ -5,10 +5,11 @@ GLOBAL_VAR_INIT(ms13_bodycam_serial, 0)
 
 /obj/item/ms13/bodycam
 	name = "body camera"
-	desc = "A clip-on camera. Tap it on a terminal to pair it, then on a uniform, suit or helmet to attach it. Alt-right-click the clothing to remove it. Use in hand to toggle transmission."
+	desc = "A clip-on camera. Tap it on a terminal to pair it. Click a person to clip it to clothing covering your selected body zone: helmet first, then outerwear, then uniform. You can also click the clothing directly. Alt-right-click the clothing to remove it. Use in hand to toggle transmission."
 	icon = 'icons/obj/machines/camera.dmi'
 	icon_state = "cameracase"
 	w_class = WEIGHT_CLASS_SMALL
+	has_combat_mode_interaction = TRUE
 	var/enabled = TRUE
 	var/obj/item/clothing/mounted_on
 	var/obj/machinery/camera/ms13_bodycam/feed
@@ -39,25 +40,40 @@ GLOBAL_VAR_INIT(ms13_bodycam_serial, 0)
 		if(terminal.pair_bodycam(src, user))
 			to_chat(user, span_notice("[feed.c_tag] paired with [terminal]."))
 		return ITEM_INTERACT_SUCCESS
+	else if(ishuman(target))
+		var/mob/living/carbon/human/wearer = target
+		var/zone = deprecise_zone(user.zone_selected)
+		for(var/obj/item/clothing/clothing as anything in list(wearer.head, wearer.wear_suit, wearer.w_uniform))
+			if(clothing && (zone in cover_flags2body_zones(clothing.body_parts_covered)))
+				return attach_to(clothing, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING
+		to_chat(user, span_warning("[wearer] has no suitable clothing covering the [parse_zone(zone)]."))
+		return ITEM_INTERACT_BLOCKING
 	else if(isclothing(target))
-		attach_to(target, user)
-		return ITEM_INTERACT_SUCCESS
+		return attach_to(target, user) ? ITEM_INTERACT_SUCCESS : ITEM_INTERACT_BLOCKING
 	return ..()
 
 /obj/item/ms13/bodycam/proc/attach_to(obj/item/clothing/clothing, mob/living/user)
 	if(mounted_on || !(istype(clothing, /obj/item/clothing/under) || istype(clothing, /obj/item/clothing/suit) || istype(clothing, /obj/item/clothing/head)))
 		return FALSE
-	if(!user.canUseTopic(clothing, USE_CLOSE|USE_DEXTERITY) || !(src in user.held_items) || (locate(/obj/item/ms13/bodycam) in clothing))
+	if(!user.Adjacent(clothing) || !user.canUseTopic(clothing, USE_CLOSE|USE_DEXTERITY) || !(src in user.held_items))
+		return FALSE
+	if(locate(/obj/item/ms13/bodycam) in clothing)
+		to_chat(user, span_warning("[clothing] already has a body camera attached."))
 		return FALSE
 	if(!user.temporarilyRemoveItemFromInventory(src))
 		return FALSE
+	mount_to(clothing)
+	to_chat(user, span_notice("You clip [src] onto [clothing]."))
+	return TRUE
+
+/// Also used by outfits, which create the camera directly in its garment.
+/obj/item/ms13/bodycam/proc/mount_to(obj/item/clothing/clothing)
+	unmount()
 	forceMove(clothing)
 	mounted_on = clothing
 	RegisterSignal(clothing, COMSIG_CLICK_ALT_SECONDARY, PROC_REF(remove_from_clothing))
 	RegisterSignal(clothing, COMSIG_PARENT_EXAMINE, PROC_REF(examine_mount))
 	RegisterSignal(clothing, COMSIG_PARENT_QDELETING, PROC_REF(mount_deleted))
-	to_chat(user, span_notice("You clip [src] onto [clothing]."))
-	return TRUE
 
 /obj/item/ms13/bodycam/proc/unmount()
 	if(mounted_on)

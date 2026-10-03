@@ -129,6 +129,8 @@
 	action.show_panel()
 
 /mob/living/carbon/human/ms13_squad/proc/issue_order(mob/living/user, new_order, atom/target, mob/living/carbon/human/ms13_squad/selected, obj/machinery/ms13/terminal/terminal)
+	if(new_order == "Break")
+		new_order = "Destroy"
 	if(!can_command(user, terminal) || !(new_order in GLOB.ms13_squad_orders))
 		return FALSE
 	var/list/units = members()
@@ -143,7 +145,8 @@
 			return FALSE
 		switch(new_order)
 			if("Attack")
-				if(!isliving(target) || squad_friendly(target))
+				var/mob/living/victim = target
+				if(!istype(victim) || victim.stat == DEAD || squad_friendly(victim))
 					return FALSE
 			if("Follow")
 				if(!isliving(target) || !squad_friendly(target))
@@ -154,8 +157,9 @@
 			if("Sit")
 				if(!istype(target, /obj/structure/chair/ms13_vehicle_seat))
 					return FALSE
-			if("Break")
-				if(!istype(target, /obj/structure))
+			if("Destroy", "Breach")
+				if(!ms13_demolition_target(target, new_order == "Breach"))
+					to_chat(user, span_warning(new_order == "Breach" ? "Breach a destructible wall or anchored structure/machine." : "Destroy a destructible structure or machine."))
 					return FALSE
 			if("Pick up")
 				if(!isitem(target) || !isturf(target.loc))
@@ -170,17 +174,29 @@
 	if(new_order == "Fire direction" && !direction)
 		return FALSE
 	// Object work belongs to one recruit, so the squad never races to grab or toggle the same object.
-	if(!selected && (new_order in list("Use", "Break", "Pick up", "Deliver", "Sit")))
+	if(!selected && (new_order in list("Use", "Pick up", "Deliver", "Sit")))
 		to_chat(user, span_warning("Select an individual recruit for object work."))
 		return FALSE
+	if(new_order == "Breach")
+		for(var/obj/item/grenade/c4/charge as anything in GLOB.ms13_squad_charges)
+			if(charge.ms13_breach_origin?.z == target.z && get_dist(charge.ms13_breach_origin, target) <= charge.ms13_breach_radius + 1)
+				to_chat(user, span_warning("A breach is already being prepared here. Wait or cancel its planter's order first."))
+				return FALSE
 	var/issued = FALSE
 	for(var/mob/living/carbon/human/ms13_squad/unit as anything in units)
 		if(unit.client || unit.stat != CONSCIOUS || unit.z != z || get_dist(src, unit) > 30)
 			continue
 		if(new_order == "Follow" && unit == target)
 			continue
+		if(new_order == "Breach" && !unit.carried_breach_charge())
+			continue
 		unit.set_order(new_order, target, direction)
 		issued = TRUE
+		if(new_order == "Breach")
+			to_chat(user, span_notice("[unit] assigned to breach [target]. Squadmates will clear the charge; keep yourself clear too."))
+			break
+	if(!issued && new_order == "Breach")
+		to_chat(user, span_warning("No available selected recruit has a usable C4, X4 or shaped charge in their hands or backpack."))
 	return issued
 
 /mob/living/carbon/human/ms13_squad/proc/issue_fire_mode(mob/living/user, new_mode, mob/living/carbon/human/ms13_squad/selected, obj/machinery/ms13/terminal/terminal)
@@ -286,7 +302,7 @@
 	return TRUE
 
 /datum/action/cooldown/ms13_squad_command/set_click_ability(mob/on_who)
-	ranged_mousepointer = (pending_order in list("Attack", "Break", "Fire at area", "Fire direction")) ? 'icons/effects/mouse_pointers/weapon_pointer.dmi' : 'icons/effects/mouse_pointers/interact.dmi'
+	ranged_mousepointer = (pending_order in list("Attack", "Destroy", "Breach", "Fire at area", "Fire direction")) ? 'icons/effects/mouse_pointers/weapon_pointer.dmi' : 'icons/effects/mouse_pointers/interact.dmi'
 	. = ..()
 	START_PROCESSING(SSfastprocess, src)
 
@@ -323,7 +339,7 @@
 		to_chat(owner, success ? span_notice("Fire mode updated.") : span_warning("Fire mode rejected."))
 	if(href_list["order"] in GLOB.ms13_squad_orders)
 		pending_order = href_list["order"]
-		if((pending_order in list("Use", "Break", "Pick up", "Deliver", "Sit")) && !selected_ref?.resolve())
+		if((pending_order in list("Use", "Pick up", "Deliver", "Sit")) && !selected_ref?.resolve())
 			to_chat(owner, span_warning("Select one recruit before choosing this order."))
 			return
 		if(pending_order == "Hold")
