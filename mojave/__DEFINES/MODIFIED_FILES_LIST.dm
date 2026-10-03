@@ -214,3 +214,5 @@ code/game/objects/structures/ladders.dm,
 // code/modules/shuttle/docking.dm
 // code/modules/shuttle/shuttle.dm
 // code/modules/events/stray_cargo.dm
+// code/controllers/subsystem/movement/moveloop_jps.dm
+// code/controllers/subsystem/movement/moveloop_astar.dm

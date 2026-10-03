@@ -1,4 +1,25 @@
 // Included only by squad_npcs_tests.dm in UNIT_TESTS builds.
+/datum/unit_test/ms13_squad_movement_cleanup/Run()
+	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
+	for(var/path_type in list(/datum/move_loop/has_target/jps, /datum/move_loop/has_target/astar))
+		var/obj/item/wrench/mover = allocate(/obj/item/wrench, site)
+		for(var/cancel in list(TRUE, FALSE))
+			var/turf/destination = get_step(mover, EAST)
+			var/datum/move_loop/route = SSmove_manager.add_to_loop(mover, SSmovement, path_type, MOVEMENT_DEFAULT_PRIORITY, NONE, null, 1, INFINITY, destination, 0.5 SECONDS, 30, 0, null, TRUE, null, TRUE, list(destination))
+			if(cancel)
+				RegisterSignal(mover, COMSIG_MOVABLE_MOVED, PROC_REF(cancel_route))
+			route.process()
+			SQUAD_ASSERT_EQUAL(get_turf(mover), destination, "[path_type] failed to move before or after route cancellation")
+			if(cancel)
+				SQUAD_ASSERT(QDELETED(route) && !mover.move_packet, "Cancelled route retained its movement packet")
+				UnregisterSignal(mover, COMSIG_MOVABLE_MOVED)
+			else
+				qdel(route)
+
+/datum/unit_test/ms13_squad_movement_cleanup/proc/cancel_route(atom/movable/mover)
+	SIGNAL_HANDLER
+	SSmove_manager.stop_looping(mover)
+
 /datum/unit_test/ms13_squad_polish/Run()
 	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
 	var/mob/living/carbon/human/ms13_squad/sidearm/unit = allocate(/mob/living/carbon/human/ms13_squad/sidearm, site)
