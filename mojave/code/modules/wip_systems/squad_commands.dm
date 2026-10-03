@@ -60,7 +60,7 @@
 	return leader
 
 /mob/living/carbon/human/ms13_squad/proc/claim_command(mob/living/user, obj/machinery/ms13/terminal/terminal)
-	if(!istype(user) || stat != CONSCIOUS || client || user.incapacitated() || (squad_id && !is_squad_leader))
+	if(!istype(user) || stat != CONSCIOUS || client || user.incapacitated())
 		return FALSE
 	if(terminal)
 		if(!terminal.terminal_available(user) || !(src in terminal.available_squad_units()))
@@ -72,6 +72,23 @@
 	if(current && current != user && current.stat != DEAD)
 		to_chat(user, span_warning("This squad already has a commander."))
 		return FALSE
+	var/list/former_leaders = list()
+	if(squad_id)
+		for(var/mob/living/carbon/human/ms13_squad/leader as anything in GLOB.ms13_squad_units)
+			if(leader == src || leader.squad_id != squad_id || !leader.is_squad_leader)
+				continue
+			current = leader.commander?.resolve()
+			if(leader.stat != DEAD || (current && current != user && current.stat != DEAD))
+				to_chat(user, span_warning("This squad already has a leader or a living commander."))
+				return FALSE
+			former_leaders += leader
+	// Keep ownership through a leader's death, and keep revived leaders subordinate.
+	for(var/mob/living/carbon/human/ms13_squad/leader as anything in former_leaders)
+		leader.is_squad_leader = FALSE
+		leader.commander = null
+		var/datum/action/action = leader.command_action?.resolve()
+		QDEL_NULL(action)
+		leader.command_action = null
 	if(!squad_id)
 		squad_id = "Squad [REF(src)]"
 	is_squad_leader = TRUE
@@ -89,7 +106,7 @@
 
 /// One authorization path for HUD orders, terminal orders, and their delayed prompts.
 /mob/living/carbon/human/ms13_squad/proc/can_command(mob/living/user, obj/machinery/ms13/terminal/terminal)
-	if(QDELETED(user) || commander?.resolve() != user || stat != CONSCIOUS || client || user.incapacitated() || !squad_id)
+	if(QDELETED(user) || commander?.resolve() != user || stat != CONSCIOUS || client || user.incapacitated() || !squad_id || squad_leader() != src)
 		return FALSE
 	if(terminal)
 		var/turf/terminal_turf = get_turf(terminal)
@@ -288,6 +305,10 @@
 		unset_click_ability(owner)
 	if(href_list["unit"])
 		var/mob/living/carbon/human/ms13_squad/unit = locate(href_list["unit"]) in leader.members()
+		if(href_list["unit"] != "all" && !unit)
+			return
+		if(owner.click_intercept == src)
+			unset_click_ability(owner)
 		selected_ref = unit ? WEAKREF(unit) : null
 	if(href_list["release"])
 		leader.issue_order(owner, "Hold", null, null, terminal_ref?.resolve())
@@ -315,11 +336,15 @@
 			set_click_ability(owner)
 			to_chat(owner, span_notice("[pending_order]: click a target. Right-click cancels."))
 	if(href_list["coordinates"] && terminal_ref && (pending_order in list("Move", "Guard", "Patrol", "Fire at area", "Fire direction", "Deliver")))
+		if(owner.click_intercept == src)
+			unset_click_ability(owner)
+		var/requested_order = pending_order
+		var/datum/weakref/requested_unit = selected_ref
 		var/target_x = tgui_input_number(owner, "Target X (same level as the terminal)", "Squad order", leader.x, world.maxx, 1)
-		if(isnull(target_x) || !IsAvailable())
+		if(isnull(target_x) || !IsAvailable() || pending_order != requested_order || selected_ref != requested_unit)
 			return
 		var/target_y = tgui_input_number(owner, "Target Y", "Squad order", leader.y, world.maxy, 1)
-		if(isnull(target_y) || !IsAvailable())
+		if(isnull(target_y) || !IsAvailable() || pending_order != requested_order || selected_ref != requested_unit)
 			return
 		Activate(locate(round(target_x), round(target_y), leader.z))
 	show_panel()

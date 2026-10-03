@@ -295,6 +295,8 @@
 	SQUAD_ASSERT(recruit && recruit.squad_id == pod.squad_id, "Cryopod lost configured mob type or squad ID")
 	allocated += recruit
 	SQUAD_ASSERT_EQUAL(terminal.wake_cryopods(user), 0, "Repeated release duplicated the occupant")
+	SQUAD_ASSERT_EQUAL(recruit.recruit(user, terminal), recruit, "Terminal could not recruit the pod's assigned squad without a pre-existing leader")
+	SQUAD_ASSERT(recruit.issue_order(user, "Hold", terminal = terminal), "Released recruit did not accept terminal orders")
 
 /datum/unit_test/ms13_squad_doors/Run()
 	var/turf/ground = locate(run_loc_floor_bottom_left.x, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)

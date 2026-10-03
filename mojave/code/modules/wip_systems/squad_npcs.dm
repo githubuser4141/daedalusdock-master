@@ -249,6 +249,40 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 			return knife
 	return null
 
+/// Use carried magazines and normal gun controls; never manufacture ammunition.
+/mob/living/carbon/human/ms13_squad/proc/reload_weapon()
+	var/datum/ai_controller/ms13_squad/brain = ai_controller
+	for(var/obj/item/gun/ballistic/gun in contents)
+		if(gun.can_fire() || !ready_item(gun))
+			continue
+		if(gun.is_jammed || gun.magazine?.ammo_count())
+			brain.stop_travel()
+			order_status = gun.is_jammed ? "Clearing jam" : "Chambering a round"
+			gun.attack_self(src)
+			return TRUE
+		if(gun.internal_magazine)
+			continue
+		for(var/obj/item/ammo_box/magazine/spare as anything in get_all_contents_type(/obj/item/ammo_box/magazine))
+			if(!istype(spare, gun.mag_type) || !spare.ammo_count() || spare == gun.magazine)
+				continue
+			if(spare.loc != src && (spare.loc.loc != src || !spare.loc.atom_storage))
+				continue
+			gun.unwield(src)
+			if(!(spare in held_items))
+				var/hand = get_empty_held_index()
+				if(!hand || !pickup_item(spare, hand))
+					continue
+			brain.stop_travel()
+			order_status = "Reloading"
+			if(gun.magazine)
+				gun.eject_magazine(src)
+			gun.attackby(spare, src)
+			if(gun.magazine == spare && !gun.can_fire())
+				gun.attack_self(src)
+			changeNext_move(CLICK_CD_MELEE)
+			return TRUE
+	return FALSE
+
 /// Do not deliberately shoot through squadmates. Ordinary projectiles still handle walls and collisions.
 /mob/living/carbon/human/ms13_squad/proc/safe_shot(atom/target)
 	if(!target || target.z != z || get_dist(src, target) > 7 || !(get_turf(target) in view(7, src)))
@@ -261,6 +295,8 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 
 /mob/living/carbon/human/ms13_squad/proc/fight(atom/target, suppress = FALSE)
 	var/datum/ai_controller/ms13_squad/brain = ai_controller
+	if(!ready_weapon(TRUE) && reload_weapon())
+		return
 	var/obj/item/weapon = ready_weapon(suppress)
 	if(istype(weapon, /obj/item/gun))
 		if(safe_shot(target))
@@ -469,12 +505,20 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				ready_weapon()
 				brain.PawnClick(target, TRUE)
 		if("Deliver")
-			if(brain.approach(target, 1))
-				var/obj/item/item = cargo?.resolve()
-				if(item && (item in held_items) && dropItemToGround(item))
-					cargo = null
+			var/obj/item/item = cargo?.resolve()
+			if(!item || !(item in held_items))
+				cargo = null
 				set_order("Guard", get_turf(src))
-				order_status = "Delivery finished"
+				order_status = "No carried item to deliver"
+				return
+			if(brain.approach(target, 0))
+				var/delivered = dropItemToGround(item)
+				if(delivered)
+					cargo = null
+					if(service_weapon?.resolve() == item)
+						service_weapon = null
+				set_order("Guard", get_turf(src))
+				order_status = delivered ? "Delivery finished" : "Cannot release cargo"
 
 /datum/ai_controller/ms13_squad
 	default_behavior = /datum/ai_behavior/ms13_squad
@@ -494,6 +538,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 /datum/ai_controller/ms13_squad/CancelActions()
 	. = ..()
 	stop_travel()
+	route_stairs = null
 	if(ai_status == AI_STATUS_ON)
 		PauseAi(2 SECONDS)
 

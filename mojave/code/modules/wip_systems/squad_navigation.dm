@@ -3,16 +3,30 @@
 	use_diagonals = FALSE
 	max_path_length = 60
 
+/// Validate both ends before walking to a staircase, including cached routes.
+/datum/ai_controller/ms13_squad/proc/stair_entry(obj/structure/stairs/stairs, ascending)
+	if(QDELETED(stairs) || !stairs.isTerminator())
+		return null
+	var/turf/bottom = get_turf(stairs)
+	var/turf/top = get_step_multiz(stairs, stairs.dir | UP)
+	var/turf/entry = ascending ? bottom : top
+	var/turf/exit = ascending ? top : bottom
+	var/turf/opening = GetAbove(stairs)
+	if(entry?.z != pawn.z || !exit || !opening?.CanZPass(pawn, ascending ? UP : DOWN, ZMOVE_STAIRS_FLAGS) || exit.is_blocked_turf(exclude_mobs = TRUE, source_atom = pawn))
+		return null
+	if(!ascending && !bottom.CanZPass(pawn, DOWN, ZMOVE_STAIRS_FLAGS))
+		return null
+	return entry
+
 /datum/ai_controller/ms13_squad/proc/approach_stairs(atom/target)
 	var/mob/living/carbon/human/ms13_squad/unit = pawn
 	if(unit.buckled)
 		stop_travel()
 		return FALSE
 	var/ascending = target.z > unit.z
-	var/turf/entry
-	if(!QDELETED(route_stairs))
-		entry = ascending ? get_turf(route_stairs) : get_step_multiz(route_stairs, route_stairs.dir | UP)
-	if(entry?.z != unit.z)
+	var/turf/entry = stair_entry(route_stairs, ascending)
+	if(!entry)
+		stop_travel()
 		route_stairs = null
 	if(!route_stairs)
 		if(world.time < next_stair_search)
@@ -20,15 +34,12 @@
 		next_stair_search = world.time + 3 SECONDS
 		var/list/options = list()
 		for(var/obj/structure/stairs/stairs as anything in INSTANCES_OF(/obj/structure/stairs))
-			if(!stairs.isTerminator())
-				continue
-			var/turf/top = get_step_multiz(stairs, stairs.dir | UP)
-			entry = ascending ? get_turf(stairs) : top
-			if(!top || entry.z != unit.z || get_dist(unit, entry) > 30)
+			entry = stair_entry(stairs, ascending)
+			if(!entry || get_dist(unit, entry) > 30)
 				continue
 			options[stairs] = get_dist(unit, entry)
-		// ponytail: try three nearby stairs per search; a connector graph can replace this for large maps.
-		for(var/attempt in 1 to 3)
+		// ponytail: nearest-first scanning suits nearby stairs; use a connector graph for large networks.
+		while(length(options))
 			var/obj/structure/stairs/best
 			for(var/obj/structure/stairs/stairs as anything in options)
 				if(!best || options[stairs] < options[best])
@@ -39,8 +50,10 @@
 			entry = ascending ? get_turf(best) : get_step_multiz(best, best.dir | UP)
 			var/serial = unit.order_serial
 			var/list/path = astar_path_to(unit, entry, max_steps = 60, mintargetdist = 0, access = get_access(), use_diagonals = FALSE)
-			if(QDELETED(unit) || unit.order_serial != serial)
+			if(QDELETED(unit) || QDELETED(target) || unit.order_serial != serial)
 				return FALSE
+			if(entry != stair_entry(best, ascending))
+				continue
 			if(get_turf(unit) == entry || length(path))
 				route_stairs = best
 				break
