@@ -6,6 +6,22 @@
 	use_diagonals = FALSE
 	max_path_length = 60
 
+/// Pick an accessible working tile; a dense target cannot itself be a walking destination.
+/datum/ai_controller/ms13_squad/proc/interaction_position(atom/target)
+	var/turf/cached = current_movement_target
+	if(istype(cached) && !cached.density && cached.Adjacent(target, target, pawn))
+		return cached
+	var/turf/closest
+	var/best_length = 61
+	for(var/turf/tile as anything in RANGE_TURFS(1, target))
+		if(tile.density || !tile.Adjacent(target, target, pawn))
+			continue
+		var/list/path = SSpathfinder.astar_pathfind_now(pawn, tile, max_steps = best_length, mintargetdist = 0, access = get_access(), use_diagonals = FALSE)
+		if(length(path) && length(path) < best_length)
+			closest = tile
+			best_length = length(path)
+	return closest
+
 /// Validate both ends before walking to a staircase, including cached routes.
 /datum/ai_controller/ms13_squad/proc/stair_entry(obj/structure/stairs/stairs, ascending)
 	if(QDELETED(stairs) || !stairs.isTerminator())

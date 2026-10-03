@@ -1,11 +1,3 @@
-/// Intercept only a real region crossing. Ordinary movement/ramming stays in the vehicle controller.
-/datum/ms13_ground_vehicle/do_move(direction, bypass_cooldown = FALSE)
-	if(!QDELETED(pivot) && SSmapping.ms13_surface_links["[pivot.z]"])
-		var/result = cross_surface_region(direction, bypass_cooldown)
-		if(!isnull(result))
-			return result
-	return ..()
-
 /// Null means an ordinary step, FALSE a blocked border, TRUE one successful whole-hull crossing.
 /datum/ms13_ground_vehicle/proc/cross_surface_region(direction, bypass_cooldown)
 	var/list/bounds = SSmapping.ms13_surface_bounds

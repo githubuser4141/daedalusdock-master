@@ -131,6 +131,8 @@
 /mob/living/carbon/human/ms13_squad/proc/issue_order(mob/living/user, new_order, atom/target, mob/living/carbon/human/ms13_squad/selected, obj/machinery/ms13/terminal/terminal)
 	if(new_order == "Break")
 		new_order = "Destroy"
+	if(new_order == "Attack" && !isliving(target) && ms13_demolition_target(target, TRUE))
+		new_order = "Breach"
 	if(!can_command(user, terminal) || !(new_order in GLOB.ms13_squad_orders))
 		return FALSE
 	var/list/units = members()
@@ -159,7 +161,7 @@
 					return FALSE
 			if("Destroy", "Breach")
 				if(!ms13_demolition_target(target, new_order == "Breach"))
-					to_chat(user, span_warning(new_order == "Breach" ? "Breach a destructible wall or anchored structure/machine." : "Destroy a destructible structure or machine."))
+					to_chat(user, span_warning("Select a destructible wall, structure or machine."))
 					return FALSE
 			if("Pick up")
 				if(!isitem(target) || !isturf(target.loc))
@@ -188,15 +190,15 @@
 			continue
 		if(new_order == "Follow" && unit == target)
 			continue
-		if(new_order == "Breach" && !unit.carried_breach_charge())
+		if(new_order == "Breach" && unit.breach_mode == "Explosives" && !unit.carried_breach_charge())
 			continue
 		unit.set_order(new_order, target, direction)
 		issued = TRUE
 		if(new_order == "Breach")
-			to_chat(user, span_notice("[unit] assigned to breach [target]. Squadmates will clear the charge; keep yourself clear too."))
+			to_chat(user, span_notice("[unit] assigned to breach [target] ([unit.breach_mode]). Explosive planting waits for friendlies to clear."))
 			break
 	if(!issued && new_order == "Breach")
-		to_chat(user, span_warning("No available selected recruit has a usable C4, X4 or shaped charge in their hands or backpack."))
+		to_chat(user, span_warning("No selected recruit is available with supplies for that breach method."))
 	return issued
 
 /mob/living/carbon/human/ms13_squad/proc/issue_fire_mode(mob/living/user, new_mode, mob/living/carbon/human/ms13_squad/selected, obj/machinery/ms13/terminal/terminal)
@@ -213,6 +215,21 @@
 			continue
 		unit.fire_mode = new_mode
 		unit.reset_aim()
+		issued = TRUE
+	return issued
+
+/mob/living/carbon/human/ms13_squad/proc/issue_breach_mode(mob/living/user, new_mode, mob/living/carbon/human/ms13_squad/selected, obj/machinery/ms13/terminal/terminal)
+	if(!can_command(user, terminal) || !(new_mode in GLOB.ms13_squad_breach_modes))
+		return FALSE
+	var/list/units = members()
+	if(selected && !(selected in units))
+		return FALSE
+	var/issued = FALSE
+	for(var/mob/living/carbon/human/ms13_squad/unit as anything in (selected ? list(selected) : units))
+		if(unit.client || unit.stat != CONSCIOUS || unit.z != z || get_dist(src, unit) > 30)
+			continue
+		unit.clear_breach()
+		unit.breach_mode = new_mode
 		issued = TRUE
 	return issued
 
@@ -251,7 +268,8 @@
 		return
 	var/obj/machinery/ms13/terminal/terminal = terminal_ref?.resolve()
 	if(terminal)
-		terminal.mode = 5
+		if(!(terminal.mode in list(7, 8)))
+			terminal.mode = 5
 		terminal.ui_interact(owner)
 		return
 	ui_interact(owner)
@@ -272,13 +290,13 @@
 	var/mob/living/carbon/human/ms13_squad/selected = selected_ref?.resolve()
 	var/list/roster = list()
 	for(var/mob/living/carbon/human/ms13_squad/unit as anything in leader.members())
-		roster += list(list("ref" = REF(unit), "name" = unit.name, "position" = "[unit.x], [unit.y], [unit.z]", "order" = unit.squad_order, "status" = unit.order_status, "fireMode" = unit.fire_mode, "ready" = unit.stat == CONSCIOUS && !unit.client))
-	return list("squad" = leader.squad_id, "units" = roster, "selected" = selected ? REF(selected) : "all", "orders" = GLOB.ms13_squad_orders, "fireModes" = list("Careful", "Precise", "Rapid"), "pending" = pending_order, "designating" = owner.click_intercept == src, "terminal" = !!terminal_ref)
+		roster += list(list("ref" = REF(unit), "name" = unit.name, "position" = "[unit.x], [unit.y], [unit.z]", "order" = unit.squad_order, "status" = unit.order_status, "fireMode" = unit.fire_mode, "breachMode" = unit.breach_mode, "ready" = unit.stat == CONSCIOUS && !unit.client))
+	return list("squad" = leader.squad_id, "units" = roster, "selected" = selected ? REF(selected) : "all", "orders" = GLOB.ms13_squad_orders, "fireModes" = list("Careful", "Precise", "Rapid"), "breachModes" = GLOB.ms13_squad_breach_modes, "pending" = pending_order, "designating" = owner.click_intercept == src, "terminal" = !!terminal_ref)
 
 /datum/action/cooldown/ms13_squad_command/ui_act(action, list/params)
 	if(..() || usr != owner || !IsAvailable())
 		return
-	if(action in list("unit", "order", "fire_mode", "release", "cancel", "coordinates"))
+	if(action in list("unit", "order", "fire_mode", "breach_mode", "release", "cancel", "coordinates"))
 		var/list/command = list()
 		command[action] = params["value"] || "1"
 		Topic(null, command)
@@ -337,6 +355,12 @@
 			return
 		var/success = leader.issue_fire_mode(owner, href_list["fire_mode"], selected, terminal_ref?.resolve())
 		to_chat(owner, success ? span_notice("Fire mode updated.") : span_warning("Fire mode rejected."))
+	if(href_list["breach_mode"])
+		var/mob/living/carbon/human/ms13_squad/selected = selected_ref?.resolve()
+		if(selected_ref && !selected)
+			return
+		var/success = leader.issue_breach_mode(owner, href_list["breach_mode"], selected, terminal_ref?.resolve())
+		to_chat(owner, success ? span_notice("Breach method updated.") : span_warning("Breach method rejected."))
 	if(href_list["order"] in GLOB.ms13_squad_orders)
 		pending_order = href_list["order"]
 		if((pending_order in list("Use", "Pick up", "Deliver", "Sit")) && !selected_ref?.resolve())
@@ -365,14 +389,14 @@
 		Activate(locate(round(target_x), round(target_y), leader.z))
 	show_panel()
 
-/datum/action/cooldown/ms13_squad_command/Activate(atom/target)
+/datum/action/cooldown/ms13_squad_command/Activate(atom/target, obj/machinery/ms13/terminal/camera_terminal)
 	if(!IsAvailable())
 		return FALSE
 	var/mob/living/carbon/human/ms13_squad/leader = leader_ref.resolve()
 	var/mob/living/carbon/human/ms13_squad/unit = selected_ref?.resolve()
 	if(selected_ref && !unit)
 		return FALSE
-	var/success = leader.issue_order(owner, pending_order, target, unit, terminal_ref?.resolve())
+	var/success = leader.issue_order(owner, pending_order, target, unit, camera_terminal || terminal_ref?.resolve())
 	to_chat(owner, success ? span_notice("Order acknowledged.") : span_warning("Order rejected. Check the target, range and selected unit."))
 	return success
 

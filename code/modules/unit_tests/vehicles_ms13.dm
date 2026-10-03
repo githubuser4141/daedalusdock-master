@@ -266,10 +266,7 @@
 	vehicle.exterior_lights_on = TRUE
 	vehicle.update_electrical()
 	TEST_ASSERT(light.is_enabled() && light.light_on && light.light_outer_range > 0 && light.light_power == 1, "Exterior lighting switch did not illuminate lamps.")
-	var/datum/component/overlay_lighting/beam = light.GetComponent(/datum/component/overlay_lighting)
-	for(var/facing in list(turn(light.dir, 90), turn(light.dir, 180), light.dir))
-		light.setDir(facing)
-		TEST_ASSERT(beam?.directional && beam.current_direction == facing, "Exterior lamp did not cast its beam the way it faces.")
+	TEST_ASSERT(light.light?.directional, "Exterior lamp did not create an occluded forward beam.")
 	var/turf/camera_turf = get_turf(camera)
 	var/turf/outside = get_step(camera, camera.dir)
 	TEST_ASSERT(vehicle.blocks_sight_from(camera_turf, outside), "Camera created a physical window for passengers/NPCs.")

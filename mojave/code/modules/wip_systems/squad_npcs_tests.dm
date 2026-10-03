@@ -268,13 +268,16 @@
 /datum/unit_test/ms13_squad_faction_presets/Run()
 	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, get_step(site, SOUTH))
-	for(var/unit_type in list(/mob/living/carbon/human/ms13_squad/bos, /mob/living/carbon/human/ms13_squad/vault, /mob/living/carbon/human/ms13_squad/ncr, /mob/living/carbon/human/ms13_squad/legion))
+	for(var/unit_type in list(/mob/living/carbon/human/ms13_squad/bos, /mob/living/carbon/human/ms13_squad/bos/rifleman, /mob/living/carbon/human/ms13_squad/vault, /mob/living/carbon/human/ms13_squad/ncr, /mob/living/carbon/human/ms13_squad/legion))
 		var/mob/living/carbon/human/ms13_squad/unit = allocate(unit_type, site)
 		unit.ai_controller.set_ai_status(AI_STATUS_OFF)
 		unit.see_in_dark = 8
 		SQUAD_ASSERT(unit.w_uniform && unit.wear_suit && unit.head && unit.gloves && unit.shoes && unit.back, "[unit_type] failed to equip its faction clothing")
 		SQUAD_ASSERT(locate(/obj/item/flashlight/ms13) in unit.contents, "[unit_type] lost its flashlight")
 		SQUAD_ASSERT(locate(/obj/item/knife/ms13/combat) in unit.contents, "[unit_type] lost its backup knife")
+		if(istype(unit, /mob/living/carbon/human/ms13_squad/bos))
+			var/obj/item/ms13/bodycam/camera = locate() in unit.head
+			SQUAD_ASSERT(camera?.mounted_on == unit.head && camera.feed.can_use(), "[unit_type] did not spawn with a working helmet camera")
 		var/obj/item/gun/ballistic/gun = unit.ready_weapon(TRUE)
 		SQUAD_ASSERT(gun?.can_fire() && gun.get_ammo(), "[unit_type] spawned without a usable loaded firearm")
 		var/spares = 0
@@ -411,11 +414,30 @@
 	terminal.set_machine_stat(NOPOWER)
 	SQUAD_ASSERT_EQUAL(viewer.ui_status(user), UI_CLOSE, "Bodycam UI stayed open without terminal power")
 
+/datum/unit_test/ms13_squad_camera_coordinates/Run()
+	var/atom/movable/screen/map_view/byondui/camera/map = allocate(/atom/movable/screen/map_view/byondui/camera)
+	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/end = locate(origin.x + 2, origin.y + 2, origin.z)
+	map.vis_contents = block(origin, end)
+	SQUAD_ASSERT_EQUAL(map.ms13_clicked_turf("1:16,1:16"), origin, "Camera clicks did not resolve the bottom-left visible tile")
+	SQUAD_ASSERT_EQUAL(map.ms13_clicked_turf("3:2,3:31"), end, "Camera clicks did not resolve the top-right visible tile")
+	SQUAD_ASSERT(!map.ms13_clicked_turf("4:1,3:1") && !map.ms13_clicked_turf("0:1,1:1"), "Camera accepted clicks outside its visible bounds")
+	var/turf/hidden = get_step(origin, NORTHEAST)
+	map.vis_contents -= hidden
+	SQUAD_ASSERT(!map.ms13_clicked_turf("2:16,2:16"), "Camera accepted a tile hidden by an obstacle")
+	map.vis_contents = null
+	SQUAD_ASSERT(!map.ms13_clicked_turf("1:16,1:16"), "Offline camera resolved a world target")
+
 /datum/unit_test/ms13_bodycam_npc_attachment/Run()
 	var/turf/site = run_loc_floor_bottom_left
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, site)
 	var/mob/living/carbon/human/ms13_squad/bos/unit = allocate(/mob/living/carbon/human/ms13_squad/bos, get_step(site, NORTH))
 	unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+	var/obj/item/ms13/bodycam/default_camera = locate() in unit.head
+	SQUAD_ASSERT(default_camera?.feed.can_use(), "BoS default camera was not transmitting")
+	default_camera.remove_from_clothing(unit.head, user)
+	SQUAD_ASSERT(default_camera in user.held_items, "Default camera could not be removed for terminal pairing")
+	qdel(default_camera)
 	var/obj/item/ms13/bodycam/camera = allocate(/obj/item/ms13/bodycam, site)
 	user.put_in_hands(camera)
 	var/list/mounts = list(
@@ -542,6 +564,215 @@
 	occupant = locate() in get_step(remote, NORTH)
 	SQUAD_ASSERT(remote.released && occupant, "Terminal hyperlink failed to release a nearby unconfigured pod")
 	allocated += occupant
+
+/datum/unit_test/ms13_squad_destroy/Run()
+	var/turf/site = get_step(run_loc_floor_bottom_left, NORTHEAST)
+	var/mob/living/carbon/human/ms13_squad/bos/rifleman/unit = allocate(/mob/living/carbon/human/ms13_squad/bos/rifleman, site)
+	unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, site)
+	SQUAD_ASSERT(unit.recruit(user), "Could not recruit demolition test unit")
+	var/obj/structure/closet/crate/target = allocate(/obj/structure/closet/crate, get_step(site, EAST))
+	var/obj/item/wrench/tool = allocate(/obj/item/wrench, unit.back)
+	tool.force = 30
+	target.damage_deflection = 25
+	target.update_integrity(60)
+	var/obj/item/gun/ballistic/gun = unit.ready_weapon(TRUE)
+	var/ammo = gun.get_ammo()
+	SQUAD_ASSERT(!unit.issue_order(user, "Destroy", user), "Destroy accepted a living target")
+	SQUAD_ASSERT(!unit.issue_order(user, "Destroy", tool), "Destroy accepted carried gear")
+	target.resistance_flags |= INDESTRUCTIBLE
+	SQUAD_ASSERT(!unit.issue_order(user, "Destroy", target), "Destroy accepted an indestructible target")
+	target.resistance_flags &= ~INDESTRUCTIBLE
+	SQUAD_ASSERT(unit.issue_order(user, "Destroy", target), "Whole-squad Destroy rejected a crate")
+	var/deadline = world.time + 10 SECONDS
+	while(!QDELETED(target) && world.time < deadline)
+		unit.act_on_order()
+		sleep(0.25 SECONDS)
+	SQUAD_ASSERT(QDELETED(target), "Destroy did not finish using a stronger tool from the backpack: [unit.order_status]")
+	SQUAD_ASSERT_EQUAL(gun.get_ammo(), ammo, "Destroy fired the gun instead of using a tool")
+	SQUAD_ASSERT_EQUAL(unit.squad_order, "Guard", "Completed destruction did not release the order")
+	var/obj/machinery/button/ms13_squad_test/button = allocate(/obj/machinery/button/ms13_squad_test, get_step(site, NORTH))
+	SQUAD_ASSERT(unit.issue_order(user, "Destroy", button), "Destroy still rejects machinery")
+	var/obj/item/grenade/c4/charge = allocate(/obj/item/grenade/c4, unit.back)
+	SQUAD_ASSERT(!unit.issue_order(user, "Breach", user), "Breach accepted a living target")
+	SQUAD_ASSERT(!charge.active, "Object validation armed a charge")
+
+/datum/unit_test/ms13_squad_breach_cancel/Run()
+	var/turf/site = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/ms13_squad/unit = allocate(/mob/living/carbon/human/ms13_squad, site)
+	unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+	unit.breach_mode = "Explosives"
+	var/obj/structure/closet/crate/target = allocate(/obj/structure/closet/crate, get_step(site, EAST))
+	target.anchored = TRUE
+	var/obj/item/grenade/c4/charge = allocate(/obj/item/grenade/c4, site)
+	unit.put_in_hands(charge)
+	unit.set_order("Breach", target)
+	INVOKE_ASYNC(unit, TYPE_PROC_REF(/mob/living/carbon/human/ms13_squad, act_on_order))
+	sleep(1 SECONDS)
+	SQUAD_ASSERT(unit.acting && unit.order_status == "Planting charge", "Breach did not reach timed planting: [unit.order_status]")
+	unit.set_order("Hold")
+	var/deadline = world.time + 5 SECONDS
+	while(unit.acting && world.time < deadline)
+		sleep(world.tick_lag)
+	SQUAD_ASSERT(!unit.acting && !charge.active && (charge in unit.held_items), "Cancelling while planting consumed or armed the charge")
+	SQUAD_ASSERT(!(charge in GLOB.ms13_squad_charges), "Cancelled planting left a hazard registered")
+	var/list/blockers = list()
+	for(var/direction in GLOB.cardinals)
+		blockers += allocate(/obj/structure/closet/crate, get_step(site, direction))
+	unit.set_order("Breach", target)
+	unit.act_on_order()
+	SQUAD_ASSERT(!charge.active && unit.order_status == "No safe retreat route; charge not armed", "Trapped unit armed a charge: [unit.order_status]")
+	for(var/obj/blocker as anything in blockers)
+		qdel(blocker)
+	// The same supplies and order must recover once the route opens.
+	INVOKE_ASYNC(unit, TYPE_PROC_REF(/mob/living/carbon/human/ms13_squad, act_on_order))
+	sleep(1 SECONDS)
+	SQUAD_ASSERT(unit.order_status == "Planting charge", "Breach failed to recover after clearing the escape route: [unit.order_status]")
+	unit.set_order("Hold")
+	while(unit.acting)
+		sleep(world.tick_lag)
+	SQUAD_ASSERT(!charge.active, "Second cancellation failed")
+
+/datum/unit_test/ms13_squad_breach_live/Run()
+	var/test_z = run_loc_floor_bottom_left.z
+	var/area/test_area = get_area(run_loc_floor_bottom_left)
+	for(var/turf/tile in block(locate(8, 8, test_z), locate(22, 22, test_z)))
+		tile = tile.ChangeTurf(/turf/open/floor/plating)
+		tile.change_area(tile.loc, test_area)
+	var/turf/site = locate(15, 15, test_z)
+	var/mob/living/carbon/human/ms13_squad/unit = allocate(/mob/living/carbon/human/ms13_squad, site)
+	unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+	unit.breach_mode = "Explosives"
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, site)
+	SQUAD_ASSERT(unit.recruit(user), "Could not claim breaching unit")
+	var/mob/living/carbon/human/ms13_squad/helper = allocate(/mob/living/carbon/human/ms13_squad, get_step(site, NORTH))
+	helper.squad_id = unit.squad_id
+	helper.set_order("Guard", get_turf(helper))
+	var/obj/structure/closet/crate/target = allocate(/obj/structure/closet/crate, get_step(site, EAST))
+	target.anchored = TRUE
+	var/obj/item/grenade/c4/charge = allocate(/obj/item/grenade/c4, site)
+	unit.put_in_hands(charge)
+	var/obj/item/grenade/c4/spare = allocate(/obj/item/grenade/c4, get_turf(helper))
+	helper.put_in_hands(spare)
+	SQUAD_ASSERT(unit.issue_order(user, "Breach", target), "Whole-squad Breach rejected a supplied unit")
+	SQUAD_ASSERT_EQUAL(helper.squad_order, "Guard", "Whole-squad Breach assigned multiple planters")
+	unit.act_on_order()
+	SQUAD_ASSERT(!charge.active && findtext(unit.order_status, "Waiting for friendlies"), "Breach armed before its commander was clear: [unit.order_status]")
+	unit.stat = UNCONSCIOUS
+	helper.avoid_breaches()
+	SQUAD_ASSERT(!(charge in GLOB.ms13_squad_charges), "Incapacitated planter kept a stale hazard")
+	unit.stat = CONSCIOUS
+	unit.act_on_order()
+	SQUAD_ASSERT(charge in GLOB.ms13_squad_charges, "Recovered planter did not announce its breach again")
+	var/turf/escape = unit.blast_escape
+	SQUAD_ASSERT(escape && get_dist(escape, target) > charge.ms13_breach_radius, "Breach selected an unsafe retreat tile")
+	user.forceMove(escape)
+	var/deadline = world.time + 20 SECONDS
+	while(get_dist(helper, target) <= charge.ms13_breach_radius && world.time < deadline)
+		sleep(0.5 SECONDS)
+	SQUAD_ASSERT(get_dist(helper, target) > charge.ms13_breach_radius, "Nearby squadmate did not clear the planned blast: [helper.order_status], at [helper.x],[helper.y], retreat [helper.blast_escape?.x],[helper.blast_escape?.y]")
+	SQUAD_ASSERT_EQUAL(get_turf(user), escape, "Retreating squadmate displaced the commander back into danger")
+	SQUAD_ASSERT(!unit.issue_order(user, "Breach", target, helper), "Accepted overlapping breaching charges")
+	deadline = world.time + 10 SECONDS
+	while(!charge.active && world.time < deadline)
+		unit.act_on_order()
+		sleep(0.25 SECONDS)
+	SQUAD_ASSERT(charge.active && charge.target == target && !(charge in unit.held_items), "Breach did not plant: [unit.order_status]; unit [unit.x],[unit.y] user [user.x],[user.y] helper [helper.x],[helper.y]; escape [unit.blast_escape?.x],[unit.blast_escape?.y]; charge held [charge.loc == unit], tracked [unit.breach_charge?.resolve() == charge], target [unit.order_target?.resolve() == target], conscious [unit.stat], fuse [charge.det_time], origin [charge.ms13_breach_origin?.x],[charge.ms13_breach_origin?.y]")
+	SQUAD_ASSERT(!spare.active, "Breach consumed another recruit's charge")
+	unit.set_order("Hold")
+	unit.ai_controller.set_ai_status(AI_STATUS_ON)
+	deadline = world.time + 10 SECONDS
+	while(get_dist(unit, target) <= charge.ms13_breach_radius && world.time < deadline)
+		sleep(0.5 SECONDS)
+	SQUAD_ASSERT(get_dist(unit, target) > charge.ms13_breach_radius, "Hold stranded the planter at a live charge: [unit.order_status], position [unit.x],[unit.y], escape [unit.blast_escape?.x],[unit.blast_escape?.y], gravity [unit.has_gravity()], move delay [unit.ai_controller.get_movement_delay()]")
+	var/old_integrity = target.get_integrity()
+	var/list/original_turfs = list()
+	for(var/turf/tile in RANGE_TURFS(charge.ms13_breach_radius, target))
+		original_turfs[tile] = tile.type
+	deadline = world.time + (charge.det_time + 5) SECONDS
+	while(!QDELETED(charge) && world.time < deadline)
+		sleep(0.5 SECONDS)
+	sleep(2 SECONDS)
+	SQUAD_ASSERT(QDELETED(charge), "Native charge fuse never detonated")
+	SQUAD_ASSERT(QDELETED(target) || target.get_integrity() < old_integrity, "Native explosion did not damage its breach target")
+	SQUAD_ASSERT(!(charge in GLOB.ms13_squad_charges), "Detonation leaked a hazard entry")
+	SQUAD_ASSERT(unit.stat == CONSCIOUS && helper.stat == CONSCIOUS, "Squadmates did not survive the planned clearance")
+	SQUAD_ASSERT_EQUAL(unit.squad_order, "Hold", "Detonation replaced a newer order")
+	for(var/turf/tile as anything in original_turfs)
+		if(tile.type != original_turfs[tile])
+			tile.ChangeTurf(original_turfs[tile])
+
+/datum/unit_test/ms13_squad_live_obstacles/Run()
+	var/test_z = run_loc_floor_bottom_left.z
+	var/area/test_area = get_area(run_loc_floor_bottom_left)
+	for(var/turf/tile in block(locate(20, 20, test_z), locate(32, 29, test_z)))
+		tile = tile.ChangeTurf(/turf/open/floor/plating)
+		tile.change_area(tile.loc, test_area)
+	var/turf/site = locate(25, 24, test_z)
+	var/mob/living/carbon/human/ms13_squad/unit = allocate(/mob/living/carbon/human/ms13_squad, site)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, site)
+	unit.see_in_dark = 8
+	user.see_in_dark = 8
+	SQUAD_ASSERT(unit.recruit(user), "Could not recruit live navigation test unit")
+	for(var/y in 22 to 26)
+		var/obj/structure/railing/ms13/sewer/rail = allocate(/obj/structure/railing/ms13/sewer, locate(24, y, test_z))
+		rail.setDir(EAST)
+	var/turf/destination = locate(23, 24, test_z)
+	SQUAD_ASSERT(unit.issue_order(user, "Move", destination), "Move rejected the visible tile across the guardrails")
+	var/deadline = world.time + 20 SECONDS
+	while(get_turf(unit) != destination && world.time < deadline)
+		unit.ai_controller.process(0.5)
+		sleep(0.5 SECONDS)
+	SQUAD_ASSERT_EQUAL(get_turf(unit), destination, "Live movement did not go around the guardrails: [unit.order_status], [unit.x],[unit.y]")
+	user.forceMove(site)
+	SQUAD_ASSERT(unit.issue_order(user, "Follow", user), "Follow rejected the commander")
+	deadline = world.time + 20 SECONDS
+	while(!user.IsReachableBy(unit, 2) && world.time < deadline)
+		unit.ai_controller.process(0.5)
+		sleep(0.5 SECONDS)
+	SQUAD_ASSERT(user.IsReachableBy(unit, 2), "Follow stopped within two tiles but across an impassable guardrail")
+	var/obj/structure/closet/crate/target = allocate(/obj/structure/closet/crate, locate(29, 24, test_z))
+	target.update_integrity(60)
+	SQUAD_ASSERT(unit.issue_order(user, "Destroy", target), "Destroy rejected a distant crate")
+	deadline = world.time + 25 SECONDS
+	while(!QDELETED(target) && world.time < deadline)
+		unit.ai_controller.process(0.5)
+		sleep(0.5 SECONDS)
+	SQUAD_ASSERT(QDELETED(target), "Destroy acknowledged but failed to approach and break the crate: [unit.order_status], [unit.x],[unit.y]")
+	var/turf/wall = locate(30, 24, test_z)
+	var/old_type = wall.type
+	wall = wall.ChangeTurf(/turf/closed/wall/ms13/wood)
+	wall.update_integrity(50)
+	SQUAD_ASSERT(unit.issue_breach_mode(user, "Melee"), "Melee breach preference was rejected")
+	SQUAD_ASSERT(unit.issue_order(user, "Attack", wall), "Attack rejected a destructible wall")
+	deadline = world.time + 20 SECONDS
+	while(isclosedturf(wall) && world.time < deadline)
+		unit.ai_controller.process(0.5)
+		sleep(0.5 SECONDS)
+	var/broken = !isclosedturf(wall)
+	wall.ChangeTurf(old_type)
+	SQUAD_ASSERT(broken, "Knife-equipped recruit did not breach the wall: [unit.order_status]")
+
+/datum/unit_test/ms13_squad_gun_breach/Run()
+	var/turf/site = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/ms13_squad/bos/rifleman/unit = allocate(/mob/living/carbon/human/ms13_squad/bos/rifleman, site)
+	unit.ai_controller.set_ai_status(AI_STATUS_OFF)
+	unit.see_in_dark = 8
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human, site)
+	user.see_in_dark = 8
+	SQUAD_ASSERT(unit.recruit(user), "Could not recruit gun breach test unit")
+	var/obj/structure/closet/crate/target = allocate(/obj/structure/closet/crate, locate(site.x + 3, site.y, site.z))
+	target.anchored = TRUE
+	var/obj/item/gun/ballistic/gun = unit.ready_weapon(TRUE)
+	var/ammo = gun.get_ammo()
+	var/integrity = target.get_integrity()
+	SQUAD_ASSERT(unit.issue_breach_mode(user, "Guns") && unit.issue_order(user, "Breach", target), "Gun breach was rejected")
+	var/deadline = world.time + 10 SECONDS
+	while(!QDELETED(target) && target.get_integrity() == integrity && world.time < deadline)
+		unit.act_on_order()
+		sleep(0.25 SECONDS)
+	SQUAD_ASSERT(gun.get_ammo() < ammo, "Gun breach never fired: [unit.order_status]")
+	SQUAD_ASSERT(QDELETED(target) || target.get_integrity() < integrity, "Gun breach fired but did not damage its target")
 
 #include "squad_polish_tests.dm"
 

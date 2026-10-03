@@ -18,6 +18,7 @@ TYPEINFO_DEF(/obj/structure/window/ms13_vehicle_wall)
 	icon = 'mojave/icons/objects/vehicles_ground/vehicleparts.dmi'
 	icon_state = "c_wall"
 	// Keep the exterior hull visible over the opaque roof shown to bystanders.
+	plane = GAME_PLANE
 	layer = ABOVE_ALL_MOB_LAYER + 0.01
 	max_integrity = 150
 	/// Below this share of integrity the wall is holed (see atom_break()); it is only destroyed at 0.

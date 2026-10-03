@@ -608,8 +608,16 @@ GLOBAL_LIST_EMPTY(ms13_vehicle_exterior_part_images)
 	// Resolve solid impacts before pushing mobs. A surviving obstacle still stops the vehicle.
 	if(speed && !ram_obstacles(direction, manifest))
 		return FALSE
-	if(!can_move(direction, TRUE, manifest) || !ram_living(direction, manifest) || !can_move(direction, FALSE, manifest))
+	if(!can_move(direction, TRUE, manifest) || !ram_living(direction, manifest) || QDELETED(pivot) || !can_move(direction, FALSE, manifest))
 		return FALSE
+	// Every route resolves the same entry collisions before moving the hull.
+	if(SSmapping.ms13_surface_links["[pivot.z]"])
+		var/region_result = cross_surface_region(direction, bypass_cooldown)
+		if(!isnull(region_result))
+			return region_result
+	var/incline_result = climb_incline(direction, bypass_cooldown)
+	if(!isnull(incline_result))
+		return incline_result
 	if(!bypass_cooldown)
 		next_move_time = world.time + gear_delay(max(speed, 1))
 	// Hull and riders glide each tile together, over the time until the next one; mismatched glides judder.

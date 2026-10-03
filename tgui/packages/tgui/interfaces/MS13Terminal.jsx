@@ -5,11 +5,11 @@ import {
   Box,
   Button,
   ByondUi,
+  Dropdown,
   Flex,
   Input,
   NoticeBox,
   Section,
-  Tabs,
 } from '../components';
 import { Window } from '../layouts';
 import { sanitizeText } from '../sanitize';
@@ -19,15 +19,21 @@ export const MS13Terminal = () => {
   const { data, act } = useBackend();
   const [search, setSearch] = useLocalState('recipes', '');
   const legacy = (choice, params = {}) => act('legacy', { choice, ...params });
-  const pages = [
-    [0, 'Home'],
-    [5, 'Squad'],
-    [6, 'Cryopods'],
-    [7, 'Bodycams'],
-    [4, 'Workshop'],
-    [3, 'Utilities'],
-  ];
-  if (data.security) pages.push([8, 'Cameras']);
+  const page = (mode) => act('page', { mode: String(mode) });
+  const cameraPage = data.mode === 7 || data.mode === 8;
+  const command = (command, params = {}) =>
+    act('command', { command, ...params });
+  const titles = {
+    0: `${data.terminalTag} Terminal ${data.terminalNumber}`,
+    1: 'RobCo Word Processor V.22',
+    2: data.title || 'Untitled entry',
+    3: 'RobCo Utili-Dock V.5',
+    4: 'RobCo Workshop',
+    5: 'Squad command',
+    6: 'Cryopod control',
+    7: 'Body cameras',
+    8: 'Security cameras',
+  };
   const systems = {
     ROBCO50: [
       'ROBCO INDUSTRIES UNIFIED OPERATING SYSTEM V.5.0',
@@ -65,100 +71,80 @@ export const MS13Terminal = () => {
         <Box className="MS13Terminal__header">
           <Box bold>{heading[0]}</Box>
           <Box>{heading[1]}</Box>
-          <Box>{`= ${data.terminalTag} Terminal ${data.terminalNumber} =`}</Box>
+          <Box>{`= ${titles[data.mode]} =`}</Box>
         </Box>
-        <Tabs>
-          {pages.map(([mode, title]) => (
-            <Tabs.Tab
-              key={mode}
-              selected={data.mode === mode}
-              onClick={() => act('page', { mode: String(mode) })}
-            >
-              &gt; {title}
-            </Tabs.Tab>
-          ))}
-        </Tabs>
-        <Box className="MS13Terminal__page">
+        <Box
+          className={`MS13Terminal__page${cameraPage ? ' MS13Terminal__page--camera' : ''}`}
+        >
           {data.mode === 0 && (
-            <Section
-              title="Documents"
-              buttons={
-                data.notekeeper && (
-                  <Button icon="pen" onClick={() => act('page', { mode: '1' })}>
-                    Write entry
+            <>
+              <Box>TERMINAL FUNCTIONS</Box>
+              <Box className="MS13Terminal__menu">
+                {!!data.notekeeper && (
+                  <Button onClick={() => page(1)}>&gt; Word Processor</Button>
+                )}
+                {!!data.remote && (
+                  <Button onClick={() => page(3)}>&gt; Utili-Dock</Button>
+                )}
+                <Button onClick={() => page(4)}>&gt; Workshop</Button>
+                <Button onClick={() => page(5)}>&gt; Squad command</Button>
+                <Button onClick={() => page(6)}>&gt; Cryopod control</Button>
+                <Button onClick={() => page(7)}>&gt; Body cameras</Button>
+              </Box>
+              <Box mt={2}>FILE SYSTEM</Box>
+              <Box className="MS13Terminal__menu">
+                {data.documents.map((doc) => (
+                  <Button key={doc.choice} onClick={() => legacy(doc.choice)}>
+                    &gt; {doc.title}
                   </Button>
-                )
-              }
-            >
-              {data.documents.map((doc) => (
-                <Button
-                  key={doc.choice}
-                  fluid
-                  icon="file-alt"
-                  onClick={() => legacy(doc.choice)}
-                >
-                  {doc.title}
-                </Button>
-              ))}
-              {!data.documents.length && (
-                <Box color="label">No documents stored.</Box>
-              )}
-              {!!data.riggedTitle && (
-                <Button fluid onClick={() => legacy('joker')}>
-                  {data.riggedTitle}
-                </Button>
-              )}
-            </Section>
+                ))}
+                {!data.documents.length && (
+                  <Box color="label">No documents stored.</Box>
+                )}
+                {!!data.riggedTitle && (
+                  <Button onClick={() => legacy('joker')}>
+                    &gt; {data.riggedTitle}
+                  </Button>
+                )}
+              </Box>
+            </>
           )}
           {(data.mode === 1 || data.mode === 2) && (
-            <Section
-              title={data.title || 'Untitled entry'}
-              buttons={
-                data.mode === 1 && (
-                  <>
-                    <Button onClick={() => legacy('Title')}>Title</Button>
-                    <Button onClick={() => legacy('Contents')}>Edit</Button>
-                    <Button icon="save" onClick={() => legacy('Save')}>
-                      Save
-                    </Button>
-                  </>
-                )
-              }
-            >
+            <>
+              {data.mode === 1 && (
+                <Box mb={1}>{data.title || 'Untitled entry'}</Box>
+              )}
               <Box
                 style={{ whiteSpace: 'pre-wrap' }}
                 dangerouslySetInnerHTML={{
                   __html: sanitizeText(data.content || ''),
                 }}
               />
-            </Section>
+            </>
           )}
           {data.mode === 3 && (
-            <Section title="Connected circuits">
+            <Box className="MS13Terminal__menu">
+              <Box>Network online. Select a linked circuit.</Box>
+              {!!data.security && (
+                <Button onClick={() => page(8)}>&gt; Security cameras</Button>
+              )}
               {data.signals.map((signal) => (
                 <Button
                   key={signal.choice}
-                  fluid
-                  icon="power-off"
                   onClick={() => legacy(signal.choice)}
                 >
-                  {signal.title}
+                  &gt; {signal.title}
                 </Button>
               ))}
               {!data.signals.length && (
                 <Box color="label">No mapped circuits.</Box>
               )}
-            </Section>
+            </Box>
           )}
           {data.mode === 5 && (
             <>
               {!!data.command && (
-                <SquadPanel
-                  data={data.command}
-                  act={(command, params = {}) =>
-                    act('command', { command, ...params })
-                  }
-                />
+                <SquadPanel data={data.command} act={command} />
               )}
               <Section title="Available personnel">
                 <Flex wrap="wrap">
@@ -218,48 +204,64 @@ export const MS13Terminal = () => {
               )}
             </Section>
           )}
-          {(data.mode === 7 || data.mode === 8) && data.camera && (
-            <Flex height="100%" className="MS13Terminal__camera">
-              <Flex.Item width="180px" mr={1} shrink={0}>
-                <Section title="Feeds" fill scrollable>
-                  {data.camera.cameras.map((camera) => (
-                    <Button
-                      key={camera.name}
-                      fluid
-                      icon="video"
-                      selected={data.camera.activeCamera?.name === camera.name}
-                      onClick={() =>
-                        act('switch_camera', { name: camera.name })
-                      }
-                    >
-                      {camera.name}
-                    </Button>
-                  ))}
-                  {!data.camera.cameras.length && (
-                    <Box color="label">
-                      No cameras paired. Tap a held bodycam on this terminal,
-                      then attach it to clothing.
-                    </Box>
-                  )}
-                </Section>
-              </Flex.Item>
-              <Flex.Item grow style={{ minWidth: 0 }}>
-                <Section
-                  title={
-                    data.camera.activeCamera
-                      ? `${data.camera.activeCamera.name}${data.camera.online ? '' : ' — Offline'}`
-                      : 'Select a camera'
-                  }
-                  fill
-                >
+          {cameraPage && data.camera && (
+            <Box className="MS13Terminal__camera">
+              <Box mb={1}>
+                Feed:{' '}
+                <Dropdown
+                  width="240px"
+                  options={data.camera.cameras.map((camera) => camera.name)}
+                  selected={data.camera.activeCamera?.name}
+                  placeholder="Select a camera"
+                  onSelected={(name) => act('switch_camera', { name })}
+                />{' '}
+                {data.camera.online ? 'ONLINE' : 'NO SIGNAL'}
+              </Box>
+              <Flex grow className="MS13Terminal__cameraBody">
+                <Flex.Item grow className="MS13Terminal__feed">
                   <ByondUi
+                    className="MS13Terminal__map"
                     key={data.camera.mapRef}
                     style={{ width: '100%', height: '100%' }}
                     params={{ id: data.camera.mapRef, type: 'map' }}
                   />
-                </Section>
-              </Flex.Item>
-            </Flex>
+                </Flex.Item>
+                <Flex.Item
+                  width="340px"
+                  ml={1}
+                  shrink={0}
+                  className="MS13Terminal__command"
+                >
+                  {data.command ? (
+                    <SquadPanel data={data.command} act={command} />
+                  ) : (
+                    <>
+                      <Box mb={1}>SQUAD COMMAND</Box>
+                      <Box mb={1}>
+                        Take command of linked personnel to issue orders through
+                        this feed.
+                      </Box>
+                      {data.recruits.map((unit) => (
+                        <Button
+                          key={unit.ref}
+                          fluid
+                          onClick={() => legacy('squad', { recruit: unit.ref })}
+                        >
+                          &gt; {unit.name}
+                        </Button>
+                      ))}
+                      {!data.recruits.length && <Box>No linked personnel.</Box>}
+                    </>
+                  )}
+                  {!data.camera.cameras.length && (
+                    <Box mt={2}>
+                      Tap a held bodycam on this terminal, then attach it to
+                      clothing.
+                    </Box>
+                  )}
+                </Flex.Item>
+              </Flex>
+            </Box>
           )}
           {data.mode === 4 && (
             <>
@@ -371,6 +373,20 @@ export const MS13Terminal = () => {
             </>
           )}
         </Box>
+        {!!data.mode && (
+          <Box className="MS13Terminal__footer">
+            {data.mode === 1 && (
+              <>
+                <Button onClick={() => legacy('Title')}>&gt; Title</Button>
+                <Button onClick={() => legacy('Contents')}>
+                  &gt; Edit contents
+                </Button>
+                <Button onClick={() => legacy('Save')}>&gt; Save</Button>
+              </>
+            )}
+            <Button onClick={() => page(0)}>&gt; Return</Button>
+          </Box>
+        )}
       </Window.Content>
     </Window>
   );

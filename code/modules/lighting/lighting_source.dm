@@ -22,6 +22,8 @@
 	var/light_falloff_curve = LIGHTING_DEFAULT_FALLOFF_CURVE
 	/// The colour of the light, string, decomposed by parse_light_color()
 	var/light_color
+	/// MOJAVE EDIT: opt-in forward cone, using the same occlusion and corner bookkeeping.
+	var/directional = FALSE
 
 	// Variables for keeping track of the colour.
 	var/lum_r
@@ -151,6 +153,7 @@
 	var/_turf_y = lighting_source.pixel_turf.y; \
 	var/_range_divisor = max(1, lighting_source.light_outer_range - lighting_source.light_inner_range); \
 	var/_light_power = lighting_source.light_power; \
+	var/_light_direction = lighting_source.directional ? lighting_source.source_atom.dir : NONE; \
 	var/_applied_lum_r = lighting_source.applied_lum_r; \
 	var/_applied_lum_g = lighting_source.applied_lum_g; \
 	var/_applied_lum_b = lighting_source.applied_lum_b; \
@@ -165,6 +168,13 @@
 
 #define APPLY_CORNER(C)                          \
 	. = LUM_FALLOFF(C);              \
+	if (_light_direction) { \
+		var/_dx = C.x - _turf_x; \
+		var/_dy = C.y - _turf_y; \
+		var/_ahead = _light_direction == NORTH ? _dy : _light_direction == SOUTH ? -_dy : _light_direction == EAST ? _dx : -_dx; \
+		var/_across = (_light_direction & (NORTH|SOUTH)) ? _dx : _dy; \
+		. *= CLAMP01((_ahead - abs(_across)) / 2); \
+	} \
 	. *= (_light_power ** 2);                \
 	. *= _light_power < 0 ? -1:1;            \
 	var/OLD = effect_str[C];                     \

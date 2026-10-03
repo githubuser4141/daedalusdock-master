@@ -16,7 +16,7 @@ shoes, a flashlight and a combat knife. They have no default firearm. Set
 to null for an unequipped recruit. A custom outfit can supply a gun in `r_hand`
 or `l_hand`, ammunition, armor or an access card.
 
-Five equipped mob subtypes are available under `/mob/living/carbon/human/ms13_squad`:
+Equipped mob subtypes are available under `/mob/living/carbon/human/ms13_squad`:
 
 | Subtype | Weapon | Default fire mode |
 | --- | --- | --- |
@@ -25,11 +25,15 @@ Five equipped mob subtypes are available under `/mob/living/carbon/human/ms13_sq
 | `marksman` | Marksman carbine, combat armor | Precise |
 | `support` | .45 SMG, combat armor | Rapid |
 | `guard` | Battle rifle, combat armor and helmet | Careful |
+| `bos` | Brotherhood initiate, 10mm pistol, helmet bodycam | Careful |
+| `bos/rifleman` | Brotherhood knight, service rifle, combat armor, helmet bodycam | Careful |
+| `vault` | Vault security, 10mm pistol | Careful |
+| `ncr` | NCR trooper, service rifle | Careful |
+| `legion` | Legion veteran, battle rifle | Careful |
 
 Each also carries two matching spare magazines in its backpack, plus the base
-clothes, flashlight and knife. Spare magazines are supplies for manual reloading;
-NPC automatic reloading is still not implemented. The corresponding
-`/datum/outfit/ms13_squad/<subtype>` can also be assigned to a leader's
+clothes, flashlight and knife. NPCs reload with their actual spare magazines,
+chamber rounds and clear jams. The corresponding outfit can also be assigned to a leader's
 `squad_outfit`. Default recruits and leaders still spawn without guns.
 
 ## Taking command
@@ -50,24 +54,41 @@ disconnecting returns it to the normal AI lifecycle.
 
 | Order | Target and result |
 | --- | --- |
-| Move / Guard | Walk to within one tile, then hold that position. |
+| Move / Guard | Walk onto the selected tile, then guard that position. |
 | Follow | Follow the commander or another squad member at two tiles. |
 | Patrol | Shuttle between the recruit's starting position and the clicked location. |
-| Attack | Engage the selected living enemy, preferring a loaded gun to the knife. |
+| Attack | Engage a living enemy, or breach an obstacle using the selected breach method. |
 | Fire at area | Fire at locations within one tile of the designation, from the current position. |
 | Fire direction | Shoot along the direction from the leader to the designation, from each recruit's position. |
 | Hold | Stop movement and the previous order. Recruits still retaliate if attacked again. |
 | Use | Walk to and operate a button or door with an empty hand; ordinary access and power checks apply. |
 | Sit | Select one recruit and a vehicle seat: board through an unlocked door and buckle in. Hold keeps them seated; a movement order unbuckles them. |
-| Break | Attack a structure, including containers, through the normal damage path. |
+| Destroy | Approach a destructible wall, structure or machine and use the strongest effective carried melee tool. Uses normal damage and cooldowns, never explosives or gun ammunition. |
+| Breach | Clear an anchored structure, machine or closed turf using the recruit's breach method. |
 | Pick up | Collect a loose item with a free hand. This is how players supply loaded guns. |
-| Deliver | Carry the last picked-up item to within one tile of the destination and drop it. |
+| Deliver | Carry the last picked-up item onto the destination and drop it. |
 
-Use, Sit, Break, Pick up and Deliver require an individual selection to avoid several
+Use, Sit, Pick up and Deliver require an individual selection to avoid several
 recruits toggling or grabbing the same object. Order status is shown in the panel
-and on examine. Refresh the panel for current status. Failed interaction/movement
+and on examine. Destroy can use the whole squad; Breach automatically assigns
+one available recruit, or uses the selected recruit. Failed interaction/movement
 jobs time out after 45 seconds and return to guard; a new order can replace them
 at any time. Guard/follow/patrol retry navigation after temporary obstructions.
+
+Set **Auto**, **Melee**, **Guns** or **Explosives** for one recruit or the squad.
+Auto tries an effective melee tool first, then a loaded gun, then a carried charge.
+Explicit methods do not silently switch to another method. Ranged breaching uses
+real ammunition and the selected fire mode; ineffective tools report why work stopped.
+
+Supply charges through Pick up or the NPC's backpack. Breach never creates or
+replenishes explosives. The planter announces the clearance distance; nearby NPCs
+temporarily clear the danger zone, and planting waits for the commander and other
+friendlies to leave. Clearance includes X4's forward blast and a shaped charge's
+jet and fragments. No escape route means no arming. Planting can be interrupted
+by a new order or a friendly re-entering the blast area. Once planted, the real
+fuse continues (at least 20 seconds, increased for slower movement); changing
+orders cannot disarm it. Units retreat and wait before resuming their orders.
+The explosion uses normal damage, so a heavily protected target may survive.
 
 Recruits retaliate against weapon, hand, animal, projectile and thrown-item
 attacks. A conscious nearby NPC leader shares the attacker with nearby squad
@@ -93,7 +114,7 @@ also set `fire_mode` to `Careful`, `Precise` or `Rapid`.
   apply. A weapon's own burst setting is preserved.
 
 All modes retain the squadmate line check and use two hands when available.
-No mode grants extra damage or ammunition. NPCs use JPS pathfinding and their
+No mode grants extra damage or ammunition. NPCs use A* pathfinding and their
 actual ID access. They operate unlocked manual MS13 doors while travelling;
 locked or bolted MS13 doors are excluded from their route. Use can also operate
 an explicitly designated door. They do not pick locks or invent access rights.
@@ -121,13 +142,18 @@ Terminal passwords and the pod's normal access restrictions still apply.
 ## Body cameras
 
 `/obj/item/ms13/bodycam` pairs with a powered, accessible terminal when tapped
-against it while held. It can pair with multiple terminals. Tap a uniform, suit
-or helmet with the camera to clip it on; alt-right-click that clothing to remove
+against it while held. It can pair with multiple terminals. Click a person with
+the camera: head/eyes/mouth selects their helmet; other zones select covering
+armor, falling back to their uniform. Clothing can also be clicked directly.
+BoS presets start with a transmitting helmet camera. Alt-right-click its clothing to remove
 it. Use the camera in hand to toggle transmission. One camera fits per garment.
 
 Choose **Body cameras** on a paired terminal. Its camera window uses the existing
 embedded map panel, with a searchable feed list; the operator's main view is
-unchanged. Feeds update as wearers move or nearby doors change. Only a camera on
+unchanged. Squad controls stay beside the feed: select a recruit and an order,
+then click the feed to designate a visible tile or object. Field command can also
+designate through an open terminal feed. Leaving the terminal, losing power or
+losing the feed prevents remote orders. Feeds update as wearers move or nearby doors change. Only a camera on
 worn clothing transmits; removal, switching it off, destruction or EMP disables
 its feed. Pairings do not expose cameras to the ordinary security-camera network.
 
@@ -155,11 +181,10 @@ and the terminal's current z-level; arbitrary object references are not accepted
 - Gun engagement range is seven tiles. Area/directional fire holds position and
   waits for a loaded gun; it does not generate ammunition or send an unarmed
   recruit charging toward the designation.
-- Supply ready-to-fire guns. Automatic reloading, spare-magazine selection,
-  bolting, tactical cover, formations, inter-level travel and autonomous looting
-  are not implemented. Ordinary firearm restrictions still apply.
-- Recruits only ready guns and knives directly in their inventory; they do not
-  search inside backpacks. Full hands can prevent a button or pickup order.
+- Ballistic magazine-fed guns use matching carried magazines. Internal-magazine
+  loading, tactical cover selection, formations and autonomous looting remain WIP.
+- Recruits recover their own dropped gun and retrieve ammunition, demolition
+  tools and charges from carried storage. Full hands can prevent object work.
 - Patrol has two points. There is no route editor or task queue.
 - These are ordinary living humans, not invulnerable RTS units. There is no
   autonomous medical care, eating or sleeping schedule yet.
@@ -170,8 +195,10 @@ and the terminal's current z-level; arbitrary object references are not accepted
 
 The adjacent `squad_npcs_tests.dm` contains focused unit tests: authority and
 terminal recovery, real inventory/button/container interaction, real ammunition
-and friendly-fire checks, and live JPS movement/patrol/recovery. Enable UNIT_TESTS
+and friendly-fire checks, and live A* movement/patrol/recovery. Enable UNIT_TESTS
 in an isolated wrapper and focus `ms13_squad_authority`, `ms13_squad_inventory`,
 `ms13_squad_combat` and `ms13_squad_movement`. Expansion tests are
 `ms13_squad_fire_modes`, `ms13_squad_loadouts`, `ms13_squad_cryopods`,
-`ms13_squad_doors` and `ms13_bodycams`.
+`ms13_squad_doors` and `ms13_bodycams`. Demolition tests are
+`ms13_squad_destroy`, `ms13_squad_breach_cancel` and `ms13_squad_breach_live`;
+the last one waits for an actual native charge detonation after the units retreat.

@@ -216,3 +216,4 @@ code/game/objects/structures/ladders.dm,
 // code/modules/events/stray_cargo.dm
 // code/controllers/subsystem/movement/moveloop_jps.dm
 // code/controllers/subsystem/movement/moveloop_astar.dm
+// code/modules/lighting/lighting_source.dm

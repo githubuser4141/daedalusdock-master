@@ -32,6 +32,24 @@
     padding-top: 1rem;
   }
 
+  .MS13Terminal__menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .MS13Terminal__footer {
+    flex-shrink: 0;
+    margin-top: 1rem;
+    border-top: 1px dashed currentColor;
+    padding-top: 0.5rem;
+  }
+
+  .MS13Terminal__page--camera {
+    display: flex;
+    overflow: hidden;
+  }
+
   .Section,
   .Section__title,
   .NoticeBox,
@@ -74,16 +92,25 @@
     opacity: 0.4;
   }
   .MS13Terminal__camera {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
     min-height: 0;
   }
-  .MS13Terminal__camera .Section__rest {
+  .MS13Terminal__cameraBody {
+    flex: 1;
     min-height: 0;
   }
-  .MS13Terminal__camera .Section__content {
+  .MS13Terminal__feed {
+    position: relative;
+    min-width: 0;
+    background: #000;
+  }
+  .MS13Terminal__map {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+  }
+  .MS13Terminal__command {
+    overflow-y: auto;
   }
 }

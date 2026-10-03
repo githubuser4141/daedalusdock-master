@@ -6,6 +6,8 @@
 		bodycam_viewer = new(src)
 	if(!camera_viewer)
 		camera_viewer = new(src)
+	bodycam_viewer.cam_screen.master_ref = WEAKREF(src)
+	camera_viewer.cam_screen.master_ref = WEAKREF(src)
 	camera_viewer.network = camera_network ? list(lowertext(camera_network)) : list()
 
 /obj/machinery/ms13/terminal/proc/user_squad_action(mob/user)
@@ -35,6 +37,7 @@
 	data["title"] = mode == 1 ? title : loaded_title
 	data["content"] = mode == 1 ? note : loaded_content
 	data["notekeeper"] = prog_notekeeper
+	data["remote"] = remote_capability
 	data["riggedTitle"] = rigged ? chosen_joker : null
 	data["signals"] = list()
 	if(remote_capability)
@@ -90,6 +93,93 @@
 		data["camera"]["online"] = !!viewer.active_camera?.can_use()
 	return data
 
+/// Native map clicks include the control name, which ClickOn() otherwise discards.
+/client/Click(atom/object, atom/location, control, params)
+	var/datum/action/cooldown/ms13_squad_command/command = mob?.click_intercept
+	if(istype(command) && istext(control))
+		var/list/control_path = splittext(control, ".")
+		var/list/map_objects = screen_maps[control_path[length(control_path)]]
+		for(var/atom/movable/screen/map_view/byondui/camera/map in map_objects)
+			var/obj/machinery/ms13/terminal/terminal = map.master_ref?.resolve()
+			if(istype(terminal))
+				terminal.command_camera_click(mob, command, map, object, location, params)
+				return
+	return ..()
+
+/obj/machinery/ms13/terminal/proc/command_camera_click(mob/user, datum/action/cooldown/ms13_squad_command/command, atom/movable/screen/map_view/byondui/camera/map, atom/object, atom/location, params)
+	if(command.owner != user || user.click_intercept != command)
+		return
+	var/list/modifiers = params2list(params)
+	command.unset_click_ability(user)
+	if(modifiers[RIGHT_CLICK] || !camera_command_available(user, map))
+		return
+	var/atom/target = object
+	if(istype(target, /atom/movable/screen) || !(get_turf(target) in map.vis_contents))
+		target = (isturf(location) && (location in map.vis_contents)) ? location : map.ms13_clicked_turf(modifiers["screen-loc"])
+	if(!target)
+		return
+	var/requested_order = command.pending_order
+	var/datum/weakref/selected = command.selected_ref
+	if(isturf(target) && (requested_order in list("Attack", "Destroy", "Breach", "Use", "Sit", "Follow", "Pick up")))
+		var/list/candidates = list()
+		if(ms13_demolition_target(target, TRUE) && (requested_order in list("Attack", "Destroy", "Breach")))
+			candidates += target
+		for(var/atom/movable/thing in target)
+			if(thing.invisibility > user.see_invisible || !thing.mouse_opacity)
+				continue
+			switch(requested_order)
+				if("Attack", "Destroy", "Breach")
+					if(ms13_demolition_target(thing, requested_order != "Destroy") || (requested_order == "Attack" && isliving(thing)))
+						candidates += thing
+				if("Follow")
+					if(isliving(thing))
+						candidates += thing
+				if("Pick up")
+					if(isitem(thing) && !thing.anchored)
+						candidates += thing
+				if("Sit")
+					if(istype(thing, /obj/structure/chair/ms13_vehicle_seat))
+						candidates += thing
+				if("Use")
+					if(istype(thing, /obj/machinery/button) || istype(thing, /obj/machinery/door) || istype(thing, /obj/structure/mineral_door) || istype(thing, /obj/structure/window/ms13_vehicle_wall/solid/door))
+						candidates += thing
+		if(!length(candidates))
+			to_chat(user, span_warning("No suitable [lowertext(requested_order)] target on that camera tile."))
+			return
+		target = length(candidates) == 1 ? candidates[1] : tgui_input_list(user, "Select the target on this tile", requested_order, candidates)
+	if(QDELETED(command) || !target || command.pending_order != requested_order || command.selected_ref != selected || !camera_command_available(user, map))
+		return
+	// A door, wearer or camera may have moved while choosing a target.
+	var/obj/machinery/computer/security/viewer = mode == 7 ? bodycam_viewer : camera_viewer
+	viewer.last_camera_turf = null
+	viewer.update_active_camera_screen()
+	if(get_turf(target) in map.vis_contents)
+		command.Activate(target, src)
+
+/obj/machinery/ms13/terminal/proc/camera_command_available(mob/user, atom/movable/screen/map_view/byondui/camera/map)
+	if(!user.client || !(user.client.weak_reference in map.viewing_clients) || !terminal_available(user) || !(mode in list(7, 8)))
+		return FALSE
+	var/obj/machinery/computer/security/viewer = mode == 7 ? bodycam_viewer : camera_viewer
+	if(viewer?.cam_screen != map || !viewer.active_camera?.can_use())
+		return FALSE
+	var/list/cameras = viewer.get_available_cameras()
+	return cameras[viewer.active_camera.c_tag] == viewer.active_camera && (mode != 8 || (remote_capability && camera_network))
+
+/atom/movable/screen/map_view/byondui/camera/proc/ms13_clicked_turf(screen_position)
+	if(!length(vis_contents) || !istext(screen_position))
+		return null
+	var/list/axes = splittext(screen_position, ",")
+	if(length(axes) != 2)
+		return null
+	var/click_x = text2num(axes[1])
+	var/click_y = text2num(axes[2])
+	var/list/bounds = get_bbox_of_atoms(vis_contents)
+	if(click_x < 1 || click_y < 1 || click_x > bounds[3] - bounds[1] + 1 || click_y > bounds[4] - bounds[2] + 1)
+		return null
+	var/turf/origin = vis_contents[1]
+	var/turf/target = locate(bounds[1] + round(click_x) - 1, bounds[2] + round(click_y) - 1, origin.z)
+	return (target in vis_contents) ? target : null
+
 /obj/machinery/ms13/terminal/ui_act(action, list/params)
 	if(..() || !terminal_available(usr))
 		return
@@ -101,7 +191,7 @@
 			return
 		command.terminal_ref = WEAKREF(src)
 		var/key = params["command"]
-		if(!(key in list("unit", "order", "fire_mode", "release", "cancel", "coordinates")))
+		if(!(key in list("unit", "order", "fire_mode", "breach_mode", "release", "cancel", "coordinates")))
 			return
 		var/list/href = list()
 		href[key] = params["value"] || "1"

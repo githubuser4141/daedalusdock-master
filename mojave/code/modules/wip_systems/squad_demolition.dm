@@ -3,6 +3,7 @@
 
 // Charges own the hazard, so deleting their planter cannot make squadmates ignore it.
 GLOBAL_LIST_EMPTY(ms13_squad_charges)
+GLOBAL_LIST_INIT(ms13_squad_breach_modes, list("Auto", "Melee", "Guns", "Explosives"))
 
 /obj/item/grenade/c4
 	var/turf/ms13_breach_origin
@@ -16,6 +17,7 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 	return ..()
 
 /mob/living/carbon/human/ms13_squad
+	var/breach_mode = "Auto"
 	var/datum/weakref/breach_charge
 	var/turf/blast_escape
 	var/next_blast_escape = 0
@@ -25,25 +27,29 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 	blast_escape = null
 	return ..()
 
+// Never swap a friendly out of safety while clearing a charge.
+/mob/living/carbon/human/ms13_squad/MobBump(mob/other)
+	if(!client && (squad_friendly(other) || faction_check_atom(other)))
+		for(var/obj/item/grenade/c4/charge as anything in GLOB.ms13_squad_charges)
+			var/turf/origin = charge.ms13_breach_origin
+			if(origin?.z == z && get_dist(src, origin) <= charge.ms13_breach_radius && get_dist(other, origin) > charge.ms13_breach_radius)
+				next_blast_escape = 0
+				return TRUE
+	return ..()
+
 /proc/ms13_demolition_target(atom/target, explosive = FALSE)
 	if(QDELETED(target) || (target.resistance_flags & INDESTRUCTIBLE))
 		return FALSE
-	if(explosive && isclosedturf(target))
-		return TRUE
+	if(isclosedturf(target))
+		return explosive || (target.uses_integrity && target.get_integrity() > 0)
 	if(!istype(target, /obj/structure) && !istype(target, /obj/machinery))
 		return FALSE
 	var/obj/object = target
 	return isturf(object.loc) && object.uses_integrity && object.get_integrity() > 0 && (!explosive || object.anchored)
 
-/mob/living/carbon/human/ms13_squad/proc/destroy_object(obj/target)
-	if(!ms13_demolition_target(target))
-		set_order("Guard", get_turf(src))
-		order_status = "Object destroyed or no longer a valid target"
-		return
-	var/datum/ai_controller/ms13_squad/brain = ai_controller
-	if(!brain.approach(target, target.IsReachableBy(src) ? 1 : 0) || !target.IsReachableBy(src))
-		order_status = "Approaching object"
-		return
+/mob/living/carbon/human/ms13_squad/proc/demolition_tool(atom/target)
+	if(!target.uses_integrity)
+		return null
 	var/obj/item/tool
 	var/best_damage = 0
 	for(var/obj/item/candidate as anything in get_all_contents_type(/obj/item))
@@ -53,17 +59,32 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 		if(damage > best_damage)
 			tool = candidate
 			best_damage = damage
+	return tool
+
+/mob/living/carbon/human/ms13_squad/proc/destroy_object(atom/target)
+	if(!ms13_demolition_target(target))
+		set_order("Guard", get_turf(src))
+		order_status = "Object destroyed or no longer a valid target"
+		return
+	var/datum/ai_controller/ms13_squad/brain = ai_controller
+	if(!brain.approach(target, 1) || !target.IsReachableBy(src))
+		order_status = "Approaching object"
+		return
+	var/obj/item/tool = demolition_tool(target)
 	if(!tool)
 		brain.stop_travel()
-		order_status = "Needs a stronger melee tool; Breach uses explosives"
+		order_status = "Needs a stronger melee tool; choose another breach method"
 		return
 	if(!ready_item(tool))
 		order_status = "Needs a free hand for [tool.name]"
 		return
 	var/old_integrity = target.get_integrity()
 	// Explicit destruction must hit, not open a welder menu or fire a point-blank gun.
-	tool.attack_obj(target, src)
-	if(QDELETED(target) || target.is_destroyed())
+	if(isturf(target))
+		tool.attack_turf(target, src)
+	else
+		tool.attack_obj(target, src)
+	if(!ms13_demolition_target(target) || target.is_destroyed())
 		set_order("Guard", get_turf(src))
 		order_status = "Object destroyed"
 	else if(target.get_integrity() < old_integrity)
@@ -90,18 +111,25 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 		charge.ms13_breach_user = null
 	breach_charge = null
 
+// Ordinary A* ignores mobs; a retreat must not depend on pushing through them.
+/mob/living/carbon/human/ms13_squad/proc/breach_path_cost(turf/tile, turf/end)
+	for(var/mob/living/occupant in tile)
+		if(occupant != src && occupant.density)
+			return 0
+	return max(1, get_dist_euclidean(tile, end))
+
 /// A short, real A* route to the nearest reachable tile beyond the entire blast.
-/mob/living/carbon/human/ms13_squad/proc/find_blast_escape(turf/origin, radius)
+/mob/living/carbon/human/ms13_squad/proc/find_blast_escape(turf/origin, radius, ignore_mobs = FALSE)
 	var/list/candidates = list()
 	for(var/turf/open/tile in RANGE_TURFS(radius + 1, origin))
-		if(get_dist(tile, origin) == radius + 1 && !tile.is_blocked_turf(source_atom = src))
+		if(get_dist(tile, origin) == radius + 1 && !tile.is_blocked_turf(exclude_mobs = ignore_mobs, source_atom = src))
 			candidates += tile
 	var/datum/ai_controller/ms13_squad/brain = ai_controller
 	// ponytail: bounded ring searches suit small squads; batch path searches for mass deployments.
 	while(length(candidates))
 		var/turf/nearest = get_closest_atom(/turf, candidates, src)
 		candidates -= nearest
-		if(length(SSpathfinder.astar_pathfind_now(src, nearest, max_steps = 40, mintargetdist = 0, access = brain.get_access(), use_diagonals = FALSE)))
+		if(length(SSpathfinder.astar_pathfind_now(src, nearest, max_steps = 40, mintargetdist = 0, access = brain.get_access(), use_diagonals = FALSE, heuristic = ignore_mobs ? null : CALLBACK(src, PROC_REF(breach_path_cost)))))
 			return nearest
 
 /// Existing orders resume after the hazard clears; even Hold cannot strand a planter at a live charge.
@@ -114,6 +142,12 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 			set_order("Guard", get_turf(src))
 			order_status = own_charge ? "Charge failed to detonate; do not approach" : "Breach detonated; guarding here"
 	for(var/obj/item/grenade/c4/charge as anything in GLOB.ms13_squad_charges)
+		if(!charge.active)
+			var/mob/living/carbon/human/ms13_squad/planter = charge.ms13_breach_user?.resolve()
+			if(!planter || planter.stat != CONSCIOUS || planter.client || planter.squad_order != "Breach" || charge.loc != planter)
+				GLOB.ms13_squad_charges -= charge
+				charge.ms13_breach_origin = null
+				continue
 		var/turf/origin = charge.ms13_breach_origin
 		if(!origin || origin.z != z || (!charge.active && charge.ms13_breach_user?.resolve() == src))
 			continue
@@ -126,11 +160,14 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 			continue
 		if(istype(buckled, /obj/structure/chair/ms13_vehicle_seat))
 			buckled.user_unbuckle_mob(src, src)
-		if(world.time >= next_blast_escape)
+		if(world.time >= next_blast_escape || blast_escape?.is_blocked_turf(source_atom = src))
 			next_blast_escape = world.time + 2 SECONDS
 			blast_escape = find_blast_escape(origin, charge.ms13_breach_radius)
 		if(blast_escape && get_dist(blast_escape, origin) > charge.ms13_breach_radius)
 			brain.approach(blast_escape, 0)
+			var/datum/move_loop/has_target/astar/route = move_packet?.existing_loops[SSai_movement]
+			if(istype(route) && !route.heuristic)
+				route.heuristic = CALLBACK(src, PROC_REF(breach_path_cost))
 			order_status = "Clearing breaching charge"
 		else
 			brain.stop_travel()
@@ -139,11 +176,16 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 	return FALSE
 
 /mob/living/carbon/human/ms13_squad/proc/breach_ready(serial, obj/item/grenade/c4/charge, atom/target)
-	if(client || stat != CONSCIOUS || order_serial != serial || squad_order != "Breach" || order_target?.resolve() != target || !ms13_demolition_target(target, TRUE) || get_turf(target) != charge.ms13_breach_origin)
+	if(QDELETED(charge) || charge.active || charge.dud_flags || charge.loc != src || breach_charge?.resolve() != charge || client || stat != CONSCIOUS || order_serial != serial || squad_order != "Breach" || order_target?.resolve() != target || !ms13_demolition_target(target, TRUE) || get_turf(target) != charge.ms13_breach_origin)
 		return FALSE
 	for(var/mob/living/occupant in range(charge.ms13_breach_radius, charge.ms13_breach_origin))
 		if(occupant != src && occupant.stat != DEAD && (squad_friendly(occupant) || faction_check_atom(occupant)))
+			order_status = "Waiting for friendlies: [occupant.name] must clear [charge.ms13_breach_radius + 1] tiles"
 			return FALSE
+	var/datum/ai_controller/ms13_squad/brain = ai_controller
+	if(!blast_escape || !length(SSpathfinder.astar_pathfind_now(src, blast_escape, max_steps = 40, mintargetdist = 0, access = brain.get_access(), use_diagonals = FALSE, heuristic = CALLBACK(src, PROC_REF(breach_path_cost)))))
+		order_status = "Waiting for an unblocked retreat route"
+		return FALSE
 	return TRUE
 
 /mob/living/carbon/human/ms13_squad/proc/breach_target(atom/target)
@@ -152,6 +194,17 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 		set_order("Guard", get_turf(src))
 		order_status = "Breach target gone or no longer anchored"
 		return
+	// Keep a prepared charge's clearance protocol intact while waiting for friendlies.
+	if(!breach_charge && breach_mode != "Explosives")
+		if(breach_mode == "Melee" || (breach_mode == "Auto" && demolition_tool(target)))
+			destroy_object(target)
+			return
+		if(breach_mode == "Guns" || ready_weapon(TRUE) || reload_weapon())
+			if(!safe_shot(target))
+				brain.approach(target, 1)
+			else
+				fight(target, TRUE)
+			return
 	var/obj/item/grenade/c4/charge = carried_breach_charge()
 	if(!charge)
 		brain.stop_travel()
@@ -172,12 +225,17 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 		order_status = "Payload exceeds supported breach clearance"
 		return
 	var/turf/origin = get_turf(target)
-	blast_escape = find_blast_escape(origin, radius)
+	if(breach_charge?.resolve() != charge || world.time >= next_blast_escape)
+		next_blast_escape = world.time + 2 SECONDS
+		blast_escape = find_blast_escape(origin, radius)
+		// Announce clearance even when squadmates currently block the way out.
+		if(!blast_escape)
+			blast_escape = find_blast_escape(origin, radius, ignore_mobs = TRUE)
 	if(!blast_escape)
 		clear_breach()
 		order_status = "No safe retreat route; charge not armed"
 		return
-	if(breach_charge?.resolve() != charge)
+	if(breach_charge?.resolve() != charge || !(charge in GLOB.ms13_squad_charges) || charge.ms13_breach_origin != origin)
 		clear_breach()
 		breach_charge = WEAKREF(charge)
 		charge.ms13_breach_user = WEAKREF(src)
@@ -186,9 +244,8 @@ GLOBAL_LIST_EMPTY(ms13_squad_charges)
 		GLOB.ms13_squad_charges |= charge
 		say("Breaching [target.name]. Clear at least [radius + 1] tiles!", forced = "squad order")
 	if(!breach_ready(order_serial, charge, target))
-		order_status = "Waiting for friendlies to clear [radius + 1] tiles"
 		return
-	var/list/escape_path = SSpathfinder.astar_pathfind_now(src, blast_escape, max_steps = 40, mintargetdist = 0, access = brain.get_access(), use_diagonals = FALSE)
+	var/list/escape_path = SSpathfinder.astar_pathfind_now(src, blast_escape, max_steps = 40, mintargetdist = 0, access = brain.get_access(), use_diagonals = FALSE, heuristic = CALLBACK(src, PROC_REF(breach_path_cost)))
 	if(!length(escape_path))
 		order_status = "Retreat route blocked; charge not armed"
 		return

@@ -54,20 +54,26 @@
 	for(var/obj/structure/ms13_rail/ramp/ramp in gate)
 		if(ramp.dir == direction)
 			return ramp.far_end()
+	var/turf/stair_exit = ms13_vehicle_stair_link(gate, direction, TRUE)
+	if(stair_exit)
+		return stair_exit
+	if(include_regions && SSmapping.ms13_surface_edge(gate) == direction)
+		return SSmapping.ms13_surface_destination(gate, direction)
+
+/// Shared by road vehicles and rail routing; a covered opening is not a stair connection.
+/proc/ms13_vehicle_stair_link(turf/gate, direction, require_rails = FALSE)
 	// Existing maps lay ordinary rails over stairs. Use the same terminal stair in both directions.
-	if(ms13_rail_at(gate))
+	if(!require_rails || ms13_rail_at(gate))
 		for(var/obj/structure/stairs/stairs in gate)
-			if(stairs.dir == direction && stairs.isTerminator())
+			if(stairs.dir == direction && stairs.isTerminator() && isopenspaceturf(GetAbove(gate)))
 				return get_step(GetAbove(gate), direction)
 	// The upper entrance is normally an open hole, with rails only on the stairs below.
 	if(ms13_rail_at(gate) || isopenspaceturf(gate))
 		var/turf/below = GetBelow(gate)
-		if(ms13_rail_at(below))
+		if(!require_rails || ms13_rail_at(below))
 			for(var/obj/structure/stairs/stairs in below)
 				if(stairs.dir == turn(direction, 180) && stairs.isTerminator())
 					return get_step(below, direction)
-	if(include_regions && SSmapping.ms13_surface_edge(gate) == direction)
-		return SSmapping.ms13_surface_destination(gate, direction)
 
 /// What route boards call this stop: the area it was mapped into.
 /obj/structure/ms13_rail/proc/stop_name()
@@ -230,9 +236,7 @@
 	var/turf/gate = get_step(bogie, direction)
 	if(!rail_at(gate) && !rail_at(ms13_rail_link(gate, direction, FALSE)))
 		return FALSE
-	. = climb_incline(direction, bypass_cooldown)
-	if(isnull(.))
-		. = ..()
+	. = ..()
 	if(. && length(rail_route))
 		// An incline or a region's edge carries the car on down the line: pick the route up where it came out.
 		var/reached = rail_route.Find(get_turf(rail_frame()))
@@ -297,11 +301,12 @@
 
 /// Null for an ordinary step. At an incline the car comes out whole on the other level, its tail on the tile past
 /// the far incline and the rest strung out ahead the way it was going, or stays put if anything there is in the way.
-/datum/ms13_ground_vehicle/rail/proc/climb_incline(direction, bypass_cooldown)
+/datum/ms13_ground_vehicle/proc/climb_incline(direction, bypass_cooldown)
 	var/turf/far_end
 	var/obj/structure/ms13_vehicle_frame/leading
 	for(var/obj/structure/ms13_vehicle_frame/frame as anything in frames)
-		far_end = ms13_rail_link(get_step(frame, direction), direction, FALSE)
+		var/turf/gate = get_step(frame, direction)
+		far_end = istype(src, /datum/ms13_ground_vehicle/rail) ? ms13_rail_link(gate, direction, FALSE) : ms13_vehicle_stair_link(gate, direction)
 		if(far_end)
 			leading = frame
 			break

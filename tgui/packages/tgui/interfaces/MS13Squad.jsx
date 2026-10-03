@@ -24,14 +24,19 @@ const instructions = {
   Guard: 'Take up a position and engage nearby hostiles.',
   Follow: 'Follow the commander or a squadmate, including stairs.',
   Patrol: 'Travel between the current position and the selected tile.',
-  Attack: 'Engage a living enemy using available weapons and ammunition.',
-  'Fire at area': 'Suppress a visible area from the current position. Live fire can hit bystanders.',
-  'Fire direction': 'Fire toward the selected direction from the current position.',
+  Attack:
+    'Engage an enemy, or breach an obstacle using the selected breach method.',
+  'Fire at area':
+    'Suppress a visible area from the current position. Live fire can hit bystanders.',
+  'Fire direction':
+    'Fire toward the selected direction from the current position.',
   Use: 'Operate one button or door. Normal locks, access and power apply.',
   Sit: 'Board a vehicle and buckle into the selected empty seat.',
-  Destroy: 'Break a structure or machine with carried melee tools. Does not use explosives.',
-  Breach: 'Assign one equipped recruit to plant a carried C4, X4 or shaped charge. Squadmates clear the blast; planting waits for friendlies and an escape route.',
-  'Pick up': 'Collect a loose item. Requires a free hand and sufficient carrying ability.',
+  Destroy: 'Break a wall, structure or machine with carried melee tools.',
+  Breach:
+    'Assign one recruit to clear an obstacle using the selected method. Explosives require a carried charge, friendly clearance and an escape route.',
+  'Pick up':
+    'Collect a loose item. Requires a free hand and sufficient carrying ability.',
   Deliver: 'Carry the last collected item onto the selected tile and drop it.',
   Hold: 'Cancel the current order and stop. Still defends against attacks and escapes live charges.',
 };
@@ -78,6 +83,7 @@ export const SquadPanel = ({ data, act }) => (
             <Table.Cell>
               {unit.order}
               <Box color="label">{unit.fireMode}</Box>
+              <Box color="label">Breach: {unit.breachMode}</Box>
             </Table.Cell>
             <Table.Cell color={unit.ready ? 'good' : 'average'}>
               {unit.ready ? unit.status : 'Unavailable'}
@@ -90,7 +96,8 @@ export const SquadPanel = ({ data, act }) => (
       <NoticeBox info>
         <Flex align="center">
           <Flex.Item grow>
-            Click a world target for <b>{data.pending}</b>. Right-click cancels.
+            Click a target in the world or camera feed for <b>{data.pending}</b>
+            . Right-click cancels.
           </Flex.Item>
           <Flex.Item>
             <Button icon="times" onClick={() => act('cancel')}>
@@ -113,7 +120,11 @@ export const SquadPanel = ({ data, act }) => (
               fluid
               icon={icons[order]}
               tooltip={instructions[order]}
-              color={order === 'Breach' || order === 'Destroy' ? 'average' : undefined}
+              color={
+                order === 'Breach' || order === 'Destroy'
+                  ? 'average'
+                  : undefined
+              }
               selected={data.designating && data.pending === order}
               disabled={data.selected === 'all' && individual.includes(order)}
               onClick={() => act('order', { value: order })}
@@ -124,9 +135,9 @@ export const SquadPanel = ({ data, act }) => (
         ))}
       </Flex>
       <Box mt={1} color="label">
-        Destroy uses tools. Breach assigns one charge carrier, clears squadmates,
-        and waits for a safe retreat. You must also stay outside the announced
-        blast radius. A live charge keeps its fuse if orders change.
+        Destroy uses melee tools. Breach follows your selected method. When a
+        charge is used, keep clear of the announced blast radius. A live charge
+        keeps its fuse if orders change.
       </Box>
       {data.terminal &&
         [
@@ -145,6 +156,25 @@ export const SquadPanel = ({ data, act }) => (
             Designate {data.pending.toLowerCase()} by coordinates
           </Button>
         )}
+    </Section>
+    <Section title="Breach method">
+      {(data.breachModes || []).map((mode) => (
+        <Button
+          key={mode}
+          selected={(data.units || [])
+            .filter(
+              (unit) => data.selected === 'all' || data.selected === unit.ref,
+            )
+            .every((unit) => unit.breachMode === mode)}
+          onClick={() => act('breach_mode', { value: mode })}
+        >
+          {mode}
+        </Button>
+      ))}
+      <Box mt={1} color="label">
+        Auto tries an effective melee tool, then a gun, then a carried charge.
+        Normal armor, ammunition, and explosive safety still apply.
+      </Box>
     </Section>
     <Section title="Fire discipline">
       {(data.fireModes || []).map((mode) => (

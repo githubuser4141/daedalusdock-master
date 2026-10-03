@@ -566,7 +566,7 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 				order_status = "Guarding"
 		if("Use", "Pick up")
 			var/picking_up = squad_order == "Pick up"
-			if(!brain.approach(target, (squad_order == "Use" || target.IsReachableBy(src)) ? 1 : 0) || !target.IsReachableBy(src))
+			if(!brain.approach(target, 1) || !target.IsReachableBy(src))
 				return
 			var/obj/item/held = get_active_held_item()
 			if(held?.wielded)
@@ -648,13 +648,21 @@ GLOBAL_LIST_INIT(ms13_squad_fire_modes, list("Careful" = 1 SECONDS, "Precise" = 
 	var/datum/ms13_ground_vehicle/destination_vehicle = get_ms13_ground_vehicle_at(target)
 	if(destination_vehicle && get_ms13_ground_vehicle_at(pawn) != destination_vehicle)
 		distance = 0
-	if(get_dist(pawn, target) <= distance)
+	if(get_dist(pawn, target) <= distance && (!distance || target.IsReachableBy(pawn, distance)))
 		stop_travel()
 		return TRUE
-	var/mob/living/unit = pawn
+	var/mob/living/carbon/human/ms13_squad/unit = pawn
 	if(unit.buckled)
 		stop_travel()
 		return FALSE
+	if(distance)
+		// Stop where the target can actually be reached, not across a border railing.
+		target = interaction_position(target)
+		if(!target)
+			stop_travel()
+			unit.order_status = "No reachable approach; retrying"
+			return FALSE
+		distance = 0
 	travel_distance = distance
 	if(current_movement_target != target || blackboard[BB_CURRENT_MIN_MOVE_DISTANCE] != distance)
 		stop_travel()

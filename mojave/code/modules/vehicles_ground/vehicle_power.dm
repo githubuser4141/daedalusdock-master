@@ -567,8 +567,8 @@
 	on_state = "vp_headlight"
 	off_state = "vp_headlight"
 	power_draw = 2
-	// A beam cast ahead along the lamp's facing; overlay lights cap their range at 6.
-	light_system = OVERLAY_LIGHT_DIRECTIONAL
+	// World lighting clips against walls; oversized overlay masks shine through neighboring rooms.
+	light_system = COMPLEX_LIGHT
 	light_outer_range = 6
 	light_power = 1
 	light_color = "#ffe8c0"
@@ -579,5 +579,13 @@
 
 /obj/structure/ms13_vehicle_part/exterior_equipment/light/update_icon_state()
 	. = ..()
-	// Overlay lights only switch off through light_on; a zero range still glows.
-	set_light_on(is_enabled())
+	set_light(l_on = is_enabled())
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/light/update_light()
+	. = ..()
+	if(light)
+		light.directional = TRUE
+
+/obj/structure/ms13_vehicle_part/exterior_equipment/light/setDir(new_dir)
+	. = ..()
+	light?.force_update()
