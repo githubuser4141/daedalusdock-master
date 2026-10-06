@@ -36,7 +36,7 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor)
 	suit = null
 	. = ..()
 
-/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, subtractible_armour_penetration, def_zone)
+/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor/take_damage(damage_amount, damage_type = BRUTE, damage_flag = NONE, sound_effect = TRUE, attack_dir, armor_penetration = 0, allow_break = TRUE, def_zone)
 	if(!uses_integrity)
 		CRASH("[src] had /atom/proc/take_damage() called on it without it being a type that has uses_integrity = TRUE!")
 	if(QDELETED(src))
@@ -47,10 +47,10 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor)
 		play_attack_sound(damage_amount, damage_type, damage_flag)
 	if(resistance_flags & INDESTRUCTIBLE)
 		return
-	damage_amount = run_atom_subarmor(damage_amount, damage_type, damage_flag, attack_dir, subtractible_armour_penetration)
+	damage_amount = run_atom_subarmor(damage_amount, damage_type, damage_flag, attack_dir, armor_penetration)
 	if(damage_amount < DAMAGE_PRECISION)
 		return
-	if(SEND_SIGNAL(src, COMSIG_ATOM_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, subtractible_armour_penetration) & COMPONENT_NO_TAKE_DAMAGE)
+	if(SEND_SIGNAL(src, COMSIG_ATOM_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration) & COMPONENT_NO_TAKE_DAMAGE)
 		return
 
 	. = damage_amount
@@ -58,7 +58,7 @@ TYPEINFO_DEF(/obj/item/clothing/head/helmet/space/hardsuit/ms13/power_armor)
 	update_integrity(atom_integrity - damage_amount)
 
 	//BREAKING
-	if(integrity_failure && atom_integrity <= integrity_failure * max_integrity)
+	if(allow_break && integrity_failure && atom_integrity <= integrity_failure * max_integrity)
 		atom_break(damage_flag)
 
 	if(atom_integrity <= 0)
@@ -450,7 +450,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 		listeningTo?.update_worn_oversuit()
 		return ..()
 
-/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, subtractible_armour_penetration, def_zone = BODY_ZONE_CHEST)
+/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/take_damage(damage_amount, damage_type = BRUTE, damage_flag = NONE, sound_effect = TRUE, attack_dir, armor_penetration = 0, allow_break = TRUE, def_zone = BODY_ZONE_CHEST)
 	if(!uses_integrity)
 		CRASH("[src] had /atom/proc/take_damage() called on it without it being a type that has uses_integrity = TRUE!")
 	if(QDELETED(src))
@@ -467,14 +467,14 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 
 	if(def_zone == BODY_ZONE_HEAD)
 		if(helmet && helmet.get_integrity() > 0)
-			var/damage_to_human = - (helmet.get_integrity() - helmet.take_damage(damage_amount, damage_type, damage_flag, null, attack_dir, subtractible_armour_penetration, def_zone))
+			var/damage_to_human = - (helmet.get_integrity() - helmet.take_damage(damage_amount, damage_type, damage_flag, null, attack_dir, armor_penetration, allow_break, def_zone))
 			return max(0, damage_to_human)
 		else
 			return damage_amount
 
 	var/obj/item/ms13/power_armor/PA_item = module_armor[def_zone]
 	if(istype(PA_item) && PA_item.get_integrity() > 0)
-		var/damage_to_frame = - (PA_item.get_integrity() - PA_item.take_damage(damage_amount, damage_type, damage_flag, null, attack_dir, subtractible_armour_penetration, def_zone))
+		var/damage_to_frame = - (PA_item.get_integrity() - PA_item.take_damage(damage_amount, damage_type, damage_flag, null, attack_dir, armor_penetration, allow_break, def_zone))
 		if(damage_to_frame <= 0)
 			return 0
 		damage_amount = damage_to_frame
@@ -482,10 +482,10 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	if(atom_integrity <= 0)
 		return damage_amount
 
-	damage_amount = run_atom_subarmor(damage_amount, damage_type, damage_flag, attack_dir, subtractible_armour_penetration)
+	damage_amount = run_atom_subarmor(damage_amount, damage_type, damage_flag, attack_dir, armor_penetration)
 	if(damage_amount < DAMAGE_PRECISION)
 		return
-	if(SEND_SIGNAL(src, COMSIG_ATOM_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, subtractible_armour_penetration) & COMPONENT_NO_TAKE_DAMAGE)
+	if(SEND_SIGNAL(src, COMSIG_ATOM_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration) & COMPONENT_NO_TAKE_DAMAGE)
 		return
 
 	. = max(damage_amount - atom_integrity, 0)
@@ -493,7 +493,7 @@ TYPEINFO_DEF(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor)
 	update_integrity(atom_integrity - damage_amount)
 
 	//BREAKING
-	if(integrity_failure && atom_integrity <= integrity_failure * max_integrity)
+	if(allow_break && integrity_failure && atom_integrity <= integrity_failure * max_integrity)
 		atom_break(damage_flag)
 
 	if(atom_integrity <= 0)

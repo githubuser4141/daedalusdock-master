@@ -116,7 +116,7 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 				wearer.update_worn_oversuit()
 		return ..()
 
-/obj/item/ms13/power_armor/take_damage(damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration)
+/obj/item/ms13/power_armor/take_damage(damage_amount, damage_type = BRUTE, damage_flag = NONE, sound_effect = TRUE, attack_dir, armor_penetration = 0, allow_break = TRUE, def_zone)
 	if(!uses_integrity)
 		CRASH("[src] had /atom/proc/take_damage() called on it without it being a type that has uses_integrity = TRUE!")
 	if(QDELETED(src))
@@ -127,10 +127,10 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 		play_attack_sound(damage_amount, damage_type, damage_flag)
 	if(resistance_flags & INDESTRUCTIBLE)
 		return
-	damage_amount = run_atom_subarmor(damage_amount, damage_type, damage_flag, attack_dir, armour_penetration)
+	damage_amount = run_atom_subarmor(damage_amount, damage_type, damage_flag, attack_dir, armor_penetration)
 	if(damage_amount < DAMAGE_PRECISION)
 		return
-	if(SEND_SIGNAL(src, COMSIG_ATOM_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armour_penetration) & COMPONENT_NO_TAKE_DAMAGE)
+	if(SEND_SIGNAL(src, COMSIG_ATOM_TAKE_DAMAGE, damage_amount, damage_type, damage_flag, sound_effect, attack_dir, armor_penetration) & COMPONENT_NO_TAKE_DAMAGE)
 		return
 
 	. = damage_amount
@@ -138,7 +138,7 @@ TYPEINFO_DEF(/obj/item/ms13/power_armor)
 	update_integrity(atom_integrity - damage_amount)
 
 	//BREAKING
-	if(integrity_failure && atom_integrity <= integrity_failure * max_integrity)
+	if(allow_break && integrity_failure && atom_integrity <= integrity_failure * max_integrity)
 		atom_break(damage_flag)
 
 	if(atom_integrity <= 0)
