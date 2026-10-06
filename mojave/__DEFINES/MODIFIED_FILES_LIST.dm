@@ -224,6 +224,7 @@ code/game/objects/structures/ladders.dm,
 // code/modules/surgery/organs/stomach/_stomach.dm
 // code/modules/surgery/organs/ears.dm
 // code/modules/mob/living/brain/brain_item.dm
+// code/modules/tgui/tgui.dm
 // tgui/packages/tgui/layouts/Window.jsx
 // tgui/packages/tgui/drag.js
 // tgui/packages/tgui/interfaces/CameraConsole.jsx

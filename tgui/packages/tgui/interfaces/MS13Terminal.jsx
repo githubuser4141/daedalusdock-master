@@ -53,24 +53,20 @@ export const MS13Terminal = () => {
     ],
   };
   const heading = systems[data.system] || [data.system, ''];
+  // On the document, so the title bar and dropdowns outside the content take the terminal's colours too.
+  document.documentElement.style.setProperty('--terminal-bg', data.mainColor);
+  document.documentElement.style.setProperty('--terminal-fg', data.secondaryColor);
   return (
     <Window
-      width={950}
-      height={720}
+      width={640}
+      height={480}
       title={`${data.terminalTag} Terminal ${data.terminalNumber}`}
       theme="ms13-terminal"
     >
-      <Window.Content
-        fitted
-        className="MS13Terminal"
-        style={{
-          '--terminal-bg': data.mainColor,
-          '--terminal-fg': data.secondaryColor,
-        }}
-      >
+      <Window.Content fitted className="MS13Terminal">
         <Box className="MS13Terminal__header">
           <Box bold>{heading[0]}</Box>
-          <Box>{heading[1]}</Box>
+          <Box bold>{heading[1]}</Box>
           <Box>{`= ${titles[data.mode]} =`}</Box>
         </Box>
         <Box
@@ -81,21 +77,21 @@ export const MS13Terminal = () => {
               <Box>TERMINAL FUNCTIONS</Box>
               <Box className="MS13Terminal__menu">
                 {!!data.notekeeper && (
-                  <Button onClick={() => page(1)}>&gt; Word Processor</Button>
+                  <Button onClick={() => page(1)}>Word Processor</Button>
                 )}
                 {!!data.remote && (
-                  <Button onClick={() => page(3)}>&gt; Utili-Dock</Button>
+                  <Button onClick={() => page(3)}>Utili-Dock</Button>
                 )}
-                <Button onClick={() => page(4)}>&gt; Workshop</Button>
-                <Button onClick={() => page(5)}>&gt; Squad command</Button>
-                <Button onClick={() => page(6)}>&gt; Cryopod control</Button>
-                <Button onClick={() => page(7)}>&gt; Body cameras</Button>
+                <Button onClick={() => page(4)}>Workshop</Button>
+                <Button onClick={() => page(5)}>Squad command</Button>
+                <Button onClick={() => page(6)}>Cryopod control</Button>
+                <Button onClick={() => page(7)}>Body cameras</Button>
               </Box>
               <Box mt={2}>FILE SYSTEM</Box>
               <Box className="MS13Terminal__menu">
                 {data.documents.map((doc) => (
                   <Button key={doc.choice} onClick={() => legacy(doc.choice)}>
-                    &gt; {doc.title}
+                    {doc.title}
                   </Button>
                 ))}
                 {!data.documents.length && (
@@ -103,7 +99,7 @@ export const MS13Terminal = () => {
                 )}
                 {!!data.riggedTitle && (
                   <Button onClick={() => legacy('joker')}>
-                    &gt; {data.riggedTitle}
+                    {data.riggedTitle}
                   </Button>
                 )}
               </Box>
@@ -126,14 +122,14 @@ export const MS13Terminal = () => {
             <Box className="MS13Terminal__menu">
               <Box>Network online. Select a linked circuit.</Box>
               {!!data.security && (
-                <Button onClick={() => page(8)}>&gt; Security cameras</Button>
+                <Button onClick={() => page(8)}>Security cameras</Button>
               )}
               {data.signals.map((signal) => (
                 <Button
                   key={signal.choice}
                   onClick={() => legacy(signal.choice)}
                 >
-                  &gt; {signal.title}
+                  {signal.title}
                 </Button>
               ))}
               {!data.signals.length && (
@@ -247,7 +243,7 @@ export const MS13Terminal = () => {
                           fluid
                           onClick={() => legacy('squad', { recruit: unit.ref })}
                         >
-                          &gt; {unit.name}
+                          {unit.name}
                         </Button>
                       ))}
                       {!data.recruits.length && <Box>No linked personnel.</Box>}
@@ -374,17 +370,20 @@ export const MS13Terminal = () => {
           )}
         </Box>
         {!!data.mode && (
-          <Box className="MS13Terminal__footer">
+          <Box className="MS13Terminal__rule">{'='.repeat(77)}</Box>
+        )}
+        {!!data.mode && (
+          <Box className="MS13Terminal__menu">
             {data.mode === 1 && (
               <>
-                <Button onClick={() => legacy('Title')}>&gt; Title</Button>
+                <Button onClick={() => legacy('Title')}>Title</Button>
                 <Button onClick={() => legacy('Contents')}>
-                  &gt; Edit contents
+                  Edit contents
                 </Button>
-                <Button onClick={() => legacy('Save')}>&gt; Save</Button>
+                <Button onClick={() => legacy('Save')}>Save</Button>
               </>
             )}
-            <Button onClick={() => page(0)}>&gt; Return</Button>
+            <Button onClick={() => page(0)}>Return</Button>
           </Box>
         )}
       </Window.Content>

@@ -35,6 +35,8 @@
 	var/refreshing = FALSE
 	/// Topic state used to determine status/interactability.
 	var/datum/ui_state/state = null
+	/// MOJAVE EDIT: always opens in tgui's own frame, whatever the player's tgui_fancy preference (MS13Terminal).
+	var/force_fancy = FALSE
 	/// Rate limit client refreshes to prevent DoS.
 	COOLDOWN_DECLARE(refresh_cooldown)
 
@@ -92,10 +94,11 @@
 		return FALSE
 	opened_at = world.time
 	window.acquire_lock(src)
-	if(!window.is_ready())
+	// A pooled window is set up for the player's preference; one that doesn't match this UI's is rebuilt.
+	if(!window.is_ready() || window.initial_fancy != is_fancy())
 		window.initialize(
 			strict_mode = TRUE,
-			fancy = user.client.prefs.read_preference(/datum/preference/toggle/tgui_fancy),
+			fancy = is_fancy(),
 			assets = list(
 				get_asset_datum(/datum/asset/simple/tgui),
 			))
@@ -226,6 +229,10 @@
 		custom_data,
 		with_data = should_update_data))
 
+/// MOJAVE EDIT: whether it opens in tgui's own frame rather than the system's.
+/datum/tgui/proc/is_fancy()
+	return force_fancy || user.client.prefs.read_preference(/datum/preference/toggle/tgui_fancy)
+
 /**
  * private
  *
@@ -243,7 +250,7 @@
 		"window" = list(
 			"key" = window_key,
 			"size" = window_size,
-			"fancy" = user.client.prefs.read_preference(/datum/preference/toggle/tgui_fancy),
+			"fancy" = is_fancy(),
 			"locked" = user.client.prefs.read_preference(/datum/preference/toggle/tgui_lock),
 			"scale" = user.client.prefs.read_preference(/datum/preference/toggle/ui_scale),
 		),

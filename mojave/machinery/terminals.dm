@@ -198,6 +198,7 @@
 	if(!ui)
 		playsound(src, 'mojave/sound/ms13machines/terminals/ui_hacking_charenter_01.ogg', 50, FALSE)
 		ui = new(user, src, "MS13Terminal", name)
+		ui.force_fancy = TRUE // Its own green screen, not a system window frame around it.
 		ui.open()
 		ensure_camera_views()
 		bodycam_viewer.cam_screen.render_to_tgui(user.client, ui.window)

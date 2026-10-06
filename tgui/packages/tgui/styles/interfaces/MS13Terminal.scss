@@ -1,27 +1,57 @@
-.theme-ms13-terminal {
-  color: #4aed92;
-  font-family: 'Courier New', Courier, monospace;
+// Mojave Sun's own terminal: a plain RobCo text screen in the terminal's colours, as the original HTML terminal drew it,
+// rather than DD's window with a green tint. Every DD component the terminal (and the squad panel inside it) uses is
+// flattened to text here: no boxes, no icons, no rounded buttons, just "> option" lines that invert under the cursor.
+// --terminal-bg and --terminal-fg come from the terminal itself (MS13Terminal.jsx sets them on the document).
 
+.theme-ms13-terminal {
+  --terminal-bg-fallback: #062113;
+  --terminal-fg-fallback: #4aed92;
+  color: var(--terminal-fg, #4aed92);
+  background: var(--terminal-bg, #062113);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  scrollbar-color: var(--terminal-fg, #4aed92) var(--terminal-bg, #062113);
+
+  &.Layout,
   .Layout,
-  .TitleBar {
-    background: #062113;
-    color: #4aed92;
+  .Layout__content,
+  .Window__rest,
+  .Window__content {
+    background: var(--terminal-bg, #062113);
     background-image: none;
+    color: var(--terminal-fg, #4aed92);
+  }
+
+  .TitleBar {
+    background: var(--terminal-bg, #062113);
+    border-bottom: 1px solid var(--terminal-fg, #4aed92);
+    color: var(--terminal-fg, #4aed92);
+    font-family: inherit;
+    box-shadow: none;
+  }
+
+  .TitleBar__title,
+  .TitleBar__close,
+  .TitleBar__minimize {
+    color: var(--terminal-fg, #4aed92);
+    font-family: inherit;
+  }
+
+  // No in-range eye: the original screen never had one.
+  .TitleBar__statusIcon {
+    display: none;
   }
 
   .MS13Terminal {
     display: flex;
     flex-direction: column;
-    background: var(--terminal-bg, #062113);
-    color: var(--terminal-fg, #4aed92);
     line-height: 1.7;
-    padding: 1rem;
+    padding: 15px;
     overflow: hidden;
   }
 
   .MS13Terminal__header {
     text-align: center;
-    padding-bottom: 1rem;
     flex-shrink: 0;
   }
 
@@ -29,7 +59,7 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding-top: 1rem;
+    padding-top: 1em;
   }
 
   .MS13Terminal__menu {
@@ -38,11 +68,12 @@
     align-items: flex-start;
   }
 
-  .MS13Terminal__footer {
+  .MS13Terminal__rule {
     flex-shrink: 0;
-    margin-top: 1rem;
-    border-top: 1px dashed currentColor;
-    padding-top: 0.5rem;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-top: 1.7em;
   }
 
   .MS13Terminal__page--camera {
@@ -50,47 +81,120 @@
     overflow: hidden;
   }
 
-  .Section,
-  .Section__title,
-  .NoticeBox,
-  .Tabs,
-  .Button,
-  .Input {
+  // Options: "> label", inverting on hover like the original's links.
+  .Button {
     background: transparent;
     background-image: none;
+    border: 1px solid transparent;
+    border-radius: 0;
     box-shadow: none;
     color: inherit;
     font-family: inherit;
-    border-radius: 0;
+    line-height: inherit;
+    padding: 1px 4px;
+    margin: 0 2px 0 0;
+    transition: none;
   }
 
-  .Section__title,
-  .Tabs,
-  .Input,
-  .NoticeBox {
+  .Button__content::before {
+    content: '> ';
+  }
+
+  .Button .Icon,
+  .Button .fa,
+  .Button .fas,
+  .Button .far {
+    display: none;
+  }
+
+  .Button:hover:not(.Button--disabled),
+  .Button--selected {
+    color: var(--terminal-bg, #062113);
+    background: var(--terminal-fg, #4aed92);
     border-color: var(--terminal-fg, #4aed92);
+  }
+
+  .Button--disabled {
+    opacity: 0.4;
+    background: transparent;
+  }
+
+  // Sections read as headings over plain lines, not boxes.
+  .Section {
+    background: transparent;
+    box-shadow: none;
+    margin-bottom: 0.5em;
+  }
+
+  .Section__title {
+    border-bottom: 1px dashed var(--terminal-fg, #4aed92);
+    padding: 0 0 2px 0;
   }
 
   .Section__titleText {
     color: inherit;
+    font-weight: bold;
+    text-transform: uppercase;
   }
-  .Tabs {
-    flex-shrink: 0;
+
+  .Section__content {
+    padding: 4px 0 0 1em;
   }
-  .Tab {
-    color: inherit;
+
+  .NoticeBox {
     background: transparent;
+    background-image: none;
+    border: none;
+    border-left: 2px solid var(--terminal-fg, #4aed92);
+    color: inherit;
+    font-style: normal;
+    padding: 0 0 0 8px;
   }
-  .Button:hover,
-  .Button--selected,
-  .Tab:hover,
-  .Tab--selected {
+
+  .Input,
+  .Dropdown__control,
+  .Dropdown__menu,
+  .Dropdown__menu-scroll {
+    background: var(--terminal-bg, #062113);
+    border: 1px solid var(--terminal-fg, #4aed92);
+    border-radius: 0;
+    color: var(--terminal-fg, #4aed92);
+    font-family: inherit;
+  }
+
+  .Input__input {
+    color: inherit;
+    font-family: inherit;
+  }
+
+  .Dropdown__menuentry:hover,
+  .Dropdown__menuentry.selected {
     color: var(--terminal-bg, #062113);
     background: var(--terminal-fg, #4aed92);
   }
-  .Button--disabled {
-    opacity: 0.4;
+
+  .Table__cell,
+  .Table__row--header .Table__cell {
+    color: inherit;
+    border-color: var(--terminal-fg, #4aed92);
   }
+
+  .Table__row--header .Table__cell {
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+
+  .color-label,
+  .color-good,
+  .color-bad,
+  .color-average {
+    color: inherit;
+  }
+
+  .color-label {
+    opacity: 0.7;
+  }
+
   .MS13Terminal__camera {
     display: flex;
     flex-direction: column;
@@ -98,18 +202,23 @@
     min-width: 0;
     min-height: 0;
   }
+
   .MS13Terminal__cameraBody {
     flex: 1;
     min-height: 0;
   }
+
   .MS13Terminal__feed {
     position: relative;
     min-width: 0;
     background: #000;
+    border: 1px solid var(--terminal-fg, #4aed92);
   }
+
   .MS13Terminal__map {
     position: absolute;
   }
+
   .MS13Terminal__command {
     overflow-y: auto;
   }
