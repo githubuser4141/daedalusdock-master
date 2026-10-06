@@ -12,17 +12,17 @@
 	if(weak_against_armor && (armor >= 0))
 		armor *= ARMOR_WEAKENED_MULTIPLIER
 
+	var/effective = max(0, armor - armor_penetration)
 	if(silent)
-		return max(0, armor - armor_penetration)
+		return effective
 
 	//the if "armor" check is because this is used for everything on /living, including humans
 	if(armor_penetration >= armor)
-		armor = max(0, armor - armor_penetration)
 		if(penetrated_text)
 			to_chat(src, span_userdanger("[penetrated_text]"))
 		else
 			to_chat(src, span_userdanger("Your DR armor was penetrated!"))
-	else if(armor >= 100)
+	else if(effective >= 100)
 		if(absorb_text)
 			to_chat(src, span_notice("[absorb_text]"))
 		else
@@ -32,7 +32,8 @@
 			to_chat(src, span_warning("[soften_text]"))
 		else
 			to_chat(src, span_warning("Your DR armor softens the blow!"))
-	return armor
+	// Partial armor penetration counts whether or not the message said so (the silent path above always took it off).
+	return effective
 
 /mob/living/proc/run_subarmor_check(def_zone = null, \
 						attack_flag = BLUNT, \
