@@ -14,7 +14,7 @@ export const JobInfo = (props) => {
   const { data } = useBackend<Info>();
   const { title, description } = data;
   return (
-    <Window width={620} height={350} title={title} theme="mojavesun">
+    <Window width={520} height={320} title={title} theme="mojavesun">
       <Window.Content>
         <Stack fill>
           <Stack.Item width="65%">

@@ -25,7 +25,6 @@ import { Layout } from './Layout';
 const logger = createLogger('Window');
 
 const DEFAULT_SIZE = [400, 600];
-const pixelRatio = window.devicePixelRatio ?? 1;
 
 export class Window extends Component {
   constructor(props) {
@@ -60,15 +59,10 @@ export class Window extends Component {
       size: DEFAULT_SIZE,
       ...config.window,
     };
+    // CSS pixels: recallWindowGeometry() converts them for scaling itself. Converting here too made scaled windows
+    // pixelRatio squared times their intended size.
     if (this.props.width && this.props.height) {
-      if (options.scale) {
-        options.size = [
-          this.props.width * pixelRatio,
-          this.props.height * pixelRatio,
-        ];
-      } else {
-        options.size = [this.props.width, this.props.height];
-      }
+      options.size = [this.props.width, this.props.height];
     }
     if (config.window?.key) {
       setWindowKey(config.window.key);

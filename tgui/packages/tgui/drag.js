@@ -113,6 +113,10 @@ export const recallWindowGeometry = async (options = {}) => {
   if (size && scale) {
     size = [size[0] * pixelRatio, size[1] * pixelRatio];
   }
+  // The size it was last resized to, already in display-pixels, rather than snapping back to the default.
+  if (geometry?.size) {
+    size = geometry.size;
+  }
 
   if (!scale) {
     document.body.style.zoom = `${100 / window.devicePixelRatio}%`;

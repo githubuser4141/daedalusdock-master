@@ -224,3 +224,8 @@ code/game/objects/structures/ladders.dm,
 // code/modules/surgery/organs/stomach/_stomach.dm
 // code/modules/surgery/organs/ears.dm
 // code/modules/mob/living/brain/brain_item.dm
+// tgui/packages/tgui/layouts/Window.jsx
+// tgui/packages/tgui/drag.js
+// tgui/packages/tgui/interfaces/CameraConsole.jsx
+// tgui/packages/tgui/interfaces/Terminal/index.tsx
+// tgui/packages/tgui/interfaces/JobInfo.tsx

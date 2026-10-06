@@ -204,7 +204,7 @@ export const SquadPanel = ({ data, act }) => (
 export const MS13Squad = () => {
   const { data, act } = useBackend();
   return (
-    <Window width={720} height={650} title="Squad command" theme="mojavesun">
+    <Window width={560} height={480} title="Squad command" theme="mojavesun">
       <Window.Content scrollable>
         <SquadPanel data={data} act={act} />
       </Window.Content>

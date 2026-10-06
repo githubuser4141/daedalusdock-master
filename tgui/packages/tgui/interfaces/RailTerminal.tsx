@@ -321,7 +321,7 @@ export const RailTerminal = (props) => {
   }
 
   return (
-    <Window theme="retro-dark" width={780} height={500}>
+    <Window theme="retro-dark" width={600} height={400}>
       <Window.Content>
         {!fitted && (
           <Dimmer fontSize="16px">
