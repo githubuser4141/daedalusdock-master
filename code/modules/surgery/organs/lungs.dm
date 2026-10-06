@@ -346,7 +346,7 @@ TYPEINFO_DEF(/obj/item/organ/lungs)
 			spawn(-1)
 				owner.emote("cough")		//respitory tract infection
 
-	if(damage >= low_threshold)
+	if(passed_low_threshold()) // MOJAVE EDIT: low_threshold is a share of maxHealth
 		if(prob(2) && owner.blood_volume)
 			owner.visible_message("[owner] coughs up blood!", span_warning("You cough up blood."), span_hear("You hear someone coughing."))
 			owner.bleed(1)

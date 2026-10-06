@@ -41,7 +41,7 @@
 		deaf = max(deaf, 1) // if we're failing we always have at least 1 deaf stack (and thus deafness)
 	else // only clear deaf stacks if we're not failing
 		deaf = max(deaf - (0.5 * delta_time), 0)
-		if((damage > low_threshold) && DT_PROB(damage / 60, delta_time))
+		if(passed_low_threshold() && DT_PROB(damage / 60, delta_time))
 			adjustEarDamage(0, 4)
 			SEND_SOUND(owner, sound('sound/weapons/flash_ring.ogg'))
 

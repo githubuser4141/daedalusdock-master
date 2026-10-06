@@ -643,9 +643,9 @@ INITIALIZE_IMMEDIATE(/obj/item/organ)
 	// Add more info if Technetium is in their blood
 	if(owner?.has_reagent(/datum/reagent/technetium))
 		. += tag ? "<span style='font-weight: bold; color:#E42426'> organ is [round((damage/maxHealth)*100, 1)]% damaged.</span>" : "[round((damage/maxHealth)*100, 1)]"
-	else if(damage > high_threshold)
+	else if(passed_high_threshold()) // MOJAVE EDIT: thresholds are shares of maxHealth
 		. +=  tag ? "<span style='font-weight: bold; color:#ff9933'>Severely Damaged</span>" : "Severely Damaged"
-	else if (damage > low_threshold)
+	else if(passed_low_threshold())
 		. += tag ? "<span style='font-weight: bold; color:#ffcc33'>Mildly Damaged</span>" : "Mildly Damaged"
 
 	return

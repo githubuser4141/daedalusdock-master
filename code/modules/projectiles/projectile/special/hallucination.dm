@@ -30,7 +30,7 @@
 /obj/projectile/hallucination/Destroy()
 	if(hal_target?.client)
 		hal_target.client.images -= fake_icon
-	QDEL_NULL(fake_icon)
+	fake_icon = null // MOJAVE EDIT: images can't be qdel'd (code/datums/image.dm)
 	return ..()
 
 /obj/projectile/hallucination/Bump(atom/A)

@@ -83,7 +83,7 @@
 		handle_disgust(body, delta_time, times_fired)
 
 	//If the stomach is not damage exit out
-	if(damage < low_threshold)
+	if(!passed_low_threshold()) // MOJAVE EDIT: low_threshold is a share of maxHealth
 		return
 
 	//We are checking if we have nutriment in a damaged stomach.
