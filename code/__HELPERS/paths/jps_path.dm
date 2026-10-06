@@ -249,7 +249,7 @@
  * * heading: What direction are we going in? Obviously, should be cardinal
  * * parent_node: Only given for normal lateral scans, if we don't have one, we're a diagonal subscan.
 */
-/datum/pathfind/jps/proc/lateral_scan_spec(turf/original_turf, heading, datum/jps_node/parent_node)
+/datum/pathfind/jps/proc/lateral_scan_spec(turf/original_turf, heading, datum/jps_node/parent_node, budget = max_steps)
 	var/steps_taken = 0
 
 	var/turf/current_turf = original_turf
@@ -276,7 +276,9 @@
 		else
 			found_turfs[current_turf] = original_turf
 
-		if(parent_node && parent_node.number_tiles + steps_taken > max_steps)
+		// MOJAVE EDIT: a diagonal's subscan (no parent) is held to the steps its diagonal has left. Unbounded, every
+		// diagonal step scanned sideways to the first obstacle, which on open ground is the map edge.
+		if(steps_taken > (parent_node ? max_steps - parent_node.number_tiles : budget))
 			return
 
 		var/interesting = FALSE // have we found a forced neighbor that would make us add this turf to the open list?
@@ -337,7 +339,8 @@
 		else
 			found_turfs[current_turf] = original_turf
 
-		if(parent_node.number_tiles + steps_taken > max_steps)
+		var/budget = max_steps - (parent_node.number_tiles + steps_taken)
+		if(budget < 0)
 			return
 
 		var/interesting = FALSE // have we found a forced neighbor that would make us add this turf to the open list?
@@ -348,22 +351,22 @@
 				if(STEP_NOT_HERE_BUT_THERE(current_turf, EAST, NORTHEAST) || STEP_NOT_HERE_BUT_THERE(current_turf, SOUTH, SOUTHWEST))
 					interesting = TRUE
 				else
-					possible_child_node = (lateral_scan_spec(current_turf, WEST) || lateral_scan_spec(current_turf, NORTH))
+					possible_child_node = (lateral_scan_spec(current_turf, WEST, null, budget) || lateral_scan_spec(current_turf, NORTH, null, budget))
 			if(NORTHEAST)
 				if(STEP_NOT_HERE_BUT_THERE(current_turf, WEST, NORTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, SOUTH, SOUTHEAST))
 					interesting = TRUE
 				else
-					possible_child_node = (lateral_scan_spec(current_turf, EAST) || lateral_scan_spec(current_turf, NORTH))
+					possible_child_node = (lateral_scan_spec(current_turf, EAST, null, budget) || lateral_scan_spec(current_turf, NORTH, null, budget))
 			if(SOUTHWEST)
 				if(STEP_NOT_HERE_BUT_THERE(current_turf, EAST, SOUTHEAST) || STEP_NOT_HERE_BUT_THERE(current_turf, NORTH, NORTHWEST))
 					interesting = TRUE
 				else
-					possible_child_node = (lateral_scan_spec(current_turf, SOUTH) || lateral_scan_spec(current_turf, WEST))
+					possible_child_node = (lateral_scan_spec(current_turf, SOUTH, null, budget) || lateral_scan_spec(current_turf, WEST, null, budget))
 			if(SOUTHEAST)
 				if(STEP_NOT_HERE_BUT_THERE(current_turf, WEST, SOUTHWEST) || STEP_NOT_HERE_BUT_THERE(current_turf, NORTH, NORTHEAST))
 					interesting = TRUE
 				else
-					possible_child_node = (lateral_scan_spec(current_turf, SOUTH) || lateral_scan_spec(current_turf, EAST))
+					possible_child_node = (lateral_scan_spec(current_turf, SOUTH, null, budget) || lateral_scan_spec(current_turf, EAST, null, budget))
 
 		if(interesting || possible_child_node)
 			var/datum/jps_node/newnode = new(current_turf, parent_node, steps_taken)
