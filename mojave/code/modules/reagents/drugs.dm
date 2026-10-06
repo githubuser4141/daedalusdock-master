@@ -7,12 +7,16 @@
 	overdose_threshold = 25
 	metabolization_rate = 0.08 * REM
 
-/datum/reagent/ms13/buffout/on_mob_metabolize(mob/living/M)
+/datum/reagent/ms13/buffout/on_mob_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	M.maxHealth += 30 // These probably shouldn't ever be too high for the sake of balance. You're only human anyways afterall.
 	M.health += 30
 	return ..()
 
-/datum/reagent/ms13/buffout/on_mob_delete(mob/living/M)
+/datum/reagent/ms13/buffout/on_mob_end_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	M.maxHealth -= 30
 	M.health -= 30
 	return ..()
@@ -44,12 +48,10 @@
 	overdose_threshold = 30
 	metabolization_rate = 0.12 * REM
 
-/datum/reagent/ms13/calmex/on_mob_metabolize(mob/living/M)
+/datum/reagent/ms13/calmex/on_mob_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	M.throw_alert_text(/atom/movable/screen/alert/text, "You feel empty inside.", override = FALSE)
-	return ..()
-
-/datum/reagent/ms13/calmex/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	if(current_cycle >= 5)
 	return ..()
 
 /datum/reagent/ms13/calmex/overdose_process(mob/living/M)
@@ -71,14 +73,18 @@
 	overdose_threshold = 30
 	metabolization_rate = 0.12 * REM
 
-/datum/reagent/ms13/medx/on_mob_add(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/medx/on_mob_add(mob/living/carbon/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	to_chat(M, span_noticealien("Your whole body begins to feel numb, and a wave of calmness washes over you."))
 	ADD_TRAIT(M, TRAIT_NOSOFTCRIT, TRAUMA_TRAIT)
 	ADD_TRAIT(M, TRAIT_STUNIMMUNE, TRAUMA_TRAIT)
 	return ..()
 
-/datum/reagent/ms13/medx/on_mob_delete(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/medx/on_mob_delete(mob/living/carbon/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	REMOVE_TRAIT(M, TRAIT_NOSOFTCRIT, TRAUMA_TRAIT)
 	REMOVE_TRAIT(M, TRAIT_STUNIMMUNE, TRAUMA_TRAIT)
@@ -115,17 +121,21 @@
 	overdose_threshold = 30
 //	ph = 12 //It's a reducing agent
 
-/datum/reagent/ms13/radx/on_mob_metabolize(mob/living/L)
+/datum/reagent/ms13/radx/on_mob_metabolize(mob/living/L, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	ADD_TRAIT(L, TRAIT_HALT_RADIATION_EFFECTS, "[type]")
 
-/datum/reagent/ms13/radx/on_mob_end_metabolize(mob/living/L)
+/datum/reagent/ms13/radx/on_mob_end_metabolize(mob/living/L, class)
+	if(class != CHEM_BLOOD)
+		return
 	REMOVE_TRAIT(L, TRAIT_HALT_RADIATION_EFFECTS, "[type]")
 	return ..()
 
-/datum/reagent/ms13/radx/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/radx/affect_blood(mob/living/carbon/M, removed)
 	if (HAS_TRAIT(M, TRAIT_IRRADIATED))
-		M.adjustToxLoss(-1 * REM * delta_time)
+		M.adjustToxLoss(-1 * REM * SSMOBS_DT)
 
 	..()
 
@@ -138,13 +148,17 @@
 	overdose_threshold = 25
 	metabolization_rate = 0.6 * REM
 
-/datum/reagent/ms13/cateye/on_mob_add(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/cateye/on_mob_add(mob/living/carbon/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	to_chat(M, span_warning("Your eyes slightly ache as everything seemingly begins to brighten."))
 	ADD_TRAIT(M, TRAIT_NIGHT_VISION, "cat_eye")
 	return ..()
 
-/datum/reagent/ms13/cateye/on_mob_delete(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/cateye/on_mob_delete(mob/living/carbon/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	REMOVE_TRAIT(M, TRAIT_NIGHT_VISION, "cat_eye")
 	return ..()
@@ -165,15 +179,19 @@
 	addiction_types = list(/datum/addiction/ms13/daytripper = 25)
 	metabolization_rate = 0.6 * REM
 
-/datum/reagent/ms13/day_tripper/on_mob_metabolize(mob/living/L)
+/datum/reagent/ms13/day_tripper/on_mob_metabolize(mob/living/L, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 
 #warn Add something to replace TG moods
 
-/datum/reagent/ms13/day_tripper/on_mob_delete(mob/living/L)
+/datum/reagent/ms13/day_tripper/on_mob_delete(mob/living/L, class)
+	if(class != CHEM_BLOOD)
+		return
 	return ..()
 
-/datum/reagent/ms13/day_tripper/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/day_tripper/affect_blood(mob/living/carbon/M, removed)
 	M.set_timed_status_effect(0 SECONDS, /datum/status_effect/jitter, only_if_higher = FALSE)
 	return ..()
 
@@ -207,7 +225,9 @@
 	overdose_threshold = 18
 	metabolization_rate = 1 * REM
 
-/datum/reagent/ms13/hydra/on_mob_metabolize(mob/living/M)
+/datum/reagent/ms13/hydra/on_mob_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	// Was calling ..() twice - once through `. = ..()` and again through `return ..()`.
 	to_chat(M, span_notice("Your insides start tingling slightly. You can feel things shifting."))
 	return ..()
@@ -235,7 +255,9 @@
 	C.adjust_disgust(1)
 	return TRUE
 
-/datum/reagent/ms13/hydra/on_mob_delete(mob/living/carbon/human/M)
+/datum/reagent/ms13/hydra/on_mob_end_metabolize(mob/living/carbon/human/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	if(isliving(M))
 		to_chat(M, span_notice("Everything seems back to normal now."))
@@ -250,7 +272,9 @@
 	addiction_types = list(/datum/addiction/ms13/jet = 45)
 	metabolization_rate = 0.8 * REM
 
-/datum/reagent/ms13/jet/on_mob_add(mob/living/carbon/human/M)
+/datum/reagent/ms13/jet/on_mob_add(mob/living/carbon/human/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(!M.hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = M.hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
@@ -263,7 +287,9 @@
 		to_chat(M, span_userdanger("You feel an incredible pulsating high! You just absolutely love life in this moment!"))
 	return ..()
 
-/datum/reagent/ms13/jet/on_mob_delete(mob/living/carbon/human/M)
+/datum/reagent/ms13/jet/on_mob_delete(mob/living/carbon/human/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(!M.hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = M.hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
@@ -273,7 +299,7 @@
 		to_chat(M, span_userdanger("You come down from your high. Maybe you should go get some more?"))
 	return ..()
 
-/datum/reagent/ms13/jet/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/jet/affect_blood(mob/living/carbon/M, removed)
 	M.stamina.adjust(-2.5, 0)
 	M.setOrganLoss(ORGAN_SLOT_LUNGS, rand(0.25, 2))
 	if(prob(12))
@@ -299,7 +325,9 @@
 	addiction_types = list(/datum/addiction/ms13/rocket = 40)
 	metabolization_rate = 0.8 * REM
 
-/datum/reagent/ms13/rocket/on_mob_add(mob/living/carbon/human/M)
+/datum/reagent/ms13/rocket/on_mob_add(mob/living/carbon/human/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(!M.hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = M.hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
@@ -312,7 +340,9 @@
 		to_chat(M, span_green("You feel an incredible high! But feel very focused..."))
 	return ..()
 
-/datum/reagent/ms13/rocket/on_mob_delete(mob/living/carbon/human/M)
+/datum/reagent/ms13/rocket/on_mob_delete(mob/living/carbon/human/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(!M.hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = M.hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
@@ -324,7 +354,7 @@
 		to_chat(M, span_userdanger("You come down from your high. Everything seems back to normal."))
 	return ..()
 
-/datum/reagent/ms13/rocket/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/rocket/affect_blood(mob/living/carbon/M, removed)
 	M.stamina.adjust(-5, 0)
 	M.setOrganLoss(ORGAN_SLOT_LUNGS, rand(0.25, 1))
 	if(prob(12))
@@ -357,7 +387,9 @@
 	addiction_types = list(/datum/addiction/ms13/turbo = 35)
 	metabolization_rate = 1 * REM
 
-/datum/reagent/ms13/turbo/on_mob_add(mob/living/carbon/human/M)
+/datum/reagent/ms13/turbo/on_mob_add(mob/living/carbon/human/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(!M.hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = M.hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
@@ -370,7 +402,9 @@
 		to_chat(M, span_notice("The world around you begins to slow down."))
 	return ..()
 
-/datum/reagent/ms13/turbo/on_mob_delete(mob/living/carbon/human/M)
+/datum/reagent/ms13/turbo/on_mob_delete(mob/living/carbon/human/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(!M.hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = M.hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
@@ -381,7 +415,7 @@
 		to_chat(M, span_notice("The world around you starts speeding up again."))
 	return ..()
 
-/datum/reagent/ms13/turbo/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/turbo/affect_blood(mob/living/carbon/M, removed)
 	M.setOrganLoss(ORGAN_SLOT_LUNGS, rand(0.25, 2))
 	if(prob(12))
 		M.emote(pick("stare", "glare"))
@@ -408,7 +442,7 @@
 	addiction_types = list(/datum/addiction/ms13/mentats = 25)
 	metabolization_rate = 1 * REM
 
-/datum/reagent/ms13/mentats/on_mob_life(mob/living/carbon/C)
+/datum/reagent/ms13/mentats/affect_blood(mob/living/carbon/C, removed)
 	C.adjustOrganLoss(ORGAN_SLOT_BRAIN, -2*REM)
 	if(prob(15))
 		C.cure_trauma_type(resilience = TRAUMA_RESILIENCE_BASIC)
@@ -438,7 +472,9 @@
 	var/datum/brain_trauma/special/psychotic_brawling/bath_salts/rage
 	metabolization_rate = 0.7 * REM
 
-/datum/reagent/ms13/psycho/on_mob_add(mob/living/M)
+/datum/reagent/ms13/psycho/on_mob_add(mob/living/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
@@ -450,7 +486,7 @@
 	//SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "gone_psycho", /datum/mood_event/stimulant_heavy, name)
 	M.throw_alert_text(/atom/movable/screen/alert/text, "You feel a burning urge to harm.", override = FALSE)
 
-/datum/reagent/ms13/psycho/on_mob_life(mob/living/M)
+/datum/reagent/ms13/psycho/affect_blood(mob/living/M, removed)
 	if(prob(75))
 		shake_camera(M, 0.25, 1)
 		M.emote("jitter")
@@ -458,7 +494,9 @@
 	M.hallucination += 5
 	return ..()
 
-/datum/reagent/ms13/psycho/on_mob_delete(mob/living/M)
+/datum/reagent/ms13/psycho/on_mob_delete(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	REMOVE_TRAIT(M, TRAIT_STUNIMMUNE, type)
 	REMOVE_TRAIT(M, TRAIT_SLEEPIMMUNE, type)
 	if(rage)
@@ -498,7 +536,9 @@
 	var/datum/brain_trauma/special/psychotic_brawling/bath_salts/rage
 	metabolization_rate = 0.75 * REM
 
-/datum/reagent/ms13/overdrive/on_mob_metabolize(mob/living/M)
+/datum/reagent/ms13/overdrive/on_mob_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	ADD_TRAIT(M, TRAIT_STUNIMMUNE, type)
 	ADD_TRAIT(M, TRAIT_SLEEPIMMUNE, type)
@@ -511,7 +551,9 @@
 	M.overlay_fullscreen("overdrive", /atom/movable/screen/fullscreen/color_vision/red)
 	M.throw_alert_text(/atom/movable/screen/alert/text, "You feel a burning urge to harm.", override = FALSE)
 
-/datum/reagent/ms13/overdrive/on_mob_end_metabolize(mob/living/M)
+/datum/reagent/ms13/overdrive/on_mob_end_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	REMOVE_TRAIT(M, TRAIT_STUNIMMUNE, type)
 	REMOVE_TRAIT(M, TRAIT_SLEEPIMMUNE, type)
 	REMOVE_TRAIT(M, TRAIT_NOSOFTCRIT, TRAUMA_TRAIT)
@@ -550,7 +592,7 @@
 	M.visible_message(span_notice("[M] looks faint and begins to close their eyes."), span_alert("This doesn't feel good at all..."))
 	M.throw_alert_text(/atom/movable/screen/alert/text/cry, "You feel the area where your heart should be get a lot sloshier.", override = FALSE)
 
-/datum/reagent/ms13/overdrive/on_mob_life(mob/living/M)
+/datum/reagent/ms13/overdrive/affect_blood(mob/living/M, removed)
 	//SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, "gone_OVERDRIVE", /datum/mood_event/stimulant_heavy, name)
 	if(prob(25))
 		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, rand(1, 5))
@@ -566,7 +608,9 @@
 	overdose_threshold = 10
 	metabolization_rate = 0.8 * REM
 
-/datum/reagent/ms13/addictol/on_mob_metabolize(mob/living/carbon/M)
+/datum/reagent/ms13/addictol/on_mob_metabolize(mob/living/carbon/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	if(M.mind)
 		for(var/addiction_type in subtypesof(/datum/addiction))
@@ -583,7 +627,7 @@
 	M.adjustToxLoss(5, 0)
 	return ..()
 
-/datum/reagent/ms13/addictol/on_mob_life(mob/living/M)
+/datum/reagent/ms13/addictol/affect_blood(mob/living/M, removed)
 	M.adjustToxLoss(2, 0)
 	return ..()
 
@@ -619,7 +663,9 @@
 	/// surgery or a slow natural recovery either way - this only shortens the road.
 	var/tissue_heals_critical = FALSE
 
-/datum/reagent/ms13/medicine/stimpak_fluid/on_mob_metabolize(mob/living/M)
+/datum/reagent/ms13/medicine/stimpak_fluid/on_mob_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	ADD_TRAIT(M, TRAIT_COAGULATING, /datum/reagent/ms13/medicine/stimpak_fluid)
 	M.throw_alert_text(/atom/movable/screen/alert/text/brutal, "You feel your body start mending itself rapidly.", override = FALSE)
 	// AI EDIT: this used to live in a SECOND on_mob_metabolize() further down the file, which - per DM's
@@ -631,7 +677,9 @@
 		H.physiology?.bleed_mod *= passive_bleed_modifier
 	return ..()
 
-/datum/reagent/ms13/medicine/stimpak_fluid/on_mob_end_metabolize(mob/living/M)
+/datum/reagent/ms13/medicine/stimpak_fluid/on_mob_end_metabolize(mob/living/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	REMOVE_TRAIT(M, TRAIT_COAGULATING, /datum/reagent/ms13/medicine/stimpak_fluid)
 	var/mob/living/carbon/human/H = M
 	if(istype(H) && H.physiology && passive_bleed_modifier)
@@ -674,7 +722,7 @@
 		to_chat(C, span_green("You can feel your wounds closing."))
 	return TRUE
 
-/datum/reagent/ms13/medicine/stimpak_fluid/overdose_process(mob/living/carbon/human/M, delta_time, times_fired)
+/datum/reagent/ms13/medicine/stimpak_fluid/overdose_process(mob/living/carbon/human/M)
 	. = ..()
 	if(!M.blood_volume)
 		return
@@ -682,7 +730,7 @@
 	var/obj/item/organ/heart/our_heart = M.getorganslot(ORGAN_SLOT_HEART)
 	our_heart.applyOrganDamage(9.5 * (OD_multiplier))
 
-	if(DT_PROB(7.5, delta_time))
+	if(DT_PROB(7.5, SSMOBS_DT))
 		M.losebreath += rand(2, 4)
 		M.adjustOxyLoss(rand(1, 3))
 		if(prob(25 * (OD_multiplier)))
@@ -730,12 +778,12 @@
 /datum/reagent/ms13/medicine/antibiotics/affect_blood(mob/living/carbon/C, removed)
 	APPLY_CHEM_EFFECT(C, CE_ANTIBIOTIC, volume * MS13_ANTIBIOTIC_PILL_POTENCY)
 
-/datum/reagent/ms13/medicine/antibiotics/overdose_process(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/medicine/antibiotics/overdose_process(mob/living/carbon/M)
 	. = ..()
 	// Wrecking your gut with too many of them is the classic downside, and gives the liver something to do.
-	M.adjustToxLoss(1 * REM * delta_time, updating_health = FALSE)
+	M.adjustToxLoss(1 * REM * SSMOBS_DT, updating_health = FALSE)
 	var/obj/item/organ/liver/our_liver = M.getorganslot(ORGAN_SLOT_LIVER)
-	our_liver?.applyOrganDamage(0.5 * REM * delta_time)
+	our_liver?.applyOrganDamage(0.5 * REM * SSMOBS_DT)
 
 // Bitter Drink //
 
@@ -749,8 +797,8 @@
 	metabolization_rate = 4.75 * REAGENTS_METABOLISM // 0.95 per second
 	overdose_threshold = 40
 
-/datum/reagent/medicine/bitter_drink/on_mob_life(mob/living/carbon/M)
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super))
+/datum/reagent/medicine/bitter_drink/affect_blood(mob/living/carbon/M, removed)
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super))
 		M.adjustFireLoss(-3.75)
 		M.adjustBruteLoss(-3.75)
 		. = TRUE
@@ -784,8 +832,8 @@
 	APPLY_CHEM_EFFECT(C, CE_ANTIBIOTIC, MS13_ANTIBIOTIC_HERBAL_POTENCY)
 	return ..()
 
-/datum/reagent/medicine/blood_remedy/on_mob_life(mob/living/carbon/M)
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
+/datum/reagent/medicine/blood_remedy/affect_blood(mob/living/carbon/M, removed)
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
 		M.adjustToxLoss(-1.75)
 		M.adjustBruteLoss(-2.5)
 		. = TRUE
@@ -795,11 +843,11 @@
 		M.stamina.adjust(1)
 	..()
 
-/datum/reagent/medicine/blood_remedy/overdose_process(mob/living/M, delta_time, times_fired)
+/datum/reagent/medicine/blood_remedy/overdose_process(mob/living/M)
 	if(!M.blood_volume)
 		return
 
-	if(DT_PROB(7.5, delta_time))
+	if(DT_PROB(7.5, SSMOBS_DT))
 		M.losebreath += rand(2, 4)
 		M.adjustOxyLoss(rand(2, 5))
 		if(prob(30))
@@ -830,8 +878,8 @@
 	APPLY_CHEM_EFFECT(C, CE_ANTIBIOTIC, MS13_ANTIBIOTIC_HERBAL_POTENCY)
 	return ..()
 
-/datum/reagent/medicine/herb_antitox/on_mob_life(mob/living/carbon/M)
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
+/datum/reagent/medicine/herb_antitox/affect_blood(mob/living/carbon/M, removed)
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
 		M.adjustToxLoss(-5)
 		. = TRUE
 	else
@@ -839,13 +887,13 @@
 		M.stamina.adjust(1)
 	..()
 
-/datum/reagent/medicine/herb_antitox/overdose_process(mob/living/M, delta_time, times_fired)
+/datum/reagent/medicine/herb_antitox/overdose_process(mob/living/M)
 	if(!iscarbon(M))
 		return
 	var/mob/living/carbon/carbie = M
 	//You will be vomiting so the damage is really for a few ticks before you flush it out of your system
-	carbie.adjustToxLoss(1.5 * REM * delta_time)
-	if(DT_PROB(5, delta_time))
+	carbie.adjustToxLoss(1.5 * REM * SSMOBS_DT)
+	if(DT_PROB(5, SSMOBS_DT))
 		carbie.adjustToxLoss(6)
 		carbie.vomit()
 
@@ -861,8 +909,8 @@
 	metabolization_rate = 6 * REAGENTS_METABOLISM // 1.2 per second
 	overdose_threshold = 35
 
-/datum/reagent/medicine/burn_remedy/on_mob_life(mob/living/carbon/M)
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super))
+/datum/reagent/medicine/burn_remedy/affect_blood(mob/living/carbon/M, removed)
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super))
 		M.adjustFireLoss(-6.5)
 		. = TRUE
 	else
@@ -876,11 +924,11 @@
 
 	..()
 
-/datum/reagent/medicine/burn_remedy/overdose_process(mob/living/M, delta_time, times_fired)
+/datum/reagent/medicine/burn_remedy/overdose_process(mob/living/M)
 	if(current_cycle >= 10)
-		M.Stun(50 * REM * delta_time)
+		M.Stun(50 * REM * SSMOBS_DT)
 		. = TRUE
-	if(DT_PROB(10, delta_time))
+	if(DT_PROB(10, SSMOBS_DT))
 		to_chat(M, span_userdanger("You struggle to breathe!"))
 		M.losebreath += 5
 
@@ -895,19 +943,23 @@
 	metabolization_rate = 0.7 * REAGENTS_METABOLISM // 0.14 per second
 	overdose_threshold = 0
 
-/datum/reagent/medicine/trail_brew/on_mob_add(mob/living/carbon/human/M)
+/datum/reagent/medicine/trail_brew/on_mob_add(mob/living/carbon/human/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	M.add_movespeed_modifier(/datum/movespeed_modifier/reagent/ms13/trail)
 	if(isliving(M))
 		to_chat(M, span_userdanger("Your legs feel energetic and alive! Though your mind does feel a bit cloudy..."))
 	return ..()
 
-/datum/reagent/medicine/trail_brew/on_mob_delete(mob/living/carbon/human/M)
+/datum/reagent/medicine/trail_brew/on_mob_delete(mob/living/carbon/human/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	M.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/ms13/trail)
 	if(isliving(M))
 		to_chat(M, span_userdanger("You feel normal again, and your legs a bit sore."))
 	return ..()
 
-/datum/reagent/medicine/trail_brew/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/medicine/trail_brew/affect_blood(mob/living/carbon/M, removed)
 	M.stamina.adjust(-1.5, 0)
 	if(prob(4))
 		M.emote(pick("sniff", "sneeze"))
@@ -926,12 +978,16 @@
 	metabolization_rate = 6 * REAGENTS_METABOLISM // 1.2 per second
 	overdose_threshold = 18
 
-/datum/reagent/medicine/radtura_mix/on_mob_add(mob/living/carbon/human/M)
+/datum/reagent/medicine/radtura_mix/on_mob_add(mob/living/carbon/human/M, amount, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(isliving(M))
 		to_chat(M, span_userdanger("You feel a strange sensation coursing through your body. You'll probably regret this later...."))
 	return ..()
 
-/datum/reagent/medicine/radtura_mix/on_mob_delete(mob/living/carbon/human/M)
+/datum/reagent/medicine/radtura_mix/on_mob_delete(mob/living/carbon/human/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	if(isliving(M))
 		to_chat(M, span_userdanger("As you come down from your previous sensations, intense sickness sets in..."))
 		M.adjustToxLoss(rand(18,25))
@@ -941,8 +997,8 @@
 		M.blind_eyes(rand(5,8))
 	return ..()
 
-/datum/reagent/medicine/radtura_mix/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) ||  !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
+/datum/reagent/medicine/radtura_mix/affect_blood(mob/living/carbon/M, removed)
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/radaway))
 		M.adjustFireLoss(-8.25)
 		M.adjustBruteLoss(-8.25)
 		. = TRUE
@@ -953,8 +1009,8 @@
 		M.vomit()
 	..()
 
-/datum/reagent/medicine/radtura_mix/overdose_process(mob/living/carbon/M, delta_time, times_fired)
-	if(DT_PROB(15, delta_time))
+/datum/reagent/medicine/radtura_mix/overdose_process(mob/living/carbon/M)
+	if(DT_PROB(15, SSMOBS_DT))
 		M.losebreath += rand(4, 6)
 		M.adjustOxyLoss(rand(4, 8))
 		if(prob(60))
@@ -964,7 +1020,7 @@
 			var/obj/item/organ/heart/our_heart = M.getorganslot(ORGAN_SLOT_HEART)
 			our_heart.applyOrganDamage(2)
 
-	if(DT_PROB(10, delta_time))
+	if(DT_PROB(10, SSMOBS_DT))
 		to_chat(M, span_danger("You can feel your blood going toxic!"))
 		M.adjustToxLoss(8)
 		M.vomit()
@@ -980,12 +1036,12 @@
 	metabolization_rate = 0.05 //lets keep this simple, 18 for 6 minutes of effects
 	overdose_threshold = 0
 
-/datum/reagent/ms13/nicotine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	M.AdjustStun(-50  * REM * delta_time) //these are here because theyre balanced already
-	M.AdjustKnockdown(-50 * REM * delta_time)
-	M.AdjustUnconscious(-50 * REM * delta_time)
-	M.AdjustParalyzed(-50 * REM * delta_time)
-	M.AdjustImmobilized(-50 * REM * delta_time)
+/datum/reagent/ms13/nicotine/affect_blood(mob/living/carbon/M, removed)
+	M.AdjustStun(-50  * REM * SSMOBS_DT) //these are here because theyre balanced already
+	M.AdjustKnockdown(-50 * REM * SSMOBS_DT)
+	M.AdjustUnconscious(-50 * REM * SSMOBS_DT)
+	M.AdjustParalyzed(-50 * REM * SSMOBS_DT)
+	M.AdjustImmobilized(-50 * REM * SSMOBS_DT)
 	..()
 	. = TRUE
 
@@ -1007,8 +1063,8 @@
 	metabolization_rate = REAGENTS_METABOLISM // 0.2 per second
 	overdose_threshold = 0
 
-/datum/reagent/ms13/medicine/bitter_mix/on_mob_life(mob/living/carbon/M) //minor healing over a threshhold
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink))
+/datum/reagent/ms13/medicine/bitter_mix/affect_blood(mob/living/carbon/M, removed) //minor healing over a threshhold
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink))
 		if(M.getFireLoss() >= 60)
 			M.adjustFireLoss(-1.35)
 			. = TRUE
@@ -1032,8 +1088,8 @@
 	metabolization_rate = 3 * REAGENTS_METABOLISM // 0.6 per second
 	overdose_threshold = 0
 
-/datum/reagent/ms13/medicine/concentrated_xander/on_mob_life(mob/living/carbon/M) //minor healing over a threshhold
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/dried_xander))
+/datum/reagent/ms13/medicine/concentrated_xander/affect_blood(mob/living/carbon/M, removed) //minor healing over a threshhold
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/dried_xander))
 		if(M.getBruteLoss() >= 30)
 			M.adjustBruteLoss(-4)
 			M.stamina.adjust(3)
@@ -1053,8 +1109,8 @@
 	metabolization_rate = 3 * REAGENTS_METABOLISM // 0.6 per second
 	overdose_threshold = 0
 
-/datum/reagent/ms13/medicine/dried_xander/on_mob_life(mob/living/carbon/M) //minor healing over a threshhold
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/concentrated_xander))
+/datum/reagent/ms13/medicine/dried_xander/affect_blood(mob/living/carbon/M, removed) //minor healing over a threshhold
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/concentrated_xander))
 		if(M.getBruteLoss() >= 60)
 			M.adjustBruteLoss(-2)
 			M.stamina.adjust(1)
@@ -1076,8 +1132,8 @@
 	metabolization_rate = 3 * REAGENTS_METABOLISM // 0.6 per second
 	overdose_threshold = 0
 
-/datum/reagent/ms13/medicine/concentrated_broc/on_mob_life(mob/living/carbon/M) //minor healing over a threshhold
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/dried_broc))
+/datum/reagent/ms13/medicine/concentrated_broc/affect_blood(mob/living/carbon/M, removed) //minor healing over a threshhold
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/dried_broc))
 		if(M.getFireLoss() >= 30)
 			M.adjustFireLoss(-4)
 			M.stamina.adjust(1)
@@ -1097,8 +1153,8 @@
 	metabolization_rate = 3 * REAGENTS_METABOLISM // 0.6 per second
 	overdose_threshold = 0
 
-/datum/reagent/ms13/medicine/dried_broc/on_mob_life(mob/living/carbon/M) //minor healing over a threshhold
-	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) || !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) || !M.reagents.has_reagent(/datum/reagent/ms13/medicine/concentrated_broc))
+/datum/reagent/ms13/medicine/dried_broc/affect_blood(mob/living/carbon/M, removed) //minor healing over a threshhold
+	if(!M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/stimpak_fluid/super) && !M.reagents.has_reagent(/datum/reagent/medicine/bitter_drink) && !M.reagents.has_reagent(/datum/reagent/ms13/medicine/concentrated_broc))
 		if(M.getFireLoss() >= 60)
 			M.adjustFireLoss(-2)
 			. = TRUE

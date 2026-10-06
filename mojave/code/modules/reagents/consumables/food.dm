@@ -4,7 +4,9 @@
 	color = "#ff93e2"
 	brute_heal = 0
 
-/datum/reagent/consumable/nutriment/protein/prions/on_mob_metabolize(mob/living/carbon/M)
+/datum/reagent/consumable/nutriment/protein/prions/on_mob_metabolize(mob/living/carbon/M, class)
+	if(class != CHEM_BLOOD)
+		return
 	. = ..()
 	addtimer(CALLBACK(src, .proc/mrelectrickillthisguy, M), rand(5,10) MINUTES)
 

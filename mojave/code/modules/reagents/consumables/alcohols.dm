@@ -426,7 +426,7 @@
 	glass_name = "glass of pale yellow-ish liquid"
 	glass_desc = "A faint pale yellow liquid with a familiar distant agave smell to it. Smells pretty alcoholic."
 
-/datum/reagent/consumable/ethanol/ms13/waster_tequila/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/consumable/ethanol/ms13/waster_tequila/affect_blood(mob/living/carbon/M, removed)
 	if(M.getToxLoss() && prob(20))
 		M.adjustToxLoss(-1*REM, 0)
 		. = 1
@@ -461,7 +461,7 @@
 	glass_name = "glass of murky brown liquid"
 	glass_desc = "A murky brown liquid with a gross smell to it. You can ALMOST pick up the faint smell of alcohol."
 
-/datum/reagent/consumable/ethanol/ms13/brew_sludge/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/consumable/ethanol/ms13/brew_sludge/affect_blood(mob/living/carbon/M, removed)
 	M.adjustOrganLoss(ORGAN_SLOT_STOMACH, rand(1,2))
 	M.adjust_disgust(15)
 	..()
@@ -496,7 +496,7 @@
 	glass_name = "glass of pale orange liquid"
 	glass_desc = "A pale orange liquid. It reeks of fungus and has hints of tato."
 
-/datum/reagent/consumable/ethanol/ms13/swift_recovery/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/consumable/ethanol/ms13/swift_recovery/affect_blood(mob/living/carbon/M, removed)
 	M.adjustOrganLoss(ORGAN_SLOT_BRAIN, rand(-5,-1))
 	if(M.getToxLoss() && prob(20))
 		M.adjustToxLoss(1*REM, 0)
@@ -513,7 +513,7 @@
 	glass_name = "glass of deep red liquid"
 	glass_desc = "A deep red liquid with a spiced aroma. Smelling it brings a comforting aura."
 
-/datum/reagent/consumable/ethanol/ms13/fire_wine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/consumable/ethanol/ms13/fire_wine/affect_blood(mob/living/carbon/M, removed)
 	M.adjust_bodytemperature(25 * TEMPERATURE_DAMAGE_COEFFICIENT, 0, M.get_body_temp_normal())
 	..()
 	. = 1
@@ -538,7 +538,7 @@
 	glass_name = "glass of a reddish-purple liquid"
 	glass_desc = "A reddish-purple liquid with a distant fruit aroma to it, occasional black flakes can be seen floating around. Alcohol is present in it, albeit not too strong."
 
-/datum/reagent/consumable/ethanol/ms13/lead_champagne/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/consumable/ethanol/ms13/lead_champagne/affect_blood(mob/living/carbon/M, removed)
 	if(prob(20))
 		M.adjustOrganLoss(ORGAN_SLOT_BRAIN, rand(1,5))
 	..() // Not positive this works right. Radiation is when you unscuff it :tm:
@@ -553,17 +553,21 @@
 	glass_name = "glass of bright blue fizzy liquid"
 	glass_desc = "A bright blue fizzy liquid with a overwealming alcoholic smell. You feel like you get a hangover from the fumes itself."
 
-/datum/reagent/consumable/ethanol/ms13/nukashine/on_mob_metabolize(mob/living/L)
+/datum/reagent/consumable/ethanol/ms13/nukashine/on_mob_metabolize(mob/living/L, class)
+	if(class != CHEM_BLOOD)
+		return
 	..()
 	L.add_movespeed_modifier(/datum/movespeed_modifier/reagent/ephedrine)
 	to_chat(L, (span_warning("Your stomach burns with pain as you drink the Nukashine, your heart beating faster.")))
 
-/datum/reagent/consumable/ethanol/ms13/nukashine/on_mob_end_metabolize(mob/living/L)
+/datum/reagent/consumable/ethanol/ms13/nukashine/on_mob_end_metabolize(mob/living/L, class)
+	if(class != CHEM_BLOOD)
+		return
 	L.remove_movespeed_modifier(/datum/movespeed_modifier/reagent/ephedrine)
 	to_chat(L, (span_danger("Against it all odds, it looks like the pain faded...")))
 	..()
 
-/datum/reagent/consumable/ethanol/ms13/nukashine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/consumable/ethanol/ms13/nukashine/affect_blood(mob/living/carbon/M, removed)
 	M.AdjustStun(-20, FALSE)
 	M.AdjustKnockdown(-20, FALSE)
 	M.stamina.adjust(-5, 0)

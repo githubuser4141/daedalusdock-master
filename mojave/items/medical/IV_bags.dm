@@ -130,7 +130,7 @@
 	color = "#ff7200"
 	metabolization_rate = 2 * REAGENTS_METABOLISM
 
-/datum/reagent/ms13/medicine/radaway/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
+/datum/reagent/ms13/medicine/radaway/affect_blood(mob/living/carbon/M, removed)
 	M.adjustToxLoss(-3*REM)
 	. = 1
 	..()
