@@ -242,6 +242,9 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 		return ..()
 	if(!use_power && !ignore_use_power)
 		return TRUE
+	// The network check_wiring() found, while it's still live, before scanning the walls around again.
+	if(ms13_net?.avail > 0 && isturf(loc))
+		return TRUE
 	return isturf(loc) && !!ms13_supply_at(loc)
 
 /obj/machinery/use_power(amount, chan = power_channel)
@@ -516,10 +519,14 @@ GLOBAL_LIST_EMPTY(ms13_rewalled_cables)
 	var/area/place = get_area(src)
 	return !place.lightswitch && powered() || flickering || constant_flickering
 
+/// Every light in an area hears every change on its APC. One whose own power didn't change has nothing to redo:
+/// set_on() -> update() would otherwise queue a fresh turn_on() for every light that was already lit.
 /obj/machinery/light/power_change()
-	if(!ms13_wired())
-		return ..()
-	set_on(has_power())
+	var/area/place = get_area(src)
+	var/powered = ms13_wired() ? has_power() : (place.lightswitch && place.power_light)
+	if(!!(powered && status == LIGHT_OK) == !!on)
+		return
+	set_on(powered)
 
 /obj/item/radio/intercom/AreaPowerCheck(datum/source)
 	var/area/place = get_area(src)
