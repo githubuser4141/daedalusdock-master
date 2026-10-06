@@ -222,6 +222,18 @@
 /datum/particle_weather/proc/weather_act(mob/living/L)
 	return
 
+/// Ticks of blur a storm can build up at full severity.
+#define WEATHER_BLUR_TICKS 12
+
+/// Clouds vision by rate a tick up to a severity-scaled ceiling, rather than piling up for the whole storm (a dust
+/// storm used to leave 20+ minutes of blur to wear off at 0.5/s).
+/datum/particle_weather/proc/blur_vision(mob/living/L, rate)
+	var/ceiling = rate * WEATHER_BLUR_TICKS * severityMod()
+	if(L.eye_blurry < ceiling)
+		L.adjust_blurriness(min(rate, ceiling - L.eye_blurry))
+
+#undef WEATHER_BLUR_TICKS
+
 //weather effects for objects
 /datum/particle_weather/proc/weather_obj_act(obj/L)
 	if(can_weather_act_obj(L))

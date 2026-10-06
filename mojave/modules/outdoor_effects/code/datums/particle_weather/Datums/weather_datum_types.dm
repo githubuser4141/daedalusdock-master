@@ -21,7 +21,7 @@
 		return
 
 	if(ishuman(L) && !L.is_eyes_covered())
-		L.adjust_blurriness(6.5)
+		blur_vision(L, 1.5)
 
 /datum/particle_weather/radiation_storm
 	name = "radiation storm"
@@ -79,7 +79,7 @@
 
 /datum/particle_weather/rain_gentle/weather_act(mob/living/L)
 	if(HAS_TRAIT(L, TRAIT_WEARING_GAS_MASK))
-		L.adjust_blurriness(1)
+		blur_vision(L, 0.6)
 		if(prob(10))
 			to_chat(L, "The [src] obscures your gas mask!")
 		return
@@ -103,7 +103,7 @@
 
 /datum/particle_weather/rain_storm/weather_act(mob/living/L)
 	if(HAS_TRAIT(L, TRAIT_WEARING_GAS_MASK))
-		L.adjust_blurriness(1.5)
+		blur_vision(L, 0.75)
 		if(prob(10))
 			to_chat(L, "The [src] obscures your gas mask!")
 		return
@@ -127,7 +127,7 @@
 
 /datum/particle_weather/snow_gentle/weather_act(mob/living/L)
 	if(HAS_TRAIT(L, TRAIT_WEARING_GAS_MASK))
-		L.adjust_blurriness(2.5)
+		blur_vision(L, 1)
 		if(prob(10))
 			to_chat(L, "The [src] obscures your gas mask!")
 		return
@@ -152,11 +152,11 @@
 //Makes you a lot little chilly
 /datum/particle_weather/snow_storm/weather_act(mob/living/L)
 	if(HAS_TRAIT(L, TRAIT_WEARING_GAS_MASK))
-		L.adjust_blurriness(3.5) // Snow sticks to your mask even worse than it gets into your mf eyes
+		blur_vision(L, 1.25) // Snow sticks to your mask even worse than it gets into your mf eyes
 		if(prob(10))
 			to_chat(L, "The [src] obscures your gas mask!")
 		return
 
 	if(ishuman(L) && !L.is_eyes_covered())
-		L.adjust_blurriness(2.5)
+		blur_vision(L, 1)
 
