@@ -63,3 +63,12 @@
 	icon_state = "superstim"
 	inhand_icon_state = "superstim"
 	list_reagents = list(/datum/reagent/ms13/medicine/stimpak_fluid/super = 10)
+
+/// Pre-war and rare: the one thing that brings someone back from brain death (drugs.dm).
+/obj/item/reagent_containers/hypospray/medipen/ms13/stimpak/synaptic
+	name = "synaptic restorative"
+	desc = "A pre-war military autoinjector of neural regenerative. Mends a damaged brain - and, used within minutes, a dead one, though whatever stopped the heart still needs seeing to."
+	icon_state = "superstim"
+	inhand_icon_state = "superstim"
+	color = "#b89cf0"
+	list_reagents = list(/datum/reagent/ms13/medicine/synaptic_restorative = 10)

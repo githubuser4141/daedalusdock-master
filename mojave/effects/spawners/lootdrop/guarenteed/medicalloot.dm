@@ -32,7 +32,8 @@
 			/obj/item/stack/medical/gauze/ms13/military = 30,
 			/obj/item/stack/medical/ointment/ms13/dressing = 30,
 			/obj/item/reagent_containers/hypospray/medipen/ms13/stimpak/super = 10,
-			/obj/item/stack/medical/suture/ms13 = 30
+			/obj/item/stack/medical/suture/ms13 = 30,
+			/obj/item/reagent_containers/hypospray/medipen/ms13/stimpak/synaptic = 2
 			)
 
 /obj/effect/spawner/random/ms13/guaranteed/medical/lowrandom

@@ -38,7 +38,8 @@
 			/obj/item/stack/medical/ointment/ms13/dressing = 30,
 			/obj/item/reagent_containers/hypospray/medipen/ms13/stimpak/super = 10,
 			/obj/item/stack/medical/suture/ms13 = 10,
-			/obj/item/stack/medical/ms13/balm = 20
+			/obj/item/stack/medical/ms13/balm = 20,
+			/obj/item/reagent_containers/hypospray/medipen/ms13/stimpak/synaptic = 2
 			)
 
 /obj/effect/spawner/random/ms13/medical/lowrandom
@@ -189,5 +190,6 @@
 			/obj/item/storage/pill_bottle/ms13/buffout = 10,
 			/obj/item/reagent_containers/hypospray/medipen/ms13/medx = 15,
 			/obj/item/reagent_containers/hypospray/medipen/ms13/psycho = 5,
-			/obj/item/reagent_containers/hypospray/medipen/ms13/addictol = 5
+			/obj/item/reagent_containers/hypospray/medipen/ms13/addictol = 5,
+			/obj/item/reagent_containers/hypospray/medipen/ms13/stimpak/synaptic = 2
 			)

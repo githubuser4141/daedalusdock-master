@@ -223,3 +223,4 @@ code/game/objects/structures/ladders.dm,
 // code/modules/surgery/organs/_organ.dm
 // code/modules/surgery/organs/stomach/_stomach.dm
 // code/modules/surgery/organs/ears.dm
+// code/modules/mob/living/brain/brain_item.dm

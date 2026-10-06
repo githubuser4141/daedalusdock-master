@@ -1,5 +1,5 @@
 #define BRAIN_DAMAGE_THRESHOLDS 10
-#define BRAIN_DECAY_RATE 1
+#define BRAIN_DECAY_RATE 0.75 // MOJAVE EDIT: was 1; a starved brain dies about 4.5 minutes after the heart stops, not 3
 
 /obj/item/organ/brain
 	name = "brain"

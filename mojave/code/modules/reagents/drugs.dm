@@ -758,6 +758,72 @@
 	tissue_max_ratio = 1
 	tissue_heals_critical = TRUE
 
+// Synaptic Restorative //
+
+/**
+ * Pre-war military neural regenerative. In the blood it regrows brain tissue faster than a brain starved of blood
+ * loses it, cures what that damage left behind, and steadies the heart. Into someone dead short of
+ * ORGAN_RECOVERY_THRESHOLD it brings the brain back over the edge, and DD brings them back with it - unconscious,
+ * badly hurt, and needing whatever stopped their heart seen to before it does it again.
+ */
+/datum/reagent/ms13/medicine/synaptic_restorative
+	name = "synaptic restorative"
+	description = "A pre-war military neural regenerative. Regrows brain tissue at an astonishing rate."
+	reagent_state = LIQUID
+	color = "#9f7fe0"
+	taste_description = "ozone"
+	metabolization_rate = 0.25
+	overdose_threshold = 15
+
+/datum/reagent/ms13/medicine/synaptic_restorative/affect_blood(mob/living/carbon/C, removed)
+	. = ..()
+	APPLY_CHEM_EFFECT(C, CE_BRAIN_REGEN, 1)
+	APPLY_CHEM_EFFECT(C, CE_STABLE, 1)
+	C.adjustOrganLoss(ORGAN_SLOT_BRAIN, -MS13_SYNAPTIC_BRAIN_HEAL * removed, updating_health = FALSE)
+	if(prob(15))
+		C.cure_trauma_type(resilience = TRAUMA_RESILIENCE_SURGERY)
+	return TRUE
+
+/// The dead don't metabolise, so it works on the brain the moment it's in.
+/datum/reagent/ms13/medicine/synaptic_restorative/on_mob_add(mob/living/carbon/C, amount, class)
+	. = ..()
+	if(class != CHEM_BLOOD || C.stat != DEAD)
+		return
+	var/obj/item/organ/brain/brain = C.getorganslot(ORGAN_SLOT_BRAIN)
+	if(!brain || !(brain.organ_flags & ORGAN_DEAD) || !brain.can_recover())
+		return
+	C.visible_message(span_notice("[C]'s eyelids flicker."))
+	brain.setOrganDamage(brain.maxHealth * MS13_SYNAPTIC_REVIVE_DAMAGE)
+
+/datum/reagent/ms13/medicine/synaptic_restorative/overdose_process(mob/living/carbon/C)
+	. = ..()
+	C.set_jitter_if_lower(10 SECONDS)
+	if(prob(20))
+		to_chat(C, span_warning("Your skull feels too small for what's growing inside it."))
+		C.adjustOrganLoss(ORGAN_SLOT_BRAIN, 2, updating_health = FALSE)
+	return TRUE
+
+#ifdef UNIT_TESTS
+/// Synaptic restorative brings back the recently brain-dead, hurt, and mends a hurt brain.
+/datum/unit_test/ms13_synaptic_restorative
+	name = "MEDICAL: Synaptic Restorative Brings Back The Brain-Dead"
+
+/datum/unit_test/ms13_synaptic_restorative/Run()
+	var/mob/living/carbon/human/consistent/patient = allocate(/mob/living/carbon/human/consistent)
+	var/obj/item/organ/brain/brain = patient.getorganslot(ORGAN_SLOT_BRAIN)
+	brain.setOrganDamage(brain.maxHealth)
+	if(patient.stat != DEAD)
+		return Fail("Destroying the brain didn't kill them.")
+	patient.bloodstream.add_reagent(/datum/reagent/ms13/medicine/synaptic_restorative, 10)
+	if(patient.stat == DEAD || (brain.organ_flags & ORGAN_DEAD) || !brain.damage)
+		return Fail("It didn't bring back the recently brain-dead, or brought them back unhurt.")
+	var/datum/reagent/ms13/medicine/synaptic_restorative/serum = locate() in patient.bloodstream.reagent_list
+	var/before = brain.damage
+	serum.affect_blood(patient, 1)
+	if(brain.damage >= before)
+		Fail("It didn't mend a hurt brain.")
+#endif
+
 // Antibiotics //
 
 /**

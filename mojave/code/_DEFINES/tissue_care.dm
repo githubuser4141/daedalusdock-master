@@ -115,3 +115,9 @@
 #define MS13_SUPER_STIMPAK_TISSUE_HEAL 3
 /// Brute/burn a stimpak mends per tick. heal_Rate on the reagent is the per-use budget this comes from.
 #define MS13_STIMPAK_HEAL_DIVISOR 4
+
+// --- Synaptic restorative (mojave/code/modules/reagents/drugs.dm). ---
+/// Brain damage mended per unit metabolised: at its rate, faster than a brain starved of blood decays.
+#define MS13_SYNAPTIC_BRAIN_HEAL 8
+/// Share of its health's worth of damage a dead brain is brought back to: alive again, and badly hurt.
+#define MS13_SYNAPTIC_REVIVE_DAMAGE 0.7
