@@ -231,3 +231,4 @@ code/game/objects/structures/ladders.dm,
 // tgui/packages/tgui/interfaces/Terminal/index.tsx
 // tgui/packages/tgui/interfaces/JobInfo.tsx
 // code/__HELPERS/paths/jps_path.dm
+// code/__HELPERS/icons.dm

@@ -58,7 +58,8 @@
 				if(1)
 					patient.blood_volume = BLOOD_VOLUME_BAD - 10
 			patient.update_pale_skin()
-			var/expected = strength ? BlendRGB(GLOB.skin_tones[tone], "#b8c4c9", strength) : null
+			// Full strength spelled out: BlendRGB() once wrapped it back to the plain skin tone, and this check mirrored it.
+			var/expected = strength == 1 ? "#b8c4c9" : (strength ? BlendRGB(GLOB.skin_tones[tone], "#b8c4c9", strength) : null)
 			if(LAZYACCESS(arm.color_overrides, "[LIMB_COLOR_PALE_SKIN]") != expected)
 				return Fail("Pallor stage [strength] failed for [tone], including recovery.")
 			if(arm.draw_color != (expected || GLOB.skin_tones[tone]))

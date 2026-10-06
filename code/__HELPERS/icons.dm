@@ -309,7 +309,8 @@ world
 	amount<0 or amount>1 are allowed
  */
 /proc/BlendRGB(rgb1, rgb2, amount)
-	return rgb_gradient(amount, 0, rgb1, 1, rgb2, "loop")
+	// MOJAVE EDIT: no "loop" - it wrapped an amount of 1 back to rgb1, so a full blend did nothing.
+	return rgb_gradient(amount, 0, rgb1, 1, rgb2)
 
 /proc/HueToAngle(hue)
 	// normalize hsv in case anything is screwy
