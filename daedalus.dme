@@ -5149,6 +5149,7 @@
 #include "mojave\code\_onclick\hud\screen_objects\screen_objects.dm"
 #include "mojave\code\controllers\subsystem\advanced_pathfinding.dm"
 #include "mojave\code\controllers\subsystem\atoms.dm"
+#include "mojave\code\controllers\subsystem\projectiles.dm"
 #include "mojave\code\controllers\subsystem\seal_planetary_gaps.dm"
 #include "mojave\code\datums\documents.dm"
 #include "mojave\code\datums\physiology.dm"
