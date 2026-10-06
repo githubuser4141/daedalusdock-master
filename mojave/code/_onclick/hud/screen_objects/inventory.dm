@@ -10,6 +10,10 @@
 	var/obj/item/held = hud?.mymob?.get_item_for_held_index(held_index)
 	if(held?.wielded || istype(held, /obj/item/offhand))
 		. += ms13_art ? "[hand_state]_wield" : "hand_active"
+	// The active and wield art are whole tiles: an unusable hand's mark goes on top of them, not under.
+	if(blocked_overlay in .)
+		. -= blocked_overlay
+		. += blocked_overlay
 
 #ifdef UNIT_TESTS
 /datum/unit_test/ms13_hand_slots
