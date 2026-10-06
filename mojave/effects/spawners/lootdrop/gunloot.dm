@@ -532,6 +532,41 @@
 				/obj/item/stock_parts/cell/ms13/gauss
 				)
 
+	var/loot17 = list(
+				/obj/item/gun_mod/scope,
+				/obj/item/gun_mod/suppressor,
+				/obj/item/gun_maintenance_supplies
+				)
+
 /obj/effect/spawner/random/ms13/gun/military/Initialize(mapload)
-	loot = pick(loot1, loot2, loot3, loot4, loot5, loot6, loot7, loot8, loot9, loot10, loot11, loot12, loot13, loot14, loot15, loot16)
+	loot = pick(loot1, loot2, loot3, loot4, loot5, loot6, loot7, loot8, loot9, loot10, loot11, loot12, loot13, loot14, loot15, loot16, loot17)
 	. = ..()
+
+// Gun mods and maintenance kits (mojave/code/modules/projectiles/gun.dm). Workshops, armories and anywhere a gun was
+// looked after.
+/obj/effect/spawner/random/ms13/gun_parts
+	name = "DO NOT USE ME - Mojave Sun gun parts spawners"
+	icon_state = "ms13_gun"
+	spawn_loot_count = 1
+
+/obj/effect/spawner/random/ms13/gun_parts/low
+	name = "low tier gun parts spawner"
+	spawn_loot_chance = 50
+	loot = list(
+			/obj/item/gun_maintenance_supplies = 40,
+			/obj/item/gun_mod/padded_stock = 15,
+			/obj/item/gun_mod/compensator = 15,
+			/obj/item/gun_mod/match_trigger = 15,
+			/obj/item/gun_mod/long_barrel = 15,
+			)
+
+/obj/effect/spawner/random/ms13/gun_parts/high
+	name = "high tier gun parts spawner"
+	spawn_loot_chance = 65
+	loot = list(
+			/obj/item/gun_maintenance_supplies = 25,
+			/obj/item/gun_mod/suppressor = 25,
+			/obj/item/gun_mod/scope = 20,
+			/obj/item/gun_mod/long_barrel = 15,
+			/obj/item/gun_mod/compensator = 15,
+			)

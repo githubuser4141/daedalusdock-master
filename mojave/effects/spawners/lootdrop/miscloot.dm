@@ -22,7 +22,8 @@
 			/obj/effect/spawner/random/ms13/tools/tool = 48,
 			/obj/effect/spawner/random/ms13/tools/farming = 4,
 			/obj/effect/spawner/random/ms13/crafting/lowrandom = 30,
-			/obj/item/storage/ms13/toolbox = 3
+			/obj/item/storage/ms13/toolbox = 3,
+			/obj/effect/spawner/random/ms13/gun_parts/low = 6
 			)
 
 /obj/effect/spawner/random/ms13/tools/tool
@@ -128,7 +129,8 @@
 			/obj/item/stack/sheet/ms13/rubber/two,
 			/obj/item/stack/sheet/ms13/scrap_parts/two,
 			/obj/item/stack/sheet/ms13/scrap/two,
-			/obj/item/restraints/handcuffs/ms13/rope
+			/obj/item/restraints/handcuffs/ms13/rope,
+			/obj/item/gun_maintenance_supplies
 	)
 
 /obj/effect/spawner/random/ms13/crafting/highrandom
@@ -147,7 +149,8 @@
 			/obj/item/stack/sheet/ms13/circuits/two,
 			/obj/item/stack/sheet/ms13/mil_fiber/two,
 			/obj/item/ms13/component/plasma_battery,
-			/obj/item/ms13/component/vacuum_tube
+			/obj/item/ms13/component/vacuum_tube,
+			/obj/effect/spawner/random/ms13/gun_parts/high
 	)
 
 /obj/effect/spawner/random/ms13/crafting/household

@@ -5547,6 +5547,7 @@
 #include "mojave\items\food\meat.dm"
 #include "mojave\items\guns\ballistic.dm"
 #include "mojave\items\guns\energy.dm"
+#include "mojave\items\guns\handling.dm"
 #include "mojave\items\guns\projectiles.dm"
 #include "mojave\items\guns\ammo\energy-ammo.dm"
 #include "mojave\items\guns\ammo\pistol-ammo.dm"

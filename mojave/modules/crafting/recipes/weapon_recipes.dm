@@ -486,3 +486,81 @@
 		if(istype(gun.magazine, /obj/item/ammo_box/magazine/internal/cylinder) && length(gun.magazine.stored_ammo) != chambers)
 			Fail("Unloading a crafted [gun] lost chambers from its cylinder.")
 #endif
+
+// Gun mods and maintenance kits (mojave/code/modules/projectiles/gun.dm).
+
+/datum/crafting_recipe/gun_maintenance_supplies
+	name = "gun maintenance supplies"
+	result = /obj/item/gun_maintenance_supplies
+	time = 6 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/cloth = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2,
+				/obj/item/stack/sheet/ms13/plastic = 1)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_GENERAL | CRAFTING_BENCH_WEAPONS
+
+/datum/crafting_recipe/gun_mod_padded_stock
+	name = "padded stock"
+	result = /obj/item/gun_mod/padded_stock
+	time = 10 SECONDS
+	tool_behaviors = list(TOOL_SAW)
+	reqs = list(/obj/item/stack/sheet/ms13/wood/plank = 2,
+				/obj/item/stack/sheet/ms13/leather = 1,
+				/obj/item/stack/sheet/ms13/cloth = 1)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_WEAPONS
+
+/datum/crafting_recipe/gun_mod_match_trigger
+	name = "match trigger"
+	result = /obj/item/gun_mod/match_trigger
+	time = 12 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	tool_paths = list(/obj/item/ms13/hammer)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 1,
+				/obj/item/stack/sheet/ms13/scrap_parts = 3)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_WEAPONS
+
+/datum/crafting_recipe/gun_mod_compensator
+	name = "compensator"
+	result = /obj/item/gun_mod/compensator
+	time = 15 SECONDS
+	tool_behaviors = list(TOOL_DRILL, TOOL_WELDER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_WEAPONS
+
+/datum/crafting_recipe/gun_mod_long_barrel
+	name = "long barrel"
+	result = /obj/item/gun_mod/long_barrel
+	time = 20 SECONDS
+	tool_behaviors = list(TOOL_DRILL, TOOL_WELDER, TOOL_SAW)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 3,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_WEAPONS
+
+/datum/crafting_recipe/gun_mod_suppressor
+	name = "suppressor"
+	result = /obj/item/gun_mod/suppressor
+	time = 25 SECONDS
+	tool_behaviors = list(TOOL_DRILL, TOOL_WELDER)
+	reqs = list(/obj/item/stack/sheet/ms13/refined_steel = 2,
+				/obj/item/stack/sheet/ms13/refined_alu = 1,
+				/obj/item/stack/sheet/ms13/scrap_parts = 2,
+				/obj/item/stack/sheet/ms13/rubber = 1)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_WEAPONS
+
+/datum/crafting_recipe/gun_mod_scope
+	name = "rifle scope"
+	result = /obj/item/gun_mod/scope
+	time = 25 SECONDS
+	tool_behaviors = list(TOOL_SCREWDRIVER)
+	reqs = list(/obj/item/stack/sheet/ms13/glass = 2,
+				/obj/item/stack/sheet/ms13/refined_alu = 2,
+				/obj/item/stack/sheet/ms13/scrap_parts = 1)
+	category = CAT_GUNS
+	crafting_interface = CRAFTING_BENCH_WEAPONS

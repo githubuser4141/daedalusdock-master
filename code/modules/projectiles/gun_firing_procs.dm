@@ -211,7 +211,7 @@
 		return FALSE
 
 	if(randomspread)
-		sprd = round((rand(0, 1) - 0.5) * DUALWIELD_PENALTY_EXTRA_MULTIPLIER * (randomized_gun_spread + randomized_bonus_spread))
+		sprd = round((rand() - 0.5) * DUALWIELD_PENALTY_EXTRA_MULTIPLIER * (randomized_gun_spread + randomized_bonus_spread)) // MOJAVE EDIT: rand(), as one burst shares its rolled spread and rand(0, 1) only ever picked + or -
 	else //Smart spread
 		sprd = round((((rand_spr/burst_size) * iteration) - (0.5 + (rand_spr * 0.25))) * (randomized_gun_spread + randomized_bonus_spread))
 

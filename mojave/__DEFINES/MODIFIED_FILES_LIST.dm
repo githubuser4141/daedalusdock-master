@@ -218,6 +218,7 @@ code/game/objects/structures/ladders.dm,
 // code/controllers/subsystem/movement/moveloop_astar.dm
 // code/modules/lighting/lighting_source.dm
 // code/modules/projectiles/projectile/special/hallucination.dm
+// code/modules/projectiles/gun_firing_procs.dm
 // code/modules/surgery/organs/lungs.dm
 // code/modules/surgery/organs/_organ.dm
 // code/modules/surgery/organs/stomach/_stomach.dm

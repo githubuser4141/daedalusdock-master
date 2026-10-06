@@ -56,6 +56,16 @@
 #define GUN_RECOIL_SETTLE 1
 /// Tiles each shot floats the view back along it, for each point of its kick and of the recoil built up.
 #define GUN_RECOIL_FLOAT 0.04
+/// Share of a shot's spread each point of Perception off average takes away or adds, and of how far off the aimed-at
+/// body part it strays with range.
+#define GUN_PERCEPTION_AIM 0.08
+/// Spread for firing within GUN_MOVING_WINDOW of a step, for each step of weapon_weight (light 1, heavy 3).
+#define GUN_MOVING_SPREAD 5
+#define GUN_MOVING_WINDOW (0.6 SECONDS)
+/// Share each point of Agility off average takes away or adds from that, and from how long recoil takes to settle.
+#define GUN_AGILITY_STEADY 0.1
+/// Spread for firing winded (exhausted, from running or being hit).
+#define GUN_WINDED_SPREAD 10
 
 /// Where on a gun a mod goes. A gun takes one mod in each slot it has (mod_slots).
 #define GUN_MOD_BARREL "barrel"
@@ -117,7 +127,8 @@
 	var/wants = weapon_weight == WEAPON_HEAVY ? GUN_ONE_HAND_STRENGTH_HEAVY : GUN_ONE_HAND_STRENGTH_MEDIUM
 	return max(1 - (1 - GUN_ONE_HAND_FLOOR) * (user.get_body_strength() - SPECIAL_BASELINE) / (wants - SPECIAL_BASELINE), GUN_ONE_HAND_FLOOR)
 
-/// Spread the shooter adds: short of what the gun needs, one-handed with a gun that wants two, and recoil built up.
+/// Spread the shooter adds: short of what the gun needs, one-handed with a gun that wants two, recoil built up, on the
+/// move (less so for the agile) and winded.
 /obj/item/gun/proc/handling_spread(mob/living/user)
 	if(!isliving(user))
 		return 0
@@ -125,6 +136,15 @@
 	. += user.current_gun_recoil() * GUN_RECOIL_SPREAD
 	if(!wielded && one_hand_by_weight)
 		. += (weapon_weight == WEAPON_HEAVY ? GUN_ONE_HAND_SPREAD_HEAVY : GUN_ONE_HAND_SPREAD_MEDIUM) * one_hand_share(user)
+	if(world.time - user.last_moved_time < GUN_MOVING_WINDOW)
+		. += GUN_MOVING_SPREAD * max(weapon_weight, 1) * max(1 - GUN_AGILITY_STEADY * (user.get_body_agility() - SPECIAL_BASELINE), 0.3)
+	if(HAS_TRAIT(user, TRAIT_EXHAUSTED))
+		. += GUN_WINDED_SPREAD
+
+/// Under 1 for a sharp eye, as far as the shooter's eyes, blood and pain let it see (stat_condition.dm): a shot's
+/// spread, and how far off the aimed-at part it strays with range, shrink by it.
+/obj/item/gun/proc/aim_mult(mob/living/user)
+	return isliving(user) ? clamp(1 - GUN_PERCEPTION_AIM * (user.get_stat(SPECIAL_PERCEPTION) - SPECIAL_BASELINE), 0.5, 1.5) : 1
 
 /// How hard a shot kicks its shooter: the gun's own, and more short of its Strength or one-handed with it.
 /obj/item/gun/proc/shot_kick(mob/living/user)
@@ -138,7 +158,13 @@
 		. *= clamp(SPECIAL_BASELINE / max(user.get_body_strength(), SPECIAL_BASELINE), 0.35, 1)
 
 /obj/item/gun/do_fire_gun(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0)
-	return ..(target, user, message, params, zone_override, bonus_spread + handling_spread(user))
+	var/aim = aim_mult(user)
+	var/own_spread = spread
+	spread *= aim
+	// Read by the round when it lands (process_hit()); whoever fires next sets it again.
+	accuracy_falloff = initial(accuracy_falloff) * aim
+	. = ..(target, user, message, params, zone_override, (bonus_spread + handling_spread(user)) * aim)
+	spread = own_spread
 
 /obj/item/gun/after_firing(mob/living/user, pointblank = FALSE, atom/pbtarget = null, message = 1)
 	. = ..()
@@ -154,10 +180,17 @@
 	/// Recoil built up from firing, spreading the shots after it until it settles.
 	var/tmp/gun_recoil = 0
 	var/tmp/gun_recoil_time = 0
+	/// world.time of their last step, for firing on the move.
+	var/tmp/last_moved_time = 0
 
-/// The recoil built up now, having settled since the last shot.
+/mob/living/Moved(atom/old_loc, movement_dir, forced, list/old_locs, momentum_change = TRUE)
+	. = ..()
+	if(!forced)
+		last_moved_time = world.time
+
+/// The recoil built up now, having settled since the last shot, quicker for the agile.
 /mob/living/proc/current_gun_recoil()
-	var/seconds = (world.time - gun_recoil_time) / (1 SECONDS)
+	var/seconds = (world.time - gun_recoil_time) / (1 SECONDS) * max(1 + GUN_AGILITY_STEADY * (get_body_agility() - SPECIAL_BASELINE), 0.3)
 	gun_recoil = max(gun_recoil * 0.5 ** seconds - GUN_RECOIL_SETTLE * seconds, 0)
 	gun_recoil_time = world.time
 	return gun_recoil
@@ -204,15 +237,12 @@
 	burst_size = mode ? initial(mode.burst_size) : base_burst_size
 	fire_delay = (mode && !isnull(initial(mode.fire_delay)) ? initial(mode.fire_delay) : base_fire_delay) * delay_mult
 	var/datum/component/automatic_fire/auto = GetComponent(/datum/component/automatic_fire)
-	if(mode)
-		if(!initial(mode.auto_delay))
-			qdel(auto)
-		else if(auto)
-			auto.autofire_shot_delay = initial(mode.auto_delay) * delay_mult
-		else
-			AddComponent(/datum/component/automatic_fire, initial(mode.auto_delay) * delay_mult)
+	if(mode && !initial(mode.automatic))
+		qdel(auto)
 	else if(auto && fire_delay)
 		auto.autofire_shot_delay = fire_delay
+	else if(mode && !auto)
+		AddComponent(/datum/component/automatic_fire, fire_delay)
 	if(ismob(loc))
 		var/mob/holder = loc
 		holder.update_equipment_speed_mods()
@@ -225,10 +255,11 @@
 	var/name = "semi-automatic"
 	/// Rounds each trigger pull fires.
 	var/burst_size = 1
-	/// Deciseconds after a pull (and between a burst's rounds) before it fires again. Null keeps the gun's own.
+	/// Deciseconds after a pull (and between a burst's or an automatic's rounds) before it fires again. Null keeps
+	/// the gun's own.
 	var/fire_delay
-	/// Deciseconds between rounds while the trigger's held. Null fires once a pull.
-	var/auto_delay
+	/// Keeps firing while the trigger's held.
+	var/automatic = FALSE
 
 /datum/gun_firemode/semi
 
@@ -239,7 +270,7 @@
 
 /datum/gun_firemode/auto
 	name = "automatic"
-	auto_delay = 1.5
+	automatic = TRUE
 
 /datum/action/item_action/gun_firemode
 	name = "Switch Fire Mode"
@@ -285,10 +316,11 @@
 
 /obj/item/gun_mod/suppressor
 	name = "suppressor"
-	desc = "Screws onto a muzzle and swallows most of the bang, and a little of the punch."
+	desc = "Screws onto a muzzle and swallows most of the bang, and a little of the punch. No good on a revolver or a scattergun."
 	icon = 'icons/obj/guns/ballistic.dmi'
 	icon_state = "suppressor"
 	slot = GUN_MOD_MUZZLE
+	fits = list(/obj/item/gun/ballistic/automatic, /obj/item/gun/ballistic/rifle)
 	suppresses = TRUE
 	damage_mult = 0.95
 
@@ -299,22 +331,25 @@
 	icon_state = "suppressor"
 	color = "#b08a5a"
 	slot = GUN_MOD_MUZZLE
+	fits = list(/obj/item/gun/ballistic/automatic, /obj/item/gun/ballistic/revolver)
 	recoil_mult = 0.7
 	spread_mult = 1.1
 
 /obj/item/gun_mod/long_barrel
 	name = "long barrel"
-	desc = "A longer barrel: truer, but heavier to swing about."
+	desc = "A longer barrel for a long gun: truer, but heavier to swing about."
 	color = "#8a8a8a"
 	slot = GUN_MOD_BARREL
+	fits = list(/obj/item/gun/ballistic/automatic/ms13, /obj/item/gun/ballistic/rifle, /obj/item/gun/ballistic/shotgun)
 	spread_mult = 0.8
 	slowdown_add = 0.1
 
 /obj/item/gun_mod/padded_stock
 	name = "padded stock"
-	desc = "Soaks up the kick into the shoulder."
+	desc = "Soaks up a long gun's kick into the shoulder."
 	icon_state = "riflestock"
 	slot = GUN_MOD_STOCK
+	fits = list(/obj/item/gun/ballistic/automatic/ms13, /obj/item/gun/ballistic/rifle, /obj/item/gun/ballistic/shotgun)
 	recoil_mult = 0.8
 
 /obj/item/gun_mod/match_trigger
@@ -322,8 +357,22 @@
 	desc = "A light, crisp trigger. Fires sooner, and heats the gun sooner doing it."
 	color = "#c0a040"
 	slot = GUN_MOD_TRIGGER
+	fits = list(/obj/item/gun/ballistic)
 	fire_delay_mult = 0.85
 	heat_mult = 1.2
+
+/obj/item/gun_mod/scope
+	name = "rifle scope"
+	desc = "Glass and crosshairs in a tube, for seeing further down a rifle and holding it steadier there."
+	color = "#3a3a3a"
+	slot = GUN_MOD_SCOPE
+	fits = list(/obj/item/gun/ballistic/automatic/ms13, /obj/item/gun/ballistic/rifle, /obj/item/gun/ballistic/shotgun/automatic/ms13/sks)
+	zoom = 4
+	spread_mult = 0.9
+	slowdown_add = 0.1
+
+/obj/item/gun_maintenance_supplies
+	desc = "A tin of gun oil, rags and spare springs. Use it on a firearm to clean it and bring it back to good order."
 
 /obj/item/gun/item_interaction(mob/living/user, obj/item/tool, list/modifiers)
 	if(istype(tool, /obj/item/gun_mod))
@@ -384,12 +433,25 @@
 		. += span_info("It's set to [initial(mode.name)].")
 	for(var/slot in mods)
 		. += span_info("It has \a [mods[slot]] fitted.")
-	if(isliving(user))
-		var/mob/living/holder = user
-		if(strength_to_handle > holder.get_body_strength())
-			. += span_warning("It's heavier than you can handle well.")
-		if(intelligence_to_handle > holder.get_special(SPECIAL_INTELLIGENCE))
-			. += span_warning("You aren't sure you understand how it works.")
+	if(strength_to_handle || intelligence_to_handle)
+		. += span_info("Handling it well takes[strength_to_handle ? " Strength [strength_to_handle]" : ""][strength_to_handle && intelligence_to_handle ? " and" : ""][intelligence_to_handle ? " Intelligence [intelligence_to_handle]" : ""].")
+	. += handling_warnings(user)
+
+/// What the gun asks of user that they're short of. It still fires, wider and kicking harder.
+/obj/item/gun/proc/handling_warnings(mob/living/user)
+	. = list()
+	if(!isliving(user))
+		return
+	if(strength_to_handle > user.get_body_strength())
+		. += span_warning("It's heavier than you can handle well.")
+	if(intelligence_to_handle > user.get_special(SPECIAL_INTELLIGENCE))
+		. += span_warning("You aren't sure you understand how it works.")
+
+/obj/item/gun/equipped(mob/user, slot, initial = FALSE)
+	. = ..()
+	if(slot & ITEM_SLOT_HANDS)
+		for(var/warning in handling_warnings(user))
+			to_chat(user, warning)
 
 // Heat, wear and jams, for guns that feed rounds.
 
@@ -573,6 +635,28 @@
 	brute.gun_recoil_time = world.time - 5 SECONDS
 	if(brute.current_gun_recoil())
 		Fail("Built-up recoil didn't settle with fire held.")
+
+	// Perception tightens aim. Firing on the move spreads it, the agile less, and so does firing winded.
+	var/mob/living/carbon/human/consistent/nimble = allocate(/mob/living/carbon/human/consistent)
+	nimble.set_special_base(SPECIAL_PERCEPTION, 9)
+	nimble.set_special_base(SPECIAL_AGILITY, 9)
+	if(rifle.aim_mult(nimble) >= rifle.aim_mult(brute))
+		Fail("Perception didn't tighten aim.")
+	var/standing_spread = rifle.handling_spread(brute)
+	brute.last_moved_time = world.time
+	nimble.last_moved_time = world.time
+	if(rifle.handling_spread(brute) <= standing_spread || rifle.handling_spread(nimble) >= rifle.handling_spread(brute))
+		Fail("Firing on the move didn't spread shots, or spread an agile shooter's as much.")
+	brute.last_moved_time = 0
+	ADD_TRAIT(brute, TRAIT_EXHAUSTED, "unit_test")
+	if(rifle.handling_spread(brute) != standing_spread + GUN_WINDED_SPREAD)
+		Fail("Firing winded didn't spread shots.")
+	REMOVE_TRAIT(brute, TRAIT_EXHAUSTED, "unit_test")
+	// Sharp eyes count for less blurred.
+	var/clear_aim = rifle.aim_mult(nimble)
+	nimble.blur_eyes(10)
+	if(rifle.aim_mult(nimble) <= clear_aim)
+		Fail("Blurred eyes didn't throw off a sharp shooter's aim.")
 	rifle.wielded = FALSE
 
 	rifle.firemodes = list(/datum/gun_firemode/semi, /datum/gun_firemode/burst, /datum/gun_firemode/auto)
