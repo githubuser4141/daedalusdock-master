@@ -37,3 +37,11 @@
 // handle_shock() below) gives that roll a real, visible, felt effect instead of a silent shock_stage
 // subtraction.
 #define MS13_ADRENALINE_DURATION (20 SECONDS)
+
+// Winding (pain_debilitation.dm): hits knock the wind out of whoever takes them, toward exhaustion.
+/// Composure of an average body. A hit winds them by this over their own.
+#define MS13_COMPOSURE 100
+/// Share of composure each point of Endurance or Perception off average adds or takes away.
+#define MS13_COMPOSURE_PER_POINT 0.08
+/// Stamina a hit knocks out of an average body for each point of pain it caused, give or take a quarter.
+#define MS13_HIT_WIND_STAMINA 2

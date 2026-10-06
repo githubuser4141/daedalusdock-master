@@ -1,7 +1,9 @@
 /**
- * S.P.E.C.I.A.L.: seven plain attributes, 1 to 10, for what a body and mind do outright. Strength hits, grapples
- * and carries harder, Perception sees further round, Endurance takes more punishment and keeps going, Agility moves
- * and works quicker, Intelligence builds faster. They're steady numbers, not rolls.
+ * S.P.E.C.I.A.L.: seven plain attributes, 1 to 10, for what a body and mind do outright. Strength hits, grapples,
+ * carries and holds a gun down harder, Perception sees further round and aims truer, Endurance takes more punishment
+ * and keeps going, Agility moves, works and shoots on the move better, Intelligence builds faster and works complex
+ * weapons. Endurance and Perception together are composure under fire (pain_debilitation.dm). They're steady
+ * numbers, not rolls.
  *
  * The character sheet (code/modules/three_dsix) is the other half: its stats and skills are rolled on 3d6 for the
  * finer, chancier things. Each of its three stats leans on SPECIAL (/datum/rpg_stat/var/special_attributes), and Luck
@@ -144,9 +146,15 @@
 /mob/living/proc/get_load_mult()
 	return max(1 - get_body_special_offset(SPECIAL_STRENGTH) * SPECIAL_STRENGTH_LOAD, 0)
 
-/// Strength as the body puts it to work: its own, or a power armor frame's.
+/// Strength as the body puts it to work: a power armor frame's, or their own as far as their arms, blood and pain let
+/// them use it (stat_condition.dm), the same as a swing.
 /mob/living/proc/get_body_strength()
-	return SPECIAL_BASELINE + get_body_special_offset(SPECIAL_STRENGTH)
+	return HAS_TRAIT(src, TRAIT_IN_POWERARMOUR) ? SPECIAL_BASELINE + get_body_special_offset(SPECIAL_STRENGTH) : get_stat(SPECIAL_STRENGTH)
+
+/// Agility the same way: their own as far as their legs, blood and pain let them, or average in power armor, which their
+/// Agility doesn't reach through.
+/mob/living/proc/get_body_agility()
+	return HAS_TRAIT(src, TRAIT_IN_POWERARMOUR) ? SPECIAL_BASELINE + get_body_special_offset(SPECIAL_AGILITY) : get_stat(SPECIAL_AGILITY)
 
 /// How long this body takes to force thing by main strength, for how tough it is (BLUNT armor) and how strong they are.
 /mob/living/proc/force_time(obj/thing)
@@ -154,7 +162,7 @@
 
 /// How far this mob's Strength outweighs other's, in steps of SPECIAL_STRENGTH_CONTEST_STEP. Negative if it's weaker.
 /mob/living/proc/strength_edge(mob/living/other)
-	return round((get_body_special_offset(SPECIAL_STRENGTH) - other.get_body_special_offset(SPECIAL_STRENGTH)) / SPECIAL_STRENGTH_CONTEST_STEP, 1)
+	return round((get_body_strength() - other.get_body_strength()) / SPECIAL_STRENGTH_CONTEST_STEP, 1)
 
 /// A grab is strength against strength as well as size against size, whether holding on or breaking free.
 /datum/grab/size_difference(mob/living/A, mob/living/B)
@@ -358,19 +366,19 @@
 /proc/special_description(attribute)
 	switch(attribute)
 		if(SPECIAL_STRENGTH)
-			return "Raw muscle. How hard you hit, grapple and shove, and how lightly you carry and drag a load."
+			return "Raw muscle. How hard you hit, grapple and shove, how lightly you carry and drag a load, and how well you hold a heavy gun down."
 		if(SPECIAL_PERCEPTION)
-			return "Your senses. How much of what's around you, you take in."
+			return "Your senses and nerve. How much of what's around you, you take in, how true you aim, and how well you keep your head when hit."
 		if(SPECIAL_ENDURANCE)
-			return "Stamina and toughness. How much punishment and pain you take, and how long you keep going."
+			return "Stamina and toughness. How much punishment and pain you take, how long you keep going, and how quickly you shake off a hit."
 		if(SPECIAL_CHARISMA)
 			return "Presence. How others take to you."
 		if(SPECIAL_INTELLIGENCE)
-			return "Wits and know-how. How quickly you put things together."
+			return "Wits and know-how. How quickly you put things together, and how well you work complicated weapons."
 		if(SPECIAL_AGILITY)
-			return "Coordination and speed. How quickly you move and get things done."
+			return "Coordination and speed. How quickly you move and get things done, and how steadily you shoot on the move."
 		if(SPECIAL_LUCK)
-			return "Fortune. How often a gamble goes your way."
+			return "Fortune. How often a gamble goes your way, and how seldom a gun jams on you."
 
 /mob/living/carbon/human/verb/check_special()
 	set name = "S.P.E.C.I.A.L."

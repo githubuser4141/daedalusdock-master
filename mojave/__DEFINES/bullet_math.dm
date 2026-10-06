@@ -561,8 +561,9 @@ TYPEINFO_DEF(/obj/projectile)
 /atom/proc/divert_bullet_damage(obj/projectile/P)
 	return 0
 
+/// Returns TRUE if the round stopped against something outside it after all (power armor plating).
 /atom/proc/finish_bullet_hit(obj/projectile/P, diverted, landed)
-	return
+	return FALSE
 
 /// Whoever is inside this atom, for a round that gets through it to hit next (a mech's pilot).
 /atom/proc/get_bullet_occupant()
@@ -598,7 +599,8 @@ TYPEINFO_DEF(/obj/projectile)
 		return
 
 	var/landed = (. == BULLET_ACT_HIT) && last_hit_blocked < 100
-	target.finish_bullet_hit(src, diverted, landed)
+	if(target.finish_bullet_hit(src, diverted, landed))
+		landed = FALSE
 	if(!landed || stop_fraction >= 1 || QDELETED(target))
 		damage = original_damage
 		return

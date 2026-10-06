@@ -1,4 +1,4 @@
-// Diagnosis for the tissue systems (bone.dm, muscle.dm, vessel.dm) and the infection they pick up when
+// Diagnosis for the tissue systems (bone.dm, muscle.dm, nerve.dm, vessel.dm) and the infection they pick up when
 // neglected (tissue_care.dm).
 //
 // Deliberately not a scanner readout: this is a Fallout setting, and DD's health analyzer is a Space
@@ -52,6 +52,9 @@
 		return
 	if(V.organ_flags & ORGAN_DEAD)
 		return span_alert("Blood is welling up from somewhere deep inside. The artery has gone.")
+	for(var/obj/item/organ/O as anything in contained_organs)
+		if(O != V && O.torn >= 1 && O.bleed_per_damage)
+			return span_alert("It's swollen tight and darkening - something deep inside is torn and bleeding.")
 	var/blood_ratio = local_blood_volume / local_blood_volume_max
 	if(blood_ratio < 0.3)
 		return span_alert("The limb is cold and bloodless, and barely has a pulse worth finding.")
@@ -108,7 +111,7 @@
 		return .
 
 	var/list/findings = list()
-	for(var/text in list(get_muscle_examine_text(), get_vessel_examine_text(), get_infection_examine_text(), get_care_examine_text()))
+	for(var/text in list(get_muscle_examine_text(), get_nerve_examine_text(), get_vessel_examine_text(), get_infection_examine_text(), get_care_examine_text()))
 		if(text)
 			findings += text
 

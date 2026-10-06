@@ -143,7 +143,7 @@ TYPEINFO_DEF(/obj/item/organ/bone/head)
 	var/count = min(MS13_BONE_FRAGMENT_MAX_COUNT, ceil(amount / MS13_BONE_FRAGMENT_DAMAGE))
 	for(var/i in 1 to count)
 		var/obj/item/organ/victim = pick(neighbors)
-		victim.applyOrganDamage(amount / count)
+		victim.tear(amount / count)
 		ms13_medical_debug(owner, "Bone splinter hit [victim.name] for [round(amount / count, 0.1)]")
 
 /**

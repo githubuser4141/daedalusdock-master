@@ -11,7 +11,7 @@
 #define MS13_MEDICAL_DEBUG_ENABLED FALSE
 
 /// Everyone bleeds out through open wounds this much faster than DD's default, and leaves that much more on the floor.
-#define MS13_EXTERNAL_BLEED_MULT 1.2
+#define MS13_EXTERNAL_BLEED_MULT 1.5
 
 /// New organ slots - one vessel per limb. Not touching DD's own ORGAN_SLOT_* defines (code/__DEFINES/DNA.dm).
 #define ORGAN_SLOT_VESSEL_HEAD "vessel_head"
@@ -49,9 +49,18 @@
 #define MS13_LOCAL_BLOOD_REGEN_FLOOR BLOOD_VOLUME_OKAY
 /// Per-tick local blood lost, per point of current vessel damage, while a vessel is hurt but not yet ruptured.
 #define MS13_VESSEL_BLEED_LOCAL_PER_DAMAGE 0.4
-/// Per-tick GLOBAL blood_volume lost (via the real bleed() proc) per point of current vessel damage - on top
-/// of, not instead of, the flat +5 bleed_rate a fully severed artery already causes.
-#define MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE 0.1
+/// Per-tick GLOBAL blood_volume lost (via the real bleed() proc) per point of current vessel damage, times its
+/// vessel_size - on top of, not instead of, the flat +5 bleed_rate a fully severed artery already causes.
+#define MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE 0.2
+/// What a ruptured vessel bleeds a tick per point of vessel_size, on top of that flat +5: an aorta far more than a wrist.
+#define MS13_VESSEL_RUPTURE_BLEED_PER_SIZE 3
+/// Torn organ (vessel.dm's tear()) that clots shut each second, at average Endurance.
+#define MS13_ORGAN_CLOT_RATE 0.1
+/// What a torn heart, liver, lung or kidney bleeds a tick per point it's torn (vessel.dm's get_bleed_rate()).
+#define MS13_HEART_BLEED_PER_DAMAGE 0.15
+#define MS13_LIVER_BLEED_PER_DAMAGE 0.08
+#define MS13_LUNG_BLEED_PER_DAMAGE 0.06
+#define MS13_KIDNEY_BLEED_PER_DAMAGE 0.06
 /// Fraction of a bodypart's own local_blood_volume_max the organs in it (heart/lungs/liver/stomach in a starved
 /// chest, brain/eyes in a starved head) need before they self-heal. Tissue is exempt: its healing slows with blood.
 #define MS13_ORGAN_REGEN_MIN_LOCAL_BLOOD_PCT 0.15

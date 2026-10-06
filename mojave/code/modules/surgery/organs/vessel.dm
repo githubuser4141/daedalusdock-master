@@ -11,7 +11,7 @@
 	to_chat(recipient, span_notice("DEBUG: [message]"))
 
 TYPEINFO_DEF(/obj/item/organ/vessel)
-	default_armor = list(BLUNT = 25, PUNCTURE = 3, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25) // famously low slash armor
+	default_armor = list(BLUNT = 25, PUNCTURE = 6, SLASH = 5, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25) // famously low slash armor
 
 /obj/item/organ/vessel
 	name = "blood vessel"
@@ -36,30 +36,89 @@ TYPEINFO_DEF(/obj/item/organ/vessel)
 	bullet_depth = BULLET_DEPTH_MIDDLE
 
 /**
- * What a damaged-but-not-ruptured vessel contributes to its limb's bleed rate, called from
- * refresh_bleed_rate() (code/modules/surgery/bodyparts/_bodyparts.dm). Going through the limb's rate
- * instead of calling owner.bleed() directly is what makes bandaging, clamping, lying down and
- * anticoagulants work on vessel bleeding at all.
- *
- * A fully ruptured vessel contributes nothing here on purpose - that case is already represented by the
- * flat +5 the severed-artery term adds just above the call site, and counting both meant a burst aorta
- * bled at several times the intended rate with no treatment able to touch the larger half of it.
+ * What the organs in this limb bleed, called from refresh_bleed_rate() (code/modules/surgery/bodyparts/_bodyparts.dm).
+ * Going through the limb's rate instead of calling owner.bleed() directly is what makes bandaging, clamping, lying
+ * down and anticoagulants work on it at all. A torn organ bleeds by how torn it is (get_bleed_rate()), more with an
+ * open path out of the body; a vessel by its damage, and a ruptured one by its size, on top of the flat +5 its severed
+ * artery adds just above.
  */
 /obj/item/bodypart/proc/get_vessel_bleed_rate()
 	. = 0
-	for(var/obj/item/organ/vessel/V in contained_organs)
-		if(!V.damage || (V.organ_flags & ORGAN_DEAD))
-			continue
-		// Blood only leaves the body where there's a path out. An intact surface over a damaged vessel
-		// pools internally instead (that half is handled in vessel_local_blood.dm's on_life()).
-		var/external_mult = (bodypart_flags & BP_BLEEDING) ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
-		. += V.damage * MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE * external_mult * V.vessel_size
+	// Blood only leaves the body where there's a path out. An intact surface over a damaged vessel pools internally
+	// instead (that half is handled in vessel_local_blood.dm's on_life()).
+	var/external_mult = (bodypart_flags & BP_BLEEDING) ? MS13_BLEED_RATIO_SHARP_EXTERNAL_MULT : MS13_BLEED_RATIO_BLUNT_EXTERNAL_MULT
+	for(var/obj/item/organ/O as anything in contained_organs)
+		if(O.bleed_per_damage)
+			. += O.get_bleed_rate() * external_mult
 
-/// The limb's bleed rate is cached, so it has to be recomputed whenever this vessel's damage changes.
-/obj/item/organ/vessel/applyOrganDamage(damage_amount, maximum = maxHealth, silent, updating_health = TRUE, cause_of_death = "Organ failure")
+/obj/item/organ
+	/// Blood a life tick it loses into its limb's bleed rate for each point it's torn: the heart, liver, lungs and
+	/// vessels are full of it. Its limb's rate is cached, so this changing recomputes that.
+	var/bleed_per_damage = 0
+	/// Its damage that something went through - a round, a bone splinter, a blade - rather than poison or starvation.
+	/// Only this bleeds, and it clots shut over time, quicker with Endurance.
+	var/tmp/torn = 0
+
+/obj/item/organ/proc/get_bleed_rate()
+	return torn * bleed_per_damage
+
+/// Damage that tears it open.
+/obj/item/organ/proc/tear(amount)
+	torn += max(amount, 0)
+	return applyOrganDamage(amount)
+
+/obj/item/organ/applyOrganDamage(damage_amount, maximum = maxHealth, silent, updating_health = TRUE, cause_of_death = "Organ failure")
 	. = ..()
-	if(.)
+	torn = min(torn, damage)
+	if(. && bleed_per_damage)
 		ownerlimb?.refresh_bleed_rate()
+
+/obj/item/organ/on_life(delta_time, times_fired)
+	. = ..()
+	if(torn && bleed_per_damage && owner)
+		torn = max(torn - MS13_ORGAN_CLOT_RATE * owner.get_endurance_resilience() * delta_time, 0)
+		ownerlimb?.refresh_bleed_rate()
+
+/// What a blow into a limb does to the organs behind it (DD's own pick, _bodyparts.dm) tears them too. A round has
+/// already been through the organs on its path (bullet_penetration.dm), so it doesn't get a second pick.
+/obj/item/bodypart/damage_internal_organs(brute, burn, sharpness)
+	if(owner?.resolving_bullet_hit)
+		return 0
+	if(!brute)
+		return ..()
+	var/list/before = list()
+	for(var/obj/item/organ/O as anything in contained_organs)
+		before[O] = O.damage
+	. = ..()
+	for(var/obj/item/organ/O as anything in before)
+		if(O.damage > before[O] && O.bleed_per_damage)
+			O.torn += O.damage - before[O]
+			refresh_bleed_rate()
+
+/obj/item/organ/heart
+	bleed_per_damage = MS13_HEART_BLEED_PER_DAMAGE
+
+/// A destroyed heart stops. DD only counted it as not working, and its pulse kept pumping blood out of every wound.
+/obj/item/organ/heart/set_organ_dead(failing, cause_of_death)
+	. = ..()
+	if(. && failing)
+		Stop()
+
+/obj/item/organ/liver
+	bleed_per_damage = MS13_LIVER_BLEED_PER_DAMAGE
+
+/obj/item/organ/lungs
+	bleed_per_damage = MS13_LUNG_BLEED_PER_DAMAGE
+
+/obj/item/organ/kidneys
+	bleed_per_damage = MS13_KIDNEY_BLEED_PER_DAMAGE
+
+/obj/item/organ/vessel
+	bleed_per_damage = MS13_VESSEL_BLEED_GLOBAL_PER_DAMAGE
+
+/// A vessel bleeds by all its damage, bigger ones harder, and a ruptured one most of all.
+/obj/item/organ/vessel/get_bleed_rate()
+	return (organ_flags & ORGAN_DEAD) ? MS13_VESSEL_RUPTURE_BLEED_PER_SIZE * vessel_size : damage * bleed_per_damage * vessel_size
 
 /// Sync the limb's artery to match, plus a one-time blood burst on rupture scaled by vessel_size.
 /obj/item/organ/vessel/set_organ_dead(failing, cause_of_death)
@@ -233,3 +292,10 @@ TYPEINFO_DEF(/obj/item/organ/vessel)
 	organs[ORGAN_SLOT_MUSCLE_CHEST] = /obj/item/organ/muscle/chest
 	organs[ORGAN_SLOT_VESSEL_L_LEG] = /obj/item/organ/vessel/l_leg
 	organs[ORGAN_SLOT_VESSEL_R_LEG] = /obj/item/organ/vessel/r_leg
+	organs[ORGAN_SLOT_NERVE_L_ARM] = /obj/item/organ/nerve/l_arm
+	organs[ORGAN_SLOT_NERVE_R_ARM] = /obj/item/organ/nerve/r_arm
+	organs[ORGAN_SLOT_NERVE_L_LEG] = /obj/item/organ/nerve/l_leg
+	organs[ORGAN_SLOT_NERVE_R_LEG] = /obj/item/organ/nerve/r_leg
+	organs[ORGAN_SLOT_NERVE_SPINE] = /obj/item/organ/nerve/spine
+	organs[ORGAN_SLOT_NERVE_L_PLEXUS] = /obj/item/organ/nerve/plexus_l
+	organs[ORGAN_SLOT_NERVE_R_PLEXUS] = /obj/item/organ/nerve/plexus_r

@@ -26,7 +26,8 @@
 
 	var/pain_passout = min(MS13_PAIN_AMT_PASSOUT * brain_health_factor * blood_circulation_factor, MS13_PAIN_AMT_PASSOUT)
 
-	if(pain <= max((pain_passout * 0.075), 10))
+	// DD's copy has this the wrong way round (<=), slowing only the barely hurt; PAIN_AMT_BEGIN_SLOWDOWN is where it begins.
+	if(pain >= max((pain_passout * 0.075), 10))
 		var/slowdown = min(pain * (PAIN_MAX_SLOWDOWN / pain_passout), PAIN_MAX_SLOWDOWN)
 		add_or_update_variable_movespeed_modifier(/datum/movespeed_modifier/pain, TRUE, slowdown)
 	else
@@ -275,3 +276,79 @@
 
 #undef SHOCK_STRING_MINOR
 #undef SHOCK_STRING_MAJOR
+
+// Winding: every hit that hurts knocks the wind out of whoever takes it, the more the less composed they are
+// (Endurance and Perception). Enough of it leaves them exhausted - slowed, unable to sprint, shooting wide - without
+// putting them on the floor; legs go out from under someone through their nerves and muscles (nerve.dm, muscle.dm).
+
+/// Every hit resolves here (bullet_math.dm), organs and all, so the pain across it is the pain the hit caused.
+/obj/projectile/penetrating_hit(atom/target, def_zone, piercing_hit)
+	var/mob/living/carbon/victim = target
+	if(!istype(victim))
+		return ..()
+	var/pain_before = victim.getPain()
+	. = ..()
+	if(!QDELETED(victim))
+		victim.wind_from_hit(victim.getPain() - pain_before)
+
+/// MS13_COMPOSURE at average, more or less with Endurance and Perception.
+/mob/living/carbon/proc/get_composure()
+	var/steadiness = get_special_offset(SPECIAL_ENDURANCE) + get_special_offset(SPECIAL_PERCEPTION)
+	return MS13_COMPOSURE * max(1 + MS13_COMPOSURE_PER_POINT * steadiness, 0.1)
+
+/// A hit caused jolt pain: it winds them by that, never past the point their stamina gives out. Returns TRUE if it
+/// left them exhausted.
+/mob/living/carbon/proc/wind_from_hit(jolt)
+	if(jolt <= 0 || stat != CONSCIOUS)
+		return FALSE
+	var/was_exhausted = HAS_TRAIT_FROM(src, TRAIT_EXHAUSTED, STAMINA)
+	var/winded = jolt * MS13_HIT_WIND_STAMINA * MS13_COMPOSURE / get_composure() * rand(75, 125) / 100
+	stamina.adjust(-max(min(winded, stamina.current - stamina.maximum * STAMINA_STUN_THRESHOLD_MODIFIER), 0))
+	if(was_exhausted || !HAS_TRAIT_FROM(src, TRAIT_EXHAUSTED, STAMINA))
+		return FALSE
+	visible_message(
+		span_danger("<b>[src]</b> doubles over, winded!"),
+		span_userdanger(pick("The hit knocks the wind out of you!", "You can barely catch your breath!", "Your legs turn to lead!")),
+	)
+	return TRUE
+
+#ifdef UNIT_TESTS
+/// Hits wind their target, the steady less, and can leave them exhausted, but never stamina-crit and never floored.
+/datum/unit_test/ms13_hit_wind
+	name = "PAIN: Hits Wind Their Target Without Flooring Them"
+
+/datum/unit_test/ms13_hit_wind/Run()
+	var/mob/living/carbon/human/consistent/average = allocate(/mob/living/carbon/human/consistent)
+	var/mob/living/carbon/human/consistent/steady = allocate(/mob/living/carbon/human/consistent)
+	steady.set_special_base(SPECIAL_ENDURANCE, 10)
+	steady.set_special_base(SPECIAL_PERCEPTION, 10)
+	if(average.get_composure() != MS13_COMPOSURE || steady.get_composure() <= average.get_composure())
+		Fail("Composure wasn't average at average, or Endurance and Perception didn't raise it.")
+	var/average_before = average.stamina.current
+	if(average.wind_from_hit(0) || average.stamina.current != average_before)
+		Fail("A hit that caused no pain winded someone.")
+
+	var/steady_before = steady.stamina.current
+	if(average.wind_from_hit(10) || steady.wind_from_hit(10))
+		Fail("A light hit exhausted someone rested.")
+	if(average_before - average.stamina.current <= steady_before - steady.stamina.current || steady.stamina.current >= steady_before)
+		Fail("A hit didn't wind its target, or winded the steady as much as the average.")
+
+	average.stamina.adjust(-average.stamina.current + average.stamina.maximum * (STAMINA_EXHAUSTION_THRESHOLD_MODIFIER + 0.05))
+	if(!average.wind_from_hit(MS13_COMPOSURE) || !HAS_TRAIT_FROM(average, TRAIT_EXHAUSTED, STAMINA))
+		Fail("A hard hit didn't leave them exhausted.")
+	if(average.stamina.current < average.stamina.maximum * STAMINA_STUN_THRESHOLD_MODIFIER || HAS_TRAIT_FROM(average, TRAIT_INCAPACITATED, STAMINA))
+		Fail("A hit knocked their stamina out entirely.")
+	if(average.IsKnockdown() || average.body_position == LYING_DOWN)
+		Fail("Being winded put them on the floor.")
+
+	// A real round, through the path every hit takes, into someone with no composure at all.
+	var/mob/living/carbon/human/consistent/glass_jaw/fragile = allocate(/mob/living/carbon/human/consistent/glass_jaw)
+	var/obj/projectile/bullet/ms13/c9mm/bullet = allocate(/obj/projectile/bullet/ms13/c9mm)
+	bullet.penetrating_hit(fragile, BODY_ZONE_CHEST)
+	if(!HAS_TRAIT_FROM(fragile, TRAIT_EXHAUSTED, STAMINA))
+		Fail("Being shot didn't wind them.")
+
+/mob/living/carbon/human/consistent/glass_jaw/get_composure()
+	return 0.01
+#endif

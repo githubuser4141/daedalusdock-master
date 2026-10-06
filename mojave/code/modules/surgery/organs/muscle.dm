@@ -105,9 +105,11 @@ TYPEINFO_DEF(/obj/item/organ/muscle/chest)
 /// A weak leg can buckle mid-stride - deliberately not DD's real TRAIT_FLOORED (a hard floor for a leg that
 /// flat-out doesn't work), just a brief recoverable stumble for one that's merely weak.
 /obj/item/organ/muscle/proc/check_buckle(delta_time)
-	if(owner.body_position == LYING_DOWN || HAS_TRAIT(owner, TRAIT_FLOORED))
+	// A leg that's given out altogether isn't bearing weight to buckle under.
+	if(owner.body_position == LYING_DOWN || HAS_TRAIT(owner, TRAIT_FLOORED) || ownerlimb.bodypart_disabled)
 		return
-	var/perf = get_performance()
+	// The whole limb's performance, bone and nerve with the muscle (muscle_movement.dm).
+	var/perf = ownerlimb.get_muscle_performance()
 	if(perf >= MS13_MUSCLE_BUCKLE_PERFORMANCE_THRESHOLD)
 		return
 	var/deficit = MS13_MUSCLE_BUCKLE_PERFORMANCE_THRESHOLD - perf

@@ -4,11 +4,12 @@
 
 /// Floors at MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR if this limb has no muscle organ installed at all.
 /// Multiplied by bone stability (bone.dm) - a stable skeleton is the baseline a muscle needs to work at all,
-/// not an independent input, so a badly broken bone drags this down even with perfectly healthy muscle.
+/// not an independent input, so a badly broken bone drags this down even with perfectly healthy muscle - and by
+/// its nerve's signal (nerve.dm), since a muscle nothing tells to move doesn't.
 /obj/item/bodypart/proc/get_muscle_performance()
 	var/obj/item/organ/muscle/M = locate() in contained_organs
 	var/base = M ? M.get_performance() : MS13_MUSCLE_MISSING_PERFORMANCE_FLOOR
-	return round(base * (get_bone_stability() / 100), 0.1)
+	return round(base * (get_bone_stability() / 100) * (get_nerve_signal() / 100), 0.1)
 
 /**
  * The single point where muscle performance actually affects this limb - called from the muscle organ's

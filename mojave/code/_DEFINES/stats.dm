@@ -68,8 +68,7 @@
 // --- Strength (SPECIAL_STRENGTH) ---
 // Inputs, in the order they're combined in get_stat_condition(): arm muscle performance (which already
 // folds in bone stability and that limb's local blood - see muscle_movement.dm), whole-body circulation,
-// and pain. Only strength has condition inputs wired up so far; the other six return 1 and read as their
-// base value, ready to be filled in the same way.
+// and pain. Perception and Agility follow the same pattern (eyes, legs); the other four read as their base value.
 
 /// Pain/shock at or above this shock_stage drops strength to its full pain penalty; below it the penalty
 /// scales in linearly from nothing. SHOCK_TIER_2 is where DD already starts describing the body as failing.
@@ -81,3 +80,9 @@
 /// strength-dependent: at 0 effective strength a weapon still lands (1 - this), because a crowbar dropped
 /// on someone hurts regardless of who dropped it.
 #define MS13_STAT_STRONG_MELEE_CONTRIBUTION 0.65
+
+// --- Perception and Agility (stat_condition.dm) ---
+/// Perception's eyes are worth this much of themselves blurred.
+#define MS13_STAT_PERCEPTION_BLUR_MULT 0.6
+/// Worst-case multiplier pain alone takes Perception to: pain narrows the eyes less than it saps the arms.
+#define MS13_STAT_PERCEPTION_PAIN_MULT 0.7

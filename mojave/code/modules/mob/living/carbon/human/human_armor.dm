@@ -35,6 +35,7 @@
 					// Passing subarmor_flag through double-applies the same reduction twice, making the
 					// component nearly unbreakable in practice.
 					PA_part.take_damage(routed_damage, damagetype)
+					power_armor_stopped_bullet = resolving_bullet_hit
 					return 0
 			return ..(damage, damagetype, def_zone, blocked, forced, spread_damage, sharpness, attack_direction, attacking_item, ignore_subarmor = TRUE, armor_penetration = armor_penetration)
 	return ..()
@@ -141,7 +142,7 @@
 	for(var/obj/item/clothing as anything in clothings)
 		if(istype(clothing, /obj/item/clothing/suit/space/hardsuit/ms13/power_armor))
 			var/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/pa = clothing
-			var/obj/item/ms13/power_armor/PA_part = pa.module_armor[def_zone.body_zone]
+			var/obj/item/ms13/power_armor/PA_part = pa.module_armor[affecting.body_zone]
 			if(PA_part && PA_part.atom_integrity > 0)
 				protection += PA_part.subarmor.getRating(d_type)
 		protection += clothing.subarmor.getRating(d_type)

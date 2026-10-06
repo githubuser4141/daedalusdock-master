@@ -1,8 +1,8 @@
 // The live half of S.P.E.C.I.A.L. (stats.dm): the game asks get_stat(), which is the attribute scaled by how intact
 // the body currently is.
 //
-// Only strength has condition inputs wired up so far. The others deliberately return a condition of 1 and read as
-// their plain value, so they can be filled in the same way later (see get_stat_condition() below).
+// Strength, Perception and Agility have condition inputs wired up. The others deliberately return a condition of 1 and
+// read as their plain value, so they can be filled in the same way later (see get_stat_condition() below).
 
 /// The attribute before any body-condition scaling.
 /mob/living/proc/get_base_stat(stat)
@@ -32,6 +32,10 @@
 	switch(stat)
 		if(SPECIAL_STRENGTH)
 			return get_strength_condition()
+		if(SPECIAL_PERCEPTION)
+			return get_perception_condition()
+		if(SPECIAL_AGILITY)
+			return get_agility_condition()
 	return ..()
 
 /**
@@ -54,20 +58,37 @@
 	var/arm_total = (l_arm ? l_arm.get_muscle_performance() : 0) + (r_arm ? r_arm.get_muscle_performance() : 0)
 	var/muscle_factor = max(MS13_STAT_CONDITION_INPUT_FLOOR, arm_total / 200)
 
-	// Measured against BLOOD_CIRC_SAFE, not BLOOD_CIRC_FULL: an uninjured human doesn't sit at exactly 100
-	// circulation, and dividing by 100 made a perfectly healthy character swing at 99.35% of a weapon's
-	// listed damage - which reads as the numbers being broken rather than as being hurt. Anywhere inside
-	// the safe band is full strength; strength falls off once circulation is genuinely compromised.
-	var/blood_factor = clamp(get_blood_circulation() / BLOOD_CIRC_SAFE, MS13_STAT_CONDITION_INPUT_FLOOR, 1)
+	return muscle_factor * get_circulation_stat_factor() * get_pain_stat_factor(MS13_STAT_STRONG_PAIN_MULT)
 
-	return muscle_factor * blood_factor * get_pain_strength_factor()
+/// Perception: the eyes, and whether there's blood and calm enough behind them to use them. Sharp eyes count for
+/// nothing blurred, wrecked or with the world going grey.
+/mob/living/carbon/human/proc/get_perception_condition()
+	var/obj/item/organ/eyes/eyes = getorganslot(ORGAN_SLOT_EYES)
+	var/eye_factor = (eyes && !is_blind()) ? 1 - eyes.damage / eyes.maxHealth : 0
+	if(eye_blurry)
+		eye_factor *= MS13_STAT_PERCEPTION_BLUR_MULT
+	return max(MS13_STAT_CONDITION_INPUT_FLOOR, eye_factor) * get_circulation_stat_factor() * get_pain_stat_factor(MS13_STAT_PERCEPTION_PAIN_MULT)
 
-/// Pain scales in linearly from no penalty at all up to MS13_STAT_STRONG_PAIN_MULT at the floor stage.
-/mob/living/carbon/human/proc/get_pain_strength_factor()
+/// Agility: both legs' muscle performance (which folds in bone and nerve), blood and pain, the same as Strength's arms.
+/mob/living/carbon/human/proc/get_agility_condition()
+	var/obj/item/bodypart/l_leg = get_bodypart(BODY_ZONE_L_LEG)
+	var/obj/item/bodypart/r_leg = get_bodypart(BODY_ZONE_R_LEG)
+	var/leg_total = (l_leg ? l_leg.get_muscle_performance() : 0) + (r_leg ? r_leg.get_muscle_performance() : 0)
+	return max(MS13_STAT_CONDITION_INPUT_FLOOR, leg_total / 200) * get_circulation_stat_factor() * get_pain_stat_factor(MS13_STAT_STRONG_PAIN_MULT)
+
+/// Measured against BLOOD_CIRC_SAFE, not BLOOD_CIRC_FULL: an uninjured human doesn't sit at exactly 100 circulation,
+/// and dividing by 100 made a perfectly healthy character swing at 99.35% of a weapon's listed damage - which reads as
+/// the numbers being broken rather than as being hurt. Anywhere inside the safe band is full; it falls off once
+/// circulation is genuinely compromised.
+/mob/living/carbon/human/proc/get_circulation_stat_factor()
+	return clamp(get_blood_circulation() / BLOOD_CIRC_SAFE, MS13_STAT_CONDITION_INPUT_FLOOR, 1)
+
+/// Pain scales in linearly from no penalty at all up to worst at MS13_STAT_STRONG_PAIN_FLOOR_STAGE.
+/mob/living/carbon/human/proc/get_pain_stat_factor(worst)
 	if(shock_stage <= 0 || HAS_TRAIT(src, TRAIT_NO_PAINSHOCK))
 		return 1
 	var/severity = min(shock_stage / MS13_STAT_STRONG_PAIN_FLOOR_STAGE, 1)
-	return 1 - (severity * (1 - MS13_STAT_STRONG_PAIN_MULT))
+	return 1 - (severity * (1 - worst))
 
 /**
  * Multiplier applied to a melee weapon's force, and to unarmed damage (muscle_movement.dm). Only

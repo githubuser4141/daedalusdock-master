@@ -92,6 +92,8 @@ TYPEINFO_DEF(/obj/item/organ/kidneys)
 	var/tmp/obj/item/bodypart/pending_bullet_part
 	/// Of the energy that path stopped, the share that became damage.
 	var/tmp/pending_bullet_damage_share
+	/// Set when power armor plating took the whole of the hit being resolved (human_armor.dm).
+	var/tmp/power_armor_stopped_bullet = FALSE
 
 /mob/living/carbon/human/get_bullet_transfer_fraction(obj/projectile/P, def_zone)
 	pending_bullet_organs = null
@@ -170,6 +172,10 @@ TYPEINFO_DEF(/obj/item/organ/kidneys)
 	pending_bullet_organs = null
 	pending_bullet_part = null
 	pending_bullet_damage_share = null
+	// The plating took it all: nothing behind it is touched, and the round stops there.
+	if(power_armor_stopped_bullet)
+		power_armor_stopped_bullet = FALSE
+		return TRUE
 	if(!landed || !part || diverted <= 0)
 		return
 	var/through_armor = (100 - clamp(P.last_hit_blocked, 0, 100)) / 100
@@ -186,11 +192,11 @@ TYPEINFO_DEF(/obj/item/organ/kidneys)
 		var/splash = min(left, amount * MS13_BULLET_SPLASH_SHARE)
 		if(splash <= 0)
 			break
-		O.applyOrganDamage(splash)
+		O.tear(splash)
 		left -= splash
 		if(firer)
 			log_combat(firer, src, "bullet splash hit [O]", addition = "[round(splash, 0.1)] damage")
-	struck.applyOrganDamage(left)
+	struck.tear(left)
 
 #ifdef UNIT_TESTS
 /// A simple bullet lands on a body like a blow: it hurts, it stays in, and it never takes the path through.
@@ -206,4 +212,22 @@ TYPEINFO_DEF(/obj/item/organ/kidneys)
 	var/result = bullet.penetrating_hit(victim, BODY_ZONE_CHEST)
 	if(result == BULLET_ACT_FORCE_PIERCE || victim.getBruteLoss() <= brute || bullet.getBIntegrity() != integrity)
 		Fail("A simple bullet went through a body, did no harm, or took the path through it.")
+
+/// Power armor plating that takes a whole round keeps it out of the body behind it, and stops it there.
+/datum/unit_test/ms13_power_armor_stops_rounds
+	name = "BULLETS: Power Armor That Takes A Round Stops It"
+
+/datum/unit_test/ms13_power_armor_stops_rounds/Run()
+	var/mob/living/carbon/human/consistent/wearer = allocate(/mob/living/carbon/human/consistent)
+	wearer.equip_to_slot_if_possible(allocate(/obj/item/clothing/suit/space/hardsuit/ms13/power_armor/t51), ITEM_SLOT_OCLOTHING, TRUE, TRUE, bypass_equip_delay_self = TRUE)
+	for(var/obj/item/organ/O as anything in wearer.organs)
+		O.bullet_hit_chance = 100
+	var/obj/projectile/bullet/ms13/c9mm/bullet = allocate(/obj/projectile/bullet/ms13/c9mm)
+	var/result = bullet.penetrating_hit(wearer, BODY_ZONE_CHEST)
+	var/list/hurt = list()
+	for(var/obj/item/organ/O as anything in wearer.organs)
+		if(O.damage)
+			hurt += O.name
+	if(result == BULLET_ACT_FORCE_PIERCE || length(hurt) || wearer.getBruteLoss())
+		Fail("A round the plating took still went through ([result]), or hurt [english_list(hurt)] behind it ([wearer.getBruteLoss()] brute).")
 #endif

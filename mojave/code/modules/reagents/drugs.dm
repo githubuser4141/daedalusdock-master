@@ -701,7 +701,7 @@
 	if(C.reagents.has_reagent(forbidden_double_dose))
 		to_chat(C, span_userdanger("Oh dear god... Shouldn't do that..."))
 		var/obj/item/organ/heart/our_heart = C.getorganslot(ORGAN_SLOT_HEART)
-		our_heart?.applyOrganDamage(9.5 * OD_multiplier * removed)
+		our_heart?.tear(9.5 * OD_multiplier * removed) // A heart driven past what it can take tears
 		if(prob(14.5))
 			C.losebreath += rand(4, 8)
 			C.adjustOxyLoss(rand(3, 8))
@@ -728,7 +728,7 @@
 		return
 
 	var/obj/item/organ/heart/our_heart = M.getorganslot(ORGAN_SLOT_HEART)
-	our_heart.applyOrganDamage(9.5 * (OD_multiplier))
+	our_heart.tear(9.5 * (OD_multiplier))
 
 	if(DT_PROB(7.5, SSMOBS_DT))
 		M.losebreath += rand(2, 4)
